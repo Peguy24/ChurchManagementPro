@@ -12,6 +12,8 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,6 +29,24 @@ const navItems = [
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Erè',
+        description: 'Pwoblèm pou dekonekte',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Dekonekte',
+        description: 'Ou dekonekte avèk siksè',
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,10 +61,13 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <UserCircle className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground hidden md:block">
+                {user?.email}
+              </span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
