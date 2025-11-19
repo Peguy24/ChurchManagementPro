@@ -11,6 +11,7 @@ import {
   Church,
   ClipboardCheck,
   Bell,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +26,7 @@ const navItems = [
   { to: "/members", icon: Users, label: "Manm" },
   { to: "/attendance", icon: ClipboardCheck, label: "Prezans" },
   { to: "/attendance/alerts", icon: Bell, label: "Alèt Prezans" },
+  { to: "/attendance/comparison", icon: BarChart3, label: "Konparezon Gwoup" },
   { to: "/donations", icon: DollarSign, label: "Don" },
   { to: "/events", icon: Calendar, label: "Evènman" },
 ];
