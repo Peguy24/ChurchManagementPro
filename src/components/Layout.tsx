@@ -18,7 +18,7 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/", icon: LayoutDashboard, label: "Tablo Bò" },
   { to: "/members", icon: Users, label: "Manm" },
   { to: "/attendance", icon: ClipboardCheck, label: "Prezans" },
   { to: "/donations", icon: DollarSign, label: "Don" },
