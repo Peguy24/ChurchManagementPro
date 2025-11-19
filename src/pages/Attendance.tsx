@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ const weeklyStats = [
 ];
 
 export default function Attendance() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -237,8 +239,12 @@ export default function Attendance() {
                         <TableCell>{record.total}</TableCell>
                         <TableCell>-</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
-                            Detay
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => navigate("/attendance/stats")}
+                          >
+                            Statistiques
                           </Button>
                         </TableCell>
                       </TableRow>
