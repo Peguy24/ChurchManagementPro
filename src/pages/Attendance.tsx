@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Calendar, Plus, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import AttendanceDialog from "@/components/AttendanceDialog";
 
 const attendanceRecords = [
   {
@@ -60,6 +62,8 @@ const weeklyStats = [
 ];
 
 export default function Attendance() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -72,7 +76,7 @@ export default function Attendance() {
               Swiv prezans manm yo nan chak rankont
             </p>
           </div>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Anrejistre Prezans
           </Button>
@@ -200,6 +204,7 @@ export default function Attendance() {
           </CardContent>
         </Card>
       </div>
+      <AttendanceDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Layout>
   );
 }
