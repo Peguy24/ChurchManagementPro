@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Plus, Users } from "lucide-react";
+import EventDialog from "@/components/EventDialog";
 
 const events = [
   {
@@ -65,6 +67,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Events() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -77,7 +81,7 @@ export default function Events() {
               Planifye ak jere evènman legliz ou
             </p>
           </div>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Kreye Evènman
           </Button>
@@ -166,6 +170,7 @@ export default function Events() {
           ))}
         </div>
       </div>
+      <EventDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Layout>
   );
 }

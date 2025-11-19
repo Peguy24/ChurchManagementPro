@@ -18,7 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Download, Upload } from "lucide-react";
+import { Plus, Search, Download, Upload, Edit } from "lucide-react";
+import MemberDialog from "@/components/MemberDialog";
 
 const mockMembers = [
   {
@@ -76,6 +77,8 @@ const statusColors: Record<string, string> = {
 
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<typeof mockMembers[0] | undefined>();
 
   const filteredMembers = mockMembers.filter(
     (member) =>
@@ -102,7 +105,10 @@ export default function Members() {
               <Download className="mr-2 h-4 w-4" />
               Ekspòte
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => {
+              setSelectedMember(undefined);
+              setDialogOpen(true);
+            }}>
               <Plus className="mr-2 h-4 w-4" />
               Ajoute Manm
             </Button>
@@ -161,8 +167,15 @@ export default function Members() {
                       </TableCell>
                       <TableCell>{member.joined}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
-                          Modifye
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -173,6 +186,11 @@ export default function Members() {
           </CardContent>
         </Card>
       </div>
+      <MemberDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        member={selectedMember}
+      />
     </Layout>
   );
 }

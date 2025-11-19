@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Download, Plus, TrendingUp } from "lucide-react";
+import DonationDialog from "@/components/DonationDialog";
 
 const donations = [
   {
@@ -90,6 +92,8 @@ const stats = [
 ];
 
 export default function Donations() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -107,7 +111,7 @@ export default function Donations() {
               <Download className="mr-2 h-4 w-4" />
               Ekspòte Rapò
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Ajoute Don
             </Button>
@@ -228,6 +232,7 @@ export default function Donations() {
           </CardContent>
         </Card>
       </div>
+      <DonationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Layout>
   );
 }
