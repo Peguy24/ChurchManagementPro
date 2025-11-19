@@ -8,6 +8,7 @@ import Members from "./pages/Members";
 import Attendance from "./pages/Attendance";
 import MemberAttendanceStats from "./pages/MemberAttendanceStats";
 import AttendanceAlerts from "./pages/AttendanceAlerts";
+import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import Events from "./pages/Events";
 import Auth from "./pages/Auth";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
           <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
           <Route path="/attendance/alerts" element={<ProtectedRoute><AttendanceAlerts /></ProtectedRoute>} />
+          <Route path="/attendance/comparison" element={<ProtectedRoute><GroupComparisonDashboard /></ProtectedRoute>} />
           <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
