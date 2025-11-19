@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance_records: {
+        Row: {
+          created_at: string | null
+          event_date: string
+          event_type: string
+          id: string
+          marked_at: string | null
+          marked_by: string | null
+          member_id: string
+          scan_method: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          marked_at?: string | null
+          marked_by?: string | null
+          member_id: string
+          scan_method?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          marked_at?: string | null
+          marked_by?: string | null
+          member_id?: string
+          scan_method?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string | null
+          first_name: string
+          groups: string[] | null
+          id: string
+          last_name: string
+          member_type: string | null
+          phone: string | null
+          photo_url: string | null
+          qr_code: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          first_name: string
+          groups?: string[] | null
+          id?: string
+          last_name: string
+          member_type?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          qr_code?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          first_name?: string
+          groups?: string[] | null
+          id?: string
+          last_name?: string
+          member_type?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          qr_code?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
