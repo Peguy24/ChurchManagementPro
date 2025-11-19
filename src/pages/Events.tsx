@@ -9,20 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Users } from "lucide-react";
-import { format } from "date-fns";
+import { Clock, MapPin, Plus, Users } from "lucide-react";
+import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import EventDialog from "@/components/EventDialog";
 
 const events = [
@@ -81,23 +71,13 @@ const statusColors: Record<string, string> = {
 
 export default function Events() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  const filteredEvents = events.filter((event) => {
-    if (!dateFrom && !dateTo) return true;
-    const eventDate = new Date(event.date);
-    if (dateFrom && dateTo) {
-      return eventDate >= dateFrom && eventDate <= dateTo;
-    }
-    if (dateFrom) {
-      return eventDate >= dateFrom;
-    }
-    if (dateTo) {
-      return eventDate <= dateTo;
-    }
-    return true;
-  });
+  const eventsOnSelectedDate = selectedDate
+    ? events.filter((event) => isSameDay(new Date(event.date), selectedDate))
+    : [];
+
+  const eventDates = events.map((event) => new Date(event.date));
 
   return (
     <Layout>
@@ -117,151 +97,140 @@ export default function Events() {
           </Button>
         </div>
 
-        {/* Date Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtre pa Dat</CardTitle>
-            <CardDescription>Chwazi yon peryòd pou wè evènman yo</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Dat Kòmansman</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !dateFrom && "text-muted-foreground"
-                      )}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Calendar */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Kalandriye</CardTitle>
+              <CardDescription>Chwazi yon dat pou wè evènman yo</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                locale={fr}
+                className="pointer-events-auto"
+                modifiers={{
+                  hasEvent: eventDates,
+                }}
+                modifiersStyles={{
+                  hasEvent: {
+                    fontWeight: "bold",
+                    textDecoration: "underline",
+                    color: "hsl(var(--primary))",
+                  },
+                }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Events for Selected Date */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Evènman nan{" "}
+                {selectedDate ? format(selectedDate, "PPP", { locale: fr }) : "..."}
+              </CardTitle>
+              <CardDescription>
+                {eventsOnSelectedDate.length} evènman
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {eventsOnSelectedDate.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Pa gen evènman nan dat sa a
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {eventsOnSelectedDate.map((event) => (
+                    <div
+                      key={event.id}
+                      className="p-4 border rounded-lg space-y-3 hover:bg-accent/50 transition-colors"
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "PPP", { locale: fr }) : <span>Chwazi dat</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dateFrom}
-                      onSelect={setDateFrom}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Dat Fen</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !dateTo && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "PPP", { locale: fr }) : <span>Chwazi dat</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dateTo}
-                      onSelect={setDateTo}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {(dateFrom || dateTo) && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setDateFrom(undefined);
-                    setDateTo(undefined);
-                  }}
-                  className="mt-auto"
-                >
-                  Efase Filt
-                </Button>
-              )}
-
-              <div className="ml-auto text-sm text-muted-foreground">
-                {filteredEvents.length} evènman jwenn
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Events Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Lis Evènman</CardTitle>
-            <CardDescription>Tout evènman planifye</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Non</TableHead>
-                  <TableHead>Dat</TableHead>
-                  <TableHead>Lè</TableHead>
-                  <TableHead>Kote</TableHead>
-                  <TableHead>Patisipan</TableHead>
-                  <TableHead>Estati</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEvents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      Pa gen evènman nan peryòd sa a
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredEvents.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                          {format(new Date(event.date), "PPP", { locale: fr })}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          {event.time}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          {event.location}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          {event.attendees}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={statusColors[event.status]}>
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-lg">{event.name}</h3>
+                        <Badge
+                          variant="outline"
+                          className={statusColors[event.status]}
+                        >
                           {event.status}
                         </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                      </div>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          {event.time}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          {event.location}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          {event.attendees} patisipan espere
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          Modifye
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          Detay
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* All Upcoming Events */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tout Evènman Pwochen</CardTitle>
+            <CardDescription>Evènman ki ap vini yo</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {events.map((event) => (
+                <Card key={event.id} className="overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-primary to-secondary" />
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-base">{event.name}</CardTitle>
+                        <CardDescription className="mt-1 text-sm">
+                          {format(new Date(event.date), "PPP", { locale: fr })}
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[event.status]}
+                      >
+                        {event.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      {event.time}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {event.location}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      {event.attendees} patisipan
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
