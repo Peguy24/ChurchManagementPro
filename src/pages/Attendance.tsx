@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,13 @@ import { Calendar, Plus, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 
-const attendanceRecords = [
+interface AttendanceRecord {
+  event_type: string;
+  event_date: string;
+  total: number;
+}
+
+const mockAttendanceRecords = [
   {
     id: 1,
     event: "Sèvis Dimanch",
@@ -63,6 +70,44 @@ const weeklyStats = [
 
 export default function Attendance() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAttendanceRecords();
+  }, []);
+
+  const loadAttendanceRecords = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("attendance_records")
+        .select("event_type, event_date")
+        .order("event_date", { ascending: false });
+
+      if (error) throw error;
+
+      // Group by event and date to get totals
+      const grouped = (data || []).reduce((acc: Record<string, AttendanceRecord>, record) => {
+        const key = `${record.event_type}-${record.event_date}`;
+        if (!acc[key]) {
+          acc[key] = {
+            event_type: record.event_type,
+            event_date: record.event_date,
+            total: 0,
+          };
+        }
+        acc[key].total += 1;
+        return acc;
+      }, {});
+
+      setAttendanceRecords(Object.values(grouped));
+    } catch (error) {
+      console.error("Error loading attendance records:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Layout>
@@ -172,39 +217,44 @@ export default function Attendance() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {attendanceRecords.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">
-                        {record.event}
-                      </TableCell>
-                      <TableCell>{record.date}</TableCell>
-                      <TableCell>{record.total}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            record.percentage >= 70
-                              ? "bg-success/10 text-success border-success/20"
-                              : "bg-warning/10 text-warning border-warning/20"
-                          }
-                        >
-                          {record.percentage}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
-                          Detay
-                        </Button>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        Ap chaje...
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : attendanceRecords.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        Pa gen anrejistman prezans ankò.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    attendanceRecords.map((record, index) => (
+                      <TableRow key={`${record.event_type}-${record.event_date}-${index}`}>
+                        <TableCell className="font-medium">{record.event_type}</TableCell>
+                        <TableCell>{record.event_date}</TableCell>
+                        <TableCell>{record.total}</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm">
+                            Detay
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
           </CardContent>
         </Card>
       </div>
-      <AttendanceDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <AttendanceDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        onSuccess={loadAttendanceRecords}
+      />
     </Layout>
   );
 }
