@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -47,8 +48,9 @@ export default function MemberDialog({
     phone: "",
     dateOfBirth: "",
     emergencyPhone: "",
-        status: "active",
+    status: "active",
     role: "",
+    branchId: "",
     addressNumber: "",
     street: "",
     apartment: "",
@@ -70,6 +72,20 @@ export default function MemberDialog({
     childrenNames: "",
   });
 
+  const { data: branches } = useQuery({
+    queryKey: ["branches-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (member) {
       const address = typeof member.address === 'string' 
@@ -85,6 +101,7 @@ export default function MemberDialog({
         emergencyPhone: member.emergency_phone || "",
         status: member.status || "active",
         role: member.role || "",
+        branchId: member.branch_id || "",
         addressNumber: address.number || "",
         street: address.street || "",
         apartment: address.apartment || "",
@@ -120,6 +137,7 @@ export default function MemberDialog({
         emergencyPhone: "",
         status: "active",
         role: "",
+        branchId: "",
         addressNumber: "",
         street: "",
         apartment: "",
@@ -192,6 +210,7 @@ export default function MemberDialog({
         emergency_phone: formData.emergencyPhone || null,
         status: formData.status,
         role: formData.role || null,
+        branch_id: formData.branchId || null,
         address: JSON.stringify(addressData),
         marital_status: formData.maritalStatus || null,
         civic_status: formData.civicStatus || null,
@@ -382,6 +401,27 @@ export default function MemberDialog({
                     <SelectItem value="active">Aktif</SelectItem>
                     <SelectItem value="inactive">Inaktif</SelectItem>
                     <SelectItem value="transferred">Transfere</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="branch">Branch</Label>
+                <Select
+                  value={formData.branchId || "none"}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, branchId: value === "none" ? "" : value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chwazi yon branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Okenn</SelectItem>
+                    {branches?.map((branch: any) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

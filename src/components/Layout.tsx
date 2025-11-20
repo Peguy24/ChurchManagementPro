@@ -33,6 +33,7 @@ const navItems = [
   { to: "/donations", icon: DollarSign, label: "Don" },
   { to: "/events", icon: Calendar, label: "Evènman" },
   { to: "/ministries", icon: Briefcase, label: "Ministè" },
+  { to: "/branches", icon: Church, label: "Branch" },
 ];
 
 export default function Layout({ children }: LayoutProps) {

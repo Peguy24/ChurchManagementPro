@@ -40,6 +40,7 @@ export default function MinistryDialog({
     name: "",
     description: "",
     leader_id: "",
+    branch_id: "",
     status: "active",
   });
 
@@ -57,12 +58,27 @@ export default function MinistryDialog({
     },
   });
 
+  const { data: branches = [] } = useQuery({
+    queryKey: ["branches-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (ministry) {
       setFormData({
         name: ministry.name || "",
         description: ministry.description || "",
         leader_id: ministry.leader_id || "",
+        branch_id: ministry.branch_id || "",
         status: ministry.status || "active",
       });
     } else {
@@ -70,6 +86,7 @@ export default function MinistryDialog({
         name: "",
         description: "",
         leader_id: "",
+        branch_id: "",
         status: "active",
       });
     }
@@ -87,6 +104,7 @@ export default function MinistryDialog({
             name: formData.name,
             description: formData.description,
             leader_id: formData.leader_id || null,
+            branch_id: formData.branch_id || null,
             status: formData.status,
           })
           .eq("id", ministry.id);
@@ -99,6 +117,7 @@ export default function MinistryDialog({
             name: formData.name,
             description: formData.description,
             leader_id: formData.leader_id || null,
+            branch_id: formData.branch_id || null,
             status: formData.status,
           },
         ]);
@@ -192,6 +211,28 @@ export default function MinistryDialog({
                 <SelectContent>
                   <SelectItem value="active">Aktif</SelectItem>
                   <SelectItem value="inactive">Inaktif</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="branch">Branch</Label>
+              <Select
+                value={formData.branch_id || "none"}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, branch_id: value === "none" ? "" : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chwazi yon branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Okenn</SelectItem>
+                  {branches.map((branch: any) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
