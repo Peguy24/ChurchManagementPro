@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 
@@ -28,60 +28,52 @@ interface AttendanceRecord {
   total: number;
 }
 
-const mockAttendanceRecords = [
-  {
-    id: 1,
-    event: "Sèvis Dimanch",
-    date: "2025-01-14",
-    total: 186,
-    percentage: 75,
-  },
-  {
-    id: 2,
-    event: "Etid Biblik",
-    date: "2025-01-16",
-    total: 42,
-    percentage: 17,
-  },
-  {
-    id: 3,
-    event: "Rankont Priyè",
-    date: "2025-01-17",
-    total: 68,
-    percentage: 27,
-  },
-  {
-    id: 4,
-    event: "Sèvis Dimanch",
-    date: "2025-01-07",
-    total: 192,
-    percentage: 77,
-  },
-];
-
-const weeklyStats = [
-  { day: "Lendi", count: 0 },
-  { day: "Madi", count: 0 },
-  { day: "Mèkredi", count: 42 },
-  { day: "Jedi", count: 68 },
-  { day: "Vandredi", count: 0 },
-  { day: "Samdi", count: 0 },
-  { day: "Dimanch", count: 186 },
-];
+interface AttendanceStats {
+  avgAttendance: number;
+  totalEvents: number;
+  highestAttendance: number;
+  highestDate: string;
+  percentageChange: number;
+}
 
 export default function Attendance() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AttendanceStats>({
+    avgAttendance: 0,
+    totalEvents: 0,
+    highestAttendance: 0,
+    highestDate: "",
+    percentageChange: 0,
+  });
+  const [totalMembers, setTotalMembers] = useState(0);
 
   useEffect(() => {
     loadAttendanceRecords();
+    loadTotalMembers();
   }, []);
+
+  const loadTotalMembers = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("members")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      if (error) throw error;
+      setTotalMembers(count || 0);
+    } catch (error) {
+      console.error("Error loading total members:", error);
+    }
+  };
 
   const loadAttendanceRecords = async () => {
     try {
       setLoading(true);
+      
+      // Get all attendance records
       const { data, error } = await supabase
         .from("attendance_records")
         .select("event_type, event_date")
@@ -103,7 +95,52 @@ export default function Attendance() {
         return acc;
       }, {});
 
-      setAttendanceRecords(Object.values(grouped));
+      const records = Object.values(grouped);
+      setAttendanceRecords(records);
+
+      // Calculate stats
+      if (records.length > 0) {
+        const totals = records.map((r) => r.total);
+        const avg = totals.reduce((a, b) => a + b, 0) / totals.length;
+        const highest = Math.max(...totals);
+        const highestRecord = records.find((r) => r.total === highest);
+
+        // Get last 30 days for current period
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const currentPeriod = records.filter(
+          (r) => new Date(r.event_date) >= thirtyDaysAgo
+        );
+
+        // Get previous 30 days
+        const sixtyDaysAgo = new Date();
+        sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+        const previousPeriod = records.filter(
+          (r) =>
+            new Date(r.event_date) >= sixtyDaysAgo &&
+            new Date(r.event_date) < thirtyDaysAgo
+        );
+
+        const currentAvg =
+          currentPeriod.length > 0
+            ? currentPeriod.reduce((a, b) => a + b.total, 0) / currentPeriod.length
+            : 0;
+        const previousAvg =
+          previousPeriod.length > 0
+            ? previousPeriod.reduce((a, b) => a + b.total, 0) / previousPeriod.length
+            : 0;
+
+        const percentageChange =
+          previousAvg > 0 ? ((currentAvg - previousAvg) / previousAvg) * 100 : 0;
+
+        setStats({
+          avgAttendance: Math.round(avg),
+          totalEvents: records.length,
+          highestAttendance: highest,
+          highestDate: highestRecord?.event_date || "",
+          percentageChange: Math.round(percentageChange),
+        });
+      }
     } catch (error) {
       console.error("Error loading attendance records:", error);
     } finally {
@@ -129,30 +166,60 @@ export default function Attendance() {
           </Button>
         </div>
 
-        {/* Weekly Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Prezans Semèn Sa</CardTitle>
-            <CardDescription>
-              Total: 296 prezans • Mwayèn: 42 pa rankont
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-2">
-              {weeklyStats.map((stat) => (
-                <div
-                  key={stat.day}
-                  className="rounded-lg border bg-card p-4 text-center"
-                >
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.day}
-                  </p>
-                  <p className="mt-2 text-2xl font-bold">{stat.count}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Actions */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-primary/50 bg-primary/5">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Manm</CardTitle>
+              <Users className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalMembers}</div>
+              <p className="text-xs text-muted-foreground">Manm aktif</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Dènye Rankont
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {attendanceRecords.length > 0
+                  ? attendanceRecords[0].total
+                  : 0}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {attendanceRecords.length > 0
+                  ? new Date(attendanceRecords[0].event_date).toLocaleDateString("fr-FR")
+                  : "Pa gen rankont"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Pousantaj Mwayèn
+              </CardTitle>
+              <BarChart3 className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {totalMembers > 0 && stats.avgAttendance > 0
+                  ? Math.round((stats.avgAttendance / totalMembers) * 100)
+                  : 0}
+                %
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats.avgAttendance} / {totalMembers} an mwayèn
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -161,12 +228,12 @@ export default function Attendance() {
               <CardTitle className="text-sm font-medium">
                 Prezans Mwayèn
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-success" />
+              <TrendingUp className={`h-4 w-4 ${stats.percentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">72%</div>
+              <div className="text-2xl font-bold">{stats.avgAttendance}</div>
               <p className="text-xs text-muted-foreground">
-                +5% vs mwa pase
+                {stats.percentageChange >= 0 ? '+' : ''}{stats.percentageChange}% vs peryòd pase
               </p>
             </CardContent>
           </Card>
@@ -179,8 +246,8 @@ export default function Attendance() {
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">Mwa sa</p>
+              <div className="text-2xl font-bold">{stats.totalEvents}</div>
+              <p className="text-xs text-muted-foreground">Total anrejistre</p>
             </CardContent>
           </Card>
 
@@ -192,8 +259,10 @@ export default function Attendance() {
               <TrendingUp className="h-4 w-4 text-secondary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">192</div>
-              <p className="text-xs text-muted-foreground">07 Janvye</p>
+              <div className="text-2xl font-bold">{stats.highestAttendance}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.highestDate ? new Date(stats.highestDate).toLocaleDateString("fr-FR") : "-"}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -232,23 +301,39 @@ export default function Attendance() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    attendanceRecords.map((record, index) => (
-                      <TableRow key={`${record.event_type}-${record.event_date}-${index}`}>
-                        <TableCell className="font-medium">{record.event_type}</TableCell>
-                        <TableCell>{record.event_date}</TableCell>
-                        <TableCell>{record.total}</TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => navigate("/attendance/stats")}
-                          >
-                            Statistiques
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    attendanceRecords.map((record, index) => {
+                      const percentage = totalMembers > 0 
+                        ? Math.round((record.total / totalMembers) * 100)
+                        : 0;
+                      
+                      return (
+                        <TableRow key={`${record.event_type}-${record.event_date}-${index}`}>
+                          <TableCell className="font-medium">{record.event_type}</TableCell>
+                          <TableCell>{new Date(record.event_date).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell>{record.total}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{percentage}%</span>
+                              <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-primary transition-all" 
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => navigate("/attendance/stats")}
+                            >
+                              Statistiques
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                       );
+                    })
                   )}
                 </TableBody>
               </Table>
