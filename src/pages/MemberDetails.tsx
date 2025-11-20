@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface MemberSimple {
   id: string;
@@ -74,6 +85,11 @@ export default function MemberDetails() {
   const [allMembers, setAllMembers] = useState<MemberSimple[]>([]);
   const [memberMinistries, setMemberMinistries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addMinistryDialog, setAddMinistryDialog] = useState(false);
+  const [selectedMinistryId, setSelectedMinistryId] = useState("");
+  const [ministryRole, setMinistryRole] = useState("member");
+  const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [addingMinistry, setAddingMinistry] = useState(false);
 
   useEffect(() => {
     loadAllMembers();
@@ -133,6 +149,70 @@ export default function MemberDetails() {
 
   const handleMemberChange = (newMemberId: string) => {
     navigate(`/members/details?memberId=${newMemberId}`);
+  };
+
+  const loadAvailableMinistries = async () => {
+    if (!memberId) return [];
+    
+    try {
+      // Get current ministry IDs
+      const currentMinistryIds = memberMinistries.map(mm => mm.ministry.id);
+      
+      // Get all active ministries not already joined
+      let query = supabase
+        .from("ministries")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      
+      if (currentMinistryIds.length > 0) {
+        query = query.not("id", "in", `(${currentMinistryIds.join(",")})`);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Erreur lors du chargement des ministères:", error);
+      return [];
+    }
+  };
+
+  const { data: availableMinistries = [] } = useQuery({
+    queryKey: ["available-ministries", memberId, memberMinistries],
+    queryFn: loadAvailableMinistries,
+    enabled: addMinistryDialog && !!memberId,
+  });
+
+  const handleAddToMinistry = async () => {
+    if (!selectedMinistryId || !memberId) return;
+    
+    setAddingMinistry(true);
+    try {
+      const { error } = await supabase
+        .from("ministry_members")
+        .insert([{
+          ministry_id: selectedMinistryId,
+          member_id: memberId,
+          role: ministryRole,
+          joined_date: joinedDate,
+        }]);
+
+      if (error) throw error;
+      
+      toast.success("Membre ajouté au ministère");
+      setAddMinistryDialog(false);
+      setSelectedMinistryId("");
+      setMinistryRole("member");
+      setJoinedDate(new Date().toISOString().split('T')[0]);
+      
+      // Reload member ministries
+      loadMemberDetails(memberId);
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de l'ajout");
+    } finally {
+      setAddingMinistry(false);
+    }
   };
 
   const InfoRow = ({ label, value, icon: Icon }: { label: string; value: string | null | undefined; icon?: any }) => {
@@ -384,15 +464,26 @@ export default function MemberDetails() {
         {/* Ministries Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Ministè yo
-            </CardTitle>
-            <CardDescription>
-              {memberMinistries.length > 0
-                ? `Manm nan ${memberMinistries.length} ministè`
-                : "Pa nan okenn ministè"}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Ministè yo
+                </CardTitle>
+                <CardDescription>
+                  {memberMinistries.length > 0
+                    ? `Manm nan ${memberMinistries.length} ministè`
+                    : "Pa nan okenn ministè"}
+                </CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setAddMinistryDialog(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Ajoute nan Ministè
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {memberMinistries.length > 0 ? (
@@ -453,6 +544,72 @@ export default function MemberDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add to Ministry Dialog */}
+      <Dialog open={addMinistryDialog} onOpenChange={setAddMinistryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajoute nan Ministè</DialogTitle>
+            <DialogDescription>
+              Chwazi yon ministè pou ajoute manm sa a
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Ministè</Label>
+              <Select value={selectedMinistryId} onValueChange={setSelectedMinistryId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chwazi yon ministè" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableMinistries.map((ministry: any) => (
+                    <SelectItem key={ministry.id} value={ministry.id}>
+                      {ministry.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Wòl</Label>
+              <Select value={ministryRole} onValueChange={setMinistryRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Manm</SelectItem>
+                  <SelectItem value="coordinator">Kowòdonatè</SelectItem>
+                  <SelectItem value="assistant">Asistan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Dat Rantre</Label>
+              <Input
+                type="date"
+                value={joinedDate}
+                onChange={(e) => setJoinedDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setAddMinistryDialog(false)}
+            >
+              Anile
+            </Button>
+            <Button
+              onClick={handleAddToMinistry}
+              disabled={!selectedMinistryId || addingMinistry}
+            >
+              {addingMinistry ? "Chajman..." : "Ajoute"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
