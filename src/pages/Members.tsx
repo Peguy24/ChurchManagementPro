@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Download, Upload, Edit } from "lucide-react";
 import MemberDialog from "@/components/MemberDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const mockMembers = [
   {
@@ -78,12 +80,25 @@ const statusColors: Record<string, string> = {
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<typeof mockMembers[0] | undefined>();
+  const [selectedMember, setSelectedMember] = useState<any>();
 
-  const filteredMembers = mockMembers.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const { data: members = [], refetch } = useQuery({
+    queryKey: ["members"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const filteredMembers = members.filter(
+    (member: any) =>
+      `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -119,7 +134,7 @@ export default function Members() {
           <CardHeader>
             <CardTitle>Lis Manm</CardTitle>
             <CardDescription>
-              Total: {mockMembers.length} manm
+              Total: {members.length} manm
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -149,23 +164,25 @@ export default function Members() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredMembers.map((member) => (
+                  {filteredMembers.map((member: any) => (
                     <TableRow key={member.id}>
                       <TableCell className="font-medium">
-                        {member.name}
+                        {member.first_name} {member.last_name}
                       </TableCell>
                       <TableCell>{member.email}</TableCell>
                       <TableCell>{member.phone}</TableCell>
-                      <TableCell>{member.group}</TableCell>
+                      <TableCell>{member.groups?.[0] || "-"}</TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={statusColors[member.status]}
+                          className={statusColors[member.status || "Aktif"]}
                         >
-                          {member.status}
+                          {member.status || "Aktif"}
                         </Badge>
                       </TableCell>
-                      <TableCell>{member.joined}</TableCell>
+                      <TableCell>
+                        {member.created_at ? new Date(member.created_at).toLocaleDateString() : "-"}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -186,11 +203,12 @@ export default function Members() {
           </CardContent>
         </Card>
       </div>
-      <MemberDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        member={selectedMember}
-      />
+        <MemberDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          member={selectedMember}
+          onSuccess={refetch}
+        />
     </Layout>
   );
 }
