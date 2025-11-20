@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Edit, Users, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import MinistryDialog from "@/components/MinistryDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Ministries() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMinistry, setSelectedMinistry] = useState<any>();
@@ -181,6 +183,14 @@ export default function Ministries() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/ministries/details?ministryId=${ministry.id}`)}
+                              title="Jere manm yo"
+                            >
+                              <Users className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
