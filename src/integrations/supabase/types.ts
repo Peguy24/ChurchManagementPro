@@ -60,12 +60,15 @@ export type Database = {
           academic_formation: string | null
           address: string | null
           baptism_date: string | null
+          baptism_status: string | null
+          children_names: string | null
           christian_experience: string | null
           civic_status: string | null
           conversion_date: string | null
           created_at: string | null
           date_of_birth: string | null
           email: string | null
+          emergency_phone: string | null
           first_name: string
           groups: string[] | null
           id: string
@@ -73,10 +76,12 @@ export type Database = {
           marital_status: string | null
           marriage_date: string | null
           member_type: string | null
+          number_of_children: number | null
           phone: string | null
           photo_url: string | null
           professional_formation: string | null
           qr_code: string | null
+          role: string | null
           spouse_name: string | null
           status: string | null
           updated_at: string | null
@@ -86,12 +91,15 @@ export type Database = {
           academic_formation?: string | null
           address?: string | null
           baptism_date?: string | null
+          baptism_status?: string | null
+          children_names?: string | null
           christian_experience?: string | null
           civic_status?: string | null
           conversion_date?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string | null
+          emergency_phone?: string | null
           first_name: string
           groups?: string[] | null
           id?: string
@@ -99,10 +107,12 @@ export type Database = {
           marital_status?: string | null
           marriage_date?: string | null
           member_type?: string | null
+          number_of_children?: number | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null
           qr_code?: string | null
+          role?: string | null
           spouse_name?: string | null
           status?: string | null
           updated_at?: string | null
@@ -112,12 +122,15 @@ export type Database = {
           academic_formation?: string | null
           address?: string | null
           baptism_date?: string | null
+          baptism_status?: string | null
+          children_names?: string | null
           christian_experience?: string | null
           civic_status?: string | null
           conversion_date?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string | null
+          emergency_phone?: string | null
           first_name?: string
           groups?: string[] | null
           id?: string
@@ -125,10 +138,12 @@ export type Database = {
           marital_status?: string | null
           marriage_date?: string | null
           member_type?: string | null
+          number_of_children?: number | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null
           qr_code?: string | null
+          role?: string | null
           spouse_name?: string | null
           status?: string | null
           updated_at?: string | null
