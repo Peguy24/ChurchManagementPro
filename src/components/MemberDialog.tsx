@@ -21,6 +21,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import QRCode from "qrcode";
+import { Download, QrCode as QrCodeIcon } from "lucide-react";
 
 interface MemberDialogProps {
   open: boolean;
@@ -37,6 +39,7 @@ export default function MemberDialog({
 }: MemberDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -102,6 +105,11 @@ export default function MemberDialog({
         numberOfChildren: member.number_of_children?.toString() || "",
         childrenNames: member.children_names || "",
       });
+
+      // Generate QR code for existing member
+      if (member.qr_code) {
+        generateQRCode(member.qr_code);
+      }
     } else {
       setFormData({
         firstName: "",
@@ -134,6 +142,31 @@ export default function MemberDialog({
       });
     }
   }, [member]);
+
+  const generateQRCode = async (qrCodeData: string) => {
+    try {
+      const url = await QRCode.toDataURL(qrCodeData, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
+      });
+      setQrCodeUrl(url);
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+    }
+  };
+
+  const downloadQRCode = () => {
+    if (qrCodeUrl) {
+      const link = document.createElement("a");
+      link.download = `QR-${formData.firstName}-${formData.lastName}.png`;
+      link.href = qrCodeUrl;
+      link.click();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,11 +215,28 @@ export default function MemberDialog({
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        // For new members, insert and get the ID to generate QR code
+        const { data, error } = await supabase
           .from("members")
-          .insert([memberData]);
+          .insert([memberData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Generate and update QR code with the member ID
+        if (data) {
+          const qrCodeData = `MEMBER-${data.id}`;
+          const { error: updateError } = await supabase
+            .from("members")
+            .update({ qr_code: qrCodeData })
+            .eq("id", data.id);
+
+          if (updateError) throw updateError;
+
+          // Generate QR code image for display
+          await generateQRCode(qrCodeData);
+        }
       }
 
       toast({
@@ -578,6 +628,33 @@ export default function MemberDialog({
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* QR Code Section - Only show for existing members with QR code */}
+          {member && qrCodeUrl && (
+            <div className="space-y-4 rounded-lg border p-4 bg-muted/50 mt-6">
+              <div className="flex items-center gap-2">
+                <QrCodeIcon className="h-5 w-5" />
+                <Label className="text-base font-semibold">Kòd QR Manm</Label>
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <div className="rounded-lg border-2 border-primary/20 p-4 bg-background">
+                  <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  Enprime kòd QR sa a pou manm nan ka itilize l pou make prezans yo
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={downloadQRCode}
+                  className="w-full"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Telechaje Kòd QR
+                </Button>
+              </div>
+            </div>
+          )}
           
           <DialogFooter className="mt-6">
             <Button
