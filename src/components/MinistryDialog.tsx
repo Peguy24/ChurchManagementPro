@@ -1,0 +1,216 @@
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+
+interface MinistryDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  ministry?: any;
+  onSuccess: () => void;
+}
+
+export default function MinistryDialog({
+  open,
+  onOpenChange,
+  ministry,
+  onSuccess,
+}: MinistryDialogProps) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    leader_id: "",
+    status: "active",
+  });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["members-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, first_name, last_name")
+        .eq("status", "active")
+        .order("first_name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (ministry) {
+      setFormData({
+        name: ministry.name || "",
+        description: ministry.description || "",
+        leader_id: ministry.leader_id || "",
+        status: ministry.status || "active",
+      });
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        leader_id: "",
+        status: "active",
+      });
+    }
+  }, [ministry, open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (ministry) {
+        const { error } = await supabase
+          .from("ministries")
+          .update({
+            name: formData.name,
+            description: formData.description,
+            leader_id: formData.leader_id || null,
+            status: formData.status,
+          })
+          .eq("id", ministry.id);
+
+        if (error) throw error;
+        toast.success("Ministère modifié avec succès");
+      } else {
+        const { error } = await supabase.from("ministries").insert([
+          {
+            name: formData.name,
+            description: formData.description,
+            leader_id: formData.leader_id || null,
+            status: formData.status,
+          },
+        ]);
+
+        if (error) throw error;
+        toast.success("Ministère créé avec succès");
+      }
+
+      onSuccess();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message || "Une erreur s'est produite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>
+              {ministry ? "Modifye Ministè" : "Ajoute Nouvo Ministè"}
+            </DialogTitle>
+            <DialogDescription>
+              {ministry
+                ? "Modifye enfòmasyon ministè a"
+                : "Ranpli enfòmasyon pou kreye yon nouvo ministè"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Non Ministè *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description">Deskripsyon</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={3}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="leader">Responsab</Label>
+              <Select
+                value={formData.leader_id}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, leader_id: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chwazi yon responsab" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Okenn</SelectItem>
+                  {members.map((member: any) => (
+                    <SelectItem key={member.id} value={member.id}>
+                      {member.first_name} {member.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="status">Estati</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="inactive">Inaktif</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Anile
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Chajman..." : ministry ? "Modifye" : "Kreye"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
