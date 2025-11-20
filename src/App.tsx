@@ -14,6 +14,7 @@ import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
+import MinistryDetails from "./pages/MinistryDetails";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
           <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
+          <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
