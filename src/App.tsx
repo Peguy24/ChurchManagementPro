@@ -15,6 +15,7 @@ import Donations from "./pages/Donations";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
 import MinistryDetails from "./pages/MinistryDetails";
+import MinistriesStats from "./pages/MinistriesStats";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
           <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
           <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
+          <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

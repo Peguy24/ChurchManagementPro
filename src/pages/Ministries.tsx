@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Users, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Users, Trash2, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MinistryDialog from "@/components/MinistryDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,16 +102,26 @@ export default function Ministries() {
               Jere tout ministè legliz ou
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={() => {
-              setSelectedMinistry(undefined);
-              setDialogOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Ajoute Ministè
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/ministries/stats")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Estatistik
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedMinistry(undefined);
+                setDialogOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ajoute Ministè
+            </Button>
+          </div>
         </div>
 
         <Card>
