@@ -13,6 +13,7 @@ import {
   Bell,
   BarChart3,
   CreditCard,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +32,7 @@ const navItems = [
   { to: "/attendance/comparison", icon: BarChart3, label: "Konparezon Gwoup" },
   { to: "/donations", icon: DollarSign, label: "Don" },
   { to: "/events", icon: Calendar, label: "Evènman" },
+  { to: "/ministries", icon: Briefcase, label: "Ministè" },
 ];
 
 export default function Layout({ children }: LayoutProps) {

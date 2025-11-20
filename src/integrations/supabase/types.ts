@@ -151,6 +151,86 @@ export type Database = {
         }
         Relationships: []
       }
+      ministries: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          leader_id: string | null
+          name: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          name: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          name?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministries_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministry_members: {
+        Row: {
+          created_at: string
+          id: string
+          joined_date: string | null
+          member_id: string
+          ministry_id: string
+          role: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_date?: string | null
+          member_id: string
+          ministry_id: string
+          role?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_date?: string | null
+          member_id?: string
+          ministry_id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_members_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

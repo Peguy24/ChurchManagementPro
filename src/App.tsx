@@ -13,6 +13,7 @@ import AttendanceAlerts from "./pages/AttendanceAlerts";
 import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import Events from "./pages/Events";
+import Ministries from "./pages/Ministries";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/attendance/comparison" element={<ProtectedRoute><GroupComparisonDashboard /></ProtectedRoute>} />
           <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+          <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
