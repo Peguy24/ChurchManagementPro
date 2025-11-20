@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart } from "lucide-react";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -72,6 +72,7 @@ export default function MemberDetails() {
 
   const [member, setMember] = useState<Member | null>(null);
   const [allMembers, setAllMembers] = useState<MemberSimple[]>([]);
+  const [memberMinistries, setMemberMinistries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,6 +110,20 @@ export default function MemberDetails() {
 
       if (error) throw error;
       setMember(data);
+
+      // Load member ministries
+      const { data: ministriesData, error: ministriesError } = await supabase
+        .from("ministry_members")
+        .select(`
+          id,
+          role,
+          joined_date,
+          ministry:ministries(id, name, status)
+        `)
+        .eq("member_id", id);
+
+      if (ministriesError) throw ministriesError;
+      setMemberMinistries(ministriesData || []);
     } catch (error) {
       console.error("Erreur lors du chargement des détails:", error);
     } finally {
@@ -365,6 +380,68 @@ export default function MemberDetails() {
             </CardContent>
           </Card>
         )}
+
+        {/* Ministries Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Ministè yo
+            </CardTitle>
+            <CardDescription>
+              {memberMinistries.length > 0
+                ? `Manm nan ${memberMinistries.length} ministè`
+                : "Pa nan okenn ministè"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {memberMinistries.length > 0 ? (
+              <div className="space-y-3">
+                {memberMinistries.map((mm: any) => (
+                  <div
+                    key={mm.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/ministries/details?ministryId=${mm.ministry.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Briefcase className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">{mm.ministry.name}</p>
+                          <Badge
+                            variant="outline"
+                            className={
+                              mm.ministry.status === "active"
+                                ? "bg-success/10 text-success border-success/20"
+                                : "bg-muted text-muted-foreground border-border"
+                            }
+                          >
+                            {mm.ministry.status === "active" ? "Aktif" : "Inaktif"}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-3 text-xs text-muted-foreground mt-1">
+                          <span>Wòl: <span className="font-medium">{mm.role}</span></span>
+                          <span>•</span>
+                          <span>
+                            Rantre: {mm.joined_date
+                              ? new Date(mm.joined_date).toLocaleDateString("fr-FR")
+                              : "-"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{mm.role}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Briefcase className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                <p>Manm sa a pa nan okenn ministè</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Metadata */}
         <Card>
