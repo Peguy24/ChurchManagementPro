@@ -188,14 +188,14 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <div className="space-y-2">
               <Label htmlFor="leader">Responsable</Label>
               <Select
-                value={formData.leader_id}
-                onValueChange={(value) => setFormData({ ...formData, leader_id: value })}
+                value={formData.leader_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, leader_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un responsable" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucun</SelectItem>
+                  <SelectItem value="none">Aucun</SelectItem>
                   {members?.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.first_name} {member.last_name}
@@ -208,14 +208,14 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <div className="space-y-2">
               <Label htmlFor="parent">Branche parente</Label>
               <Select
-                value={formData.parent_branch_id}
-                onValueChange={(value) => setFormData({ ...formData, parent_branch_id: value })}
+                value={formData.parent_branch_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, parent_branch_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner une branche parente" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucune (Branche principale)</SelectItem>
+                  <SelectItem value="none">Aucune (Branche principale)</SelectItem>
                   {branches?.filter(b => b.id !== branch?.id).map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name}
