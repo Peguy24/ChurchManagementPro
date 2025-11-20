@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, TrendingDown, User } from "lucide-react";
+import { AlertTriangle, TrendingDown, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface AttendanceAlert {
@@ -20,6 +20,7 @@ interface AttendanceAlert {
 export default function AttendanceAlerts() {
   const [alerts, setAlerts] = useState<AttendanceAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -124,6 +125,30 @@ export default function AttendanceAlerts() {
     navigate(`/attendance/stats?memberId=${memberId}`);
   };
 
+  const sendAlertEmail = async (alert: AttendanceAlert) => {
+    try {
+      setSendingEmail(alert.member_id);
+      
+      const { error } = await supabase.functions.invoke('send-absence-alert', {
+        body: {
+          member_id: alert.member_id,
+          member_name: alert.member_name,
+          decline_percentage: alert.decline_percentage,
+          last_attendance: alert.last_attendance,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(`Email envoyé à ${alert.member_name}`);
+    } catch (error: any) {
+      console.error("Error sending alert email:", error);
+      toast.error("Erreur lors de l'envoi de l'email: " + error.message);
+    } finally {
+      setSendingEmail(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -209,8 +234,14 @@ export default function AttendanceAlerts() {
                     <Button onClick={() => viewMemberStats(alert.member_id)} className="flex-1">
                       Voir les statistiques
                     </Button>
-                    <Button variant="outline" className="flex-1">
-                      Contacter le membre
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => sendAlertEmail(alert)}
+                      disabled={sendingEmail === alert.member_id}
+                    >
+                      <Mail className="mr-2 h-4 w-4" />
+                      {sendingEmail === alert.member_id ? "Envoi..." : "Envoyer email"}
                     </Button>
                   </div>
                 </CardContent>
