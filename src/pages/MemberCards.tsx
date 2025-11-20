@@ -15,7 +15,15 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import QRCode from "qrcode";
 
 interface Member {
@@ -38,6 +46,10 @@ export default function MemberCards() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [baptismFilter, setBaptismFilter] = useState<string>("all");
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
+  const [eventType, setEventType] = useState("");
+  const [eventDate, setEventDate] = useState(new Date().toISOString().split("T")[0]);
+  const [submittingAttendance, setSubmittingAttendance] = useState(false);
 
   const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
@@ -181,6 +193,64 @@ export default function MemberCards() {
     });
   };
 
+  const handleMarkAttendance = async () => {
+    if (!eventType || !eventDate) {
+      toast({
+        title: "Erè",
+        description: "Tanpri chwazi kalite evènman ak dat la.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedMemberIds = Array.from(selectedMembers).filter((id) =>
+      members.some((m) => m.id === id)
+    );
+
+    if (selectedMemberIds.length === 0) {
+      toast({
+        title: "Erè",
+        description: "Tanpri chwazi omwen yon manm.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSubmittingAttendance(true);
+
+      const records = selectedMemberIds.map((memberId) => ({
+        member_id: memberId,
+        event_type: eventType,
+        event_date: eventDate,
+        scan_method: "bulk_selection",
+      }));
+
+      const { error } = await supabase
+        .from("attendance_records")
+        .insert(records);
+
+      if (error) throw error;
+
+      toast({
+        title: "Siksè!",
+        description: `Prezans ${selectedMemberIds.length} manm te anrejistre.`,
+      });
+
+      setAttendanceDialogOpen(false);
+      setEventType("");
+    } catch (error) {
+      console.error("Error marking attendance:", error);
+      toast({
+        title: "Erè",
+        description: "Pwoblèm pou anrejistre prezans yo.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingAttendance(false);
+    }
+  };
+
   if (isLoading || generatingQRs) {
     return (
       <Layout>
@@ -208,6 +278,14 @@ export default function MemberCards() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="default" 
+              onClick={() => setAttendanceDialogOpen(true)}
+              disabled={selectedCount === 0}
+            >
+              <ClipboardCheck className="mr-2 h-4 w-4" />
+              Make Prezans ({selectedCount})
+            </Button>
             <Button variant="outline" onClick={downloadAllCards}>
               <Download className="mr-2 h-4 w-4" />
               Telechaje
@@ -437,6 +515,62 @@ export default function MemberCards() {
           }
         }
       `}</style>
+
+      {/* Attendance Dialog */}
+      <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Make Prezans</DialogTitle>
+            <DialogDescription>
+              Make prezans pou {selectedCount} manm seleksyone yo
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="event-type">Kalite Evènman</Label>
+              <Select value={eventType} onValueChange={setEventType}>
+                <SelectTrigger id="event-type">
+                  <SelectValue placeholder="Chwazi yon evènman" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Sèvis Dimanch">Sèvis Dimanch</SelectItem>
+                  <SelectItem value="Etid Biblik">Etid Biblik</SelectItem>
+                  <SelectItem value="Rankont Priyè">Rankont Priyè</SelectItem>
+                  <SelectItem value="Kèl Jenn">Kèl Jenn</SelectItem>
+                  <SelectItem value="Lòt">Lòt</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-date">Dat</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAttendanceDialogOpen(false)}
+              disabled={submittingAttendance}
+            >
+              Anile
+            </Button>
+            <Button
+              onClick={handleMarkAttendance}
+              disabled={submittingAttendance || !eventType}
+            >
+              {submittingAttendance ? "Ap anrejistre..." : "Konfime"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
