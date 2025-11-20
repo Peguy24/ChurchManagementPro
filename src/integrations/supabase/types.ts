@@ -122,6 +122,83 @@ export type Database = {
           },
         ]
       }
+      custom_field_values: {
+        Row: {
+          created_at: string | null
+          custom_field_id: string
+          entity_id: string
+          field_value: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_field_id: string
+          entity_id: string
+          field_value?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_field_id?: string
+          entity_id?: string
+          field_value?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          field_label: string
+          field_name: string
+          field_options: Json | null
+          field_type: Database["public"]["Enums"]["custom_field_type"]
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          field_label: string
+          field_name: string
+          field_options?: Json | null
+          field_type: Database["public"]["Enums"]["custom_field_type"]
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          field_label?: string
+          field_name?: string
+          field_options?: Json | null
+          field_type?: Database["public"]["Enums"]["custom_field_type"]
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           academic_formation: string | null
@@ -388,6 +465,14 @@ export type Database = {
         | "secretary"
         | "volunteer"
         | "user"
+      custom_field_type:
+        | "text"
+        | "textarea"
+        | "number"
+        | "date"
+        | "select"
+        | "checkbox"
+      entity_type: "member" | "branch" | "ministry" | "event" | "donation"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -523,6 +608,15 @@ export const Constants = {
         "volunteer",
         "user",
       ],
+      custom_field_type: [
+        "text",
+        "textarea",
+        "number",
+        "date",
+        "select",
+        "checkbox",
+      ],
+      entity_type: ["member", "branch", "ministry", "event", "donation"],
     },
   },
 } as const
