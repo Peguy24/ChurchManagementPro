@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       attendance_records: {
         Row: {
+          branch_id: string | null
           created_at: string | null
           event_date: string
           event_type: string
@@ -26,6 +27,7 @@ export type Database = {
           scan_method: string | null
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string | null
           event_date: string
           event_type: string
@@ -36,6 +38,7 @@ export type Database = {
           scan_method?: string | null
         }
         Update: {
+          branch_id?: string | null
           created_at?: string | null
           event_date?: string
           event_type?: string
@@ -47,10 +50,74 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "attendance_records_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "attendance_records_member_id_fkey"
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branches: {
+        Row: {
+          address: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          leader_id: string | null
+          name: string
+          parent_branch_id: string | null
+          phone: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          leader_id?: string | null
+          name: string
+          parent_branch_id?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          leader_id?: string | null
+          name?: string
+          parent_branch_id?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branches_parent_branch_id_fkey"
+            columns: ["parent_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
         ]
@@ -61,6 +128,7 @@ export type Database = {
           address: string | null
           baptism_date: string | null
           baptism_status: string | null
+          branch_id: string | null
           children_names: string | null
           christian_experience: string | null
           civic_status: string | null
@@ -92,6 +160,7 @@ export type Database = {
           address?: string | null
           baptism_date?: string | null
           baptism_status?: string | null
+          branch_id?: string | null
           children_names?: string | null
           christian_experience?: string | null
           civic_status?: string | null
@@ -123,6 +192,7 @@ export type Database = {
           address?: string | null
           baptism_date?: string | null
           baptism_status?: string | null
+          branch_id?: string | null
           children_names?: string | null
           christian_experience?: string | null
           civic_status?: string | null
@@ -149,10 +219,19 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "members_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ministries: {
         Row: {
+          branch_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -162,6 +241,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -171,6 +251,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -180,6 +261,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ministries_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ministries_leader_id_fkey"
             columns: ["leader_id"]
