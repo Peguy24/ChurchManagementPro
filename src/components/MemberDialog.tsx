@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,33 +20,31 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MemberDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  member?: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    status: string;
-    group: string;
-  };
+  member?: any;
+  onSuccess?: () => void;
 }
 
 export default function MemberDialog({
   open,
   onOpenChange,
   member,
+  onSuccess,
 }: MemberDialogProps) {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: member?.name || "",
-    email: member?.email || "",
-    phone: member?.phone || "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
     dateOfBirth: "",
     emergencyPhone: "",
-    status: member?.status || "Aktif",
+    status: "Aktif",
     role: "",
     addressNumber: "",
     street: "",
@@ -69,13 +67,144 @@ export default function MemberDialog({
     childrenNames: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (member) {
+      const address = typeof member.address === 'string' 
+        ? JSON.parse(member.address || '{}') 
+        : member.address || {};
+      
+      setFormData({
+        firstName: member.first_name || "",
+        lastName: member.last_name || "",
+        email: member.email || "",
+        phone: member.phone || "",
+        dateOfBirth: member.date_of_birth || "",
+        emergencyPhone: member.emergency_phone || "",
+        status: member.status || "Aktif",
+        role: member.role || "",
+        addressNumber: address.number || "",
+        street: address.street || "",
+        apartment: address.apartment || "",
+        city: address.city || "",
+        state: address.state || "",
+        zipCode: address.zipCode || "",
+        country: address.country || "",
+        maritalStatus: member.marital_status || "",
+        civicStatus: member.civic_status || "",
+        conversionDate: member.conversion_date || "",
+        baptismDate: member.baptism_date || "",
+        baptismStatus: member.baptism_status || "",
+        academicFormation: member.academic_formation || "",
+        professionalFormation: member.professional_formation || "",
+        christianExperience: member.christian_experience || "",
+        marriageDate: member.marriage_date || "",
+        spouseName: member.spouse_name || "",
+        numberOfChildren: member.number_of_children?.toString() || "",
+        childrenNames: member.children_names || "",
+      });
+    } else {
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        emergencyPhone: "",
+        status: "Aktif",
+        role: "",
+        addressNumber: "",
+        street: "",
+        apartment: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+        maritalStatus: "",
+        civicStatus: "",
+        conversionDate: "",
+        baptismDate: "",
+        baptismStatus: "",
+        academicFormation: "",
+        professionalFormation: "",
+        christianExperience: "",
+        marriageDate: "",
+        spouseName: "",
+        numberOfChildren: "",
+        childrenNames: "",
+      });
+    }
+  }, [member]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: member ? "Manm modifye!" : "Manm ajoute!",
-      description: `${formData.name} te ${member ? "modifye" : "ajoute"} avèk siksè.`,
-    });
-    onOpenChange(false);
+    setLoading(true);
+
+    try {
+      const addressData = {
+        number: formData.addressNumber,
+        street: formData.street,
+        apartment: formData.apartment,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        country: formData.country,
+      };
+
+      const memberData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        date_of_birth: formData.dateOfBirth || null,
+        emergency_phone: formData.emergencyPhone || null,
+        status: formData.status,
+        role: formData.role || null,
+        address: JSON.stringify(addressData),
+        marital_status: formData.maritalStatus || null,
+        civic_status: formData.civicStatus || null,
+        conversion_date: formData.conversionDate || null,
+        baptism_date: formData.baptismDate || null,
+        baptism_status: formData.baptismStatus || null,
+        academic_formation: formData.academicFormation || null,
+        professional_formation: formData.professionalFormation || null,
+        christian_experience: formData.christianExperience || null,
+        marriage_date: formData.marriageDate || null,
+        spouse_name: formData.spouseName || null,
+        number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : null,
+        children_names: formData.childrenNames || null,
+      };
+
+      if (member?.id) {
+        const { error } = await supabase
+          .from("members")
+          .update(memberData)
+          .eq("id", member.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("members")
+          .insert([memberData]);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: member ? "Manm modifye!" : "Manm ajoute!",
+        description: `${formData.firstName} ${formData.lastName} te ${member ? "modifye" : "ajoute"} avèk siksè.`,
+      });
+      
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Erè",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,17 +227,31 @@ export default function MemberDialog({
             </TabsList>
             
             <TabsContent value="general" className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Non Konple</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Jean Pierre"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="firstName">Prenon</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstName: e.target.value })
+                    }
+                    placeholder="Jean"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="lastName">Non</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lastName: e.target.value })
+                    }
+                    placeholder="Pierre"
+                    required
+                  />
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -441,10 +584,13 @@ export default function MemberDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={loading}
             >
               Anile
             </Button>
-            <Button type="submit">Sove</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Chajman..." : "Sove"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
