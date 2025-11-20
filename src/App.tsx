@@ -18,7 +18,6 @@ import MinistryDetails from "./pages/MinistryDetails";
 import MinistriesStats from "./pages/MinistriesStats";
 import Auth from "./pages/Auth";
 import Branches from "./pages/Branches";
-import BranchHierarchy from "./pages/BranchHierarchy";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,7 +45,6 @@ const App = () => (
           <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
           <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
           <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
-          <Route path="/branches/hierarchy" element={<ProtectedRoute><BranchHierarchy /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
