@@ -44,7 +44,7 @@ export default function MemberDialog({
     phone: "",
     dateOfBirth: "",
     emergencyPhone: "",
-    status: "Aktif",
+        status: "active",
     role: "",
     addressNumber: "",
     street: "",
@@ -80,7 +80,7 @@ export default function MemberDialog({
         phone: member.phone || "",
         dateOfBirth: member.date_of_birth || "",
         emergencyPhone: member.emergency_phone || "",
-        status: member.status || "Aktif",
+        status: member.status || "active",
         role: member.role || "",
         addressNumber: address.number || "",
         street: address.street || "",
@@ -110,7 +110,7 @@ export default function MemberDialog({
         phone: "",
         dateOfBirth: "",
         emergencyPhone: "",
-        status: "Aktif",
+        status: "active",
         role: "",
         addressNumber: "",
         street: "",
@@ -311,9 +311,9 @@ export default function MemberDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Aktif">Aktif</SelectItem>
-                    <SelectItem value="Inaktif">Inaktif</SelectItem>
-                    <SelectItem value="Transfere">Transfere</SelectItem>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Inaktif</SelectItem>
+                    <SelectItem value="transferred">Transfere</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
