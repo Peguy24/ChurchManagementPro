@@ -48,7 +48,13 @@ export default function MemberDialog({
     emergencyPhone: "",
     status: member?.status || "Aktif",
     role: "",
-    address: "",
+    addressNumber: "",
+    street: "",
+    apartment: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
     maritalStatus: "",
     civicStatus: "",
     conversionDate: "",
@@ -168,37 +174,87 @@ export default function MemberDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="role">Wòl</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, role: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chwazi wòl" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Manm">Manm</SelectItem>
-                    <SelectItem value="Dyak">Dyak</SelectItem>
-                    <SelectItem value="Ansyen">Ansyen</SelectItem>
-                    <SelectItem value="Pastè">Pastè</SelectItem>
-                    <SelectItem value="Sekretè">Sekretè</SelectItem>
-                    <SelectItem value="Trezorye">Trezorye</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="address">Adrès Aktyèl</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="Antre adrès la"
-                />
+              <div className="space-y-2">
+                <Label className="text-base font-semibold">Adrès Aktyèl</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="addressNumber">#</Label>
+                    <Input
+                      id="addressNumber"
+                      value={formData.addressNumber}
+                      onChange={(e) =>
+                        setFormData({ ...formData, addressNumber: e.target.value })
+                      }
+                      placeholder="123"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="street">Ri</Label>
+                    <Input
+                      id="street"
+                      value={formData.street}
+                      onChange={(e) =>
+                        setFormData({ ...formData, street: e.target.value })
+                      }
+                      placeholder="Lari Prensipal"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="apartment">Apt</Label>
+                    <Input
+                      id="apartment"
+                      value={formData.apartment}
+                      onChange={(e) =>
+                        setFormData({ ...formData, apartment: e.target.value })
+                      }
+                      placeholder="A-12"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="city">Vil</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      placeholder="Pòtoprens"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="state">Depatman/Eta</Label>
+                    <Input
+                      id="state"
+                      value={formData.state}
+                      onChange={(e) =>
+                        setFormData({ ...formData, state: e.target.value })
+                      }
+                      placeholder="Lwès"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="zipCode">Zip Code</Label>
+                    <Input
+                      id="zipCode"
+                      value={formData.zipCode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, zipCode: e.target.value })
+                      }
+                      placeholder="HT6120"
+                    />
+                  </div>
+                  <div className="grid gap-2 col-span-2">
+                    <Label htmlFor="country">Peyi</Label>
+                    <Input
+                      id="country"
+                      value={formData.country}
+                      onChange={(e) =>
+                        setFormData({ ...formData, country: e.target.value })
+                      }
+                      placeholder="Ayiti"
+                    />
+                  </div>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="maritalStatus">Estati Sivil</Label>
@@ -256,7 +312,7 @@ export default function MemberDialog({
 
             <TabsContent value="spiritual" className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="baptismStatus">Estati Batèm</Label>
+                <Label htmlFor="baptismStatus">Gwoup de Manm</Label>
                 <Select
                   value={formData.baptismStatus}
                   onValueChange={(value) =>
@@ -264,11 +320,32 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chwazi estati batèm" />
+                    <SelectValue placeholder="Chwazi gwoup manm" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Batize">Manm Batize</SelectItem>
                     <SelectItem value="PaBatize">Manm Pa Batize</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="role">Wòl</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, role: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chwazi wòl" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manm">Manm</SelectItem>
+                    <SelectItem value="Dyak">Dyak</SelectItem>
+                    <SelectItem value="Ansyen">Ansyen</SelectItem>
+                    <SelectItem value="Pastè">Pastè</SelectItem>
+                    <SelectItem value="Sekretè">Sekretè</SelectItem>
+                    <SelectItem value="Trezorye">Trezorye</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
