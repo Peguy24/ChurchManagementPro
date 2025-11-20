@@ -14,6 +14,7 @@ import {
   BarChart3,
   CreditCard,
   Briefcase,
+  Network,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +35,7 @@ const navItems = [
   { to: "/events", icon: Calendar, label: "Evènman" },
   { to: "/ministries", icon: Briefcase, label: "Ministè" },
   { to: "/branches", icon: Church, label: "Branch" },
+  { to: "/branches/hierarchy", icon: Network, label: "Òganigramm" },
 ];
 
 export default function Layout({ children }: LayoutProps) {
