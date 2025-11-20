@@ -236,6 +236,24 @@ export default function MemberDialog({
 
           // Generate QR code image for display
           await generateQRCode(qrCodeData);
+
+          // Send welcome email to new member
+          if (formData.email) {
+            try {
+              await supabase.functions.invoke("send-welcome-email", {
+                body: {
+                  memberId: data.id,
+                  firstName: formData.firstName,
+                  lastName: formData.lastName,
+                  email: formData.email,
+                },
+              });
+              console.log("Welcome email sent successfully");
+            } catch (emailError) {
+              console.error("Error sending welcome email:", emailError);
+              // Don't throw error here - we don't want to fail member creation if email fails
+            }
+          }
         }
       }
 
