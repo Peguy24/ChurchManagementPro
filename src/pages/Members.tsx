@@ -19,7 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Download, Upload, Edit } from "lucide-react";
+import { Plus, Search, Download, Upload, Edit, BarChart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -78,6 +79,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Members() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
@@ -184,16 +186,26 @@ export default function Members() {
                         {member.created_at ? new Date(member.created_at).toLocaleDateString() : "-"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/attendance/stats?memberId=${member.id}`)}
+                            title="Voir les statistiques de présence"
+                          >
+                            <BarChart className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedMember(member);
+                              setDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
