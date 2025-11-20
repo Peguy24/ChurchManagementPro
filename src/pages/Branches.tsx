@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, MapPin, Phone, Mail, Users, Building2, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, MapPin, Phone, Mail, Users, Building2, Edit, Trash2, Network } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { BranchDialog } from "@/components/BranchDialog";
 import { toast } from "sonner";
 import {
@@ -41,6 +42,7 @@ interface Branch {
 }
 
 export default function Branches() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | undefined>();
@@ -133,15 +135,24 @@ export default function Branches() {
             Gérez les différentes branches et départements de votre église
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedBranch(undefined);
-            setIsDialogOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Nouvelle branche
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/branches/hierarchy")}
+          >
+            <Network className="mr-2 h-4 w-4" />
+            Voir l'organigramme
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedBranch(undefined);
+              setIsDialogOpen(true);
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle branche
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-4">
