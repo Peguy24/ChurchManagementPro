@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Download, Upload, Edit, BarChart } from "lucide-react";
+import { Plus, Search, Download, Upload, Edit, BarChart, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,6 +187,14 @@ export default function Members() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/members/details?memberId=${member.id}`)}
+                            title="Voir tous les détails"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
