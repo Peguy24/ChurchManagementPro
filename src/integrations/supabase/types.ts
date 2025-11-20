@@ -57,7 +57,12 @@ export type Database = {
       }
       members: {
         Row: {
+          academic_formation: string | null
           address: string | null
+          baptism_date: string | null
+          christian_experience: string | null
+          civic_status: string | null
+          conversion_date: string | null
           created_at: string | null
           date_of_birth: string | null
           email: string | null
@@ -65,16 +70,25 @@ export type Database = {
           groups: string[] | null
           id: string
           last_name: string
+          marital_status: string | null
+          marriage_date: string | null
           member_type: string | null
           phone: string | null
           photo_url: string | null
+          professional_formation: string | null
           qr_code: string | null
+          spouse_name: string | null
           status: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          academic_formation?: string | null
           address?: string | null
+          baptism_date?: string | null
+          christian_experience?: string | null
+          civic_status?: string | null
+          conversion_date?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string | null
@@ -82,16 +96,25 @@ export type Database = {
           groups?: string[] | null
           id?: string
           last_name: string
+          marital_status?: string | null
+          marriage_date?: string | null
           member_type?: string | null
           phone?: string | null
           photo_url?: string | null
+          professional_formation?: string | null
           qr_code?: string | null
+          spouse_name?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          academic_formation?: string | null
           address?: string | null
+          baptism_date?: string | null
+          christian_experience?: string | null
+          civic_status?: string | null
+          conversion_date?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string | null
@@ -99,10 +122,14 @@ export type Database = {
           groups?: string[] | null
           id?: string
           last_name?: string
+          marital_status?: string | null
+          marriage_date?: string | null
           member_type?: string | null
           phone?: string | null
           photo_url?: string | null
+          professional_formation?: string | null
           qr_code?: string | null
+          spouse_name?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
