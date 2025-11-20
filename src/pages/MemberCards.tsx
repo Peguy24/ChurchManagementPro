@@ -3,9 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter } from "lucide-react";
 import QRCode from "qrcode";
 
 interface Member {
@@ -16,25 +25,48 @@ interface Member {
   photo_url: string | null;
   phone: string | null;
   email: string | null;
+  role: string | null;
+  baptism_status: string | null;
 }
 
 export default function MemberCards() {
   const { toast } = useToast();
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [generatingQRs, setGeneratingQRs] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [baptismFilter, setBaptismFilter] = useState<string>("all");
 
-  const { data: members = [], isLoading, refetch } = useQuery({
+  const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("id, first_name, last_name, qr_code, photo_url, phone, email")
+        .select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status")
         .eq("status", "active")
         .order("first_name");
 
       if (error) throw error;
       return data as Member[];
     },
+  });
+
+  // Filter members based on search and filters
+  const members = allMembers.filter((member) => {
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.last_name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole =
+      roleFilter === "all" ||
+      (member.role && member.role.toLowerCase() === roleFilter.toLowerCase());
+
+    const matchesBaptism =
+      baptismFilter === "all" ||
+      (member.baptism_status && member.baptism_status.toLowerCase() === baptismFilter.toLowerCase());
+
+    return matchesSearch && matchesRole && matchesBaptism;
   });
 
   // Generate QR codes for all members
@@ -139,13 +171,13 @@ export default function MemberCards() {
           <div>
             <h1 className="text-3xl font-bold">Kat Manm</h1>
             <p className="text-muted-foreground">
-              {members.length} kat disponib pou enpresyon
+              {members.length} kat seleksyone / {allMembers.length} total
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={downloadAllCards}>
               <Download className="mr-2 h-4 w-4" />
-              Telechaje Tout
+              Telechaje
             </Button>
             <Button onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
@@ -153,6 +185,82 @@ export default function MemberCards() {
             </Button>
           </div>
         </div>
+
+        {/* Filters Section - Hidden when printing */}
+        <Card className="print:hidden">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Filtè ak Rechèch</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search */}
+              <div className="space-y-2">
+                <Label htmlFor="search">Chèche Manm</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Tape non..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Role Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="role">Wòl</Label>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Tout wòl yo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tout wòl yo</SelectItem>
+                    <SelectItem value="manm">Manm</SelectItem>
+                    <SelectItem value="dyak">Dyak</SelectItem>
+                    <SelectItem value="ansyen">Ansyen</SelectItem>
+                    <SelectItem value="pastè">Pastè</SelectItem>
+                    <SelectItem value="dirijan">Dirijan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Baptism Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="baptism">Estati Batèm</Label>
+                <Select value={baptismFilter} onValueChange={setBaptismFilter}>
+                  <SelectTrigger id="baptism">
+                    <SelectValue placeholder="Tout estati" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tout estati</SelectItem>
+                    <SelectItem value="batize">Batize</SelectItem>
+                    <SelectItem value="pabatize">Pa Batize</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Reset Filters */}
+            {(searchQuery || roleFilter !== "all" || baptismFilter !== "all") && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setRoleFilter("all");
+                    setBaptismFilter("all");
+                  }}
+                >
+                  Efase Filtè
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Member Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-4">
