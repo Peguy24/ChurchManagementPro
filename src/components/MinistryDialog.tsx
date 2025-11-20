@@ -159,16 +159,16 @@ export default function MinistryDialog({
             <div className="grid gap-2">
               <Label htmlFor="leader">Responsab</Label>
               <Select
-                value={formData.leader_id}
+                value={formData.leader_id || "none"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, leader_id: value })
+                  setFormData({ ...formData, leader_id: value === "none" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chwazi yon responsab" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Okenn</SelectItem>
+                  <SelectItem value="none">Okenn</SelectItem>
                   {members.map((member: any) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.first_name} {member.last_name}
