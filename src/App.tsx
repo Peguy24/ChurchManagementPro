@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MemberCards from "./pages/MemberCards";
+import MemberDetails from "./pages/MemberDetails";
 import Attendance from "./pages/Attendance";
 import MemberAttendanceStats from "./pages/MemberAttendanceStats";
 import AttendanceAlerts from "./pages/AttendanceAlerts";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
           <Route path="/members/cards" element={<ProtectedRoute><MemberCards /></ProtectedRoute>} />
+          <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
           <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
           <Route path="/attendance/alerts" element={<ProtectedRoute><AttendanceAlerts /></ProtectedRoute>} />
