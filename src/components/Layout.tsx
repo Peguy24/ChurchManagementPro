@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   Bell,
   BarChart3,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +25,7 @@ interface LayoutProps {
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tablo Bò" },
   { to: "/members", icon: Users, label: "Manm" },
+  { to: "/members/cards", icon: CreditCard, label: "Kat Manm" },
   { to: "/attendance", icon: ClipboardCheck, label: "Prezans" },
   { to: "/attendance/alerts", icon: Bell, label: "Alèt Prezans" },
   { to: "/attendance/comparison", icon: BarChart3, label: "Konparezon Gwoup" },
