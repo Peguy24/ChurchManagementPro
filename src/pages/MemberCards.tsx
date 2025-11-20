@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square } from "lucide-react";
 import QRCode from "qrcode";
 
 interface Member {
@@ -36,6 +37,7 @@ export default function MemberCards() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [baptismFilter, setBaptismFilter] = useState<string>("all");
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
 
   const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
@@ -68,6 +70,37 @@ export default function MemberCards() {
 
     return matchesSearch && matchesRole && matchesBaptism;
   });
+
+  // Initialize selected members when members change
+  useEffect(() => {
+    if (members.length > 0 && selectedMembers.size === 0) {
+      setSelectedMembers(new Set(members.map((m) => m.id)));
+    }
+  }, [members.length]);
+
+  const toggleMemberSelection = (memberId: string) => {
+    setSelectedMembers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(memberId)) {
+        newSet.delete(memberId);
+      } else {
+        newSet.add(memberId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedMembers(new Set(members.map((m) => m.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedMembers(new Set());
+  };
+
+  const selectedCount = Array.from(selectedMembers).filter((id) =>
+    members.some((m) => m.id === id)
+  ).length;
 
   // Generate QR codes for all members
   useEffect(() => {
@@ -171,7 +204,7 @@ export default function MemberCards() {
           <div>
             <h1 className="text-3xl font-bold">Kat Manm</h1>
             <p className="text-muted-foreground">
-              {members.length} kat seleksyone / {allMembers.length} total
+              {selectedCount} kat pou enprime / {members.length} filtre / {allMembers.length} total
             </p>
           </div>
           <div className="flex gap-2">
@@ -179,9 +212,9 @@ export default function MemberCards() {
               <Download className="mr-2 h-4 w-4" />
               Telechaje
             </Button>
-            <Button onClick={handlePrint}>
+            <Button onClick={handlePrint} disabled={selectedCount === 0}>
               <Printer className="mr-2 h-4 w-4" />
-              Enprime
+              Enprime ({selectedCount})
             </Button>
           </div>
         </div>
@@ -243,9 +276,31 @@ export default function MemberCards() {
               </div>
             </div>
 
-            {/* Reset Filters */}
-            {(searchQuery || roleFilter !== "all" || baptismFilter !== "all") && (
-              <div className="mt-4 flex justify-end">
+            {/* Selection Controls */}
+            <div className="mt-4 flex items-center justify-between pt-4 border-t">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAll}
+                  disabled={selectedCount === members.length}
+                >
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                  Seleksyone Tout
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={deselectAll}
+                  disabled={selectedCount === 0}
+                >
+                  <Square className="mr-2 h-4 w-4" />
+                  Deseleksyone Tout
+                </Button>
+              </div>
+
+              {/* Reset Filters */}
+              {(searchQuery || roleFilter !== "all" || baptismFilter !== "all") && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -257,19 +312,34 @@ export default function MemberCards() {
                 >
                   Efase Filtè
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Member Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-4">
-          {members.map((member) => (
-            <Card
-              key={member.id}
-              className="overflow-hidden border-2 print:break-inside-avoid print:mb-4"
-            >
-              <CardContent className="p-6">
+          {members.map((member) => {
+            const isSelected = selectedMembers.has(member.id);
+            const shouldPrint = isSelected;
+            
+            return (
+              <Card
+                key={member.id}
+                className={`overflow-hidden border-2 print:break-inside-avoid print:mb-4 relative ${
+                  shouldPrint ? "" : "print:hidden"
+                } ${!isSelected ? "opacity-50" : ""}`}
+              >
+                {/* Selection Checkbox - Hidden when printing */}
+                <div className="absolute top-2 right-2 z-10 print:hidden">
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleMemberSelection(member.id)}
+                    className="h-5 w-5 bg-background border-2"
+                  />
+                </div>
+                
+                <CardContent className="p-6">
                 {/* Header with Photo */}
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative h-16 w-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
@@ -321,7 +391,8 @@ export default function MemberCards() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         {members.length === 0 && (
