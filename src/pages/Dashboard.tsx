@@ -10,30 +10,50 @@ const stats = [
   {
     title: "Total Manm",
     value: "248",
-    change: "+12 mwa sa",
+    detail: "Gason 120 • Fanm 128",
     icon: Users,
-    color: "text-primary",
+    bgColor: "bg-[hsl(var(--blue))]",
+    textColor: "text-[hsl(var(--blue-foreground))]",
   },
   {
-    title: "Prezans Semèn",
+    title: "Total Batize",
     value: "186",
-    change: "75% manm",
+    detail: "75% manm",
     icon: TrendingUp,
-    color: "text-success",
+    bgColor: "bg-[hsl(var(--dark))]",
+    textColor: "text-[hsl(var(--dark-foreground))]",
   },
   {
-    title: "Don Mwa Sa",
-    value: "$8,450",
-    change: "+23% vs mwa pase",
+    title: "Total Dim Semèn",
+    value: "0",
+    detail: "Peye: 0 • Pa Peye: 248",
     icon: DollarSign,
-    color: "text-secondary",
+    bgColor: "bg-[hsl(var(--red))]",
+    textColor: "text-[hsl(var(--red-foreground))]",
   },
   {
-    title: "Evènman Planifye",
+    title: "Total Ofrand Mwa Sa",
+    value: "$8,450",
+    detail: "+23% vs mwa pase",
+    icon: DollarSign,
+    bgColor: "bg-[hsl(var(--cyan))]",
+    textColor: "text-[hsl(var(--cyan-foreground))]",
+  },
+  {
+    title: "Total Branch",
     value: "5",
-    change: "2 semèn kap vini",
+    detail: "Aktif",
     icon: Calendar,
-    color: "text-info",
+    bgColor: "bg-[hsl(var(--yellow))]",
+    textColor: "text-[hsl(var(--yellow-foreground))]",
+  },
+  {
+    title: "Total Ministè",
+    value: "12",
+    detail: "Tout ministè",
+    icon: Users,
+    bgColor: "bg-[hsl(var(--green))]",
+    textColor: "text-[hsl(var(--green-foreground))]",
   },
 ];
 
@@ -111,20 +131,28 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <Icon className={`h-5 w-5 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">{stat.change}</p>
+              <Card key={stat.title} className={`${stat.bgColor} border-none shadow-lg`}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium mb-2 ${stat.textColor} opacity-90`}>
+                        {stat.title}
+                      </p>
+                      <h3 className={`text-4xl font-bold mb-2 ${stat.textColor}`}>
+                        {stat.value}
+                      </h3>
+                      <p className={`text-xs ${stat.textColor} opacity-80`}>
+                        {stat.detail}
+                      </p>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+                      <Icon className={`h-8 w-8 ${stat.textColor}`} />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );
