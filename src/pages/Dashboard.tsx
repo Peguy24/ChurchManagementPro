@@ -220,17 +220,13 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {stats.map((stat, index) => {
+          {stats.map((stat) => {
             const Icon = stat.icon;
             const isHovered = hoveredCard === stat.title;
             return (
               <Card 
                 key={stat.title} 
-                className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:brightness-110 animate-fade-in opacity-0`}
-                style={{
-                  animationDelay: `${index * 150}ms`,
-                  animationFillMode: 'forwards'
-                }}
+                className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:brightness-110`}
                 onMouseMove={(e) => handleMouseMove(e, stat.title)}
                 onMouseLeave={handleMouseLeave}
               >
