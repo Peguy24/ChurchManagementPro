@@ -33,7 +33,15 @@ export default function DonationDialog({
 }: DonationDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    memberId: string;
+    amount: string;
+    donationType: string;
+    paymentMethod: string;
+    donationDate: string;
+    notes: string;
+    branchId: string;
+  }>({
     memberId: "none",
     amount: "",
     donationType: "",
@@ -113,6 +121,17 @@ export default function DonationDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!formData.donationType || !formData.paymentMethod) {
+      toast({
+        title: "Erè",
+        description: "Tanpri ranpli tout chan obligatwa",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createDonation.mutate(formData);
   };
 
@@ -164,13 +183,12 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="donationType">Tip Don</Label>
+            <Label htmlFor="donationType">Tip Don *</Label>
             <Select
-              value={formData.donationType}
+              value={formData.donationType || undefined}
               onValueChange={(value) =>
                 setFormData({ ...formData, donationType: value })
               }
-              required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chwazi tip" />
@@ -186,13 +204,12 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="paymentMethod">Metòd Peman</Label>
+            <Label htmlFor="paymentMethod">Metòd Peman *</Label>
             <Select
-              value={formData.paymentMethod}
+              value={formData.paymentMethod || undefined}
               onValueChange={(value) =>
                 setFormData({ ...formData, paymentMethod: value })
               }
-              required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chwazi metòd" />
