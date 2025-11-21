@@ -5,8 +5,25 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, addDays } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
 
 export default function Dashboard() {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardTitle: string) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / 20;
+    const y = (e.clientY - rect.top - rect.height / 2) / 20;
+    setMousePosition({ x, y });
+    setHoveredCard(cardTitle);
+  };
+
+  const handleMouseLeave = () => {
+    setMousePosition({ x: 0, y: 0 });
+    setHoveredCard(null);
+  };
+
   // Fetch members data
   const { data: members } = useQuery({
     queryKey: ["members"],
@@ -205,15 +222,18 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
+            const isHovered = hoveredCard === stat.title;
             return (
               <Card 
                 key={stat.title} 
                 className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:brightness-110`}
+                onMouseMove={(e) => handleMouseMove(e, stat.title)}
+                onMouseLeave={handleMouseLeave}
               >
                 <CardContent className="p-8 relative z-10">
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-6xl font-bold text-white mb-1 transition-transform duration-300 group-hover:scale-110">
+                      <h3 className="text-6xl font-bold text-white mb-1 transition-transform duration-300">
                         {stat.value}
                       </h3>
                       <p className="text-lg font-medium text-white/90">
@@ -227,8 +247,15 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </CardContent>
-                {/* Large background icon */}
-                <div className="absolute right-0 bottom-0 transform translate-x-6 translate-y-6 opacity-20 transition-all duration-500 group-hover:opacity-30 group-hover:scale-110">
+                {/* Large background icon with parallax */}
+                <div 
+                  className="absolute right-0 bottom-0 opacity-20 transition-all duration-200 ease-out"
+                  style={{
+                    transform: isHovered 
+                      ? `translate(${24 + mousePosition.x}px, ${24 + mousePosition.y}px)` 
+                      : 'translate(24px, 24px)'
+                  }}
+                >
                   <Icon className="h-40 w-40 text-white" />
                 </div>
               </Card>
