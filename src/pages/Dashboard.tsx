@@ -1,87 +1,132 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, Calendar, DollarSign, Cake } from "lucide-react";
+import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isSameDay, isWithinInterval, addDays } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const stats = [
-  {
-    title: "Total Manm",
-    value: "248",
-    detail: "Gason 120 • Fanm 128",
-    icon: Users,
-    bgColor: "bg-[hsl(var(--blue))]",
-    textColor: "text-[hsl(var(--blue-foreground))]",
-  },
-  {
-    title: "Total Batize",
-    value: "186",
-    detail: "75% manm",
-    icon: TrendingUp,
-    bgColor: "bg-[hsl(var(--dark))]",
-    textColor: "text-[hsl(var(--dark-foreground))]",
-  },
-  {
-    title: "Total Dim Semèn",
-    value: "0",
-    detail: "Peye: 0 • Pa Peye: 248",
-    icon: DollarSign,
-    bgColor: "bg-[hsl(var(--red))]",
-    textColor: "text-[hsl(var(--red-foreground))]",
-  },
-  {
-    title: "Total Ofrand Mwa Sa",
-    value: "$8,450",
-    detail: "+23% vs mwa pase",
-    icon: DollarSign,
-    bgColor: "bg-[hsl(var(--cyan))]",
-    textColor: "text-[hsl(var(--cyan-foreground))]",
-  },
-  {
-    title: "Total Branch",
-    value: "5",
-    detail: "Aktif",
-    icon: Calendar,
-    bgColor: "bg-[hsl(var(--yellow))]",
-    textColor: "text-[hsl(var(--yellow-foreground))]",
-  },
-  {
-    title: "Total Ministè",
-    value: "12",
-    detail: "Tout ministè",
-    icon: Users,
-    bgColor: "bg-[hsl(var(--green))]",
-    textColor: "text-[hsl(var(--green-foreground))]",
-  },
-];
-
-const recentMembers = [
-  { name: "Jean Pierre", joined: "2025-01-15", status: "Aktif" },
-  { name: "Marie Duval", joined: "2025-01-12", status: "Aktif" },
-  { name: "Paul Joseph", joined: "2025-01-08", status: "Aktif" },
-];
-
-const upcomingEvents = [
-  { name: "Sèvis Dimanch", date: "2025-01-21", time: "10:00 AM" },
-  { name: "Etid Biblik", date: "2025-01-23", time: "7:00 PM" },
-  { name: "Rankont Jèn", date: "2025-01-25", time: "6:00 PM" },
-];
-
 export default function Dashboard() {
+  // Fetch members data
   const { data: members } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("id, first_name, last_name, date_of_birth, photo_url")
+        .select("id, first_name, last_name, date_of_birth, photo_url, baptism_status, baptism_date, created_at")
         .eq("status", "active");
       
       if (error) throw error;
       return data || [];
     },
   });
+
+  // Fetch branches data
+  const { data: branches } = useQuery({
+    queryKey: ["branches"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("branches")
+        .select("id, name, status")
+        .eq("status", "active");
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch ministries data
+  const { data: ministries } = useQuery({
+    queryKey: ["ministries"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ministries")
+        .select("id, name, status")
+        .eq("status", "active");
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch recent members (last 30 days)
+  const { data: recentMembers } = useQuery({
+    queryKey: ["recentMembers"],
+    queryFn: async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, first_name, last_name, created_at, status")
+        .eq("status", "active")
+        .gte("created_at", thirtyDaysAgo.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Calculate statistics
+  const totalMembers = members?.length || 0;
+  const totalBaptized = members?.filter(m => 
+    m.baptism_status === "baptized" || m.baptism_date
+  ).length || 0;
+  const totalBranches = branches?.length || 0;
+  const totalMinistries = ministries?.length || 0;
+
+  const stats = [
+    {
+      title: "Total Manm",
+      value: totalMembers.toString(),
+      detail: `${totalMembers} manm aktif`,
+      icon: Users,
+      bgColor: "bg-[hsl(var(--blue))]",
+      textColor: "text-[hsl(var(--blue-foreground))]",
+    },
+    {
+      title: "Total Batize",
+      value: totalBaptized.toString(),
+      detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% manm`,
+      icon: TrendingUp,
+      bgColor: "bg-[hsl(var(--dark))]",
+      textColor: "text-[hsl(var(--dark-foreground))]",
+    },
+    {
+      title: "Total Dim Semèn",
+      value: "0",
+      detail: "Peye: 0 • Pa Peye: " + totalMembers,
+      icon: DollarSign,
+      bgColor: "bg-[hsl(var(--red))]",
+      textColor: "text-[hsl(var(--red-foreground))]",
+    },
+    {
+      title: "Total Ofrand Mwa Sa",
+      value: "$0",
+      detail: "Poko gen done",
+      icon: DollarSign,
+      bgColor: "bg-[hsl(var(--cyan))]",
+      textColor: "text-[hsl(var(--cyan-foreground))]",
+    },
+    {
+      title: "Total Branch",
+      value: totalBranches.toString(),
+      detail: `${totalBranches} branch aktif`,
+      icon: Building2,
+      bgColor: "bg-[hsl(var(--yellow))]",
+      textColor: "text-[hsl(var(--yellow-foreground))]",
+    },
+    {
+      title: "Total Ministè",
+      value: totalMinistries.toString(),
+      detail: `${totalMinistries} ministè aktif`,
+      icon: Users,
+      bgColor: "bg-[hsl(var(--green))]",
+      textColor: "text-[hsl(var(--green-foreground))]",
+    },
+  ];
 
   const today = new Date();
   const nextWeek = addDays(today, 7);
@@ -265,48 +310,75 @@ export default function Dashboard() {
               <CardTitle>Manm Resan</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentMembers.map((member) => (
-                  <div
-                    key={member.name}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{member.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Rantre: {member.joined}
-                      </p>
+              {!recentMembers || recentMembers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Pa gen nouvo manm 30 dènye jou yo
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {recentMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {member.first_name} {member.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Rantre: {format(new Date(member.created_at), "dd/MM/yyyy")}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                        Aktif
+                      </span>
                     </div>
-                    <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                      {member.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Upcoming Events */}
+          {/* Statistics Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Evènman Kap Vini</CardTitle>
+              <CardTitle>Rezime Estatistik</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {upcomingEvents.map((event) => (
-                  <div
-                    key={event.name}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{event.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {event.date} • {event.time}
-                      </p>
-                    </div>
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Branch Aktif</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total branch nan sistèm
+                    </p>
                   </div>
-                ))}
+                  <span className="text-2xl font-bold text-primary">
+                    {totalBranches}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Ministè Aktif</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total ministè nan legliz
+                    </p>
+                  </div>
+                  <span className="text-2xl font-bold text-success">
+                    {totalMinistries}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">To Batize</p>
+                    <p className="text-sm text-muted-foreground">
+                      {totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% manm batize
+                    </p>
+                  </div>
+                  <span className="text-2xl font-bold text-info">
+                    {totalBaptized}
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>
