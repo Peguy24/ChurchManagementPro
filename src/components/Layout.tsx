@@ -60,42 +60,35 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-red-600 to-red-700 shadow-lg">
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <Church className="h-8 w-8 text-white" />
-            <h1 className="text-2xl font-bold text-white">ChurchCRM</h1>
+      <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Church className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-xl font-bold text-foreground">EglizApp</h1>
+              <p className="text-xs text-muted-foreground">Sistèm Jesyon Legliz</p>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-red-700">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-                CA
-              </div>
-              <span className="text-sm text-white font-medium hidden md:block">
-                Church Admin
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground hidden md:block">
+                {user?.email}
               </span>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-white hover:bg-red-700">
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="container flex">
         {/* Sidebar */}
-        <aside className="hidden w-72 bg-gray-800 md:block">
-          <div className="p-4">
-            <select className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm">
-              <option>Seleksyone Branch</option>
-            </select>
-          </div>
-          <nav className="space-y-1 px-2">
+        <aside className="hidden w-64 border-r py-6 md:block">
+          <nav className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.to;
@@ -103,10 +96,10 @@ export default function Layout({ children }: LayoutProps) {
                 <Link key={item.to} to={item.to}>
                   <div
                     className={cn(
-                      "flex items-center gap-3 rounded px-4 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-gray-700 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -119,7 +112,7 @@ export default function Layout({ children }: LayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <main className="flex-1 py-6 md:pl-6">{children}</main>
       </div>
     </div>
   );
