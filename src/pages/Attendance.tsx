@@ -21,6 +21,7 @@ import {
 import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
+import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,6 +68,12 @@ export default function Attendance() {
     percentageChange: 0,
   });
   const [totalMembers, setTotalMembers] = useState(0);
+  const [soundSettings, setSoundSettings] = useState<ScannerSoundSettings>({
+    enabled: true,
+    volume: 50,
+    successSound: "/success-beep.mp3",
+    errorSound: "/error-beep.mp3",
+  });
 
   useEffect(() => {
     loadAttendanceRecords();
@@ -79,6 +86,19 @@ export default function Attendance() {
       scanInputRef.current.focus();
     }
   }, [scannerMode, kioskMode]);
+
+  const playSound = (type: "success" | "error") => {
+    if (!soundSettings.enabled) return;
+    
+    try {
+      const soundUrl = type === "success" ? soundSettings.successSound : soundSettings.errorSound;
+      const audio = new Audio(soundUrl);
+      audio.volume = soundSettings.volume / 100;
+      audio.play().catch(() => {});
+    } catch (e) {
+      console.error("Error playing sound:", e);
+    }
+  };
 
   const handleQrCodeScan = async (qrCode: string) => {
     if (!qrCode.trim()) return;
@@ -100,6 +120,8 @@ export default function Attendance() {
           description: `QR code "${qrCode}" pa koresponn ak okenn manm aktif`,
           variant: "destructive",
         });
+        
+        playSound("error");
         
         setScannedMembers(prev => [{
           id: qrCode,
@@ -132,6 +154,8 @@ export default function Attendance() {
           variant: "destructive",
         });
 
+        playSound("error");
+
         setScannedMembers(prev => [{
           ...member,
           time: new Date().toLocaleTimeString("fr-FR"),
@@ -160,20 +184,13 @@ export default function Attendance() {
         description: `${member.first_name} ${member.last_name} make prezan`,
       });
 
+      playSound("success");
+
       setScannedMembers(prev => [{
         ...member,
         time: new Date().toLocaleTimeString("fr-FR"),
         status: 'success' as const
       }, ...prev].slice(0, 10));
-
-      // Play success sound (optional)
-      try {
-        const audio = new Audio('/success-beep.mp3');
-        audio.volume = 0.3;
-        audio.play().catch(() => {});
-      } catch (e) {
-        // Ignore audio errors
-      }
 
       await loadAttendanceRecords();
     } catch (error) {
@@ -317,14 +334,17 @@ export default function Attendance() {
             <h1 className="text-4xl font-bold">Mode Kiosk - Prezans</h1>
             <p className="text-xl text-muted-foreground mt-1">Skane QR code manm yo pou make prezans</p>
           </div>
-          <Button 
-            size="lg"
-            variant="outline"
-            onClick={() => setKioskMode(false)}
-          >
-            <Minimize className="mr-2 h-5 w-5" />
-            Fèmen Mode Kiosk
-          </Button>
+          <div className="flex gap-2">
+            <ScannerSettings onSettingsChange={setSoundSettings} />
+            <Button 
+              size="lg"
+              variant="outline"
+              onClick={() => setKioskMode(false)}
+            >
+              <Minimize className="mr-2 h-5 w-5" />
+              Fèmen Mode Kiosk
+            </Button>
+          </div>
         </div>
 
         {/* Scanned Members Grid */}
@@ -419,6 +439,7 @@ export default function Attendance() {
             </p>
           </div>
           <div className="flex gap-2">
+            <ScannerSettings onSettingsChange={setSoundSettings} />
             <Button 
               variant={scannerMode ? "default" : "outline"} 
               size="sm" 
