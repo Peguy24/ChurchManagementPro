@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -18,9 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3 } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AttendanceRecord {
   event_type: string;
@@ -36,9 +39,23 @@ interface AttendanceStats {
   percentageChange: number;
 }
 
+interface ScannedMember {
+  id: string;
+  first_name: string;
+  last_name: string;
+  photo_url: string | null;
+  time: string;
+  status: 'success' | 'error';
+}
+
 export default function Attendance() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [scannerMode, setScannerMode] = useState(false);
+  const [qrCodeInput, setQrCodeInput] = useState("");
+  const [scannedMembers, setScannedMembers] = useState<ScannedMember[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AttendanceStats>({
@@ -54,6 +71,135 @@ export default function Attendance() {
     loadAttendanceRecords();
     loadTotalMembers();
   }, []);
+
+  // Keep scanner input focused when in scanner mode
+  useEffect(() => {
+    if (scannerMode && scanInputRef.current) {
+      scanInputRef.current.focus();
+    }
+  }, [scannerMode]);
+
+  const handleQrCodeScan = async (qrCode: string) => {
+    if (!qrCode.trim()) return;
+
+    try {
+      // Find member by QR code
+      const { data: member, error } = await supabase
+        .from("members")
+        .select("id, first_name, last_name, photo_url")
+        .eq("qr_code", qrCode.trim())
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!member) {
+        toast({
+          title: "Manm pa jwenn",
+          description: `QR code "${qrCode}" pa koresponn ak okenn manm aktif`,
+          variant: "destructive",
+        });
+        
+        setScannedMembers(prev => [{
+          id: qrCode,
+          first_name: "Enkoni",
+          last_name: "",
+          photo_url: null,
+          time: new Date().toLocaleTimeString("fr-FR"),
+          status: 'error' as const
+        }, ...prev].slice(0, 10));
+        
+        setQrCodeInput("");
+        return;
+      }
+
+      // Mark attendance for today
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if already marked today
+      const { data: existing } = await supabase
+        .from("attendance_records")
+        .select("id")
+        .eq("member_id", member.id)
+        .eq("event_date", today)
+        .maybeSingle();
+
+      if (existing) {
+        toast({
+          title: "Deja make",
+          description: `${member.first_name} ${member.last_name} deja make prezan jodi a`,
+          variant: "destructive",
+        });
+
+        setScannedMembers(prev => [{
+          ...member,
+          time: new Date().toLocaleTimeString("fr-FR"),
+          status: 'error' as const
+        }, ...prev].slice(0, 10));
+        
+        setQrCodeInput("");
+        return;
+      }
+
+      // Insert attendance record
+      const { error: insertError } = await supabase
+        .from("attendance_records")
+        .insert({
+          member_id: member.id,
+          event_date: today,
+          event_type: "Kilt",
+          scan_method: "scanner_externe",
+        });
+
+      if (insertError) throw insertError;
+
+      // Success feedback
+      toast({
+        title: "Prezans make!",
+        description: `${member.first_name} ${member.last_name} make prezan`,
+      });
+
+      setScannedMembers(prev => [{
+        ...member,
+        time: new Date().toLocaleTimeString("fr-FR"),
+        status: 'success' as const
+      }, ...prev].slice(0, 10));
+
+      // Play success sound (optional)
+      try {
+        const audio = new Audio('/success-beep.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(() => {});
+      } catch (e) {
+        // Ignore audio errors
+      }
+
+      await loadAttendanceRecords();
+    } catch (error) {
+      console.error("Error scanning QR code:", error);
+      toast({
+        title: "Erè",
+        description: "Pwoblèm pou anrejistre prezans",
+        variant: "destructive",
+      });
+    } finally {
+      setQrCodeInput("");
+      if (scanInputRef.current) {
+        scanInputRef.current.focus();
+      }
+    }
+  };
+
+  const handleScanInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQrCodeInput(e.target.value);
+  };
+
+  const handleScanInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleQrCodeScan(qrCodeInput);
+    }
+  };
 
   const loadTotalMembers = async () => {
     try {
@@ -160,11 +306,94 @@ export default function Attendance() {
               Swiv prezans manm yo nan chak rankont
             </p>
           </div>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Anrejistre Prezans
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant={scannerMode ? "default" : "outline"} 
+              size="sm" 
+              onClick={() => setScannerMode(!scannerMode)}
+            >
+              <Scan className="mr-2 h-4 w-4" />
+              {scannerMode ? "Fèmen Scanner" : "Ouvri Scanner"}
+            </Button>
+            <Button size="sm" onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Anrejistre Prezans
+            </Button>
+          </div>
         </div>
+
+        {/* QR Scanner Section */}
+        {scannerMode && (
+          <Card className="border-primary bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scan className="h-5 w-5" />
+                Scanner QR Code
+              </CardTitle>
+              <CardDescription>
+                Klike nan chan anba a epi itilize scanner ekstèn ou pou skane QR code manm yo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Chan Scan (Klike pou fokis)</label>
+                <Input
+                  ref={scanInputRef}
+                  type="text"
+                  value={qrCodeInput}
+                  onChange={handleScanInputChange}
+                  onKeyDown={handleScanInputKeyDown}
+                  onBlur={() => scanInputRef.current?.focus()}
+                  placeholder="Skane QR code la isit..."
+                  className="text-lg font-mono"
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">
+                  Scanner ekstèn ap tape QR code otomatikman nan chan sa. Prezans ap make otomatikman.
+                </p>
+              </div>
+
+              {scannedMembers.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Dènye Scan ({scannedMembers.length})</h4>
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {scannedMembers.map((member, index) => (
+                      <div
+                        key={`${member.id}-${index}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border ${
+                          member.status === 'success' 
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}
+                      >
+                        {member.status === 'success' ? (
+                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                        )}
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={member.photo_url || undefined} />
+                          <AvatarFallback>
+                            {member.first_name[0]}{member.last_name[0] || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">
+                            {member.first_name} {member.last_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{member.time}</p>
+                        </div>
+                        <Badge variant={member.status === 'success' ? 'default' : 'destructive'}>
+                          {member.status === 'success' ? 'Siksè' : 'Erè'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-3">
