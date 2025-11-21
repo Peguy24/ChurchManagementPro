@@ -34,13 +34,13 @@ export default function DonationDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    memberId: "",
+    memberId: "none",
     amount: "",
     donationType: "",
     paymentMethod: "",
     donationDate: new Date().toISOString().split("T")[0],
     notes: "",
-    branchId: "",
+    branchId: "none",
   });
 
   const { data: members } = useQuery({
@@ -73,13 +73,13 @@ export default function DonationDialog({
     mutationFn: async (data: typeof formData) => {
       const { data: user } = await supabase.auth.getUser();
       const { error } = await supabase.from("donations").insert({
-        member_id: data.memberId || null,
+        member_id: data.memberId === "none" ? null : data.memberId,
         amount: parseFloat(data.amount),
         donation_type: data.donationType,
         payment_method: data.paymentMethod,
         donation_date: data.donationDate,
         notes: data.notes || null,
-        branch_id: data.branchId || null,
+        branch_id: data.branchId === "none" ? null : data.branchId,
         created_by: user.user?.id,
       });
       if (error) throw error;
@@ -92,13 +92,13 @@ export default function DonationDialog({
       });
       onOpenChange(false);
       setFormData({
-        memberId: "",
+        memberId: "none",
         amount: "",
         donationType: "",
         paymentMethod: "",
         donationDate: new Date().toISOString().split("T")[0],
         notes: "",
-        branchId: "",
+        branchId: "none",
       });
     },
     onError: (error) => {
@@ -131,7 +131,7 @@ export default function DonationDialog({
             <Select
               value={formData.memberId}
               onValueChange={(value) =>
-                setFormData({ ...formData, memberId: value === "none" ? "" : value })
+                setFormData({ ...formData, memberId: value })
               }
             >
               <SelectTrigger>
@@ -212,7 +212,7 @@ export default function DonationDialog({
             <Select
               value={formData.branchId}
               onValueChange={(value) =>
-                setFormData({ ...formData, branchId: value === "none" ? "" : value })
+                setFormData({ ...formData, branchId: value })
               }
             >
               <SelectTrigger>
