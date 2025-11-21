@@ -3,9 +3,11 @@ import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2 } from "lucide
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isWithinInterval, addDays } from "date-fns";
+import { format, isWithinInterval, addDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 export default function Dashboard() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -99,6 +101,21 @@ export default function Dashboard() {
     },
   });
 
+  // Fetch attendance data
+  const { data: attendanceRecords } = useQuery({
+    queryKey: ["attendanceRecords"],
+    queryFn: async () => {
+      const sixMonthsAgo = subMonths(new Date(), 6);
+      const { data, error } = await supabase
+        .from("attendance_records")
+        .select("id, event_date, member_id")
+        .gte("event_date", sixMonthsAgo.toISOString().split('T')[0]);
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Calculate statistics
   const totalMembers = members?.length || 0;
   const totalBaptized = members?.filter(m => 
@@ -173,6 +190,59 @@ export default function Dashboard() {
   ];
 
   const nextWeek = addDays(today, 7);
+
+  // Prepare chart data for the last 6 months
+  const chartData = useMemo(() => {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = subMonths(today, i);
+      const monthStart = startOfMonth(monthDate);
+      const monthEnd = endOfMonth(monthDate);
+      
+      // Count new members for this month
+      const newMembersCount = members?.filter(m => {
+        const createdDate = new Date(m.created_at);
+        return createdDate >= monthStart && createdDate <= monthEnd;
+      }).length || 0;
+      
+      // Calculate total donations for this month
+      const monthDonations = donations?.filter(d => {
+        const donationDate = new Date(d.donation_date);
+        return donationDate >= monthStart && donationDate <= monthEnd;
+      }) || [];
+      
+      const totalDonationsAmount = monthDonations.reduce((sum, d) => sum + Number(d.amount), 0);
+      
+      // Count attendance for this month
+      const monthAttendance = attendanceRecords?.filter(a => {
+        const attendanceDate = new Date(a.event_date);
+        return attendanceDate >= monthStart && attendanceDate <= monthEnd;
+      }).length || 0;
+      
+      months.push({
+        month: format(monthDate, "MMM yyyy"),
+        membres: newMembersCount,
+        donations: totalDonationsAmount,
+        presence: monthAttendance,
+      });
+    }
+    return months;
+  }, [members, donations, attendanceRecords, today]);
+
+  const chartConfig = {
+    membres: {
+      label: "Nouveaux Membres",
+      color: "hsl(var(--cyan))",
+    },
+    donations: {
+      label: "Donations ($)",
+      color: "hsl(var(--green))",
+    },
+    presence: {
+      label: "Présence",
+      color: "hsl(var(--orange))",
+    },
+  };
 
   // Filter members with birthdays today
   const todayBirthdays = members?.filter((member) => {
@@ -261,6 +331,108 @@ export default function Dashboard() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Members Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-4 w-4" />
+                Évolution des Membres
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{ membres: chartConfig.membres }} className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="month" 
+                      className="text-xs"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="membres" 
+                      stroke="var(--color-membres)" 
+                      strokeWidth={2}
+                      dot={{ fill: "var(--color-membres)", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Donations Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <DollarSign className="h-4 w-4" />
+                Évolution des Donations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{ donations: chartConfig.donations }} className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="month" 
+                      className="text-xs"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="donations" 
+                      stroke="var(--color-donations)" 
+                      strokeWidth={2}
+                      dot={{ fill: "var(--color-donations)", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Attendance Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="h-4 w-4" />
+                Évolution de la Présence
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{ presence: chartConfig.presence }} className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="month" 
+                      className="text-xs"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="presence" 
+                      stroke="var(--color-presence)" 
+                      strokeWidth={2}
+                      dot={{ fill: "var(--color-presence)", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
