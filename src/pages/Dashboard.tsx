@@ -69,6 +69,19 @@ export default function Dashboard() {
     },
   });
 
+  // Fetch donations data
+  const { data: donations } = useQuery({
+    queryKey: ["donations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("donations")
+        .select("id, amount, donation_type, donation_date, payment_method");
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Calculate statistics
   const totalMembers = members?.length || 0;
   const totalBaptized = members?.filter(m => 
@@ -76,6 +89,26 @@ export default function Dashboard() {
   ).length || 0;
   const totalBranches = branches?.length || 0;
   const totalMinistries = ministries?.length || 0;
+
+  // Calculate donations statistics
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const firstDayOfWeek = new Date(today);
+  firstDayOfWeek.setDate(today.getDate() - today.getDay());
+
+  const monthlyDonations = donations?.filter(d => 
+    new Date(d.donation_date) >= firstDayOfMonth
+  ) || [];
+  
+  const weeklyDonations = donations?.filter(d => 
+    new Date(d.donation_date) >= firstDayOfWeek
+  ) || [];
+
+  const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
+  const totalWeeklyAmount = weeklyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
+  
+  const paidThisWeek = weeklyDonations.filter(d => d.donation_type === 'tithe').length;
+  const unpaidThisWeek = totalMembers - paidThisWeek;
 
   const stats = [
     {
@@ -96,16 +129,16 @@ export default function Dashboard() {
     },
     {
       title: "Total Dim Semèn",
-      value: "0",
-      detail: "Peye: 0 • Pa Peye: " + totalMembers,
+      value: paidThisWeek.toString(),
+      detail: `Peye: ${paidThisWeek} • Pa Peye: ${unpaidThisWeek}`,
       icon: DollarSign,
       bgColor: "bg-[hsl(var(--red))]",
       textColor: "text-[hsl(var(--red-foreground))]",
     },
     {
       title: "Total Ofrand Mwa Sa",
-      value: "$0",
-      detail: "Poko gen done",
+      value: `$${totalMonthlyAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      detail: `${monthlyDonations.length} don`,
       icon: DollarSign,
       bgColor: "bg-[hsl(var(--cyan))]",
       textColor: "text-[hsl(var(--cyan-foreground))]",
@@ -128,7 +161,6 @@ export default function Dashboard() {
     },
   ];
 
-  const today = new Date();
   const nextWeek = addDays(today, 7);
 
   // Filter members with birthdays today
