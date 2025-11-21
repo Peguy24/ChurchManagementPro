@@ -206,11 +206,14 @@ export default function Dashboard() {
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.title} className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative`}>
+              <Card 
+                key={stat.title} 
+                className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:brightness-110`}
+              >
                 <CardContent className="p-8 relative z-10">
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-6xl font-bold text-white mb-1">
+                      <h3 className="text-6xl font-bold text-white mb-1 transition-transform duration-300 group-hover:scale-110">
                         {stat.value}
                       </h3>
                       <p className="text-lg font-medium text-white/90">
@@ -225,7 +228,7 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
                 {/* Large background icon */}
-                <div className="absolute right-0 bottom-0 transform translate-x-6 translate-y-6 opacity-20">
+                <div className="absolute right-0 bottom-0 transform translate-x-6 translate-y-6 opacity-20 transition-all duration-500 group-hover:opacity-30 group-hover:scale-110">
                   <Icon className="h-40 w-40 text-white" />
                 </div>
               </Card>
