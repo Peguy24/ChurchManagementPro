@@ -47,6 +47,36 @@ All colors MUST be HSL.
     
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+    
+    --purple: 271 76% 53%;
+    --purple-foreground: 0 0% 100%;
+    
+    --blue: 217 91% 60%;
+    --blue-foreground: 0 0% 100%;
+    
+    --dark: 220 13% 18%;
+    --dark-foreground: 0 0% 100%;
+    
+    --red: 348 83% 47%;
+    --red-foreground: 0 0% 100%;
+    
+    --orange: 27 98% 54%;
+    --orange-foreground: 0 0% 100%;
+    
+    --cyan: 190 90% 50%;
+    --cyan-foreground: 0 0% 100%;
+    
+    --yellow: 43 100% 50%;
+    --yellow-foreground: 222 47% 11%;
+    
+    --green: 88 61% 52%;
+    --green-foreground: 0 0% 100%;
+    
+    --maroon: 338 79% 40%;
+    --maroon-foreground: 0 0% 100%;
+    
+    --magenta: 291 64% 42%;
+    --magenta-foreground: 0 0% 100%;
 
     --radius: 0.75rem;
     
@@ -113,6 +143,36 @@ All colors MUST be HSL.
     
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+    
+    --purple: 271 76% 53%;
+    --purple-foreground: 0 0% 100%;
+    
+    --blue: 217 91% 60%;
+    --blue-foreground: 0 0% 100%;
+    
+    --dark: 220 13% 18%;
+    --dark-foreground: 0 0% 100%;
+    
+    --red: 348 83% 47%;
+    --red-foreground: 0 0% 100%;
+    
+    --orange: 27 98% 54%;
+    --orange-foreground: 0 0% 100%;
+    
+    --cyan: 190 90% 50%;
+    --cyan-foreground: 0 0% 100%;
+    
+    --yellow: 43 100% 50%;
+    --yellow-foreground: 222 47% 11%;
+    
+    --green: 88 61% 52%;
+    --green-foreground: 0 0% 100%;
+    
+    --maroon: 338 79% 40%;
+    --maroon-foreground: 0 0% 100%;
+    
+    --magenta: 291 64% 42%;
+    --magenta-foreground: 0 0% 100%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
