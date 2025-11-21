@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,7 @@ export default function Attendance() {
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
+  const [kioskMode, setKioskMode] = useState(false);
   const [qrCodeInput, setQrCodeInput] = useState("");
   const [scannedMembers, setScannedMembers] = useState<ScannedMember[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -72,12 +73,12 @@ export default function Attendance() {
     loadTotalMembers();
   }, []);
 
-  // Keep scanner input focused when in scanner mode
+  // Keep scanner input focused when in scanner mode or kiosk mode
   useEffect(() => {
-    if (scannerMode && scanInputRef.current) {
+    if ((scannerMode || kioskMode) && scanInputRef.current) {
       scanInputRef.current.focus();
     }
-  }, [scannerMode]);
+  }, [scannerMode, kioskMode]);
 
   const handleQrCodeScan = async (qrCode: string) => {
     if (!qrCode.trim()) return;
@@ -294,6 +295,117 @@ export default function Attendance() {
     }
   };
 
+  // Kiosk Mode Full Screen View
+  if (kioskMode) {
+    return (
+      <div className="fixed inset-0 bg-background z-50 flex flex-col">
+        {/* Hidden scanner input */}
+        <Input
+          ref={scanInputRef}
+          type="text"
+          value={qrCodeInput}
+          onChange={handleScanInputChange}
+          onKeyDown={handleScanInputKeyDown}
+          onBlur={() => scanInputRef.current?.focus()}
+          className="absolute opacity-0 pointer-events-none"
+          autoFocus
+        />
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b bg-card">
+          <div>
+            <h1 className="text-4xl font-bold">Mode Kiosk - Prezans</h1>
+            <p className="text-xl text-muted-foreground mt-1">Skane QR code manm yo pou make prezans</p>
+          </div>
+          <Button 
+            size="lg"
+            variant="outline"
+            onClick={() => setKioskMode(false)}
+          >
+            <Minimize className="mr-2 h-5 w-5" />
+            Fèmen Mode Kiosk
+          </Button>
+        </div>
+
+        {/* Scanned Members Grid */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {scannedMembers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <Scan className="h-32 w-32 text-muted-foreground/20 mb-6" />
+              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">Pare pou scan</h2>
+              <p className="text-xl text-muted-foreground">Skane QR code manm yo pou kòmanse</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {scannedMembers.map((member, index) => (
+                <Card 
+                  key={`${member.id}-${index}`}
+                  className={`overflow-hidden transition-all duration-300 ${
+                    member.status === 'success' 
+                      ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
+                      : 'border-red-500 bg-red-50 dark:bg-red-950/20'
+                  } ${index === 0 ? 'ring-4 ring-primary' : ''}`}
+                >
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+                        <AvatarImage src={member.photo_url || undefined} />
+                        <AvatarFallback className="text-2xl">
+                          {member.first_name[0]}{member.last_name[0] || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <CardTitle className="text-2xl mb-1">
+                          {member.first_name} {member.last_name}
+                        </CardTitle>
+                        <p className="text-lg text-muted-foreground">{member.time}</p>
+                      </div>
+                      {member.status === 'success' ? (
+                        <CheckCircle className="h-16 w-16 text-green-600" />
+                      ) : (
+                        <XCircle className="h-16 w-16 text-red-600" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge 
+                      variant={member.status === 'success' ? 'default' : 'destructive'}
+                      className="text-lg px-4 py-2 w-full justify-center"
+                    >
+                      {member.status === 'success' ? '✓ Prezans Make!' : '✗ Erè'}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Stats */}
+        <div className="border-t bg-card p-6">
+          <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Total Scan Jodi a</p>
+              <p className="text-4xl font-bold text-primary">{scannedMembers.filter(m => m.status === 'success').length}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Erè</p>
+              <p className="text-4xl font-bold text-destructive">{scannedMembers.filter(m => m.status === 'error').length}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Pousantaj Siksè</p>
+              <p className="text-4xl font-bold text-green-600">
+                {scannedMembers.length > 0 
+                  ? Math.round((scannedMembers.filter(m => m.status === 'success').length / scannedMembers.length) * 100)
+                  : 0}%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -314,6 +426,19 @@ export default function Attendance() {
             >
               <Scan className="mr-2 h-4 w-4" />
               {scannerMode ? "Fèmen Scanner" : "Ouvri Scanner"}
+            </Button>
+            <Button 
+              variant={kioskMode ? "default" : "outline"} 
+              size="sm" 
+              onClick={() => {
+                setKioskMode(!kioskMode);
+                if (!kioskMode) {
+                  setScannerMode(false);
+                }
+              }}
+            >
+              <Maximize className="mr-2 h-4 w-4" />
+              Mode Kiosk
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
