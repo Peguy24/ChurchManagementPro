@@ -116,48 +116,48 @@ export default function Dashboard() {
       value: totalMembers.toString(),
       detail: `${totalMembers} manm aktif`,
       icon: Users,
-      bgColor: "bg-[hsl(var(--blue))]",
-      textColor: "text-[hsl(var(--blue-foreground))]",
+      bgColor: "bg-gradient-to-br from-cyan-400 to-cyan-500",
+      iconBgColor: "bg-cyan-500/20",
     },
     {
       title: "Total Batize",
       value: totalBaptized.toString(),
       detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% manm`,
       icon: TrendingUp,
-      bgColor: "bg-[hsl(var(--dark))]",
-      textColor: "text-[hsl(var(--dark-foreground))]",
-    },
-    {
-      title: "Total Dim Semèn",
-      value: paidThisWeek.toString(),
-      detail: `Peye: ${paidThisWeek} • Pa Peye: ${unpaidThisWeek}`,
-      icon: DollarSign,
-      bgColor: "bg-[hsl(var(--red))]",
-      textColor: "text-[hsl(var(--red-foreground))]",
-    },
-    {
-      title: "Total Ofrand Mwa Sa",
-      value: `$${totalMonthlyAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      detail: `${monthlyDonations.length} don`,
-      icon: DollarSign,
-      bgColor: "bg-[hsl(var(--cyan))]",
-      textColor: "text-[hsl(var(--cyan-foreground))]",
-    },
-    {
-      title: "Total Branch",
-      value: totalBranches.toString(),
-      detail: `${totalBranches} branch aktif`,
-      icon: Building2,
-      bgColor: "bg-[hsl(var(--yellow))]",
-      textColor: "text-[hsl(var(--yellow-foreground))]",
+      bgColor: "bg-gradient-to-br from-green-500 to-green-600",
+      iconBgColor: "bg-green-600/20",
     },
     {
       title: "Total Ministè",
       value: totalMinistries.toString(),
       detail: `${totalMinistries} ministè aktif`,
       icon: Users,
-      bgColor: "bg-[hsl(var(--green))]",
-      textColor: "text-[hsl(var(--green-foreground))]",
+      bgColor: "bg-gradient-to-br from-red-500 to-red-600",
+      iconBgColor: "bg-red-600/20",
+    },
+    {
+      title: "Prezans Semèn",
+      value: paidThisWeek.toString(),
+      detail: `${paidThisWeek} manm prezankonferans`,
+      icon: Calendar,
+      bgColor: "bg-gradient-to-br from-orange-400 to-orange-500",
+      iconBgColor: "bg-orange-500/20",
+    },
+    {
+      title: "Total Branch",
+      value: totalBranches.toString(),
+      detail: `${totalBranches} branch aktif`,
+      icon: Building2,
+      bgColor: "bg-gradient-to-br from-blue-500 to-blue-600",
+      iconBgColor: "bg-blue-600/20",
+    },
+    {
+      title: "Total Ofrand Mwa Sa",
+      value: `$${totalMonthlyAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      detail: `${monthlyDonations.length} don`,
+      icon: DollarSign,
+      bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",
+      iconBgColor: "bg-purple-600/20",
     },
   ];
 
@@ -208,29 +208,32 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.title} className={`${stat.bgColor} border-none shadow-lg`}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium mb-2 ${stat.textColor} opacity-90`}>
-                        {stat.title}
-                      </p>
-                      <h3 className={`text-4xl font-bold mb-2 ${stat.textColor}`}>
+              <Card key={stat.title} className={`${stat.bgColor} border-none shadow-xl overflow-hidden relative`}>
+                <CardContent className="p-8 relative z-10">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-6xl font-bold text-white mb-1">
                         {stat.value}
                       </h3>
-                      <p className={`text-xs ${stat.textColor} opacity-80`}>
+                      <p className="text-lg font-medium text-white/90">
+                        {stat.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-white/20">
+                      <p className="text-sm text-white/80">
                         {stat.detail}
                       </p>
                     </div>
-                    <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                      <Icon className={`h-8 w-8 ${stat.textColor}`} />
-                    </div>
                   </div>
                 </CardContent>
+                {/* Large background icon */}
+                <div className="absolute right-0 bottom-0 transform translate-x-6 translate-y-6 opacity-20">
+                  <Icon className="h-40 w-40 text-white" />
+                </div>
               </Card>
             );
           })}
