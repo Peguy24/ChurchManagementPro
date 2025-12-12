@@ -59,7 +59,7 @@ const methodLabels: Record<string, string> = {
 export default function Donations() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
-    donationType: "",
+    donationType: "all",
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     endDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
   });
@@ -78,7 +78,7 @@ export default function Donations() {
         .lte("donation_date", filters.endDate)
         .order("donation_date", { ascending: false });
 
-      if (filters.donationType) {
+      if (filters.donationType && filters.donationType !== "all") {
         query = query.eq("donation_type", filters.donationType);
       }
 
@@ -210,7 +210,7 @@ export default function Donations() {
                     <SelectValue placeholder="Tout tip" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tout tip</SelectItem>
+                    <SelectItem value="all">Tout tip</SelectItem>
                     <SelectItem value="tithe">Dim</SelectItem>
                     <SelectItem value="offering">Ofrann</SelectItem>
                     <SelectItem value="building">Batiman</SelectItem>
