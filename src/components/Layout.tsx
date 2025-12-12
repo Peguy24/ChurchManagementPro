@@ -14,6 +14,7 @@ import {
   BarChart3,
   CreditCard,
   Briefcase,
+  PieChart,
   Settings,
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -32,6 +33,7 @@ const navItems = [
   { to: "/attendance/alerts", icon: Bell, label: "Alèt Prezans" },
   { to: "/attendance/comparison", icon: BarChart3, label: "Konparezon Gwoup" },
   { to: "/donations", icon: DollarSign, label: "Don" },
+  { to: "/donations/reports", icon: PieChart, label: "Rapò Finansye" },
   { to: "/events", icon: Calendar, label: "Evènman" },
   { to: "/ministries", icon: Briefcase, label: "Ministè" },
   { to: "/branches", icon: Church, label: "Branch" },
