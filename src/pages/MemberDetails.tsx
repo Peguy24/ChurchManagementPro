@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import MemberAttendanceStats from "@/components/MemberAttendanceStats";
 
 interface MemberSimple {
   id: string;
@@ -460,6 +461,9 @@ export default function MemberDetails() {
             </CardContent>
           </Card>
         )}
+
+        {/* Attendance Statistics Section */}
+        {memberId && <MemberAttendanceStats memberId={memberId} />}
 
         {/* Ministries Section */}
         <Card>
