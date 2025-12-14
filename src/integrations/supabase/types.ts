@@ -840,13 +840,17 @@ export type Database = {
           email: string | null
           emergency_phone: string | null
           first_name: string
+          gender: string | null
           groups: string[] | null
           id: string
+          join_date: string | null
           last_name: string
           marital_status: string | null
           marriage_date: string | null
+          member_number: string | null
           member_type: string | null
           number_of_children: number | null
+          origin_church: string | null
           phone: string | null
           photo_url: string | null
           professional_formation: string | null
@@ -872,13 +876,17 @@ export type Database = {
           email?: string | null
           emergency_phone?: string | null
           first_name: string
+          gender?: string | null
           groups?: string[] | null
           id?: string
+          join_date?: string | null
           last_name: string
           marital_status?: string | null
           marriage_date?: string | null
+          member_number?: string | null
           member_type?: string | null
           number_of_children?: number | null
+          origin_church?: string | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null
@@ -904,13 +912,17 @@ export type Database = {
           email?: string | null
           emergency_phone?: string | null
           first_name?: string
+          gender?: string | null
           groups?: string[] | null
           id?: string
+          join_date?: string | null
           last_name?: string
           marital_status?: string | null
           marriage_date?: string | null
+          member_number?: string | null
           member_type?: string | null
           number_of_children?: number | null
+          origin_church?: string | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null

@@ -23,7 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import QRCode from "qrcode";
-import { Download, QrCode as QrCodeIcon } from "lucide-react";
+import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MemberDialogProps {
   open: boolean;
@@ -38,19 +39,19 @@ export default function MemberDialog({
   member,
   onSuccess,
 }: MemberDialogProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [formData, setFormData] = useState({
+    // Personal Information
     firstName: "",
     lastName: "",
-    email: "",
-    phone: "",
+    gender: "",
     dateOfBirth: "",
+    phone: "",
+    email: "",
     emergencyPhone: "",
-    status: "active",
-    role: "",
-    branchId: "",
     addressNumber: "",
     street: "",
     apartment: "",
@@ -58,16 +59,20 @@ export default function MemberDialog({
     state: "",
     zipCode: "",
     country: "",
-    maritalStatus: "",
-    civicStatus: "",
-    conversionDate: "",
-    baptismDate: "",
+    joinDate: "",
+    status: "active",
+    branchId: "",
+    // Spiritual Information
     baptismStatus: "",
-    academicFormation: "",
-    professionalFormation: "",
+    baptismDate: "",
+    originChurch: "",
+    role: "",
+    conversionDate: "",
     christianExperience: "",
-    marriageDate: "",
+    // Family Information
+    maritalStatus: "",
     spouseName: "",
+    marriageDate: "",
     numberOfChildren: "",
     childrenNames: "",
   });
@@ -86,6 +91,20 @@ export default function MemberDialog({
     },
   });
 
+  const { data: ministries } = useQuery({
+    queryKey: ["ministries-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ministries")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (member) {
       const address = typeof member.address === 'string' 
@@ -95,6 +114,7 @@ export default function MemberDialog({
       setFormData({
         firstName: member.first_name || "",
         lastName: member.last_name || "",
+        gender: member.gender || "",
         email: member.email || "",
         phone: member.phone || "",
         dateOfBirth: member.date_of_birth || "",
@@ -102,6 +122,7 @@ export default function MemberDialog({
         status: member.status || "active",
         role: member.role || "",
         branchId: member.branch_id || "",
+        joinDate: member.join_date || "",
         addressNumber: address.number || "",
         street: address.street || "",
         apartment: address.apartment || "",
@@ -110,12 +131,10 @@ export default function MemberDialog({
         zipCode: address.zipCode || "",
         country: address.country || "",
         maritalStatus: member.marital_status || "",
-        civicStatus: member.civic_status || "",
         conversionDate: member.conversion_date || "",
         baptismDate: member.baptism_date || "",
         baptismStatus: member.baptism_status || "",
-        academicFormation: member.academic_formation || "",
-        professionalFormation: member.professional_formation || "",
+        originChurch: member.origin_church || "",
         christianExperience: member.christian_experience || "",
         marriageDate: member.marriage_date || "",
         spouseName: member.spouse_name || "",
@@ -131,6 +150,7 @@ export default function MemberDialog({
       setFormData({
         firstName: "",
         lastName: "",
+        gender: "",
         email: "",
         phone: "",
         dateOfBirth: "",
@@ -138,6 +158,7 @@ export default function MemberDialog({
         status: "active",
         role: "",
         branchId: "",
+        joinDate: "",
         addressNumber: "",
         street: "",
         apartment: "",
@@ -146,12 +167,10 @@ export default function MemberDialog({
         zipCode: "",
         country: "",
         maritalStatus: "",
-        civicStatus: "",
         conversionDate: "",
         baptismDate: "",
         baptismStatus: "",
-        academicFormation: "",
-        professionalFormation: "",
+        originChurch: "",
         christianExperience: "",
         marriageDate: "",
         spouseName: "",
@@ -204,6 +223,7 @@ export default function MemberDialog({
       const memberData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
+        gender: formData.gender || null,
         email: formData.email || null,
         phone: formData.phone || null,
         date_of_birth: formData.dateOfBirth || null,
@@ -211,14 +231,13 @@ export default function MemberDialog({
         status: formData.status,
         role: formData.role || null,
         branch_id: formData.branchId || null,
+        join_date: formData.joinDate || null,
         address: JSON.stringify(addressData),
         marital_status: formData.maritalStatus || null,
-        civic_status: formData.civicStatus || null,
         conversion_date: formData.conversionDate || null,
         baptism_date: formData.baptismDate || null,
         baptism_status: formData.baptismStatus || null,
-        academic_formation: formData.academicFormation || null,
-        professional_formation: formData.professionalFormation || null,
+        origin_church: formData.originChurch || null,
         christian_experience: formData.christianExperience || null,
         marriage_date: formData.marriageDate || null,
         spouse_name: formData.spouseName || null,
@@ -270,22 +289,21 @@ export default function MemberDialog({
               console.log("Welcome email sent successfully");
             } catch (emailError) {
               console.error("Error sending welcome email:", emailError);
-              // Don't throw error here - we don't want to fail member creation if email fails
             }
           }
         }
       }
 
       toast({
-        title: member ? "Membre modifié!" : "Membre ajouté!",
-        description: `${formData.firstName} ${formData.lastName} a été ${member ? "modifié" : "ajouté"} avec succès.`,
+        title: member ? t("members.memberUpdated") : t("members.memberAdded"),
+        description: `${formData.firstName} ${formData.lastName}`,
       });
       
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Erreur",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -296,39 +314,42 @@ export default function MemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {member ? "Modifier le Membre" : "Ajouter un Nouveau Membre"}
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {member ? t("members.editMember") : t("members.addMember")}
           </DialogTitle>
           <DialogDescription>
-            Remplissez les informations du membre. Cliquez sur enregistrer quand vous avez terminé.
+            {member?.member_number && (
+              <span className="font-mono text-primary font-semibold">
+                N° {member.member_number}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="general" className="w-full">
+          <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="general">Général</TabsTrigger>
-              <TabsTrigger value="spiritual">Spirituel</TabsTrigger>
-              <TabsTrigger value="family">Famille</TabsTrigger>
+              <TabsTrigger value="personal" className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {t("members.personalInfo")}
+              </TabsTrigger>
+              <TabsTrigger value="spiritual" className="flex items-center gap-1">
+                <Church className="h-4 w-4" />
+                {t("members.spiritualInfo")}
+              </TabsTrigger>
+              <TabsTrigger value="family" className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                {t("members.familyInfo")}
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="general" className="space-y-4">
+            {/* Personal Information Tab */}
+            <TabsContent value="personal" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
-                    placeholder="Jean"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName">{t("members.lastName")} *</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -339,44 +360,81 @@ export default function MemberDialog({
                     required
                   />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="firstName">{t("members.firstName")} *</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstName: e.target.value })
+                    }
+                    placeholder="Jean"
+                    required
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="jean@example.com"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="gender">{t("members.gender")}</Label>
+                  <Select
+                    value={formData.gender || "none"}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, gender: value === "none" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("members.selectGender")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("common.select")}</SelectItem>
+                      <SelectItem value="M">{t("members.male")}</SelectItem>
+                      <SelectItem value="F">{t("members.female")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="dateOfBirth">{t("members.dateOfBirth")}</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) =>
+                      setFormData({ ...formData, dateOfBirth: e.target.value })
+                    }
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="+33 1 23 45 67 89"
-                  required
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">{t("common.phone")} *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    placeholder="+33 1 23 45 67 89"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">{t("common.email")}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="jean@example.com"
+                  />
+                </div>
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="dateOfBirth">Date de Naissance</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) =>
-                    setFormData({ ...formData, dateOfBirth: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="emergencyPhone">Numéro d'Urgence</Label>
+                <Label htmlFor="emergencyPhone">{t("members.emergencyPhone")}</Label>
                 <Input
                   id="emergencyPhone"
                   value={formData.emergencyPhone}
@@ -386,48 +444,11 @@ export default function MemberDialog({
                   placeholder="+33 1 98 76 54 32"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Statut</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Actif</SelectItem>
-                    <SelectItem value="inactive">Inactif</SelectItem>
-                    <SelectItem value="transferred">Transféré</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="branch">Branche</Label>
-                <Select
-                  value={formData.branchId || "none"}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, branchId: value === "none" ? "" : value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir une branche" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Aucune</SelectItem>
-                    {branches?.map((branch: any) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-base font-semibold">Adresse Actuelle</Label>
-                <div className="grid grid-cols-2 gap-4">
+
+              {/* Address Section */}
+              <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
+                <Label className="text-base font-semibold">{t("members.address")}</Label>
+                <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="addressNumber">N°</Label>
                     <Input
@@ -439,8 +460,8 @@ export default function MemberDialog({
                       placeholder="123"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="street">Rue</Label>
+                  <div className="grid gap-2 col-span-2">
+                    <Label htmlFor="street">{t("members.street")}</Label>
                     <Input
                       id="street"
                       value={formData.street}
@@ -450,6 +471,8 @@ export default function MemberDialog({
                       placeholder="Rue Principale"
                     />
                   </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="apartment">Apt</Label>
                     <Input
@@ -462,7 +485,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="city">Ville</Label>
+                    <Label htmlFor="city">{t("members.city")}</Label>
                     <Input
                       id="city"
                       value={formData.city}
@@ -473,7 +496,20 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="state">Département/Région</Label>
+                    <Label htmlFor="zipCode">{t("members.zipCode")}</Label>
+                    <Input
+                      id="zipCode"
+                      value={formData.zipCode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, zipCode: e.target.value })
+                      }
+                      placeholder="75001"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="state">{t("members.stateRegion")}</Label>
                     <Input
                       id="state"
                       value={formData.state}
@@ -484,18 +520,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="zipCode">Code Postal</Label>
-                    <Input
-                      id="zipCode"
-                      value={formData.zipCode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, zipCode: e.target.value })
-                      }
-                      placeholder="75001"
-                    />
-                  </div>
-                  <div className="grid gap-2 col-span-2">
-                    <Label htmlFor="country">Pays</Label>
+                    <Label htmlFor="country">{t("members.country")}</Label>
                     <Input
                       id="country"
                       value={formData.country}
@@ -507,101 +532,135 @@ export default function MemberDialog({
                   </div>
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="joinDate">{t("members.joinDate")}</Label>
+                  <Input
+                    id="joinDate"
+                    type="date"
+                    value={formData.joinDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, joinDate: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">{t("common.status")}</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">{t("common.active")}</SelectItem>
+                      <SelectItem value="inactive">{t("common.inactive")}</SelectItem>
+                      <SelectItem value="transferred">{t("common.transferred")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="maritalStatus">État Civil</Label>
+                <Label htmlFor="branch">{t("members.branch")}</Label>
                 <Select
-                  value={formData.maritalStatus}
+                  value={formData.branchId || "none"}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, maritalStatus: value })
+                    setFormData({ ...formData, branchId: value === "none" ? "" : value })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choisir l'état civil" />
+                    <SelectValue placeholder={t("members.selectBranch")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Célibataire">Célibataire</SelectItem>
-                    <SelectItem value="Marié(e)">Marié(e)</SelectItem>
-                    <SelectItem value="Divorcé(e)">Divorcé(e)</SelectItem>
-                    <SelectItem value="Veuf/Veuve">Veuf/Veuve</SelectItem>
+                    <SelectItem value="none">{t("common.none")}</SelectItem>
+                    {branches?.map((branch: any) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="civicStatus">Statut Civique</Label>
-                <Input
-                  id="civicStatus"
-                  value={formData.civicStatus}
-                  onChange={(e) =>
-                    setFormData({ ...formData, civicStatus: e.target.value })
-                  }
-                  placeholder="Citoyen, Résident, etc."
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="academicFormation">Formation Académique</Label>
-                <Textarea
-                  id="academicFormation"
-                  value={formData.academicFormation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, academicFormation: e.target.value })
-                  }
-                  placeholder="Diplômes, certificats, etc."
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="professionalFormation">Formation Professionnelle</Label>
-                <Textarea
-                  id="professionalFormation"
-                  value={formData.professionalFormation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, professionalFormation: e.target.value })
-                  }
-                  placeholder="Métier, compétences, etc."
-                />
               </div>
             </TabsContent>
 
-            <TabsContent value="spiritual" className="space-y-4">
+            {/* Spiritual Information Tab */}
+            <TabsContent value="spiritual" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="baptismStatus">{t("members.baptized")}</Label>
+                  <Select
+                    value={formData.baptismStatus || "none"}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, baptismStatus: value === "none" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("common.select")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("common.select")}</SelectItem>
+                      <SelectItem value="Oui">{t("common.yes")}</SelectItem>
+                      <SelectItem value="Non">{t("common.no")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="baptismDate">{t("members.baptismDate")}</Label>
+                  <Input
+                    id="baptismDate"
+                    type="date"
+                    value={formData.baptismDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, baptismDate: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="baptismStatus">Groupe de Membre</Label>
+                <Label htmlFor="originChurch">{t("members.originChurch")}</Label>
+                <Input
+                  id="originChurch"
+                  value={formData.originChurch}
+                  onChange={(e) =>
+                    setFormData({ ...formData, originChurch: e.target.value })
+                  }
+                  placeholder={t("members.originChurchPlaceholder")}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="role">{t("members.ministryRole")}</Label>
                 <Select
-                  value={formData.baptismStatus}
+                  value={formData.role || "none"}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, baptismStatus: value })
+                    setFormData({ ...formData, role: value === "none" ? "" : value })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choisir le groupe" />
+                    <SelectValue placeholder={t("members.selectRole")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Baptisé">Membre Baptisé</SelectItem>
-                    <SelectItem value="NonBaptisé">Membre Non Baptisé</SelectItem>
+                    <SelectItem value="none">{t("common.select")}</SelectItem>
+                    <SelectItem value="Membre">{t("members.roles.member")}</SelectItem>
+                    <SelectItem value="Diacre">{t("members.roles.deacon")}</SelectItem>
+                    <SelectItem value="Ancien">{t("members.roles.elder")}</SelectItem>
+                    <SelectItem value="Pasteur">{t("members.roles.pastor")}</SelectItem>
+                    <SelectItem value="Secrétaire">{t("members.roles.secretary")}</SelectItem>
+                    <SelectItem value="Trésorier">{t("members.roles.treasurer")}</SelectItem>
+                    <SelectItem value="Chantre">{t("members.roles.worship")}</SelectItem>
+                    <SelectItem value="Technique">{t("members.roles.tech")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="role">Rôle</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, role: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir le rôle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Membre">Membre</SelectItem>
-                    <SelectItem value="Diacre">Diacre</SelectItem>
-                    <SelectItem value="Ancien">Ancien</SelectItem>
-                    <SelectItem value="Pasteur">Pasteur</SelectItem>
-                    <SelectItem value="Secrétaire">Secrétaire</SelectItem>
-                    <SelectItem value="Trésorier">Trésorier</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="conversionDate">Date de Conversion</Label>
+                <Label htmlFor="conversionDate">{t("members.conversionDate")}</Label>
                 <Input
                   id="conversionDate"
                   type="date"
@@ -611,76 +670,117 @@ export default function MemberDialog({
                   }
                 />
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="baptismDate">Date de Baptême</Label>
-                <Input
-                  id="baptismDate"
-                  type="date"
-                  value={formData.baptismDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, baptismDate: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="christianExperience">Expérience Chrétienne/Ministérielle</Label>
+                <Label htmlFor="christianExperience">{t("members.christianExperience")}</Label>
                 <Textarea
                   id="christianExperience"
                   value={formData.christianExperience}
                   onChange={(e) =>
                     setFormData({ ...formData, christianExperience: e.target.value })
                   }
-                  placeholder="Service dans l'église, responsabilités, etc."
+                  placeholder={t("members.christianExperiencePlaceholder")}
                   rows={4}
                 />
               </div>
+
+              {/* Ministries info (readonly for display) */}
+              {ministries && ministries.length > 0 && (
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <Label className="text-sm font-semibold text-muted-foreground">
+                    {t("members.availableMinistries")}
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("members.ministriesNote")}
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="family" className="space-y-4">
+            {/* Family Information Tab */}
+            <TabsContent value="family" className="space-y-4 mt-4">
               <div className="grid gap-2">
-                <Label htmlFor="marriageDate">Date de Mariage</Label>
-                <Input
-                  id="marriageDate"
-                  type="date"
-                  value={formData.marriageDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, marriageDate: e.target.value })
+                <Label htmlFor="maritalStatus">{t("members.maritalStatus")}</Label>
+                <Select
+                  value={formData.maritalStatus || "none"}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, maritalStatus: value === "none" ? "" : value })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("members.selectMaritalStatus")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("common.select")}</SelectItem>
+                    <SelectItem value="Célibataire">{t("members.marital.single")}</SelectItem>
+                    <SelectItem value="Marié(e)">{t("members.marital.married")}</SelectItem>
+                    <SelectItem value="Divorcé(e)">{t("members.marital.divorced")}</SelectItem>
+                    <SelectItem value="Veuf/Veuve">{t("members.marital.widowed")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="spouseName">Nom du Conjoint(e)</Label>
-                <Input
-                  id="spouseName"
-                  value={formData.spouseName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, spouseName: e.target.value })
-                  }
-                  placeholder="Nom de votre conjoint(e)"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="spouseName">{t("members.spouseName")}</Label>
+                  <Input
+                    id="spouseName"
+                    value={formData.spouseName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, spouseName: e.target.value })
+                    }
+                    placeholder={t("members.spouseNamePlaceholder")}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="marriageDate">{t("members.marriageDate")}</Label>
+                  <Input
+                    id="marriageDate"
+                    type="date"
+                    value={formData.marriageDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, marriageDate: e.target.value })
+                    }
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="numberOfChildren">Nombre d'Enfants</Label>
-                <Input
-                  id="numberOfChildren"
-                  type="number"
-                  value={formData.numberOfChildren}
-                  onChange={(e) =>
-                    setFormData({ ...formData, numberOfChildren: e.target.value })
-                  }
-                  placeholder="0"
-                  min="0"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="numberOfChildren">{t("members.numberOfChildren")}</Label>
+                  <Input
+                    id="numberOfChildren"
+                    type="number"
+                    value={formData.numberOfChildren}
+                    onChange={(e) =>
+                      setFormData({ ...formData, numberOfChildren: e.target.value })
+                    }
+                    placeholder="0"
+                    min="0"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="emergencyPhone">{t("members.emergencyContact")}</Label>
+                  <Input
+                    id="familyEmergency"
+                    value={formData.emergencyPhone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, emergencyPhone: e.target.value })
+                    }
+                    placeholder="+33 1 98 76 54 32"
+                  />
+                </div>
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="childrenNames">Noms des Enfants</Label>
+                <Label htmlFor="childrenNames">{t("members.childrenNames")}</Label>
                 <Textarea
                   id="childrenNames"
                   value={formData.childrenNames}
                   onChange={(e) =>
                     setFormData({ ...formData, childrenNames: e.target.value })
                   }
-                  placeholder="Noms de tous les enfants (séparés par une virgule)"
+                  placeholder={t("members.childrenNamesPlaceholder")}
                   rows={3}
                 />
               </div>
@@ -692,14 +792,14 @@ export default function MemberDialog({
             <div className="space-y-4 rounded-lg border p-4 bg-muted/50 mt-6">
               <div className="flex items-center gap-2">
                 <QrCodeIcon className="h-5 w-5" />
-                <Label className="text-base font-semibold">QR Code du Membre</Label>
+                <Label className="text-base font-semibold">{t("members.qrCode")}</Label>
               </div>
               <div className="flex flex-col items-center gap-4">
                 <div className="rounded-lg border-2 border-primary/20 p-4 bg-background">
                   <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
                 </div>
                 <p className="text-sm text-muted-foreground text-center">
-                  Imprimez ce QR code pour que le membre puisse l'utiliser pour marquer sa présence
+                  {t("members.qrCodeDescription")}
                 </p>
                 <Button
                   type="button"
@@ -708,7 +808,7 @@ export default function MemberDialog({
                   className="w-full"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Télécharger le QR Code
+                  {t("members.downloadQrCode")}
                 </Button>
               </div>
             </div>
@@ -721,10 +821,10 @@ export default function MemberDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Chargement..." : "Enregistrer"}
+              {loading ? t("common.loading") : t("common.save")}
             </Button>
           </DialogFooter>
         </form>

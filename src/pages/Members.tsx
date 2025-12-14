@@ -122,24 +122,28 @@ export default function Members() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>{t("members.memberNumber")}</TableHead>
                     <TableHead>{t("common.name")}</TableHead>
-                    <TableHead>{t("common.email")}</TableHead>
+                    <TableHead>{t("members.gender")}</TableHead>
                     <TableHead>{t("common.phone")}</TableHead>
-                    <TableHead>{t("common.group")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>{t("common.joinedDate")}</TableHead>
+                    <TableHead>{t("members.joinDate")}</TableHead>
                     <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredMembers.map((member: any) => (
                     <TableRow key={member.id}>
-                      <TableCell className="font-medium">
-                        {member.first_name} {member.last_name}
+                      <TableCell className="font-mono text-sm text-primary font-semibold">
+                        {member.member_number || "-"}
                       </TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>{member.phone}</TableCell>
-                      <TableCell>{member.groups?.[0] || "-"}</TableCell>
+                      <TableCell className="font-medium">
+                        {member.last_name} {member.first_name}
+                      </TableCell>
+                      <TableCell>
+                        {member.gender === "M" ? t("members.male") : member.gender === "F" ? t("members.female") : "-"}
+                      </TableCell>
+                      <TableCell>{member.phone || "-"}</TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
@@ -149,7 +153,11 @@ export default function Members() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {member.created_at ? new Date(member.created_at).toLocaleDateString() : "-"}
+                        {member.join_date 
+                          ? new Date(member.join_date).toLocaleDateString() 
+                          : member.created_at 
+                            ? new Date(member.created_at).toLocaleDateString() 
+                            : "-"}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
