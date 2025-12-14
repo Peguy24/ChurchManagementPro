@@ -468,12 +468,12 @@ export default function MemberDetails() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5" />
-                  Ministè yo
+                  Ministères
                 </CardTitle>
                 <CardDescription>
                   {memberMinistries.length > 0
-                    ? `Manm nan ${memberMinistries.length} ministè`
-                    : "Pa nan okenn ministè"}
+                    ? `Membre de ${memberMinistries.length} ministère(s)`
+                    : "N'appartient à aucun ministère"}
                 </CardDescription>
               </div>
               <Button
@@ -481,7 +481,7 @@ export default function MemberDetails() {
                 onClick={() => setAddMinistryDialog(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Ajoute nan Ministè
+                Ajouter à un ministère
               </Button>
             </div>
           </CardHeader>
