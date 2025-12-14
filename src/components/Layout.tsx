@@ -20,30 +20,35 @@ import {
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Tableau de Bord" },
-  { to: "/members", icon: Users, label: "Membres" },
-  { to: "/members/cards", icon: CreditCard, label: "Cartes Membres" },
-  { to: "/attendance", icon: ClipboardCheck, label: "Présence" },
-  { to: "/attendance/alerts", icon: Bell, label: "Alertes Présence" },
-  { to: "/attendance/comparison", icon: BarChart3, label: "Comparaison Groupes" },
-  { to: "/donations", icon: DollarSign, label: "Dons" },
-  { to: "/donations/reports", icon: PieChart, label: "Rapports Financiers" },
-  { to: "/events", icon: Calendar, label: "Événements" },
-  { to: "/ministries", icon: Briefcase, label: "Ministères" },
-  { to: "/branches", icon: Church, label: "Branches" },
-  { to: "/custom-fields", icon: Settings, label: "Champs Personnalisés" },
+const getNavItems = (t: (key: string) => string) => [
+  { to: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
+  { to: "/members", icon: Users, label: t("nav.members") },
+  { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
+  { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
+  { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
+  { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
+  { to: "/donations", icon: DollarSign, label: t("nav.donations") },
+  { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
+  { to: "/events", icon: Calendar, label: t("nav.events") },
+  { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
+  { to: "/branches", icon: Church, label: t("nav.branches") },
+  { to: "/custom-fields", icon: Settings, label: t("nav.customFields") },
 ];
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const navItems = getNavItems(t);
 
   const handleLogout = async () => {
     const { error } = await signOut();
@@ -55,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
       });
     } else {
       toast({
-        title: 'Déconnecté',
+        title: t("nav.logout"),
         description: 'Vous êtes déconnecté avec succès',
       });
     }
@@ -74,6 +79,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <LanguageSelector />
             <div className="flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground hidden md:block">
