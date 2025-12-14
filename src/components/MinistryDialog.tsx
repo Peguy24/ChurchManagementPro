@@ -141,18 +141,18 @@ export default function MinistryDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
-              {ministry ? "Modifye Ministè" : "Ajoute Nouvo Ministè"}
+              {ministry ? "Modifier le Ministère" : "Ajouter un Nouveau Ministère"}
             </DialogTitle>
             <DialogDescription>
               {ministry
-                ? "Modifye enfòmasyon ministè a"
-                : "Ranpli enfòmasyon pou kreye yon nouvo ministè"}
+                ? "Modifiez les informations du ministère"
+                : "Remplissez les informations pour créer un nouveau ministère"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Non Ministè *</Label>
+              <Label htmlFor="name">Nom du Ministère *</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -164,7 +164,7 @@ export default function MinistryDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Deskripsyon</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -176,7 +176,7 @@ export default function MinistryDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="leader">Responsab</Label>
+              <Label htmlFor="leader">Responsable</Label>
               <Select
                 value={formData.leader_id || "none"}
                 onValueChange={(value) =>
@@ -184,10 +184,10 @@ export default function MinistryDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chwazi yon responsab" />
+                  <SelectValue placeholder="Choisir un responsable" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Okenn</SelectItem>
+                  <SelectItem value="none">Aucun</SelectItem>
                   {members.map((member: any) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.first_name} {member.last_name}
@@ -198,7 +198,7 @@ export default function MinistryDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="status">Estati</Label>
+              <Label htmlFor="status">Statut</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
@@ -209,14 +209,14 @@ export default function MinistryDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Aktif</SelectItem>
-                  <SelectItem value="inactive">Inaktif</SelectItem>
+                  <SelectItem value="active">Actif</SelectItem>
+                  <SelectItem value="inactive">Inactif</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="branch">Branch</Label>
+              <Label htmlFor="branch">Branche</Label>
               <Select
                 value={formData.branch_id || "none"}
                 onValueChange={(value) =>
@@ -224,10 +224,10 @@ export default function MinistryDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chwazi yon branch" />
+                  <SelectValue placeholder="Choisir une branche" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Okenn</SelectItem>
+                  <SelectItem value="none">Aucune</SelectItem>
                   {branches.map((branch: any) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.name}
@@ -244,10 +244,10 @@ export default function MinistryDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Anile
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Chajman..." : ministry ? "Modifye" : "Kreye"}
+              {loading ? "Chargement..." : ministry ? "Modifier" : "Créer"}
             </Button>
           </DialogFooter>
         </form>

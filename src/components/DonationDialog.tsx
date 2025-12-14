@@ -95,8 +95,8 @@ export default function DonationDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["donations"] });
       toast({
-        title: "Don anrejistre",
-        description: "Resi kreye ak siksè",
+        title: "Don enregistré",
+        description: "Le reçu a été créé avec succès",
       });
       onOpenChange(false);
       setFormData({
@@ -111,8 +111,8 @@ export default function DonationDialog({
     },
     onError: (error) => {
       toast({
-        title: "Erè",
-        description: "Pwoblèm pou anrejistre don an",
+        title: "Erreur",
+        description: "Problème lors de l'enregistrement du don",
         variant: "destructive",
       });
       console.error(error);
@@ -125,8 +125,8 @@ export default function DonationDialog({
     // Validation
     if (!formData.donationType || !formData.paymentMethod) {
       toast({
-        title: "Erè",
-        description: "Tanpri ranpli tout chan obligatwa",
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive",
       });
       return;
@@ -139,14 +139,14 @@ export default function DonationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Anrejistre yon Don</DialogTitle>
+          <DialogTitle>Enregistrer un Don</DialogTitle>
           <DialogDescription>
-            Ranpli enfòmasyon sou kontribisyon an
+            Remplissez les informations sur la contribution
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="memberId">Manm (Opsyonèl)</Label>
+            <Label htmlFor="memberId">Membre (Optionnel)</Label>
             <Select
               value={formData.memberId}
               onValueChange={(value) =>
@@ -154,10 +154,10 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chwazi yon manm" />
+                <SelectValue placeholder="Choisir un membre" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Donatè anonim</SelectItem>
+                <SelectItem value="none">Donateur anonyme</SelectItem>
                 {members?.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.first_name} {member.last_name}
@@ -168,7 +168,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Montan ($)</Label>
+            <Label htmlFor="amount">Montant (€)</Label>
             <Input
               id="amount"
               type="number"
@@ -183,7 +183,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="donationType">Tip Don *</Label>
+            <Label htmlFor="donationType">Type de Don *</Label>
             <Select
               value={formData.donationType || undefined}
               onValueChange={(value) =>
@@ -191,20 +191,20 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chwazi tip" />
+                <SelectValue placeholder="Choisir le type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tithe">Dim</SelectItem>
-                <SelectItem value="offering">Ofrann</SelectItem>
-                <SelectItem value="building">Batiman</SelectItem>
-                <SelectItem value="mission">Misyon</SelectItem>
-                <SelectItem value="special">Espesyal</SelectItem>
+                <SelectItem value="tithe">Dîme</SelectItem>
+                <SelectItem value="offering">Offrande</SelectItem>
+                <SelectItem value="building">Bâtiment</SelectItem>
+                <SelectItem value="mission">Mission</SelectItem>
+                <SelectItem value="special">Spécial</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="paymentMethod">Metòd Peman *</Label>
+            <Label htmlFor="paymentMethod">Méthode de Paiement *</Label>
             <Select
               value={formData.paymentMethod || undefined}
               onValueChange={(value) =>
@@ -212,20 +212,20 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chwazi metòd" />
+                <SelectValue placeholder="Choisir la méthode" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">Lajan Kach</SelectItem>
-                <SelectItem value="check">Chèk</SelectItem>
-                <SelectItem value="transfer">Vire</SelectItem>
-                <SelectItem value="mobile_money">Lajan Mobil</SelectItem>
-                <SelectItem value="card">Kat</SelectItem>
+                <SelectItem value="cash">Espèces</SelectItem>
+                <SelectItem value="check">Chèque</SelectItem>
+                <SelectItem value="transfer">Virement</SelectItem>
+                <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                <SelectItem value="card">Carte</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="branchId">Branch (Opsyonèl)</Label>
+            <Label htmlFor="branchId">Branche (Optionnel)</Label>
             <Select
               value={formData.branchId}
               onValueChange={(value) =>
@@ -233,10 +233,10 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chwazi branch" />
+                <SelectValue placeholder="Choisir une branche" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Pa gen branch</SelectItem>
+                <SelectItem value="none">Aucune branche</SelectItem>
                 {branches?.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
@@ -247,7 +247,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="donationDate">Dat</Label>
+            <Label htmlFor="donationDate">Date</Label>
             <Input
               id="donationDate"
               type="date"
@@ -260,14 +260,14 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Nòt (Opsyonèl)</Label>
+            <Label htmlFor="notes">Notes (Optionnel)</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
               }
-              placeholder="Nòt adisyonèl..."
+              placeholder="Notes additionnelles..."
               rows={3}
             />
           </div>
@@ -278,10 +278,10 @@ export default function DonationDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Anile
+              Annuler
             </Button>
             <Button type="submit" disabled={createDonation.isPending}>
-              {createDonation.isPending ? "Anrejistre..." : "Anrejistre"}
+              {createDonation.isPending ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>
