@@ -72,7 +72,7 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
           ) : (
             <VolumeX className="h-4 w-4 mr-2" />
           )}
-          Paramèt Son
+          Paramètres Son
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
@@ -80,14 +80,14 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
           <div className="flex items-center justify-between">
             <h4 className="font-semibold flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Paramèt Son Scanner
+              Paramètres du Scanner
             </h4>
           </div>
 
           {/* Enable/Disable Sounds */}
           <div className="flex items-center justify-between">
             <Label htmlFor="sound-enabled" className="cursor-pointer">
-              Aktive Son
+              Activer le son
             </Label>
             <Switch
               id="sound-enabled"
@@ -99,7 +99,7 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
           {/* Volume Control */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Volim: {settings.volume}%</Label>
+              <Label>Volume: {settings.volume}%</Label>
             </div>
             <Slider
               value={[settings.volume]}
@@ -114,7 +114,7 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
 
           {/* Test Sounds */}
           <div className="space-y-2 pt-2 border-t">
-            <Label className="text-sm text-muted-foreground">Tès Son</Label>
+            <Label className="text-sm text-muted-foreground">Tester les sons</Label>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -123,7 +123,7 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
                 disabled={!settings.enabled}
                 className="flex-1"
               >
-                ✓ Son Siksè
+                ✓ Son Succès
               </Button>
               <Button
                 variant="outline"
@@ -132,14 +132,14 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
                 disabled={!settings.enabled}
                 className="flex-1"
               >
-                ✗ Son Erè
+                ✗ Son Erreur
               </Button>
             </div>
           </div>
 
           {/* Info */}
           <p className="text-xs text-muted-foreground">
-            Son yo ap jwe lè w skane yon QR code. Ou ka ajiste volim oswa dezaktive son yo konplètman.
+            Les sons sont émis lors du scan d'un QR code. Vous pouvez ajuster le volume ou désactiver complètement les sons.
           </p>
         </div>
       </PopoverContent>
