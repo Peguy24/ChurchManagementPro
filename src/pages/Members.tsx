@@ -30,52 +30,55 @@ const mockMembers = [
     name: "Jean Pierre",
     email: "jean@example.com",
     phone: "+509 1234-5678",
-    status: "Aktif",
+    status: "Actif",
     joined: "2023-05-20",
-    group: "Kwayan",
+    group: "Croyants",
   },
   {
     id: 2,
     name: "Marie Duval",
     email: "marie@example.com",
     phone: "+509 2345-6789",
-    status: "Aktif",
+    status: "Actif",
     joined: "2024-01-15",
-    group: "Fanmi",
+    group: "Familles",
   },
   {
     id: 3,
     name: "Paul Joseph",
     email: "paul@example.com",
     phone: "+509 3456-7890",
-    status: "Inaktif",
+    status: "Inactif",
     joined: "2022-08-10",
-    group: "Kwayan",
+    group: "Croyants",
   },
   {
     id: 4,
     name: "Sophie Laurent",
     email: "sophie@example.com",
     phone: "+509 4567-8901",
-    status: "Aktif",
+    status: "Actif",
     joined: "2024-11-03",
-    group: "Timoun",
+    group: "Enfants",
   },
   {
     id: 5,
     name: "Marc Etienne",
     email: "marc@example.com",
     phone: "+509 5678-9012",
-    status: "Transfere",
+    status: "Transféré",
     joined: "2021-03-12",
-    group: "Kwayan",
+    group: "Croyants",
   },
 ];
 
 const statusColors: Record<string, string> = {
-  Aktif: "bg-success/10 text-success border-success/20",
-  Inaktif: "bg-muted text-muted-foreground border-border",
-  Transfere: "bg-info/10 text-info border-info/20",
+  Actif: "bg-success/10 text-success border-success/20",
+  Inactif: "bg-muted text-muted-foreground border-border",
+  Transféré: "bg-info/10 text-info border-info/20",
+  active: "bg-success/10 text-success border-success/20",
+  inactive: "bg-muted text-muted-foreground border-border",
+  transferred: "bg-info/10 text-info border-info/20",
 };
 
 export default function Members() {
@@ -177,9 +180,9 @@ export default function Members() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={statusColors[member.status || "Aktif"]}
+                          className={statusColors[member.status || "active"]}
                         >
-                          {member.status || "Aktif"}
+                          {member.status === "active" ? "Actif" : member.status === "inactive" ? "Inactif" : member.status === "transferred" ? "Transféré" : member.status}
                         </Badge>
                       </TableCell>
                       <TableCell>

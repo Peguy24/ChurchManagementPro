@@ -245,26 +245,26 @@ export default function FinancialReports() {
 
     // Title
     doc.setFontSize(20);
-    doc.text("Rapò Finansyè", 14, 22);
+    doc.text("Rapport Financier", 14, 22);
     doc.setFontSize(12);
-    doc.text(`Peryòd: ${period} dènye mwa`, 14, 30);
-    doc.text(`Dat: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
+    doc.text(`Période: ${period} derniers mois`, 14, 30);
+    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
 
     // Summary stats
     doc.setFontSize(14);
-    doc.text("Rezime", 14, 48);
+    doc.text("Résumé", 14, 48);
     doc.setFontSize(11);
-    doc.text(`Total Kontribisyon: $${stats.total.toFixed(2)}`, 14, 56);
-    doc.text(`Kantite Don: ${stats.count}`, 14, 62);
-    doc.text(`Mwayèn pa Don: $${stats.average.toFixed(2)}`, 14, 68);
+    doc.text(`Total Contributions: $${stats.total.toFixed(2)}`, 14, 56);
+    doc.text(`Nombre de Dons: ${stats.count}`, 14, 62);
+    doc.text(`Moyenne par Don: $${stats.average.toFixed(2)}`, 14, 68);
 
     // Monthly summary table
     doc.setFontSize(14);
-    doc.text("Rezime Mansyèl", 14, 82);
+    doc.text("Résumé Mensuel", 14, 82);
 
     autoTable(doc, {
       startY: 88,
-      head: [["Mwa", "Total", "Dim", "Ofrann", "Batiman", "Misyon", "Espesyal"]],
+      head: [["Mois", "Total", "Dîme", "Offrande", "Bâtiment", "Mission", "Spécial"]],
       body: monthlyData.map((m) => [
         m.month,
         `$${m.total.toFixed(2)}`,
@@ -281,11 +281,11 @@ export default function FinancialReports() {
     // Category breakdown
     const finalY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    doc.text("Distribisyon pa Kategori", 14, finalY);
+    doc.text("Distribution par Catégorie", 14, finalY);
 
     autoTable(doc, {
       startY: finalY + 6,
-      head: [["Kategori", "Montan", "Pousantaj"]],
+      head: [["Catégorie", "Montant", "Pourcentage"]],
       body: categoryData.map((c) => [
         c.name,
         `$${c.value.toFixed(2)}`,
@@ -295,7 +295,7 @@ export default function FinancialReports() {
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapò-finansye-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`rapport-financier-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   return (
@@ -304,18 +304,18 @@ export default function FinancialReports() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Rapò Finansye</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Rapports Financiers</h2>
             <p className="text-muted-foreground">
-              Analiz detaye kontribisyon ak don
+              Analyse détaillée des contributions et dons
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Select value={selectedBranch} onValueChange={setSelectedBranch}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Tout branch" />
+                <SelectValue placeholder="Toutes les branches" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tout branch</SelectItem>
+                <SelectItem value="all">Toutes les branches</SelectItem>
                 {branches.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
@@ -329,10 +329,10 @@ export default function FinancialReports() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3">3 dènye mwa</SelectItem>
-                <SelectItem value="6">6 dènye mwa</SelectItem>
-                <SelectItem value="12">12 dènye mwa</SelectItem>
-                <SelectItem value="24">24 dènye mwa</SelectItem>
+                <SelectItem value="3">3 derniers mois</SelectItem>
+                <SelectItem value="6">6 derniers mois</SelectItem>
+                <SelectItem value="12">12 derniers mois</SelectItem>
+                <SelectItem value="24">24 derniers mois</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" onClick={exportToExcel}>

@@ -168,8 +168,8 @@ export default function MemberCards() {
         }
 
         toast({
-          title: "Kòd QR kreye!",
-          description: `${membersNeedingQR.length} kòd QR te kreye pou manm yo.`,
+          title: "Codes QR créés !",
+          description: `${membersNeedingQR.length} codes QR ont été créés pour les membres.`,
         });
         
         refetch();
