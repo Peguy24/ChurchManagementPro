@@ -16,6 +16,7 @@ import {
   Briefcase,
   PieChart,
   Settings,
+  Building2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
