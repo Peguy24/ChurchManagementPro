@@ -26,12 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Download, Plus, TrendingUp, FileText } from "lucide-react";
+import { DollarSign, Download, Plus, TrendingUp, FileText, Eye, Pencil, Wallet, Building2 } from "lucide-react";
 import DonationDialog from "@/components/DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const categoryColors: Record<string, string> = {
   tithe: "bg-primary/10 text-primary border-primary/20",
@@ -39,11 +46,15 @@ const categoryColors: Record<string, string> = {
   building: "bg-info/10 text-info border-info/20",
   mission: "bg-success/10 text-success border-success/20",
   special: "bg-accent/10 text-accent border-accent/20",
+  activity: "bg-warning/10 text-warning border-warning/20",
+  other: "bg-muted text-muted-foreground border-muted",
 };
 
 export default function Donations() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDonation, setEditDonation] = useState<any>(null);
+  const [viewDonation, setViewDonation] = useState<any>(null);
   const [filters, setFilters] = useState({
     donationType: "all",
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
@@ -56,6 +67,8 @@ export default function Donations() {
     building: t("donations.building"),
     mission: t("donations.mission"),
     special: t("donations.special"),
+    activity: "Activité",
+    other: "Autre",
   };
 
   const methodLabels: Record<string, string> = {
@@ -74,7 +87,9 @@ export default function Donations() {
         .select(`
           *,
           member:members(first_name, last_name),
-          branch:branches(name)
+          branch:branches(name),
+          cash_register:cash_registers(name),
+          bank_account:bank_accounts(name, bank_name)
         `)
         .gte("donation_date", filters.startDate)
         .lte("donation_date", filters.endDate)
@@ -90,18 +105,36 @@ export default function Donations() {
     },
   });
 
+  const { data: userProfiles } = useQuery({
+    queryKey: ["profiles"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, first_name, last_name");
+      return data || [];
+    },
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
+      style: "currency",
+      currency: "HTG",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
+
   const stats = [
     {
       title: t("donations.totalAmount"),
-      value: `$${donations.reduce((sum, d) => sum + Number(d.amount), 0).toFixed(2)}`,
+      value: formatCurrency(totalAmount),
       change: `${donations.length} ${t("donations.donationCount").toLowerCase()}`,
       icon: DollarSign,
     },
     {
       title: t("donations.avgDonation"),
       value: donations.length > 0 
-        ? `$${(donations.reduce((sum, d) => sum + Number(d.amount), 0) / donations.length).toFixed(2)}`
-        : "$0.00",
+        ? formatCurrency(totalAmount / donations.length)
+        : formatCurrency(0),
       change: t("donations.donationDate"),
       icon: TrendingUp,
     },
@@ -113,8 +146,22 @@ export default function Donations() {
     },
   ];
 
-  const generateReceipt = async (donation: any) => {
-    console.log("Generate receipt for:", donation);
+  const getCreatorName = (createdBy: string | null) => {
+    if (!createdBy) return "Système";
+    const profile = userProfiles?.find(p => p.id === createdBy);
+    return profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || "Utilisateur" : "Utilisateur";
+  };
+
+  const handleEdit = (donation: any) => {
+    setEditDonation(donation);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setEditDonation(null);
+    }
   };
 
   const exportData = () => {
@@ -295,58 +342,88 @@ export default function Donations() {
                 {t("common.noData")}
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t("common.date")}</TableHead>
-                      <TableHead>{t("common.name")}</TableHead>
-                      <TableHead>{t("donations.amount")}</TableHead>
+                      <TableHead>Description</TableHead>
                       <TableHead>{t("donations.donationType")}</TableHead>
+                      <TableHead>{t("donations.amount")}</TableHead>
+                      <TableHead>Compte</TableHead>
                       <TableHead>{t("donations.paymentMethod")}</TableHead>
-                      <TableHead>{t("branches.branchName")}</TableHead>
+                      <TableHead>Créateur</TableHead>
                       <TableHead className="text-right">{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {donations.map((donation) => (
                       <TableRow key={donation.id}>
-                        <TableCell>
-                          {format(new Date(donation.donation_date), "dd/MM/yyyy")}
+                        <TableCell className="whitespace-nowrap">
+                          {format(new Date(donation.donation_date), "dd/MM/yyyy", { locale: fr })}
                         </TableCell>
-                        <TableCell className="font-medium">
-                          {donation.member
-                            ? `${donation.member.first_name} ${donation.member.last_name}`
-                            : t("common.noData")}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          ${Number(donation.amount).toFixed(2)}
+                        <TableCell className="max-w-[200px] truncate">
+                          {donation.description || donation.notes || "-"}
                         </TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={categoryColors[donation.donation_type]}
+                            className={categoryColors[donation.donation_type] || categoryColors.other}
                           >
-                            {categoryLabels[donation.donation_type] ||
-                              donation.donation_type}
+                            {categoryLabels[donation.donation_type] || donation.donation_type}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {methodLabels[donation.payment_method] ||
-                            donation.payment_method}
+                        <TableCell className="font-semibold text-green-600">
+                          {formatCurrency(Number(donation.amount))}
                         </TableCell>
                         <TableCell>
-                          {donation.branch?.name || "N/A"}
+                          {donation.cash_register ? (
+                            <span className="flex items-center gap-1 text-sm">
+                              <Wallet className="h-3 w-3" />
+                              {(donation.cash_register as any).name}
+                            </span>
+                          ) : donation.bank_account ? (
+                            <span className="flex items-center gap-1 text-sm">
+                              <Building2 className="h-3 w-3" />
+                              {(donation.bank_account as any).name}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {methodLabels[donation.payment_method] || donation.payment_method}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {getCreatorName(donation.created_by)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => generateReceipt(donation)}
-                          >
-                            <FileText className="mr-2 h-4 w-4" />
-                            {t("common.download")}
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setViewDonation(donation)}
+                              title="Voir détails"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(donation)}
+                              title="Modifier"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => console.log("Generate receipt for:", donation)}
+                              title="Télécharger reçu"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -357,7 +434,82 @@ export default function Donations() {
           </CardContent>
         </Card>
       </div>
-      <DonationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      {/* View Donation Dialog */}
+      <Dialog open={!!viewDonation} onOpenChange={() => setViewDonation(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Détails de la Recette</DialogTitle>
+          </DialogHeader>
+          {viewDonation && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Date</p>
+                  <p>{format(new Date(viewDonation.donation_date), "dd MMMM yyyy", { locale: fr })}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Montant</p>
+                  <p className="text-xl font-bold text-green-600">{formatCurrency(Number(viewDonation.amount))}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Type</p>
+                  <Badge variant="outline" className={categoryColors[viewDonation.donation_type] || categoryColors.other}>
+                    {categoryLabels[viewDonation.donation_type] || viewDonation.donation_type}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Mode de paiement</p>
+                  <p>{methodLabels[viewDonation.payment_method] || viewDonation.payment_method}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Compte</p>
+                  <p className="flex items-center gap-1">
+                    {viewDonation.cash_register ? (
+                      <><Wallet className="h-4 w-4" />{(viewDonation.cash_register as any).name}</>
+                    ) : viewDonation.bank_account ? (
+                      <><Building2 className="h-4 w-4" />{(viewDonation.bank_account as any).name}</>
+                    ) : (
+                      "Non spécifié"
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Donateur</p>
+                  <p>{viewDonation.member ? `${viewDonation.member.first_name} ${viewDonation.member.last_name}` : "Anonyme"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-sm font-medium text-muted-foreground">Description</p>
+                  <p>{viewDonation.description || viewDonation.notes || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Branche</p>
+                  <p>{viewDonation.branch?.name || "Toutes"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Créé par</p>
+                  <p>{getCreatorName(viewDonation.created_by)}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setViewDonation(null)}>
+                  Fermer
+                </Button>
+                <Button onClick={() => { handleEdit(viewDonation); setViewDonation(null); }}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Modifier
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <DonationDialog 
+        open={dialogOpen} 
+        onOpenChange={handleCloseDialog}
+        editDonation={editDonation}
+      />
     </Layout>
   );
 }

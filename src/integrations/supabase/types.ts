@@ -488,9 +488,13 @@ export type Database = {
       donations: {
         Row: {
           amount: number
+          bank_account_id: string | null
           branch_id: string | null
+          cash_register_id: string | null
+          category_id: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           donation_date: string
           donation_type: string
           id: string
@@ -501,9 +505,13 @@ export type Database = {
         }
         Insert: {
           amount: number
+          bank_account_id?: string | null
           branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           donation_date?: string
           donation_type?: string
           id?: string
@@ -514,9 +522,13 @@ export type Database = {
         }
         Update: {
           amount?: number
+          bank_account_id?: string | null
           branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           donation_date?: string
           donation_type?: string
           id?: string
@@ -527,10 +539,31 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "donations_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "donations_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_cash_register_id_fkey"
+            columns: ["cash_register_id"]
+            isOneToOne: false
+            referencedRelation: "cash_registers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "income_categories"
             referencedColumns: ["id"]
           },
           {
