@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DonationDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export default function DonationDialog({
   open,
   onOpenChange,
 }: DonationDialogProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<{
@@ -95,8 +97,8 @@ export default function DonationDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["donations"] });
       toast({
-        title: "Don enregistré",
-        description: "Le reçu a été créé avec succès",
+        title: t("donations.addDonation"),
+        description: t("common.save"),
       });
       onOpenChange(false);
       setFormData({
@@ -111,8 +113,8 @@ export default function DonationDialog({
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Problème lors de l'enregistrement du don",
+        title: t("errors.serverError"),
+        description: t("errors.serverError"),
         variant: "destructive",
       });
       console.error(error);
@@ -122,11 +124,10 @@ export default function DonationDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
     if (!formData.donationType || !formData.paymentMethod) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
+        title: t("errors.serverError"),
+        description: t("errors.required"),
         variant: "destructive",
       });
       return;
@@ -139,14 +140,14 @@ export default function DonationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Enregistrer un Don</DialogTitle>
+          <DialogTitle>{t("donations.addDonation")}</DialogTitle>
           <DialogDescription>
-            Remplissez les informations sur la contribution
+            {t("donations.subtitle")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="memberId">Membre (Optionnel)</Label>
+            <Label htmlFor="memberId">{t("attendance.selectMember")}</Label>
             <Select
               value={formData.memberId}
               onValueChange={(value) =>
@@ -154,10 +155,10 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choisir un membre" />
+                <SelectValue placeholder={t("attendance.selectMember")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Donateur anonyme</SelectItem>
+                <SelectItem value="none">{t("common.noData")}</SelectItem>
                 {members?.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.first_name} {member.last_name}
@@ -168,7 +169,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Montant (€)</Label>
+            <Label htmlFor="amount">{t("donations.amount")} ($)</Label>
             <Input
               id="amount"
               type="number"
@@ -183,7 +184,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="donationType">Type de Don *</Label>
+            <Label htmlFor="donationType">{t("donations.donationType")} *</Label>
             <Select
               value={formData.donationType || undefined}
               onValueChange={(value) =>
@@ -191,20 +192,20 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choisir le type" />
+                <SelectValue placeholder={t("donations.donationType")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tithe">Dîme</SelectItem>
-                <SelectItem value="offering">Offrande</SelectItem>
-                <SelectItem value="building">Bâtiment</SelectItem>
-                <SelectItem value="mission">Mission</SelectItem>
-                <SelectItem value="special">Spécial</SelectItem>
+                <SelectItem value="tithe">{t("donations.tithe")}</SelectItem>
+                <SelectItem value="offering">{t("donations.offering")}</SelectItem>
+                <SelectItem value="building">{t("donations.building")}</SelectItem>
+                <SelectItem value="mission">{t("donations.mission")}</SelectItem>
+                <SelectItem value="special">{t("donations.special")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="paymentMethod">Méthode de Paiement *</Label>
+            <Label htmlFor="paymentMethod">{t("donations.paymentMethod")} *</Label>
             <Select
               value={formData.paymentMethod || undefined}
               onValueChange={(value) =>
@@ -212,20 +213,20 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choisir la méthode" />
+                <SelectValue placeholder={t("donations.paymentMethod")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">Espèces</SelectItem>
-                <SelectItem value="check">Chèque</SelectItem>
-                <SelectItem value="transfer">Virement</SelectItem>
+                <SelectItem value="cash">{t("donations.cash")}</SelectItem>
+                <SelectItem value="check">{t("donations.check")}</SelectItem>
+                <SelectItem value="transfer">{t("donations.transfer")}</SelectItem>
                 <SelectItem value="mobile_money">Mobile Money</SelectItem>
-                <SelectItem value="card">Carte</SelectItem>
+                <SelectItem value="card">{t("donations.card")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="branchId">Branche (Optionnel)</Label>
+            <Label htmlFor="branchId">{t("branches.branchName")}</Label>
             <Select
               value={formData.branchId}
               onValueChange={(value) =>
@@ -233,10 +234,10 @@ export default function DonationDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choisir une branche" />
+                <SelectValue placeholder={t("branches.branchName")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Aucune branche</SelectItem>
+                <SelectItem value="none">{t("common.noData")}</SelectItem>
                 {branches?.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
@@ -247,7 +248,7 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="donationDate">Date</Label>
+            <Label htmlFor="donationDate">{t("donations.donationDate")}</Label>
             <Input
               id="donationDate"
               type="date"
@@ -260,14 +261,14 @@ export default function DonationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optionnel)</Label>
+            <Label htmlFor="notes">{t("donations.notes")}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
               }
-              placeholder="Notes additionnelles..."
+              placeholder={t("donations.notes")}
               rows={3}
             />
           </div>
@@ -278,10 +279,10 @@ export default function DonationDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={createDonation.isPending}>
-              {createDonation.isPending ? "Enregistrement..." : "Enregistrer"}
+              {createDonation.isPending ? t("common.loading") : t("common.save")}
             </Button>
           </DialogFooter>
         </form>
