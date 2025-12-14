@@ -108,35 +108,35 @@ export default function Members() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Jesyon Manm</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Gestion des Membres</h2>
             <p className="text-muted-foreground">
-              Jere tout manm legliz ou
+              Gérez tous les membres de votre église
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
               <Upload className="mr-2 h-4 w-4" />
-              Enpòte
+              Importer
             </Button>
             <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
-              Ekspòte
+              Exporter
             </Button>
             <Button size="sm" onClick={() => {
               setSelectedMember(undefined);
               setDialogOpen(true);
             }}>
               <Plus className="mr-2 h-4 w-4" />
-              Ajoute Manm
+              Ajouter Membre
             </Button>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Lis Manm</CardTitle>
+            <CardTitle>Liste des Membres</CardTitle>
             <CardDescription>
-              Total: {members.length} manm
+              Total: {members.length} membres
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -144,7 +144,7 @@ export default function Members() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Chèche manm..."
+                  placeholder="Rechercher un membre..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,13 +156,13 @@ export default function Members() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Non</TableHead>
+                    <TableHead>Nom</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Telefòn</TableHead>
-                    <TableHead>Gwoup</TableHead>
-                    <TableHead>Estati</TableHead>
-                    <TableHead>Dat Rantre</TableHead>
-                    <TableHead className="text-right">Aksyon</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Groupe</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Date d'inscription</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -26,18 +26,18 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Tablo Bò" },
-  { to: "/members", icon: Users, label: "Manm" },
-  { to: "/members/cards", icon: CreditCard, label: "Kat Manm" },
-  { to: "/attendance", icon: ClipboardCheck, label: "Prezans" },
-  { to: "/attendance/alerts", icon: Bell, label: "Alèt Prezans" },
-  { to: "/attendance/comparison", icon: BarChart3, label: "Konparezon Gwoup" },
-  { to: "/donations", icon: DollarSign, label: "Don" },
-  { to: "/donations/reports", icon: PieChart, label: "Rapò Finansye" },
-  { to: "/events", icon: Calendar, label: "Evènman" },
-  { to: "/ministries", icon: Briefcase, label: "Ministè" },
-  { to: "/branches", icon: Church, label: "Branch" },
-  { to: "/custom-fields", icon: Settings, label: "Chan Pèsonalize" },
+  { to: "/", icon: LayoutDashboard, label: "Tableau de Bord" },
+  { to: "/members", icon: Users, label: "Membres" },
+  { to: "/members/cards", icon: CreditCard, label: "Cartes Membres" },
+  { to: "/attendance", icon: ClipboardCheck, label: "Présence" },
+  { to: "/attendance/alerts", icon: Bell, label: "Alertes Présence" },
+  { to: "/attendance/comparison", icon: BarChart3, label: "Comparaison Groupes" },
+  { to: "/donations", icon: DollarSign, label: "Dons" },
+  { to: "/donations/reports", icon: PieChart, label: "Rapports Financiers" },
+  { to: "/events", icon: Calendar, label: "Événements" },
+  { to: "/ministries", icon: Briefcase, label: "Ministères" },
+  { to: "/branches", icon: Church, label: "Branches" },
+  { to: "/custom-fields", icon: Settings, label: "Champs Personnalisés" },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -49,14 +49,14 @@ export default function Layout({ children }: LayoutProps) {
     const { error } = await signOut();
     if (error) {
       toast({
-        title: 'Erè',
-        description: 'Pwoblèm pou dekonekte',
+        title: 'Erreur',
+        description: 'Problème de déconnexion',
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Dekonekte',
-        description: 'Ou dekonekte avèk siksè',
+        title: 'Déconnecté',
+        description: 'Vous êtes déconnecté avec succès',
       });
     }
   };
@@ -69,8 +69,8 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center gap-2">
             <Church className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">EglizApp</h1>
-              <p className="text-xs text-muted-foreground">Sistèm Jesyon Legliz</p>
+              <h1 className="text-xl font-bold text-foreground">ÉgliseApp</h1>
+              <p className="text-xs text-muted-foreground">Système de Gestion d'Église</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

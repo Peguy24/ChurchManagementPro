@@ -18,55 +18,55 @@ import EventDialog from "@/components/EventDialog";
 const events = [
   {
     id: 1,
-    name: "Sèvis Dimanch",
+    name: "Culte du Dimanche",
     date: "2025-01-21",
-    time: "10:00 AM",
-    location: "Sanktiyè Prensipal",
+    time: "10:00",
+    location: "Sanctuaire Principal",
     attendees: 200,
-    status: "Konfime",
+    status: "Confirmé",
   },
   {
     id: 2,
-    name: "Etid Biblik",
+    name: "Étude Biblique",
     date: "2025-01-23",
-    time: "7:00 PM",
-    location: "Sal Rankont",
+    time: "19:00",
+    location: "Salle de Réunion",
     attendees: 45,
-    status: "Konfime",
+    status: "Confirmé",
   },
   {
     id: 3,
-    name: "Rankont Jèn",
+    name: "Rencontre Jeunesse",
     date: "2025-01-25",
-    time: "6:00 PM",
-    location: "Espas Jèn",
+    time: "18:00",
+    location: "Espace Jeunes",
     attendees: 60,
-    status: "Planifye",
+    status: "Planifié",
   },
   {
     id: 4,
-    name: "Sèvis Priyè",
+    name: "Prière du Matin",
     date: "2025-01-24",
-    time: "6:00 AM",
-    location: "Sanktiyè Prensipal",
+    time: "06:00",
+    location: "Sanctuaire Principal",
     attendees: 35,
-    status: "Konfime",
+    status: "Confirmé",
   },
   {
     id: 5,
-    name: "Rankont Fanmi",
+    name: "Rencontre Famille",
     date: "2025-01-28",
-    time: "4:00 PM",
-    location: "Sal Rekreyasyon",
+    time: "16:00",
+    location: "Salle de Récréation",
     attendees: 80,
-    status: "Planifye",
+    status: "Planifié",
   },
 ];
 
 const statusColors: Record<string, string> = {
-  Konfime: "bg-success/10 text-success border-success/20",
-  Planifye: "bg-info/10 text-info border-info/20",
-  Kansele: "bg-destructive/10 text-destructive border-destructive/20",
+  Confirmé: "bg-success/10 text-success border-success/20",
+  Planifié: "bg-info/10 text-info border-info/20",
+  Annulé: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 export default function Events() {
@@ -85,15 +85,15 @@ export default function Events() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Jesyon Evènman
+              Gestion des Événements
             </h2>
             <p className="text-muted-foreground">
-              Planifye ak jere evènman legliz ou
+              Planifiez et gérez les événements de votre église
             </p>
           </div>
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Kreye Evènman
+            Créer Événement
           </Button>
         </div>
 
@@ -101,8 +101,8 @@ export default function Events() {
           {/* Calendar */}
           <Card>
             <CardHeader>
-              <CardTitle>Kalandriye</CardTitle>
-              <CardDescription>Chwazi yon dat pou wè evènman yo</CardDescription>
+              <CardTitle>Calendrier</CardTitle>
+              <CardDescription>Choisissez une date pour voir les événements</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
               <Calendar
@@ -129,17 +129,17 @@ export default function Events() {
           <Card>
             <CardHeader>
               <CardTitle>
-                Evènman nan{" "}
+                Événements du{" "}
                 {selectedDate ? format(selectedDate, "PPP", { locale: fr }) : "..."}
               </CardTitle>
               <CardDescription>
-                {eventsOnSelectedDate.length} evènman
+                {eventsOnSelectedDate.length} événement(s)
               </CardDescription>
             </CardHeader>
             <CardContent>
               {eventsOnSelectedDate.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Pa gen evènman nan dat sa a
+                  Aucun événement à cette date
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -168,15 +168,15 @@ export default function Events() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          {event.attendees} patisipan espere
+                          {event.attendees} participants attendus
                         </div>
                       </div>
                       <div className="flex gap-2 pt-2">
                         <Button variant="outline" size="sm" className="flex-1">
-                          Modifye
+                          Modifier
                         </Button>
                         <Button size="sm" className="flex-1">
-                          Detay
+                          Détails
                         </Button>
                       </div>
                     </div>
@@ -190,8 +190,8 @@ export default function Events() {
         {/* All Upcoming Events */}
         <Card>
           <CardHeader>
-            <CardTitle>Tout Evènman Pwochen</CardTitle>
-            <CardDescription>Evènman ki ap vini yo</CardDescription>
+            <CardTitle>Tous les Événements à Venir</CardTitle>
+            <CardDescription>Les prochains événements programmés</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -225,7 +225,7 @@ export default function Events() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users className="h-4 w-4" />
-                      {event.attendees} patisipan
+                      {event.attendees} participants
                     </div>
                   </CardContent>
                 </Card>

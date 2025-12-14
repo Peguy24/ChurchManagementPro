@@ -41,19 +41,19 @@ const categoryColors: Record<string, string> = {
 };
 
 const categoryLabels: Record<string, string> = {
-  tithe: "Dim",
-  offering: "Ofrann",
-  building: "Batiman",
-  mission: "Misyon",
-  special: "Espesyal",
+  tithe: "Dîme",
+  offering: "Offrande",
+  building: "Bâtiment",
+  mission: "Mission",
+  special: "Spécial",
 };
 
 const methodLabels: Record<string, string> = {
-  cash: "Lajan Kach",
-  check: "Chèk",
-  transfer: "Vire",
-  mobile_money: "Lajan Mobil",
-  card: "Kat",
+  cash: "Espèces",
+  check: "Chèque",
+  transfer: "Virement",
+  mobile_money: "Mobile Money",
+  card: "Carte",
 };
 
 export default function Donations() {
@@ -90,23 +90,23 @@ export default function Donations() {
 
   const stats = [
     {
-      title: "Total Peryòd",
+      title: "Total Période",
       value: `$${donations.reduce((sum, d) => sum + Number(d.amount), 0).toFixed(2)}`,
-      change: `${donations.length} don`,
+      change: `${donations.length} dons`,
       icon: DollarSign,
     },
     {
-      title: "Mwayèn Don",
+      title: "Don Moyen",
       value: donations.length > 0 
         ? `$${(donations.reduce((sum, d) => sum + Number(d.amount), 0) / donations.length).toFixed(2)}`
         : "$0.00",
-      change: "Peryòd la",
+      change: "Sur la période",
       icon: TrendingUp,
     },
     {
-      title: "Kantite Don",
+      title: "Nombre de Dons",
       value: donations.length.toString(),
-      change: "Peryòd la",
+      change: "Sur la période",
       icon: TrendingUp,
     },
   ];
@@ -152,20 +152,20 @@ export default function Donations() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Jesyon Kontribisyon
+              Gestion des Contributions
             </h2>
             <p className="text-muted-foreground">
-              Jere don ak kontribisyon yo
+              Gérez les dons et contributions
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={exportData}>
               <Download className="mr-2 h-4 w-4" />
-              Ekspòte CSV
+              Exporter CSV
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Ajoute Don
+              Ajouter Don
             </Button>
           </div>
         </div>
@@ -194,12 +194,12 @@ export default function Donations() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filtè</CardTitle>
+            <CardTitle>Filtres</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label>Tip Don</Label>
+                <Label>Type de Don</Label>
                 <Select
                   value={filters.donationType}
                   onValueChange={(value) =>
@@ -207,20 +207,20 @@ export default function Donations() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Tout tip" />
+                    <SelectValue placeholder="Tous les types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tout tip</SelectItem>
-                    <SelectItem value="tithe">Dim</SelectItem>
-                    <SelectItem value="offering">Ofrann</SelectItem>
-                    <SelectItem value="building">Batiman</SelectItem>
-                    <SelectItem value="mission">Misyon</SelectItem>
-                    <SelectItem value="special">Espesyal</SelectItem>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="tithe">Dîme</SelectItem>
+                    <SelectItem value="offering">Offrande</SelectItem>
+                    <SelectItem value="building">Bâtiment</SelectItem>
+                    <SelectItem value="mission">Mission</SelectItem>
+                    <SelectItem value="special">Spécial</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Dat Kòmansman</Label>
+                <Label>Date de Début</Label>
                 <Input
                   type="date"
                   value={filters.startDate}
@@ -230,7 +230,7 @@ export default function Donations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Dat Finisman</Label>
+                <Label>Date de Fin</Label>
                 <Input
                   type="date"
                   value={filters.endDate}
@@ -246,8 +246,8 @@ export default function Donations() {
         {/* Category Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribisyon pa Kategori</CardTitle>
-            <CardDescription>Peryòd seleksyone</CardDescription>
+            <CardTitle>Répartition par Catégorie</CardTitle>
+            <CardDescription>Période sélectionnée</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -281,30 +281,30 @@ export default function Donations() {
         {/* Donations List */}
         <Card>
           <CardHeader>
-            <CardTitle>List Don</CardTitle>
+            <CardTitle>Liste des Dons</CardTitle>
             <CardDescription>
-              {donations.length} don pou peryòd la
+              {donations.length} dons pour cette période
             </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8">Chaje...</div>
+              <div className="text-center py-8">Chargement...</div>
             ) : donations.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Pa gen don pou peryòd sa
+                Aucun don pour cette période
               </div>
             ) : (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Dat</TableHead>
-                      <TableHead>Donatè</TableHead>
-                      <TableHead>Montan</TableHead>
-                      <TableHead>Tip</TableHead>
-                      <TableHead>Metòd</TableHead>
-                      <TableHead>Branch</TableHead>
-                      <TableHead className="text-right">Aksyon</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Donateur</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Méthode</TableHead>
+                      <TableHead>Branche</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -344,7 +344,7 @@ export default function Donations() {
                             onClick={() => generateReceipt(donation)}
                           >
                             <FileText className="mr-2 h-4 w-4" />
-                            Resi
+                            Reçu
                           </Button>
                         </TableCell>
                       </TableRow>

@@ -146,44 +146,44 @@ export default function Dashboard() {
 
   const stats = [
     {
-      title: "Total Manm",
+      title: "Total Membres",
       value: totalMembers.toString(),
-      detail: `${totalMembers} manm aktif`,
+      detail: `${totalMembers} membres actifs`,
       icon: Users,
       bgColor: "bg-gradient-to-br from-cyan-400 to-cyan-500",
     },
     {
-      title: "Total Batize",
+      title: "Total Baptisés",
       value: totalBaptized.toString(),
-      detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% manm`,
+      detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% membres`,
       icon: TrendingUp,
       bgColor: "bg-gradient-to-br from-green-500 to-green-600",
     },
     {
-      title: "Total Ministè",
+      title: "Total Ministères",
       value: totalMinistries.toString(),
-      detail: `${totalMinistries} ministè aktif`,
+      detail: `${totalMinistries} ministères actifs`,
       icon: Users,
       bgColor: "bg-gradient-to-br from-red-500 to-red-600",
     },
     {
-      title: "Prezans Semèn",
+      title: "Présence Semaine",
       value: paidThisWeek.toString(),
-      detail: `${paidThisWeek} manm prezans`,
+      detail: `${paidThisWeek} membres présents`,
       icon: Calendar,
       bgColor: "bg-gradient-to-br from-orange-400 to-orange-500",
     },
     {
-      title: "Total Branch",
+      title: "Total Branches",
       value: totalBranches.toString(),
-      detail: `${totalBranches} branch aktif`,
+      detail: `${totalBranches} branches actives`,
       icon: Building2,
       bgColor: "bg-gradient-to-br from-blue-500 to-blue-600",
     },
     {
-      title: "Total Ofrand Mwa Sa",
-      value: `$${totalMonthlyAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      detail: `${monthlyDonations.length} don`,
+      title: "Offrandes du Mois",
+      value: `$${totalMonthlyAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      detail: `${monthlyDonations.length} dons`,
       icon: DollarSign,
       bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",
     },
@@ -282,9 +282,9 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Tableau de Bord</h2>
           <p className="text-muted-foreground">
-            Byenveni nan sistèm jesyon legliz ou
+            Bienvenue dans le système de gestion de votre église
           </p>
         </div>
 
@@ -441,13 +441,13 @@ export default function Dashboard() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="flex items-center gap-2">
                 <Cake className="h-5 w-5 text-primary" />
-                Fèt Jodi a
+                Anniversaires du Jour
               </CardTitle>
             </CardHeader>
             <CardContent>
               {todayBirthdays.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Pa gen fèt jodi a
+                  Pas d'anniversaire aujourd'hui
                 </p>
               ) : (
                 <div className="space-y-4">

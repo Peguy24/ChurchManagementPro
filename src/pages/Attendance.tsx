@@ -116,8 +116,8 @@ export default function Attendance() {
 
       if (!member) {
         toast({
-          title: "Manm pa jwenn",
-          description: `QR code "${qrCode}" pa koresponn ak okenn manm aktif`,
+          title: "Membre non trouvé",
+          description: `Le QR code "${qrCode}" ne correspond à aucun membre actif`,
           variant: "destructive",
         });
         
@@ -125,7 +125,7 @@ export default function Attendance() {
         
         setScannedMembers(prev => [{
           id: qrCode,
-          first_name: "Enkoni",
+          first_name: "Inconnu",
           last_name: "",
           photo_url: null,
           time: new Date().toLocaleTimeString("fr-FR"),
@@ -149,8 +149,8 @@ export default function Attendance() {
 
       if (existing) {
         toast({
-          title: "Deja make",
-          description: `${member.first_name} ${member.last_name} deja make prezan jodi a`,
+          title: "Déjà marqué",
+          description: `${member.first_name} ${member.last_name} a déjà été marqué présent aujourd'hui`,
           variant: "destructive",
         });
 
@@ -172,7 +172,7 @@ export default function Attendance() {
         .insert({
           member_id: member.id,
           event_date: today,
-          event_type: "Kilt",
+          event_type: "Culte",
           scan_method: "scanner_externe",
         });
 
@@ -180,8 +180,8 @@ export default function Attendance() {
 
       // Success feedback
       toast({
-        title: "Prezans make!",
-        description: `${member.first_name} ${member.last_name} make prezan`,
+        title: "Présence marquée!",
+        description: `${member.first_name} ${member.last_name} a été marqué présent`,
       });
 
       playSound("success");
@@ -196,8 +196,8 @@ export default function Attendance() {
     } catch (error) {
       console.error("Error scanning QR code:", error);
       toast({
-        title: "Erè",
-        description: "Pwoblèm pou anrejistre prezans",
+        title: "Erreur",
+        description: "Problème lors de l'enregistrement de la présence",
         variant: "destructive",
       });
     } finally {
@@ -331,8 +331,8 @@ export default function Attendance() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-card">
           <div>
-            <h1 className="text-4xl font-bold">Mode Kiosk - Prezans</h1>
-            <p className="text-xl text-muted-foreground mt-1">Skane QR code manm yo pou make prezans</p>
+            <h1 className="text-4xl font-bold">Mode Kiosque - Présence</h1>
+            <p className="text-xl text-muted-foreground mt-1">Scannez les QR codes des membres pour marquer leur présence</p>
           </div>
           <div className="flex gap-2">
             <ScannerSettings onSettingsChange={setSoundSettings} />
@@ -342,7 +342,7 @@ export default function Attendance() {
               onClick={() => setKioskMode(false)}
             >
               <Minimize className="mr-2 h-5 w-5" />
-              Fèmen Mode Kiosk
+              Fermer Mode Kiosque
             </Button>
           </div>
         </div>
@@ -352,8 +352,8 @@ export default function Attendance() {
           {scannedMembers.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Scan className="h-32 w-32 text-muted-foreground/20 mb-6" />
-              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">Pare pou scan</h2>
-              <p className="text-xl text-muted-foreground">Skane QR code manm yo pou kòmanse</p>
+              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">Prêt à scanner</h2>
+              <p className="text-xl text-muted-foreground">Scannez les QR codes des membres pour commencer</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -392,7 +392,7 @@ export default function Attendance() {
                       variant={member.status === 'success' ? 'default' : 'destructive'}
                       className="text-lg px-4 py-2 w-full justify-center"
                     >
-                      {member.status === 'success' ? '✓ Prezans Make!' : '✗ Erè'}
+                      {member.status === 'success' ? '✓ Présence Marquée!' : '✗ Erreur'}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -405,15 +405,15 @@ export default function Attendance() {
         <div className="border-t bg-card p-6">
           <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Total Scan Jodi a</p>
+              <p className="text-sm text-muted-foreground mb-1">Total Scans Aujourd'hui</p>
               <p className="text-4xl font-bold text-primary">{scannedMembers.filter(m => m.status === 'success').length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Erè</p>
+              <p className="text-sm text-muted-foreground mb-1">Erreurs</p>
               <p className="text-4xl font-bold text-destructive">{scannedMembers.filter(m => m.status === 'error').length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Pousantaj Siksè</p>
+              <p className="text-sm text-muted-foreground mb-1">Taux de Réussite</p>
               <p className="text-4xl font-bold text-green-600">
                 {scannedMembers.length > 0 
                   ? Math.round((scannedMembers.filter(m => m.status === 'success').length / scannedMembers.length) * 100)
@@ -432,10 +432,10 @@ export default function Attendance() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Jesyon Prezans
+              Gestion des Présences
             </h2>
             <p className="text-muted-foreground">
-              Swiv prezans manm yo nan chak rankont
+              Suivez la présence des membres à chaque réunion
             </p>
           </div>
           <div className="flex gap-2">
@@ -446,7 +446,7 @@ export default function Attendance() {
               onClick={() => setScannerMode(!scannerMode)}
             >
               <Scan className="mr-2 h-4 w-4" />
-              {scannerMode ? "Fèmen Scanner" : "Ouvri Scanner"}
+              {scannerMode ? "Fermer Scanner" : "Ouvrir Scanner"}
             </Button>
             <Button 
               variant={kioskMode ? "default" : "outline"} 
@@ -459,11 +459,11 @@ export default function Attendance() {
               }}
             >
               <Maximize className="mr-2 h-4 w-4" />
-              Mode Kiosk
+              Mode Kiosque
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Anrejistre Prezans
+              Enregistrer Présence
             </Button>
           </div>
         </div>
@@ -477,12 +477,12 @@ export default function Attendance() {
                 Scanner QR Code
               </CardTitle>
               <CardDescription>
-                Klike nan chan anba a epi itilize scanner ekstèn ou pou skane QR code manm yo
+                Cliquez dans le champ ci-dessous et utilisez votre scanner externe pour scanner les QR codes des membres
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Chan Scan (Klike pou fokis)</label>
+                <label className="text-sm font-medium">Champ de Scan (Cliquez pour focus)</label>
                 <Input
                   ref={scanInputRef}
                   type="text"
@@ -490,12 +490,12 @@ export default function Attendance() {
                   onChange={handleScanInputChange}
                   onKeyDown={handleScanInputKeyDown}
                   onBlur={() => scanInputRef.current?.focus()}
-                  placeholder="Skane QR code la isit..."
+                  placeholder="Scannez le QR code ici..."
                   className="text-lg font-mono"
                   autoFocus
                 />
                 <p className="text-xs text-muted-foreground">
-                  Scanner ekstèn ap tape QR code otomatikman nan chan sa. Prezans ap make otomatikman.
+                  Le scanner externe tapera automatiquement le QR code dans ce champ. La présence sera marquée automatiquement.
                 </p>
               </div>
 
