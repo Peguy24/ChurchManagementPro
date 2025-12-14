@@ -31,8 +31,8 @@ export default function EventDialog({ open, onOpenChange }: EventDialogProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Evènman kreye!",
-      description: `${formData.name} te planifye pou ${formData.date}.`,
+      title: "Événement créé!",
+      description: `${formData.name} a été planifié pour le ${formData.date}.`,
     });
     onOpenChange(false);
   };
@@ -41,28 +41,28 @@ export default function EventDialog({ open, onOpenChange }: EventDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Kreye Nouvo Evènman</DialogTitle>
+          <DialogTitle>Créer un Nouvel Événement</DialogTitle>
           <DialogDescription>
-            Planifye yon nouvo evènman pou legliz la.
+            Planifiez un nouvel événement pour l'église.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Non Evènman</Label>
+              <Label htmlFor="name">Nom de l'Événement</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="Sèvis Dimanch"
+                placeholder="Culte du Dimanche"
                 required
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="date">Dat</Label>
+                <Label htmlFor="date">Date</Label>
                 <Input
                   id="date"
                   type="date"
@@ -74,7 +74,7 @@ export default function EventDialog({ open, onOpenChange }: EventDialogProps) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="time">Lè</Label>
+                <Label htmlFor="time">Heure</Label>
                 <Input
                   id="time"
                   type="time"
@@ -87,26 +87,26 @@ export default function EventDialog({ open, onOpenChange }: EventDialogProps) {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="location">Kote</Label>
+              <Label htmlFor="location">Lieu</Label>
               <Input
                 id="location"
                 value={formData.location}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
-                placeholder="Legliz Santral"
+                placeholder="Église Centrale"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Deskripsyon</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Dekri evènman an..."
+                placeholder="Décrivez l'événement..."
                 rows={3}
               />
             </div>
@@ -117,9 +117,9 @@ export default function EventDialog({ open, onOpenChange }: EventDialogProps) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Anile
+              Annuler
             </Button>
-            <Button type="submit">Kreye Evènman</Button>
+            <Button type="submit">Créer l'Événement</Button>
           </DialogFooter>
         </form>
       </DialogContent>

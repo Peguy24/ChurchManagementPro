@@ -44,7 +44,7 @@ export default function AttendanceDialog({
   onSuccess,
 }: AttendanceDialogProps) {
   const { toast } = useToast();
-  const [eventType, setEventType] = useState("Sèvis Dimanch");
+  const [eventType, setEventType] = useState("Culte du Dimanche");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [checkedMembers, setCheckedMembers] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -101,8 +101,8 @@ export default function AttendanceDialog({
     } catch (error) {
       console.error("Error loading members:", error);
       toast({
-        title: "Erè",
-        description: "Pa kapab chaje manm yo.",
+        title: "Erreur",
+        description: "Impossible de charger les membres.",
         variant: "destructive",
       });
     }
@@ -112,8 +112,8 @@ export default function AttendanceDialog({
     e.preventDefault();
     if (checkedMembers.length === 0) {
       toast({
-        title: "Erè",
-        description: "Ou dwe chwazi omwen yon manm.",
+        title: "Erreur",
+        description: "Vous devez sélectionner au moins un membre.",
         variant: "destructive",
       });
       return;
@@ -138,8 +138,8 @@ export default function AttendanceDialog({
       if (error) throw error;
 
       toast({
-        title: "Prezans anrejistre!",
-        description: `${checkedMembers.length} manm make prezan pou ${eventType}.`,
+        title: "Présence enregistrée!",
+        description: `${checkedMembers.length} membre(s) marqué(s) présent(s) pour ${eventType}.`,
       });
       
       setCheckedMembers([]);
@@ -149,8 +149,8 @@ export default function AttendanceDialog({
     } catch (error) {
       console.error("Error saving attendance:", error);
       toast({
-        title: "Erè",
-        description: "Pa kapab anrejistre prezans.",
+        title: "Erreur",
+        description: "Impossible d'enregistrer la présence.",
         variant: "destructive",
       });
     } finally {
@@ -202,8 +202,8 @@ export default function AttendanceDialog({
       
       if (!member) {
         toast({
-          title: "Erè",
-          description: "Kòd QR sa a pa konn.",
+          title: "Erreur",
+          description: "Ce QR code n'est pas reconnu.",
           variant: "destructive",
         });
         return;
@@ -211,16 +211,16 @@ export default function AttendanceDialog({
 
       if (checkedMembers.includes(member.id)) {
         toast({
-          title: "Atansyon",
-          description: `${member.first_name} ${member.last_name} deja make prezan.`,
+          title: "Attention",
+          description: `${member.first_name} ${member.last_name} est déjà marqué présent.`,
         });
         return;
       }
 
       setCheckedMembers((prev) => [...prev, member.id]);
       toast({
-        title: "Siksè!",
-        description: `${member.first_name} ${member.last_name} make prezan.`,
+        title: "Succès!",
+        description: `${member.first_name} ${member.last_name} marqué présent.`,
       });
     } catch (error) {
       console.error("Error processing QR scan:", error);
@@ -231,29 +231,29 @@ export default function AttendanceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>Anrejistre Prezans</DialogTitle>
+          <DialogTitle>Enregistrer la Présence</DialogTitle>
           <DialogDescription>
-            Chwazi rankont la epi make manm ki prezan yo.
+            Choisissez la réunion et marquez les membres présents.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="event">Tip Rankont</Label>
+              <Label htmlFor="event">Type de Réunion</Label>
               <Select value={eventType} onValueChange={setEventType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Sèvis Dimanch">Sèvis Dimanch</SelectItem>
-                  <SelectItem value="Etid Biblik">Etid Biblik</SelectItem>
-                  <SelectItem value="Rankont Priyè">Rankont Priyè</SelectItem>
-                  <SelectItem value="Rankont Jèn">Rankont Jèn</SelectItem>
+                  <SelectItem value="Culte du Dimanche">Culte du Dimanche</SelectItem>
+                  <SelectItem value="Étude Biblique">Étude Biblique</SelectItem>
+                  <SelectItem value="Réunion de Prière">Réunion de Prière</SelectItem>
+                  <SelectItem value="Rencontre Jeunesse">Rencontre Jeunesse</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="date">Dat</Label>
+              <Label htmlFor="date">Date</Label>
               <Input
                 id="date"
                 type="date"
@@ -267,21 +267,21 @@ export default function AttendanceDialog({
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="manual">
                   <Search className="mr-2 h-4 w-4" />
-                  Mannyèl
+                  Manuel
                 </TabsTrigger>
                 <TabsTrigger value="qr" onClick={startQRScanner}>
                   <QrCode className="mr-2 h-4 w-4" />
-                  Scan QR
+                  Scanner QR
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="manual" className="space-y-4">
                 <div className="grid gap-2">
-                  <Label>Chèche Manm</Label>
+                  <Label>Rechercher un Membre</Label>
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Tape non manm..."
+                      placeholder="Tapez le nom du membre..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-8"
@@ -290,11 +290,11 @@ export default function AttendanceDialog({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label>Lis Prezans</Label>
+                  <Label>Liste de Présence</Label>
                   <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-4">
                     {filteredMembers.length === 0 ? (
                       <p className="text-center text-sm text-muted-foreground py-4">
-                        {members.length === 0 ? "Pa gen manm nan baz done a." : "Pa gen rezilta."}
+                        {members.length === 0 ? "Aucun membre dans la base de données." : "Aucun résultat."}
                       </p>
                     ) : (
                       filteredMembers.map((member) => (
@@ -318,14 +318,14 @@ export default function AttendanceDialog({
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {checkedMembers.length} manm seleksyone
+                    {checkedMembers.length} membre(s) sélectionné(s)
                   </p>
                 </div>
               </TabsContent>
 
               <TabsContent value="qr" className="space-y-4">
                 <div className="grid gap-2">
-                  <Label>Skannen Kòd QR Manm</Label>
+                  <Label>Scanner le QR Code du Membre</Label>
                   <div className="rounded-lg border p-4">
                     {scannerActive ? (
                       <>
@@ -336,20 +336,20 @@ export default function AttendanceDialog({
                           className="mt-4 w-full"
                           onClick={stopQRScanner}
                         >
-                          Sispann Scanner
+                          Arrêter le Scanner
                         </Button>
                       </>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-center">
                         <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
                         <p className="text-sm text-muted-foreground">
-                          Klike sou tab "Scan QR" pou kòmanse
+                          Cliquez sur l'onglet "Scanner QR" pour commencer
                         </p>
                       </div>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {checkedMembers.length} manm make prezan
+                    {checkedMembers.length} membre(s) marqué(s) présent(s)
                   </p>
                 </div>
               </TabsContent>
@@ -364,10 +364,10 @@ export default function AttendanceDialog({
                 onOpenChange(false);
               }}
             >
-              Anile
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Ap anrejistre..." : "Anrejistre"}
+              {loading ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>

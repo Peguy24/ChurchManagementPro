@@ -41,8 +41,8 @@ export default function Auth() {
 
     if (!loginForm.email || !loginForm.password) {
       toast({
-        title: 'Erè',
-        description: 'Tanpri ranpli tout chan yo',
+        title: 'Erreur',
+        description: 'Veuillez remplir tous les champs',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -53,16 +53,16 @@ export default function Auth() {
 
     if (error) {
       toast({
-        title: 'Erè koneksyon',
+        title: 'Erreur de connexion',
         description: error.message === 'Invalid login credentials' 
-          ? 'Imèl oswa modpas enkòrèk' 
+          ? 'Email ou mot de passe incorrect' 
           : error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Koneksyon reyisi!',
-        description: 'Byenveni nan sistèm jesyon legliz',
+        title: 'Connexion réussie!',
+        description: 'Bienvenue dans le système de gestion',
       });
       navigate('/');
     }
@@ -77,8 +77,8 @@ export default function Auth() {
     // Validation
     if (!signupForm.firstName || !signupForm.lastName || !signupForm.email || !signupForm.password) {
       toast({
-        title: 'Erè',
-        description: 'Tanpri ranpli tout chan yo',
+        title: 'Erreur',
+        description: 'Veuillez remplir tous les champs',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -87,8 +87,8 @@ export default function Auth() {
 
     if (signupForm.password !== signupForm.confirmPassword) {
       toast({
-        title: 'Erè',
-        description: 'Modpas yo pa menm',
+        title: 'Erreur',
+        description: 'Les mots de passe ne correspondent pas',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -97,8 +97,8 @@ export default function Auth() {
 
     if (signupForm.password.length < 6) {
       toast({
-        title: 'Erè',
-        description: 'Modpas dwe gen omwen 6 karaktè',
+        title: 'Erreur',
+        description: 'Le mot de passe doit contenir au moins 6 caractères',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -115,21 +115,21 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('already registered')) {
         toast({
-          title: 'Kont egziste deja',
-          description: 'Yon kont ak imèl sa a egziste deja. Tanpri konekte w.',
+          title: 'Compte déjà existant',
+          description: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Erè enskripsyon',
+          title: "Erreur d'inscription",
           description: error.message,
           variant: 'destructive',
         });
       }
     } else {
       toast({
-        title: 'Enskripsyon reyisi!',
-        description: 'Kont ou kreye avèk siksè. W ap konekte otomatikman.',
+        title: 'Inscription réussie!',
+        description: 'Votre compte a été créé avec succès. Vous êtes connecté automatiquement.',
       });
       navigate('/');
     }
@@ -142,7 +142,7 @@ export default function Auth() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chajman...</p>
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -155,34 +155,34 @@ export default function Auth() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Church className="h-10 w-10 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">EglizApp</h1>
-              <p className="text-sm text-muted-foreground">Sistèm Jesyon Legliz</p>
+              <h1 className="text-2xl font-bold text-foreground">ÉgliseApp</h1>
+              <p className="text-sm text-muted-foreground">Système de Gestion d'Église</p>
             </div>
           </div>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Koneksyon</TabsTrigger>
-            <TabsTrigger value="signup">Enskripsyon</TabsTrigger>
+            <TabsTrigger value="login">Connexion</TabsTrigger>
+            <TabsTrigger value="signup">Inscription</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
             <Card>
               <CardHeader>
-                <CardTitle>Koneksyon</CardTitle>
+                <CardTitle>Connexion</CardTitle>
                 <CardDescription>
-                  Antre enfòmasyon w pou konekte w
+                  Entrez vos informations pour vous connecter
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Imèl</Label>
+                    <Label htmlFor="login-email">Email</Label>
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="nom@example.com"
+                      placeholder="nom@exemple.com"
                       value={loginForm.email}
                       onChange={(e) =>
                         setLoginForm({ ...loginForm, email: e.target.value })
@@ -191,7 +191,7 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Modpas</Label>
+                    <Label htmlFor="login-password">Mot de passe</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -204,7 +204,7 @@ export default function Auth() {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Chajman...' : 'Konekte'}
+                    {isLoading ? 'Chargement...' : 'Se connecter'}
                   </Button>
                 </form>
               </CardContent>
@@ -214,16 +214,16 @@ export default function Auth() {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Kreye Kont</CardTitle>
+                <CardTitle>Créer un Compte</CardTitle>
                 <CardDescription>
-                  Ranpli enfòmasyon w pou kreye yon nouvo kont
+                  Remplissez vos informations pour créer un nouveau compte
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-firstname">Prenon</Label>
+                      <Label htmlFor="signup-firstname">Prénom</Label>
                       <Input
                         id="signup-firstname"
                         placeholder="Jean"
@@ -235,7 +235,7 @@ export default function Auth() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-lastname">Non</Label>
+                      <Label htmlFor="signup-lastname">Nom</Label>
                       <Input
                         id="signup-lastname"
                         placeholder="Pierre"
@@ -248,11 +248,11 @@ export default function Auth() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Imèl</Label>
+                    <Label htmlFor="signup-email">Email</Label>
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="nom@example.com"
+                      placeholder="nom@exemple.com"
                       value={signupForm.email}
                       onChange={(e) =>
                         setSignupForm({ ...signupForm, email: e.target.value })
@@ -261,7 +261,7 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Modpas</Label>
+                    <Label htmlFor="signup-password">Mot de passe</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -274,7 +274,7 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-confirm">Konfime Modpas</Label>
+                    <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
                     <Input
                       id="signup-confirm"
                       type="password"
@@ -290,7 +290,7 @@ export default function Auth() {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Chajman...' : 'Kreye Kont'}
+                    {isLoading ? 'Chargement...' : 'Créer le Compte'}
                   </Button>
                 </form>
               </CardContent>

@@ -277,15 +277,15 @@ export default function MemberDialog({
       }
 
       toast({
-        title: member ? "Manm modifye!" : "Manm ajoute!",
-        description: `${formData.firstName} ${formData.lastName} te ${member ? "modifye" : "ajoute"} avèk siksè.`,
+        title: member ? "Membre modifié!" : "Membre ajouté!",
+        description: `${formData.firstName} ${formData.lastName} a été ${member ? "modifié" : "ajouté"} avec succès.`,
       });
       
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Erè",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -299,24 +299,24 @@ export default function MemberDialog({
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {member ? "Modifye Manm" : "Ajoute Nouvo Manm"}
+            {member ? "Modifier le Membre" : "Ajouter un Nouveau Membre"}
           </DialogTitle>
           <DialogDescription>
-            Ranpli enfòmasyon manm nan. Klike sove lè w fini.
+            Remplissez les informations du membre. Cliquez sur enregistrer quand vous avez terminé.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="general">Jeneral</TabsTrigger>
-              <TabsTrigger value="spiritual">Spirityèl</TabsTrigger>
-              <TabsTrigger value="family">Fanmi</TabsTrigger>
+              <TabsTrigger value="general">Général</TabsTrigger>
+              <TabsTrigger value="spiritual">Spirituel</TabsTrigger>
+              <TabsTrigger value="family">Famille</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="firstName">Prenon</Label>
+                  <Label htmlFor="firstName">Prénom</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
@@ -328,7 +328,7 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="lastName">Non</Label>
+                  <Label htmlFor="lastName">Nom</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -353,19 +353,19 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phone">Telefòn</Label>
+                <Label htmlFor="phone">Téléphone</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  placeholder="+509 1234-5678"
+                  placeholder="+33 1 23 45 67 89"
                   required
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="dateOfBirth">Dat Nesans</Label>
+                <Label htmlFor="dateOfBirth">Date de Naissance</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -376,18 +376,18 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="emergencyPhone">Nimewo Ijans</Label>
+                <Label htmlFor="emergencyPhone">Numéro d'Urgence</Label>
                 <Input
                   id="emergencyPhone"
                   value={formData.emergencyPhone}
                   onChange={(e) =>
                     setFormData({ ...formData, emergencyPhone: e.target.value })
                   }
-                  placeholder="+509 9876-5432"
+                  placeholder="+33 1 98 76 54 32"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">Estati</Label>
+                <Label htmlFor="status">Statut</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) =>
@@ -398,14 +398,14 @@ export default function MemberDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="inactive">Inaktif</SelectItem>
-                    <SelectItem value="transferred">Transfere</SelectItem>
+                    <SelectItem value="active">Actif</SelectItem>
+                    <SelectItem value="inactive">Inactif</SelectItem>
+                    <SelectItem value="transferred">Transféré</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="branch">Branch</Label>
+                <Label htmlFor="branch">Branche</Label>
                 <Select
                   value={formData.branchId || "none"}
                   onValueChange={(value) =>
@@ -413,10 +413,10 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chwazi yon branch" />
+                    <SelectValue placeholder="Choisir une branche" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Okenn</SelectItem>
+                    <SelectItem value="none">Aucune</SelectItem>
                     {branches?.map((branch: any) => (
                       <SelectItem key={branch.id} value={branch.id}>
                         {branch.name}
@@ -426,10 +426,10 @@ export default function MemberDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-base font-semibold">Adrès Aktyèl</Label>
+                <Label className="text-base font-semibold">Adresse Actuelle</Label>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="addressNumber">#</Label>
+                    <Label htmlFor="addressNumber">N°</Label>
                     <Input
                       id="addressNumber"
                       value={formData.addressNumber}
@@ -440,14 +440,14 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="street">Ri</Label>
+                    <Label htmlFor="street">Rue</Label>
                     <Input
                       id="street"
                       value={formData.street}
                       onChange={(e) =>
                         setFormData({ ...formData, street: e.target.value })
                       }
-                      placeholder="Lari Prensipal"
+                      placeholder="Rue Principale"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -462,53 +462,53 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="city">Vil</Label>
+                    <Label htmlFor="city">Ville</Label>
                     <Input
                       id="city"
                       value={formData.city}
                       onChange={(e) =>
                         setFormData({ ...formData, city: e.target.value })
                       }
-                      placeholder="Pòtoprens"
+                      placeholder="Paris"
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="state">Depatman/Eta</Label>
+                    <Label htmlFor="state">Département/Région</Label>
                     <Input
                       id="state"
                       value={formData.state}
                       onChange={(e) =>
                         setFormData({ ...formData, state: e.target.value })
                       }
-                      placeholder="Lwès"
+                      placeholder="Île-de-France"
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="zipCode">Zip Code</Label>
+                    <Label htmlFor="zipCode">Code Postal</Label>
                     <Input
                       id="zipCode"
                       value={formData.zipCode}
                       onChange={(e) =>
                         setFormData({ ...formData, zipCode: e.target.value })
                       }
-                      placeholder="HT6120"
+                      placeholder="75001"
                     />
                   </div>
                   <div className="grid gap-2 col-span-2">
-                    <Label htmlFor="country">Peyi</Label>
+                    <Label htmlFor="country">Pays</Label>
                     <Input
                       id="country"
                       value={formData.country}
                       onChange={(e) =>
                         setFormData({ ...formData, country: e.target.value })
                       }
-                      placeholder="Ayiti"
+                      placeholder="France"
                     />
                   </div>
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="maritalStatus">Estati Sivil</Label>
+                <Label htmlFor="maritalStatus">État Civil</Label>
                 <Select
                   value={formData.maritalStatus}
                   onValueChange={(value) =>
@@ -516,54 +516,54 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chwazi estati sivil" />
+                    <SelectValue placeholder="Choisir l'état civil" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Selibatè">Selibatè</SelectItem>
-                    <SelectItem value="Marye">Marye</SelectItem>
-                    <SelectItem value="Divòse">Divòse</SelectItem>
-                    <SelectItem value="Vèf/Vèv">Vèf/Vèv</SelectItem>
+                    <SelectItem value="Célibataire">Célibataire</SelectItem>
+                    <SelectItem value="Marié(e)">Marié(e)</SelectItem>
+                    <SelectItem value="Divorcé(e)">Divorcé(e)</SelectItem>
+                    <SelectItem value="Veuf/Veuve">Veuf/Veuve</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="civicStatus">Estati Sivik</Label>
+                <Label htmlFor="civicStatus">Statut Civique</Label>
                 <Input
                   id="civicStatus"
                   value={formData.civicStatus}
                   onChange={(e) =>
                     setFormData({ ...formData, civicStatus: e.target.value })
                   }
-                  placeholder="Sitwayen, Rezidan, elatriye"
+                  placeholder="Citoyen, Résident, etc."
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="academicFormation">Fòmasyon Akademik</Label>
+                <Label htmlFor="academicFormation">Formation Académique</Label>
                 <Textarea
                   id="academicFormation"
                   value={formData.academicFormation}
                   onChange={(e) =>
                     setFormData({ ...formData, academicFormation: e.target.value })
                   }
-                  placeholder="Diplòm, sètifika, elatriye"
+                  placeholder="Diplômes, certificats, etc."
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="professionalFormation">Fòmasyon Pwofesyonèl</Label>
+                <Label htmlFor="professionalFormation">Formation Professionnelle</Label>
                 <Textarea
                   id="professionalFormation"
                   value={formData.professionalFormation}
                   onChange={(e) =>
                     setFormData({ ...formData, professionalFormation: e.target.value })
                   }
-                  placeholder="Metye, konpetans, elatriye"
+                  placeholder="Métier, compétences, etc."
                 />
               </div>
             </TabsContent>
 
             <TabsContent value="spiritual" className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="baptismStatus">Gwoup de Manm</Label>
+                <Label htmlFor="baptismStatus">Groupe de Membre</Label>
                 <Select
                   value={formData.baptismStatus}
                   onValueChange={(value) =>
@@ -571,16 +571,16 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chwazi gwoup manm" />
+                    <SelectValue placeholder="Choisir le groupe" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Batize">Manm Batize</SelectItem>
-                    <SelectItem value="PaBatize">Manm Pa Batize</SelectItem>
+                    <SelectItem value="Baptisé">Membre Baptisé</SelectItem>
+                    <SelectItem value="NonBaptisé">Membre Non Baptisé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="role">Wòl</Label>
+                <Label htmlFor="role">Rôle</Label>
                 <Select
                   value={formData.role}
                   onValueChange={(value) =>
@@ -588,20 +588,20 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chwazi wòl" />
+                    <SelectValue placeholder="Choisir le rôle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Manm">Manm</SelectItem>
-                    <SelectItem value="Dyak">Dyak</SelectItem>
-                    <SelectItem value="Ansyen">Ansyen</SelectItem>
-                    <SelectItem value="Pastè">Pastè</SelectItem>
-                    <SelectItem value="Sekretè">Sekretè</SelectItem>
-                    <SelectItem value="Trezorye">Trezorye</SelectItem>
+                    <SelectItem value="Membre">Membre</SelectItem>
+                    <SelectItem value="Diacre">Diacre</SelectItem>
+                    <SelectItem value="Ancien">Ancien</SelectItem>
+                    <SelectItem value="Pasteur">Pasteur</SelectItem>
+                    <SelectItem value="Secrétaire">Secrétaire</SelectItem>
+                    <SelectItem value="Trésorier">Trésorier</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="conversionDate">Dat Konvèsyon</Label>
+                <Label htmlFor="conversionDate">Date de Conversion</Label>
                 <Input
                   id="conversionDate"
                   type="date"
@@ -612,7 +612,7 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="baptismDate">Dat Batèm</Label>
+                <Label htmlFor="baptismDate">Date de Baptême</Label>
                 <Input
                   id="baptismDate"
                   type="date"
@@ -623,14 +623,14 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="christianExperience">Eksperyans Kretyen/Ministeryèl</Label>
+                <Label htmlFor="christianExperience">Expérience Chrétienne/Ministérielle</Label>
                 <Textarea
                   id="christianExperience"
                   value={formData.christianExperience}
                   onChange={(e) =>
                     setFormData({ ...formData, christianExperience: e.target.value })
                   }
-                  placeholder="Sèvis nan legliz, responsablite, elatriye"
+                  placeholder="Service dans l'église, responsabilités, etc."
                   rows={4}
                 />
               </div>
@@ -638,7 +638,7 @@ export default function MemberDialog({
 
             <TabsContent value="family" className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="marriageDate">Dat Maryaj</Label>
+                <Label htmlFor="marriageDate">Date de Mariage</Label>
                 <Input
                   id="marriageDate"
                   type="date"
@@ -649,18 +649,18 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="spouseName">Non Konjwen(t)</Label>
+                <Label htmlFor="spouseName">Nom du Conjoint(e)</Label>
                 <Input
                   id="spouseName"
                   value={formData.spouseName}
                   onChange={(e) =>
                     setFormData({ ...formData, spouseName: e.target.value })
                   }
-                  placeholder="Non konjwen(t) ou"
+                  placeholder="Nom de votre conjoint(e)"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="numberOfChildren">Kantite Timoun</Label>
+                <Label htmlFor="numberOfChildren">Nombre d'Enfants</Label>
                 <Input
                   id="numberOfChildren"
                   type="number"
@@ -673,14 +673,14 @@ export default function MemberDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="childrenNames">Non Timoun yo</Label>
+                <Label htmlFor="childrenNames">Noms des Enfants</Label>
                 <Textarea
                   id="childrenNames"
                   value={formData.childrenNames}
                   onChange={(e) =>
                     setFormData({ ...formData, childrenNames: e.target.value })
                   }
-                  placeholder="Non tout timoun yo (separe pa vigil)"
+                  placeholder="Noms de tous les enfants (séparés par une virgule)"
                   rows={3}
                 />
               </div>
@@ -692,14 +692,14 @@ export default function MemberDialog({
             <div className="space-y-4 rounded-lg border p-4 bg-muted/50 mt-6">
               <div className="flex items-center gap-2">
                 <QrCodeIcon className="h-5 w-5" />
-                <Label className="text-base font-semibold">Kòd QR Manm</Label>
+                <Label className="text-base font-semibold">QR Code du Membre</Label>
               </div>
               <div className="flex flex-col items-center gap-4">
                 <div className="rounded-lg border-2 border-primary/20 p-4 bg-background">
                   <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
                 </div>
                 <p className="text-sm text-muted-foreground text-center">
-                  Enprime kòd QR sa a pou manm nan ka itilize l pou make prezans yo
+                  Imprimez ce QR code pour que le membre puisse l'utiliser pour marquer sa présence
                 </p>
                 <Button
                   type="button"
@@ -708,7 +708,7 @@ export default function MemberDialog({
                   className="w-full"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Telechaje Kòd QR
+                  Télécharger le QR Code
                 </Button>
               </div>
             </div>
@@ -721,10 +721,10 @@ export default function MemberDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Anile
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Chajman..." : "Sove"}
+              {loading ? "Chargement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>
