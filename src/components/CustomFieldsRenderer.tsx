@@ -68,7 +68,7 @@ export function CustomFieldsRenderer({
 
   return (
     <div className="space-y-4 border-t pt-4">
-      <h3 className="font-semibold">Chan Pèsonalize</h3>
+      <h3 className="font-semibold">Champs Personnalisés</h3>
       <div className="grid grid-cols-2 gap-4">
         {fields.map((field) => (
           <div key={field.id}>
@@ -117,7 +117,7 @@ export function CustomFieldsRenderer({
                 onValueChange={(value) => onChange(field.field_name, value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chwazi..." />
+                  <SelectValue placeholder="Sélectionner..." />
                 </SelectTrigger>
                 <SelectContent>
                   {(field.field_options as any)?.options?.map((option: string) => (
