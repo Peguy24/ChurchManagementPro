@@ -51,7 +51,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   );
 }
 
-const translations: Record<Language, Record<string, any>> = {
+const translations = {
   fr: {
     common: {
       save: "Enregistrer",
@@ -114,15 +114,6 @@ const translations: Record<Language, Record<string, any>> = {
       budgets: "Budgets",
       expenses: "Dépenses",
       bankReconciliation: "Rapprochement Bancaire",
-      events: "Événements",
-      ministries: "Ministères",
-      branches: "Branches",
-      customFields: "Champs Personnalisés",
-      logout: "Déconnexion",
-    },
-      groupComparison: "Comparaison Groupes",
-      donations: "Recettes",
-      financialReports: "Rapports Financiers",
       events: "Événements",
       ministries: "Ministères",
       branches: "Branches",
