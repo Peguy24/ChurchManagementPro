@@ -25,6 +25,7 @@ import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSetti
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AttendanceRecord {
   event_type: string;
@@ -52,6 +53,7 @@ interface ScannedMember {
 export default function Attendance() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
@@ -116,8 +118,8 @@ export default function Attendance() {
 
       if (!member) {
         toast({
-          title: "Membre non trouvé",
-          description: `Le QR code "${qrCode}" ne correspond à aucun membre actif`,
+          title: t("attendance.memberNotFound"),
+          description: t("attendance.qrCodeNotFound").replace("{qrCode}", qrCode),
           variant: "destructive",
         });
         
@@ -125,7 +127,7 @@ export default function Attendance() {
         
         setScannedMembers(prev => [{
           id: qrCode,
-          first_name: "Inconnu",
+          first_name: t("attendance.unknown"),
           last_name: "",
           photo_url: null,
           time: new Date().toLocaleTimeString("fr-FR"),
@@ -149,8 +151,8 @@ export default function Attendance() {
 
       if (existing) {
         toast({
-          title: "Déjà marqué",
-          description: `${member.first_name} ${member.last_name} a déjà été marqué présent aujourd'hui`,
+          title: t("attendance.alreadyMarked"),
+          description: t("attendance.alreadyMarkedToday").replace("{name}", `${member.first_name} ${member.last_name}`),
           variant: "destructive",
         });
 
@@ -180,8 +182,8 @@ export default function Attendance() {
 
       // Success feedback
       toast({
-        title: "Présence marquée!",
-        description: `${member.first_name} ${member.last_name} a été marqué présent`,
+        title: t("attendance.attendanceMarked"),
+        description: t("attendance.memberMarkedPresent").replace("{name}", `${member.first_name} ${member.last_name}`),
       });
 
       playSound("success");
@@ -196,8 +198,8 @@ export default function Attendance() {
     } catch (error) {
       console.error("Error scanning QR code:", error);
       toast({
-        title: "Erreur",
-        description: "Problème lors de l'enregistrement de la présence",
+        title: t("attendance.error"),
+        description: t("attendance.attendanceRecordError"),
         variant: "destructive",
       });
     } finally {
@@ -331,8 +333,8 @@ export default function Attendance() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-card">
           <div>
-            <h1 className="text-4xl font-bold">Mode Kiosque - Présence</h1>
-            <p className="text-xl text-muted-foreground mt-1">Scannez les QR codes des membres pour marquer leur présence</p>
+            <h1 className="text-4xl font-bold">{t("attendance.kioskMode")} - {t("nav.attendance")}</h1>
+            <p className="text-xl text-muted-foreground mt-1">{t("attendance.scanQrToMarkAttendance")}</p>
           </div>
           <div className="flex gap-2">
             <ScannerSettings onSettingsChange={setSoundSettings} />
@@ -342,7 +344,7 @@ export default function Attendance() {
               onClick={() => setKioskMode(false)}
             >
               <Minimize className="mr-2 h-5 w-5" />
-              Fermer Mode Kiosque
+              {t("attendance.closeKioskMode")}
             </Button>
           </div>
         </div>
@@ -352,8 +354,8 @@ export default function Attendance() {
           {scannedMembers.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Scan className="h-32 w-32 text-muted-foreground/20 mb-6" />
-              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">Prêt à scanner</h2>
-              <p className="text-xl text-muted-foreground">Scannez les QR codes des membres pour commencer</p>
+              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">{t("attendance.readyToScan")}</h2>
+              <p className="text-xl text-muted-foreground">{t("attendance.scanQrToStart")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -392,7 +394,7 @@ export default function Attendance() {
                       variant={member.status === 'success' ? 'default' : 'destructive'}
                       className="text-lg px-4 py-2 w-full justify-center"
                     >
-                      {member.status === 'success' ? '✓ Présence Marquée!' : '✗ Erreur'}
+                      {member.status === 'success' ? `✓ ${t("attendance.attendanceMarked")}` : `✗ ${t("attendance.error")}`}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -405,15 +407,15 @@ export default function Attendance() {
         <div className="border-t bg-card p-6">
           <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Total Scans Aujourd'hui</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("attendance.totalScansToday")}</p>
               <p className="text-4xl font-bold text-primary">{scannedMembers.filter(m => m.status === 'success').length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Erreurs</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("attendance.errors")}</p>
               <p className="text-4xl font-bold text-destructive">{scannedMembers.filter(m => m.status === 'error').length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Taux de Réussite</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("attendance.successRate")}</p>
               <p className="text-4xl font-bold text-green-600">
                 {scannedMembers.length > 0 
                   ? Math.round((scannedMembers.filter(m => m.status === 'success').length / scannedMembers.length) * 100)
@@ -432,10 +434,10 @@ export default function Attendance() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Gestion des Présences
+              {t("attendance.title")}
             </h2>
             <p className="text-muted-foreground">
-              Suivez la présence des membres à chaque réunion
+              {t("attendance.trackMemberAttendance")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -446,7 +448,7 @@ export default function Attendance() {
               onClick={() => setScannerMode(!scannerMode)}
             >
               <Scan className="mr-2 h-4 w-4" />
-              {scannerMode ? "Fermer Scanner" : "Ouvrir Scanner"}
+              {scannerMode ? t("attendance.closeScanner") : t("attendance.openScanner")}
             </Button>
             <Button 
               variant={kioskMode ? "default" : "outline"} 
@@ -459,11 +461,11 @@ export default function Attendance() {
               }}
             >
               <Maximize className="mr-2 h-4 w-4" />
-              Mode Kiosque
+              {t("attendance.kioskMode")}
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Enregistrer Présence
+              {t("attendance.recordAttendance")}
             </Button>
           </div>
         </div>
@@ -474,15 +476,15 @@ export default function Attendance() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Scan className="h-5 w-5" />
-                Scanner QR Code
+                {t("attendance.scanQrCode")}
               </CardTitle>
               <CardDescription>
-                Cliquez dans le champ ci-dessous et utilisez votre scanner externe pour scanner les QR codes des membres
+                {t("attendance.clickFieldToScan")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Champ de Scan (Cliquez pour focus)</label>
+                <label className="text-sm font-medium">{t("attendance.scanField")}</label>
                 <Input
                   ref={scanInputRef}
                   type="text"
@@ -490,18 +492,18 @@ export default function Attendance() {
                   onChange={handleScanInputChange}
                   onKeyDown={handleScanInputKeyDown}
                   onBlur={() => scanInputRef.current?.focus()}
-                  placeholder="Scannez le QR code ici..."
+                  placeholder={t("attendance.scanQrHere")}
                   className="text-lg font-mono"
                   autoFocus
                 />
                 <p className="text-xs text-muted-foreground">
-                  Le scanner externe tapera automatiquement le QR code dans ce champ. La présence sera marquée automatiquement.
+                  {t("attendance.scannerAutoType")}
                 </p>
               </div>
 
               {scannedMembers.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Derniers Scans ({scannedMembers.length})</h4>
+                  <h4 className="text-sm font-medium">{t("attendance.lastScans")} ({scannedMembers.length})</h4>
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {scannedMembers.map((member, index) => (
                       <div
@@ -530,7 +532,7 @@ export default function Attendance() {
                           <p className="text-xs text-muted-foreground">{member.time}</p>
                         </div>
                         <Badge variant={member.status === 'success' ? 'default' : 'destructive'}>
-                          {member.status === 'success' ? 'Succès' : 'Erreur'}
+                          {member.status === 'success' ? t("attendance.success") : t("attendance.error")}
                         </Badge>
                       </div>
                     ))}
@@ -545,19 +547,19 @@ export default function Attendance() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="border-primary/50 bg-primary/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Membres</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("attendance.totalMembers")}</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalMembers}</div>
-              <p className="text-xs text-muted-foreground">Membres actifs</p>
+              <p className="text-xs text-muted-foreground">{t("attendance.activeMembers")}</p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Dernière Rencontre
+                {t("attendance.lastMeeting")}
               </CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
@@ -570,7 +572,7 @@ export default function Attendance() {
               <p className="text-xs text-muted-foreground">
                 {attendanceRecords.length > 0
                   ? new Date(attendanceRecords[0].event_date).toLocaleDateString("fr-FR")
-                  : "Pa gen rankont"}
+                  : t("attendance.noMeetings")}
               </p>
             </CardContent>
           </Card>
@@ -578,7 +580,7 @@ export default function Attendance() {
           <Card className="border-primary/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Pousantaj Mwayèn
+                {t("attendance.averagePercentage")}
               </CardTitle>
               <BarChart3 className="h-4 w-4 text-primary" />
             </CardHeader>
@@ -590,7 +592,7 @@ export default function Attendance() {
                 %
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.avgAttendance} / {totalMembers} an mwayèn
+                {stats.avgAttendance} / {totalMembers} {t("attendance.onAverage")}
               </p>
             </CardContent>
           </Card>
@@ -601,14 +603,14 @@ export default function Attendance() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Prezans Mwayèn
+                {t("attendance.averageAttendance")}
               </CardTitle>
               <TrendingUp className={`h-4 w-4 ${stats.percentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.avgAttendance}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.percentageChange >= 0 ? '+' : ''}{stats.percentageChange}% vs peryòd pase
+                {stats.percentageChange >= 0 ? '+' : ''}{stats.percentageChange}% {t("attendance.vsPreviousPeriod")}
               </p>
             </CardContent>
           </Card>
@@ -616,20 +618,20 @@ export default function Attendance() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Rankont
+                {t("attendance.totalMeetings")}
               </CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalEvents}</div>
-              <p className="text-xs text-muted-foreground">Total anrejistre</p>
+              <p className="text-xs text-muted-foreground">{t("attendance.totalRecorded")}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Pi Gwo Prezans
+                {t("attendance.highestAttendance")}
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-secondary" />
             </CardHeader>
@@ -645,9 +647,9 @@ export default function Attendance() {
         {/* Recent Attendance */}
         <Card>
           <CardHeader>
-            <CardTitle>Prezans Resan</CardTitle>
+            <CardTitle>{t("attendance.recentAttendance")}</CardTitle>
             <CardDescription>
-              History prezans pou dènye rankont yo
+              {t("attendance.attendanceHistoryDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -655,24 +657,24 @@ export default function Attendance() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Evènman</TableHead>
-                    <TableHead>Dat</TableHead>
-                    <TableHead>Total Prezan</TableHead>
-                    <TableHead>Pousantaj</TableHead>
-                    <TableHead className="text-right">Aksyon</TableHead>
+                    <TableHead>{t("attendance.event")}</TableHead>
+                    <TableHead>{t("attendance.date")}</TableHead>
+                    <TableHead>{t("attendance.totalPresent")}</TableHead>
+                    <TableHead>{t("attendance.percentage")}</TableHead>
+                    <TableHead className="text-right">{t("attendance.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        Ap chaje...
+                        {t("attendance.loading")}
                       </TableCell>
                     </TableRow>
                   ) : attendanceRecords.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        Pa gen anrejistman prezans ankò.
+                        {t("attendance.noAttendanceRecords")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -703,7 +705,7 @@ export default function Attendance() {
                               size="sm"
                               onClick={() => navigate("/attendance/stats")}
                             >
-                              Statistiques
+                              {t("attendance.statistics")}
                             </Button>
                           </TableCell>
                         </TableRow>
