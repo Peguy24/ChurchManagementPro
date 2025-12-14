@@ -618,7 +618,9 @@ export type Database = {
           amount: number
           approved_at: string | null
           approved_by: string | null
+          bank_account_id: string | null
           branch_id: string | null
+          cash_register_id: string | null
           category_id: string | null
           created_at: string
           created_by: string | null
@@ -637,7 +639,9 @@ export type Database = {
           amount: number
           approved_at?: string | null
           approved_by?: string | null
+          bank_account_id?: string | null
           branch_id?: string | null
+          cash_register_id?: string | null
           category_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -656,7 +660,9 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           approved_by?: string | null
+          bank_account_id?: string | null
           branch_id?: string | null
+          cash_register_id?: string | null
           category_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -673,10 +679,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "expenses_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "expenses_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_cash_register_id_fkey"
+            columns: ["cash_register_id"]
+            isOneToOne: false
+            referencedRelation: "cash_registers"
             referencedColumns: ["id"]
           },
           {
