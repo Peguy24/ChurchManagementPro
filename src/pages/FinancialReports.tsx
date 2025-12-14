@@ -78,11 +78,26 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info)
 
 export default function FinancialReports() {
   const [period, setPeriod] = useState("12");
+  const [selectedBranch, setSelectedBranch] = useState("all");
   const currentDate = new Date();
+
+  // Fetch all branches
+  const { data: branches = [] } = useQuery({
+    queryKey: ["branches-for-reports"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Fetch all donations for the selected period
   const { data: donations = [], isLoading } = useQuery({
-    queryKey: ["financial-reports", period],
+    queryKey: ["financial-reports", period, selectedBranch],
     queryFn: async () => {
       const startDate = format(
         subMonths(startOfMonth(currentDate), parseInt(period) - 1),
@@ -90,7 +105,7 @@ export default function FinancialReports() {
       );
       const endDate = format(endOfMonth(currentDate), "yyyy-MM-dd");
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("donations")
         .select(`
           *,
@@ -101,6 +116,11 @@ export default function FinancialReports() {
         .lte("donation_date", endDate)
         .order("donation_date", { ascending: true });
 
+      if (selectedBranch !== "all") {
+        query = query.eq("branch_id", selectedBranch);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -290,6 +310,19 @@ export default function FinancialReports() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tout branch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tout branch</SelectItem>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={period} onValueChange={setPeriod}>
               <SelectTrigger className="w-[180px]">
                 <Calendar className="mr-2 h-4 w-4" />
