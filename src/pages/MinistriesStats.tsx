@@ -209,10 +209,10 @@ export default function MinistriesStats() {
             </Button>
             <div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Estatistik Ministè yo
+                Statistiques des Ministères
               </h2>
               <p className="text-muted-foreground">
-                Analize pèfòmans ak kwasans ministè yo
+                Analysez les performances et la croissance des ministères
               </p>
             </div>
           </div>
@@ -221,9 +221,9 @@ export default function MinistriesStats() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="3">3 mwa</SelectItem>
-              <SelectItem value="6">6 mwa</SelectItem>
-              <SelectItem value="12">12 mwa</SelectItem>
+              <SelectItem value="3">3 mois</SelectItem>
+              <SelectItem value="6">6 mois</SelectItem>
+              <SelectItem value="12">12 mois</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -233,14 +233,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Ministè
+                Total des Ministères
               </CardTitle>
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{ministriesData.length}</div>
               <p className="text-xs text-muted-foreground">
-                {activeMinistries} aktif
+                {activeMinistries} actif(s)
               </p>
             </CardContent>
           </Card>
@@ -248,14 +248,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Manm
+                Total des Membres
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalMembers}</div>
               <p className="text-xs text-muted-foreground">
-                Nan tout ministè yo
+                Dans tous les ministères
               </p>
             </CardContent>
           </Card>
@@ -263,14 +263,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Mwayèn pa Ministè
+                Moyenne par Ministère
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{avgMembersPerMinistry}</div>
               <p className="text-xs text-muted-foreground">
-                manm pa ministè
+                membres par ministère
               </p>
             </CardContent>
           </Card>
@@ -278,7 +278,7 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Nouvo Manm
+                Nouveaux Membres
               </CardTitle>
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -287,7 +287,7 @@ export default function MinistriesStats() {
                 {monthlyGrowth.reduce((sum, m) => sum + m.new_members, 0)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Dènye {period} mwa
+                Derniers {period} mois
               </p>
             </CardContent>
           </Card>
@@ -298,8 +298,8 @@ export default function MinistriesStats() {
           {/* Members per Ministry */}
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Ministè</CardTitle>
-              <CardDescription>Pa kantite manm</CardDescription>
+              <CardTitle>Top 5 Ministères</CardTitle>
+              <CardDescription>Par nombre de membres</CardDescription>
             </CardHeader>
             <CardContent>
               {topMinistries.length > 0 ? (
@@ -326,12 +326,12 @@ export default function MinistriesStats() {
                         color: "hsl(var(--foreground))",
                       }}
                     />
-                    <Bar dataKey="member_count" name="Manm" fill="hsl(var(--primary))" />
+                    <Bar dataKey="member_count" name="Membres" fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Okenn done disponib</p>
+                  <p className="text-muted-foreground">Aucune donnée disponible</p>
                 </div>
               )}
             </CardContent>
@@ -340,8 +340,8 @@ export default function MinistriesStats() {
           {/* Role Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Distribisyon Wòl</CardTitle>
-              <CardDescription>Nan tout ministè yo</CardDescription>
+              <CardTitle>Distribution des Rôles</CardTitle>
+              <CardDescription>Dans tous les ministères</CardDescription>
             </CardHeader>
             <CardContent>
               {roleDistribution.length > 0 ? (
@@ -372,7 +372,7 @@ export default function MinistriesStats() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Okenn done disponib</p>
+                  <p className="text-muted-foreground">Aucune donnée disponible</p>
                 </div>
               )}
             </CardContent>
@@ -382,9 +382,9 @@ export default function MinistriesStats() {
         {/* Monthly Growth Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Kwasans Mansyèl</CardTitle>
+            <CardTitle>Croissance Mensuelle</CardTitle>
             <CardDescription>
-              Nouvo manm ki antre nan ministè yo pa mwa
+              Nouveaux membres rejoignant les ministères par mois
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -413,17 +413,17 @@ export default function MinistriesStats() {
                   <Line
                     type="monotone"
                     dataKey="new_members"
-                    name="Nouvo Manm"
+                    name="Nouveaux Membres"
                     stroke="hsl(var(--success))"
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--success))", r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px]">
-                <p className="text-muted-foreground">Okenn done disponib</p>
-              </div>
+              ) : (
+                <div className="flex items-center justify-center h-[300px]">
+                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                </div>
             )}
           </CardContent>
         </Card>
@@ -431,8 +431,8 @@ export default function MinistriesStats() {
         {/* All Ministries Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Tout Ministè yo</CardTitle>
-            <CardDescription>Detay konplè</CardDescription>
+            <CardTitle>Tous les Ministères</CardTitle>
+            <CardDescription>Détails complets</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -445,13 +445,13 @@ export default function MinistriesStats() {
                   <div className="flex-1">
                     <h4 className="font-semibold">{ministry.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Responsab: {ministry.leader_name || "Okenn"}
+                      Responsable: {ministry.leader_name || "Aucun"}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-2xl font-bold">{ministry.member_count}</p>
-                      <p className="text-xs text-muted-foreground">manm</p>
+                      <p className="text-xs text-muted-foreground">membres</p>
                     </div>
                     <div
                       className={`w-3 h-3 rounded-full ${
