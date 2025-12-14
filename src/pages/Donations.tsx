@@ -30,7 +30,8 @@ import { DollarSign, Download, Plus, TrendingUp, FileText } from "lucide-react";
 import DonationDialog from "@/components/DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categoryColors: Record<string, string> = {
   tithe: "bg-primary/10 text-primary border-primary/20",
@@ -40,29 +41,30 @@ const categoryColors: Record<string, string> = {
   special: "bg-accent/10 text-accent border-accent/20",
 };
 
-const categoryLabels: Record<string, string> = {
-  tithe: "Dîme",
-  offering: "Offrande",
-  building: "Bâtiment",
-  mission: "Mission",
-  special: "Spécial",
-};
-
-const methodLabels: Record<string, string> = {
-  cash: "Espèces",
-  check: "Chèque",
-  transfer: "Virement",
-  mobile_money: "Mobile Money",
-  card: "Carte",
-};
-
 export default function Donations() {
+  const { t } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     donationType: "all",
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     endDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
   });
+
+  const categoryLabels: Record<string, string> = {
+    tithe: t("donations.tithe"),
+    offering: t("donations.offering"),
+    building: t("donations.building"),
+    mission: t("donations.mission"),
+    special: t("donations.special"),
+  };
+
+  const methodLabels: Record<string, string> = {
+    cash: t("donations.cash"),
+    check: t("donations.check"),
+    transfer: t("donations.transfer"),
+    mobile_money: "Mobile Money",
+    card: t("donations.card"),
+  };
 
   const { data: donations = [], isLoading } = useQuery({
     queryKey: ["donations", filters],
@@ -90,38 +92,37 @@ export default function Donations() {
 
   const stats = [
     {
-      title: "Total Période",
+      title: t("donations.totalAmount"),
       value: `$${donations.reduce((sum, d) => sum + Number(d.amount), 0).toFixed(2)}`,
-      change: `${donations.length} dons`,
+      change: `${donations.length} ${t("donations.donationCount").toLowerCase()}`,
       icon: DollarSign,
     },
     {
-      title: "Don Moyen",
+      title: t("donations.avgDonation"),
       value: donations.length > 0 
         ? `$${(donations.reduce((sum, d) => sum + Number(d.amount), 0) / donations.length).toFixed(2)}`
         : "$0.00",
-      change: "Sur la période",
+      change: t("donations.donationDate"),
       icon: TrendingUp,
     },
     {
-      title: "Nombre de Dons",
+      title: t("donations.donationCount"),
       value: donations.length.toString(),
-      change: "Sur la période",
+      change: t("donations.donationDate"),
       icon: TrendingUp,
     },
   ];
 
   const generateReceipt = async (donation: any) => {
-    // This will be implemented with jsPDF
     console.log("Generate receipt for:", donation);
   };
 
   const exportData = () => {
     const csv = [
-      ["Dat", "Donatè", "Montan", "Tip", "Metòd", "Branch"],
+      [t("common.date"), t("members.name"), t("donations.amount"), t("donations.donationType"), t("donations.paymentMethod"), t("branches.branchName")],
       ...donations.map((d) => [
         d.donation_date,
-        d.member ? `${d.member.first_name} ${d.member.last_name}` : "Anonim",
+        d.member ? `${d.member.first_name} ${d.member.last_name}` : t("common.noData"),
         d.amount,
         categoryLabels[d.donation_type] || d.donation_type,
         methodLabels[d.payment_method] || d.payment_method,
@@ -152,20 +153,20 @@ export default function Donations() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Gestion des Contributions
+              {t("donations.title")}
             </h2>
             <p className="text-muted-foreground">
-              Gérez les dons et contributions
+              {t("donations.subtitle")}
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={exportData}>
               <Download className="mr-2 h-4 w-4" />
-              Exporter CSV
+              {t("common.export")} CSV
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter Don
+              {t("donations.addDonation")}
             </Button>
           </div>
         </div>
@@ -194,12 +195,12 @@ export default function Donations() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filtres</CardTitle>
+            <CardTitle>{t("common.filter")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label>Type de Don</Label>
+                <Label>{t("donations.donationType")}</Label>
                 <Select
                   value={filters.donationType}
                   onValueChange={(value) =>
@@ -207,20 +208,20 @@ export default function Donations() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Tous les types" />
+                    <SelectValue placeholder={t("common.all")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="tithe">Dîme</SelectItem>
-                    <SelectItem value="offering">Offrande</SelectItem>
-                    <SelectItem value="building">Bâtiment</SelectItem>
-                    <SelectItem value="mission">Mission</SelectItem>
-                    <SelectItem value="special">Spécial</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="tithe">{t("donations.tithe")}</SelectItem>
+                    <SelectItem value="offering">{t("donations.offering")}</SelectItem>
+                    <SelectItem value="building">{t("donations.building")}</SelectItem>
+                    <SelectItem value="mission">{t("donations.mission")}</SelectItem>
+                    <SelectItem value="special">{t("donations.special")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Date de Début</Label>
+                <Label>{t("donations.donationDate")}</Label>
                 <Input
                   type="date"
                   value={filters.startDate}
@@ -230,7 +231,7 @@ export default function Donations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Date de Fin</Label>
+                <Label>{t("donations.donationDate")}</Label>
                 <Input
                   type="date"
                   value={filters.endDate}
@@ -246,8 +247,8 @@ export default function Donations() {
         {/* Category Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Répartition par Catégorie</CardTitle>
-            <CardDescription>Période sélectionnée</CardDescription>
+            <CardTitle>{t("donations.donationType")}</CardTitle>
+            <CardDescription>{t("donations.donationDate")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -281,30 +282,30 @@ export default function Donations() {
         {/* Donations List */}
         <Card>
           <CardHeader>
-            <CardTitle>Liste des Dons</CardTitle>
+            <CardTitle>{t("donations.title")}</CardTitle>
             <CardDescription>
-              {donations.length} dons pour cette période
+              {donations.length} {t("donations.donationCount").toLowerCase()}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8">Chargement...</div>
+              <div className="text-center py-8">{t("common.loading")}</div>
             ) : donations.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Aucun don pour cette période
+                {t("common.noData")}
               </div>
             ) : (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Donateur</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Méthode</TableHead>
-                      <TableHead>Branche</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("common.name")}</TableHead>
+                      <TableHead>{t("donations.amount")}</TableHead>
+                      <TableHead>{t("donations.donationType")}</TableHead>
+                      <TableHead>{t("donations.paymentMethod")}</TableHead>
+                      <TableHead>{t("branches.branchName")}</TableHead>
+                      <TableHead className="text-right">{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -316,7 +317,7 @@ export default function Donations() {
                         <TableCell className="font-medium">
                           {donation.member
                             ? `${donation.member.first_name} ${donation.member.last_name}`
-                            : "Anonim"}
+                            : t("common.noData")}
                         </TableCell>
                         <TableCell className="font-semibold">
                           ${Number(donation.amount).toFixed(2)}
@@ -344,7 +345,7 @@ export default function Donations() {
                             onClick={() => generateReceipt(donation)}
                           >
                             <FileText className="mr-2 h-4 w-4" />
-                            Reçu
+                            {t("common.download")}
                           </Button>
                         </TableCell>
                       </TableRow>
