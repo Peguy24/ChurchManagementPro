@@ -97,9 +97,9 @@ export default function Ministries() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Ministè yo</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Ministères</h2>
             <p className="text-muted-foreground">
-              Jere tout ministè legliz ou
+              Gérez tous les ministères de votre église
             </p>
           </div>
           <div className="flex gap-2">
@@ -109,7 +109,7 @@ export default function Ministries() {
               onClick={() => navigate("/ministries/stats")}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
-              Estatistik
+              Statistiques
             </Button>
             <Button
               size="sm"
@@ -119,16 +119,16 @@ export default function Ministries() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Ajoute Ministè
+              Ajouter Ministère
             </Button>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Lis Ministè</CardTitle>
+            <CardTitle>Liste des Ministères</CardTitle>
             <CardDescription>
-              Total: {ministries.length} ministè
+              Total: {ministries.length} ministères
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -136,7 +136,7 @@ export default function Ministries() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Chèche ministè..."
+                  placeholder="Rechercher un ministère..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,19 +148,19 @@ export default function Ministries() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Non</TableHead>
-                    <TableHead>Deskripsyon</TableHead>
-                    <TableHead>Responsab</TableHead>
-                    <TableHead>Manm</TableHead>
-                    <TableHead>Estati</TableHead>
-                    <TableHead className="text-right">Aksyon</TableHead>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Responsable</TableHead>
+                    <TableHead>Membres</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredMinistries.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Okenn ministè pa jwenn
+                        Aucun ministère trouvé
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -188,7 +188,7 @@ export default function Ministries() {
                             variant="outline"
                             className={statusColors[ministry.status || "active"]}
                           >
-                            {ministry.status === "active" ? "Aktif" : "Inaktif"}
+                            {ministry.status === "active" ? "Actif" : "Inactif"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -197,7 +197,7 @@ export default function Ministries() {
                               variant="ghost"
                               size="sm"
                               onClick={() => navigate(`/ministries/details?ministryId=${ministry.id}`)}
-                              title="Jere manm yo"
+                              title="Gérer les membres"
                             >
                               <Users className="h-4 w-4" />
                             </Button>
@@ -245,14 +245,14 @@ export default function Ministries() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Efase Ministè</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer le Ministère</AlertDialogTitle>
             <AlertDialogDescription>
-              Èske ou sèten ou vle efase ministè sa a? Aksyon sa a pa ka defèt.
+              Êtes-vous sûr de vouloir supprimer ce ministère ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anile</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Efase</AlertDialogAction>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

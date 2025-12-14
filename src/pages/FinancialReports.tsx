@@ -67,11 +67,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const categoryLabels: Record<string, string> = {
-  tithe: "Dim",
-  offering: "Ofrann",
-  building: "Batiman",
-  mission: "Misyon",
-  special: "Espesyal",
+  tithe: "Dîme",
+  offering: "Offrande",
+  building: "Bâtiment",
+  mission: "Mission",
+  special: "Spécial",
 };
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))"];
