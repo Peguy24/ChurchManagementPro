@@ -23,54 +23,7 @@ import { Plus, Search, Download, Upload, Edit, BarChart, Eye } from "lucide-reac
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import { supabase } from "@/integrations/supabase/client";
-
-const mockMembers = [
-  {
-    id: 1,
-    name: "Jean Pierre",
-    email: "jean@example.com",
-    phone: "+509 1234-5678",
-    status: "Actif",
-    joined: "2023-05-20",
-    group: "Croyants",
-  },
-  {
-    id: 2,
-    name: "Marie Duval",
-    email: "marie@example.com",
-    phone: "+509 2345-6789",
-    status: "Actif",
-    joined: "2024-01-15",
-    group: "Familles",
-  },
-  {
-    id: 3,
-    name: "Paul Joseph",
-    email: "paul@example.com",
-    phone: "+509 3456-7890",
-    status: "Inactif",
-    joined: "2022-08-10",
-    group: "Croyants",
-  },
-  {
-    id: 4,
-    name: "Sophie Laurent",
-    email: "sophie@example.com",
-    phone: "+509 4567-8901",
-    status: "Actif",
-    joined: "2024-11-03",
-    group: "Enfants",
-  },
-  {
-    id: 5,
-    name: "Marc Etienne",
-    email: "marc@example.com",
-    phone: "+509 5678-9012",
-    status: "Transféré",
-    joined: "2021-03-12",
-    group: "Croyants",
-  },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const statusColors: Record<string, string> = {
   Actif: "bg-success/10 text-success border-success/20",
@@ -82,6 +35,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Members() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -106,40 +60,49 @@ export default function Members() {
       member.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active": return t("common.active");
+      case "inactive": return t("common.inactive");
+      case "transferred": return t("common.transferred");
+      default: return status;
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Gestion des Membres</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("members.title")}</h2>
             <p className="text-muted-foreground">
-              Gérez tous les membres de votre église
+              {t("members.subtitle")}
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
               <Upload className="mr-2 h-4 w-4" />
-              Importer
+              {t("common.import")}
             </Button>
             <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
-              Exporter
+              {t("common.export")}
             </Button>
             <Button size="sm" onClick={() => {
               setSelectedMember(undefined);
               setDialogOpen(true);
             }}>
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter Membre
+              {t("members.addMember")}
             </Button>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Liste des Membres</CardTitle>
+            <CardTitle>{t("members.title")}</CardTitle>
             <CardDescription>
-              Total: {members.length} membres
+              {t("common.total")}: {members.length} {t("nav.members").toLowerCase()}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +110,7 @@ export default function Members() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un membre..."
+                  placeholder={t("members.searchPlaceholder")}
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -159,13 +122,13 @@ export default function Members() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Groupe</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Date d'inscription</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("common.name")}</TableHead>
+                    <TableHead>{t("common.email")}</TableHead>
+                    <TableHead>{t("common.phone")}</TableHead>
+                    <TableHead>{t("common.group")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead>{t("common.joinedDate")}</TableHead>
+                    <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -182,7 +145,7 @@ export default function Members() {
                           variant="outline"
                           className={statusColors[member.status || "active"]}
                         >
-                          {member.status === "active" ? "Actif" : member.status === "inactive" ? "Inactif" : member.status === "transferred" ? "Transféré" : member.status}
+                          {getStatusLabel(member.status || "active")}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -194,7 +157,7 @@ export default function Members() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/members/details?memberId=${member.id}`)}
-                            title="Voir tous les détails"
+                            title={t("members.viewDetails")}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -202,7 +165,7 @@ export default function Members() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/attendance/stats?memberId=${member.id}`)}
-                            title="Voir les statistiques de présence"
+                            title={t("attendance.statistics")}
                           >
                             <BarChart className="h-4 w-4" />
                           </Button>
