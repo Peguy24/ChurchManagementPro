@@ -188,16 +188,16 @@ export default function MemberCards() {
 
   const downloadAllCards = () => {
     toast({
-      title: "Fonksyon bientò disponib",
-      description: "Telechajman tout kat yo pral disponib byento.",
+      title: "Fonction bientôt disponible",
+      description: "Le téléchargement de toutes les cartes sera bientôt disponible.",
     });
   };
 
   const handleMarkAttendance = async () => {
     if (!eventType || !eventDate) {
       toast({
-        title: "Erè",
-        description: "Tanpri chwazi kalite evènman ak dat la.",
+        title: "Erreur",
+        description: "Veuillez choisir le type d'événement et la date.",
         variant: "destructive",
       });
       return;
@@ -209,8 +209,8 @@ export default function MemberCards() {
 
     if (selectedMemberIds.length === 0) {
       toast({
-        title: "Erè",
-        description: "Tanpri chwazi omwen yon manm.",
+        title: "Erreur",
+        description: "Veuillez sélectionner au moins un membre.",
         variant: "destructive",
       });
       return;
@@ -233,8 +233,8 @@ export default function MemberCards() {
       if (error) throw error;
 
       toast({
-        title: "Siksè!",
-        description: `Prezans ${selectedMemberIds.length} manm te anrejistre.`,
+        title: "Succès !",
+        description: `Présence de ${selectedMemberIds.length} membres enregistrée.`,
       });
 
       setAttendanceDialogOpen(false);
@@ -242,8 +242,8 @@ export default function MemberCards() {
     } catch (error) {
       console.error("Error marking attendance:", error);
       toast({
-        title: "Erè",
-        description: "Pwoblèm pou anrejistre prezans yo.",
+        title: "Erreur",
+        description: "Problème lors de l'enregistrement des présences.",
         variant: "destructive",
       });
     } finally {
@@ -258,7 +258,7 @@ export default function MemberCards() {
           <div className="text-center space-y-4">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
             <p className="text-muted-foreground">
-              {generatingQRs ? "Jenerasyon kòd QR yo..." : "Chajman manm yo..."}
+              {generatingQRs ? "Génération des codes QR..." : "Chargement des membres..."}
             </p>
           </div>
         </div>
@@ -272,9 +272,9 @@ export default function MemberCards() {
         {/* Header - Hidden when printing */}
         <div className="flex justify-between items-center print:hidden">
           <div>
-            <h1 className="text-3xl font-bold">Kat Manm</h1>
+            <h1 className="text-3xl font-bold">Cartes des Membres</h1>
             <p className="text-muted-foreground">
-              {selectedCount} kat pou enprime / {members.length} filtre / {allMembers.length} total
+              {selectedCount} cartes à imprimer / {members.length} filtrés / {allMembers.length} total
             </p>
           </div>
           <div className="flex gap-2">
@@ -284,15 +284,15 @@ export default function MemberCards() {
               disabled={selectedCount === 0}
             >
               <ClipboardCheck className="mr-2 h-4 w-4" />
-              Make Prezans ({selectedCount})
+              Marquer Présence ({selectedCount})
             </Button>
             <Button variant="outline" onClick={downloadAllCards}>
               <Download className="mr-2 h-4 w-4" />
-              Telechaje
+              Télécharger
             </Button>
             <Button onClick={handlePrint} disabled={selectedCount === 0}>
               <Printer className="mr-2 h-4 w-4" />
-              Enprime ({selectedCount})
+              Imprimer ({selectedCount})
             </Button>
           </div>
         </div>
@@ -302,17 +302,17 @@ export default function MemberCards() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Filter className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Filtè ak Rechèch</h2>
+              <h2 className="text-lg font-semibold">Filtres et Recherche</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Search */}
               <div className="space-y-2">
-                <Label htmlFor="search">Chèche Manm</Label>
+                <Label htmlFor="search">Rechercher un Membre</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Tape non..."
+                    placeholder="Tapez un nom..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -322,33 +322,33 @@ export default function MemberCards() {
 
               {/* Role Filter */}
               <div className="space-y-2">
-                <Label htmlFor="role">Wòl</Label>
+                <Label htmlFor="role">Rôle</Label>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger id="role">
-                    <SelectValue placeholder="Tout wòl yo" />
+                    <SelectValue placeholder="Tous les rôles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tout wòl yo</SelectItem>
-                    <SelectItem value="manm">Manm</SelectItem>
-                    <SelectItem value="dyak">Dyak</SelectItem>
-                    <SelectItem value="ansyen">Ansyen</SelectItem>
-                    <SelectItem value="pastè">Pastè</SelectItem>
-                    <SelectItem value="dirijan">Dirijan</SelectItem>
+                    <SelectItem value="all">Tous les rôles</SelectItem>
+                    <SelectItem value="membre">Membre</SelectItem>
+                    <SelectItem value="diacre">Diacre</SelectItem>
+                    <SelectItem value="ancien">Ancien</SelectItem>
+                    <SelectItem value="pasteur">Pasteur</SelectItem>
+                    <SelectItem value="dirigeant">Dirigeant</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Baptism Filter */}
               <div className="space-y-2">
-                <Label htmlFor="baptism">Estati Batèm</Label>
+                <Label htmlFor="baptism">Statut Baptême</Label>
                 <Select value={baptismFilter} onValueChange={setBaptismFilter}>
                   <SelectTrigger id="baptism">
-                    <SelectValue placeholder="Tout estati" />
+                    <SelectValue placeholder="Tous les statuts" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tout estati</SelectItem>
-                    <SelectItem value="batize">Batize</SelectItem>
-                    <SelectItem value="pabatize">Pa Batize</SelectItem>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="baptise">Baptisé</SelectItem>
+                    <SelectItem value="nonbaptise">Non Baptisé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -364,7 +364,7 @@ export default function MemberCards() {
                   disabled={selectedCount === members.length}
                 >
                   <CheckSquare className="mr-2 h-4 w-4" />
-                  Seleksyone Tout
+                  Tout Sélectionner
                 </Button>
                 <Button
                   variant="outline"
@@ -373,7 +373,7 @@ export default function MemberCards() {
                   disabled={selectedCount === 0}
                 >
                   <Square className="mr-2 h-4 w-4" />
-                  Deseleksyone Tout
+                  Tout Désélectionner
                 </Button>
               </div>
 
@@ -388,7 +388,7 @@ export default function MemberCards() {
                     setBaptismFilter("all");
                   }}
                 >
-                  Efase Filtè
+                  Effacer les Filtres
                 </Button>
               )}
             </div>
@@ -464,7 +464,7 @@ export default function MemberCards() {
                 {/* Footer */}
                 <div className="mt-4 pt-4 border-t text-center">
                   <p className="text-xs font-semibold text-primary">
-                    EglizApp - Manm Aktif
+                    EgliseApp - Membre Actif
                   </p>
                 </div>
               </CardContent>
@@ -478,10 +478,10 @@ export default function MemberCards() {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <UserCircle className="h-16 w-16 text-muted-foreground mb-4" />
               <p className="text-lg font-medium text-muted-foreground">
-                Pa gen manm aktif
+                Aucun membre actif
               </p>
               <p className="text-sm text-muted-foreground">
-                Ajoute manm yo pou kreye kat yo
+                Ajoutez des membres pour créer leurs cartes
               </p>
             </CardContent>
           </Card>
@@ -520,25 +520,25 @@ export default function MemberCards() {
       <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Make Prezans</DialogTitle>
+            <DialogTitle>Marquer la Présence</DialogTitle>
             <DialogDescription>
-              Make prezans pou {selectedCount} manm seleksyone yo
+              Marquer la présence pour {selectedCount} membres sélectionnés
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="event-type">Kalite Evènman</Label>
+              <Label htmlFor="event-type">Type d'Événement</Label>
               <Select value={eventType} onValueChange={setEventType}>
                 <SelectTrigger id="event-type">
-                  <SelectValue placeholder="Chwazi yon evènman" />
+                  <SelectValue placeholder="Choisir un événement" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Sèvis Dimanch">Sèvis Dimanch</SelectItem>
-                  <SelectItem value="Etid Biblik">Etid Biblik</SelectItem>
-                  <SelectItem value="Rankont Priyè">Rankont Priyè</SelectItem>
-                  <SelectItem value="Kèl Jenn">Kèl Jenn</SelectItem>
-                  <SelectItem value="Lòt">Lòt</SelectItem>
+                  <SelectItem value="Service Dimanche">Service du Dimanche</SelectItem>
+                  <SelectItem value="Etude Biblique">Étude Biblique</SelectItem>
+                  <SelectItem value="Reunion Priere">Réunion de Prière</SelectItem>
+                  <SelectItem value="Groupe Jeunesse">Groupe Jeunesse</SelectItem>
+                  <SelectItem value="Autre">Autre</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -560,13 +560,13 @@ export default function MemberCards() {
               onClick={() => setAttendanceDialogOpen(false)}
               disabled={submittingAttendance}
             >
-              Anile
+              Annuler
             </Button>
             <Button
               onClick={handleMarkAttendance}
               disabled={submittingAttendance || !eventType}
             >
-              {submittingAttendance ? "Ap anrejistre..." : "Konfime"}
+              {submittingAttendance ? "Enregistrement..." : "Confirmer"}
             </Button>
           </DialogFooter>
         </DialogContent>
