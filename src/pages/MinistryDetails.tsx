@@ -230,7 +230,7 @@ export default function MinistryDetails() {
           </div>
           <Button onClick={() => setAddMemberDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Ajoute Manm
+            Ajouter un membre
           </Button>
         </div>
 
@@ -239,7 +239,7 @@ export default function MinistryDetails() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Responsab
+                Responsable
               </CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -247,7 +247,7 @@ export default function MinistryDetails() {
               <div className="text-xl font-bold">
                 {ministry.leader
                   ? `${ministry.leader.first_name} ${ministry.leader.last_name}`
-                  : "Okenn"}
+                  : "Aucun"}
               </div>
             </CardContent>
           </Card>
@@ -255,7 +255,7 @@ export default function MinistryDetails() {
           <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Manm
+                Total des membres
               </CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -266,7 +266,7 @@ export default function MinistryDetails() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Estati</CardTitle>
+              <CardTitle className="text-sm font-medium">Statut</CardTitle>
             </CardHeader>
             <CardContent>
               <Badge
@@ -277,7 +277,7 @@ export default function MinistryDetails() {
                     : "bg-muted text-muted-foreground border-border"
                 }
               >
-                {ministry.status === "active" ? "Aktif" : "Inaktif"}
+                {ministry.status === "active" ? "Actif" : "Inactif"}
               </Badge>
             </CardContent>
           </Card>
@@ -286,9 +286,9 @@ export default function MinistryDetails() {
         {/* Members List */}
         <Card>
           <CardHeader>
-            <CardTitle>Manm Ministè a</CardTitle>
+            <CardTitle>Membres du ministère</CardTitle>
             <CardDescription>
-              {ministryMembers.length} manm nan ministè sa a
+              {ministryMembers.length} membre(s) dans ce ministère
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -296,19 +296,19 @@ export default function MinistryDetails() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Non</TableHead>
+                    <TableHead>Nom</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Telefòn</TableHead>
-                    <TableHead>Wòl</TableHead>
-                    <TableHead>Dat Rantre</TableHead>
-                    <TableHead className="text-right">Aksyon</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Rôle</TableHead>
+                    <TableHead>Date d'adhésion</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ministryMembers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Okenn manm nan ministè sa a
+                        Aucun membre dans ce ministère
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -352,17 +352,17 @@ export default function MinistryDetails() {
       <Dialog open={addMemberDialog} onOpenChange={setAddMemberDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajoute Manm nan Ministè</DialogTitle>
+            <DialogTitle>Ajouter un membre au ministère</DialogTitle>
             <DialogDescription>
-              Chwazi yon manm pou ajoute nan ministè sa a
+              Sélectionnez un membre à ajouter à ce ministère
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Manm</Label>
+              <Label>Membre</Label>
               <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chwazi yon manm" />
+                  <SelectValue placeholder="Sélectionner un membre" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableMembers.map((member: any) => (
@@ -375,21 +375,21 @@ export default function MinistryDetails() {
             </div>
 
             <div className="grid gap-2">
-              <Label>Wòl</Label>
+              <Label>Rôle</Label>
               <Select value={memberRole} onValueChange={setMemberRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Manm</SelectItem>
-                  <SelectItem value="coordinator">Kowòdonatè</SelectItem>
-                  <SelectItem value="assistant">Asistan</SelectItem>
+                  <SelectItem value="member">Membre</SelectItem>
+                  <SelectItem value="coordinator">Coordinateur</SelectItem>
+                  <SelectItem value="assistant">Assistant</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label>Dat Rantre</Label>
+              <Label>Date d'adhésion</Label>
               <Input
                 type="date"
                 value={joinedDate}
@@ -402,13 +402,13 @@ export default function MinistryDetails() {
               variant="outline"
               onClick={() => setAddMemberDialog(false)}
             >
-              Anile
+              Annuler
             </Button>
             <Button
               onClick={handleAddMember}
               disabled={!selectedMemberId || loading}
             >
-              {loading ? "Chajman..." : "Ajoute"}
+              {loading ? "Chargement..." : "Ajouter"}
             </Button>
           </div>
         </DialogContent>
@@ -421,15 +421,15 @@ export default function MinistryDetails() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Retire Manm</AlertDialogTitle>
+            <AlertDialogTitle>Retirer le membre</AlertDialogTitle>
             <AlertDialogDescription>
-              Èske ou sèten ou vle retire manm sa a nan ministè a?
+              Êtes-vous sûr de vouloir retirer ce membre du ministère ?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anile</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveMember}>
-              Retire
+              Retirer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

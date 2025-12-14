@@ -64,7 +64,7 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant={branch.status === "active" ? "default" : "secondary"}>
-                {branch.status === "active" ? "Active" : "Inactive"}
+                {branch.status === "active" ? "Actif" : "Inactif"}
               </Badge>
               {hasChildren && (
                 <ChevronDown 
@@ -344,7 +344,7 @@ export default function Branches() {
                       )}
                     </div>
                     <Badge variant={branch.status === "active" ? "default" : "secondary"}>
-                      {branch.status === "active" ? "Active" : "Inactive"}
+                      {branch.status === "active" ? "Actif" : "Inactif"}
                     </Badge>
                   </div>
                 </CardHeader>
