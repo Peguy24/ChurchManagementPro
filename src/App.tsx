@@ -14,6 +14,9 @@ import AttendanceAlerts from "./pages/AttendanceAlerts";
 import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import FinancialReports from "./pages/FinancialReports";
+import Budgets from "./pages/Budgets";
+import Expenses from "./pages/Expenses";
+import BankReconciliation from "./pages/BankReconciliation";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
 import MinistryDetails from "./pages/MinistryDetails";
@@ -45,6 +48,9 @@ const App = () => (
             <Route path="/attendance/comparison" element={<ProtectedRoute><GroupComparisonDashboard /></ProtectedRoute>} />
             <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
             <Route path="/donations/reports" element={<ProtectedRoute><FinancialReports /></ProtectedRoute>} />
+            <Route path="/finance/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
+            <Route path="/finance/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+            <Route path="/finance/bank" element={<ProtectedRoute><BankReconciliation /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
             <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
