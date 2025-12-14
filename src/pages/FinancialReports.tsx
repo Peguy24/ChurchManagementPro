@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -41,11 +40,9 @@ import {
 } from "recharts";
 import {
   DollarSign,
-  Download,
   FileSpreadsheet,
   FileText,
   TrendingUp,
-  TrendingDown,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
@@ -57,29 +54,29 @@ import {
   subMonths,
   startOfMonth,
   endOfMonth,
-  startOfYear,
-  endOfYear,
   parseISO,
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-const categoryLabels: Record<string, string> = {
-  tithe: "Dîme",
-  offering: "Offrande",
-  building: "Bâtiment",
-  mission: "Mission",
-  special: "Spécial",
-};
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))"];
 
 export default function FinancialReports() {
+  const { t } = useLanguage();
   const [period, setPeriod] = useState("12");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const currentDate = new Date();
+
+  const categoryLabels: Record<string, string> = {
+    tithe: t("donations.tithe"),
+    offering: t("donations.offering"),
+    building: t("donations.building"),
+    mission: t("donations.mission"),
+    special: t("donations.special"),
+  };
 
   // Fetch all branches
   const { data: branches = [] } = useQuery({
@@ -171,7 +168,7 @@ export default function FinancialReports() {
       value,
       color: COLORS[index % COLORS.length],
     }));
-  }, [donations]);
+  }, [donations, categoryLabels]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -207,64 +204,59 @@ export default function FinancialReports() {
 
   // Export to Excel
   const exportToExcel = () => {
-    // Monthly summary
     const monthlySheet = monthlyData.map((m) => ({
-      Mwa: m.month,
-      "Total ($)": m.total.toFixed(2),
-      "Dim ($)": m.tithe.toFixed(2),
-      "Ofrann ($)": m.offering.toFixed(2),
-      "Batiman ($)": m.building.toFixed(2),
-      "Misyon ($)": m.mission.toFixed(2),
-      "Espesyal ($)": m.special.toFixed(2),
+      [t("financialReports.month")]: m.month,
+      [`${t("common.total")} ($)`]: m.total.toFixed(2),
+      [`${t("donations.tithe")} ($)`]: m.tithe.toFixed(2),
+      [`${t("donations.offering")} ($)`]: m.offering.toFixed(2),
+      [`${t("donations.building")} ($)`]: m.building.toFixed(2),
+      [`${t("donations.mission")} ($)`]: m.mission.toFixed(2),
+      [`${t("donations.special")} ($)`]: m.special.toFixed(2),
     }));
 
-    // Detailed transactions
     const detailSheet = donations.map((d) => ({
-      Dat: format(parseISO(d.donation_date), "dd/MM/yyyy"),
-      Donatè: d.member ? `${d.member.first_name} ${d.member.last_name}` : "Anonim",
-      "Montan ($)": Number(d.amount).toFixed(2),
-      Tip: categoryLabels[d.donation_type] || d.donation_type,
-      Branch: d.branch?.name || "N/A",
-      Nòt: d.notes || "",
+      [t("common.date")]: format(parseISO(d.donation_date), "dd/MM/yyyy"),
+      [t("common.name")]: d.member ? `${d.member.first_name} ${d.member.last_name}` : t("common.noData"),
+      [`${t("financialReports.amount")} ($)`]: Number(d.amount).toFixed(2),
+      [t("donations.donationType")]: categoryLabels[d.donation_type] || d.donation_type,
+      [t("branches.branchName")]: d.branch?.name || "N/A",
+      [t("donations.notes")]: d.notes || "",
     }));
 
     const wb = XLSX.utils.book_new();
     
     const ws1 = XLSX.utils.json_to_sheet(monthlySheet);
-    XLSX.utils.book_append_sheet(wb, ws1, "Rezime Mansyèl");
+    XLSX.utils.book_append_sheet(wb, ws1, t("financialReports.detailedSummary"));
     
     const ws2 = XLSX.utils.json_to_sheet(detailSheet);
-    XLSX.utils.book_append_sheet(wb, ws2, "Detay Tranzaksyon");
+    XLSX.utils.book_append_sheet(wb, ws2, t("common.actions"));
 
-    XLSX.writeFile(wb, `rapò-finansye-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `${t("financialReports.title").toLowerCase().replace(" ", "-")}-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   // Export to PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
 
-    // Title
     doc.setFontSize(20);
-    doc.text("Rapport Financier", 14, 22);
+    doc.text(t("financialReports.title"), 14, 22);
     doc.setFontSize(12);
-    doc.text(`Période: ${period} derniers mois`, 14, 30);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
+    doc.text(`${period} ${t("financialReports.lastMonths")}`, 14, 30);
+    doc.text(`${t("common.date")}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
 
-    // Summary stats
     doc.setFontSize(14);
-    doc.text("Résumé", 14, 48);
+    doc.text(t("common.statisticsSummary"), 14, 48);
     doc.setFontSize(11);
-    doc.text(`Total Contributions: $${stats.total.toFixed(2)}`, 14, 56);
-    doc.text(`Nombre de Dons: ${stats.count}`, 14, 62);
-    doc.text(`Moyenne par Don: $${stats.average.toFixed(2)}`, 14, 68);
+    doc.text(`${t("donations.totalAmount")}: $${stats.total.toFixed(2)}`, 14, 56);
+    doc.text(`${t("donations.donationCount")}: ${stats.count}`, 14, 62);
+    doc.text(`${t("financialReports.avgDonation")}: $${stats.average.toFixed(2)}`, 14, 68);
 
-    // Monthly summary table
     doc.setFontSize(14);
-    doc.text("Résumé Mensuel", 14, 82);
+    doc.text(t("financialReports.detailedSummary"), 14, 82);
 
     autoTable(doc, {
       startY: 88,
-      head: [["Mois", "Total", "Dîme", "Offrande", "Bâtiment", "Mission", "Spécial"]],
+      head: [[t("financialReports.month"), t("common.total"), t("donations.tithe"), t("donations.offering"), t("donations.building"), t("donations.mission"), t("donations.special")]],
       body: monthlyData.map((m) => [
         m.month,
         `$${m.total.toFixed(2)}`,
@@ -278,14 +270,13 @@ export default function FinancialReports() {
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    // Category breakdown
     const finalY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    doc.text("Distribution par Catégorie", 14, finalY);
+    doc.text(t("financialReports.categoryDistribution"), 14, finalY);
 
     autoTable(doc, {
       startY: finalY + 6,
-      head: [["Catégorie", "Montant", "Pourcentage"]],
+      head: [[t("donations.donationType"), t("financialReports.amount"), t("financialReports.percentage")]],
       body: categoryData.map((c) => [
         c.name,
         `$${c.value.toFixed(2)}`,
@@ -295,7 +286,7 @@ export default function FinancialReports() {
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-financier-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`${t("financialReports.title").toLowerCase().replace(" ", "-")}-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   return (
@@ -304,18 +295,18 @@ export default function FinancialReports() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Rapports Financiers</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("financialReports.title")}</h2>
             <p className="text-muted-foreground">
-              Analyse détaillée des contributions et dons
+              {t("financialReports.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Select value={selectedBranch} onValueChange={setSelectedBranch}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Toutes les branches" />
+                <SelectValue placeholder={t("financialReports.allBranches")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les branches</SelectItem>
+                <SelectItem value="all">{t("financialReports.allBranches")}</SelectItem>
                 {branches.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
@@ -329,10 +320,10 @@ export default function FinancialReports() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3">3 derniers mois</SelectItem>
-                <SelectItem value="6">6 derniers mois</SelectItem>
-                <SelectItem value="12">12 derniers mois</SelectItem>
-                <SelectItem value="24">24 derniers mois</SelectItem>
+                <SelectItem value="3">3 {t("financialReports.lastMonths")}</SelectItem>
+                <SelectItem value="6">6 {t("financialReports.lastMonths")}</SelectItem>
+                <SelectItem value="12">12 {t("financialReports.lastMonths")}</SelectItem>
+                <SelectItem value="24">24 {t("financialReports.lastMonths")}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" onClick={exportToExcel}>
@@ -350,18 +341,18 @@ export default function FinancialReports() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Peryòd</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("financialReports.totalPeriod")}</CardTitle>
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${stats.total.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">{stats.count} don</p>
+              <p className="text-xs text-muted-foreground">{stats.count} {t("donations.donationCount").toLowerCase()}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Mwa Sa</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("financialReports.currentMonth")}</CardTitle>
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -381,25 +372,25 @@ export default function FinancialReports() {
                 >
                   {Math.abs(stats.monthlyChange).toFixed(1)}%
                 </span>
-                <span className="text-muted-foreground ml-1">vs mwa pase</span>
+                <span className="text-muted-foreground ml-1">{t("financialReports.vsPreviousMonth")}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Mwayèn Don</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("financialReports.avgDonation")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${stats.average.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">pa don</p>
+              <p className="text-xs text-muted-foreground">{t("financialReports.perDonation")}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Mwa Pase</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("financialReports.previousMonth")}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -418,8 +409,8 @@ export default function FinancialReports() {
           {/* Monthly Trend Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Evolisyon Mansyèl</CardTitle>
-              <CardDescription>Total kontribisyon pa mwa</CardDescription>
+              <CardTitle>{t("financialReports.monthlyTrend")}</CardTitle>
+              <CardDescription>{t("financialReports.totalContributions")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -437,7 +428,7 @@ export default function FinancialReports() {
                       tickFormatter={(value) => `$${value}`}
                     />
                     <Tooltip
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Total"]}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, t("common.total")]}
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
@@ -461,8 +452,8 @@ export default function FinancialReports() {
           {/* Category Pie Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Distribisyon pa Kategori</CardTitle>
-              <CardDescription>Rezime pa tip don</CardDescription>
+              <CardTitle>{t("financialReports.categoryDistribution")}</CardTitle>
+              <CardDescription>{t("financialReports.summaryByType")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -485,7 +476,7 @@ export default function FinancialReports() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Montan"]}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, t("financialReports.amount")]}
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
@@ -502,9 +493,9 @@ export default function FinancialReports() {
         {/* Stacked Bar Chart - Category Comparison */}
         <Card>
           <CardHeader>
-            <CardTitle>Konparezon Kategori pa Mwa</CardTitle>
+            <CardTitle>{t("financialReports.categoryComparison")}</CardTitle>
             <CardDescription>
-              Distribisyon don pa kategori chak mwa
+              {t("financialReports.donationDistribution")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -550,9 +541,9 @@ export default function FinancialReports() {
         {/* Monthly Summary Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Rezime Mansyèl Detaye</CardTitle>
+            <CardTitle>{t("financialReports.detailedSummary")}</CardTitle>
             <CardDescription>
-              Chif egzak pa mwa ak kategori
+              {t("financialReports.exactFigures")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -560,13 +551,13 @@ export default function FinancialReports() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Mwa</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Dim</TableHead>
-                    <TableHead className="text-right">Ofrann</TableHead>
-                    <TableHead className="text-right">Batiman</TableHead>
-                    <TableHead className="text-right">Misyon</TableHead>
-                    <TableHead className="text-right">Espesyal</TableHead>
+                    <TableHead>{t("financialReports.month")}</TableHead>
+                    <TableHead className="text-right">{t("common.total")}</TableHead>
+                    <TableHead className="text-right">{t("donations.tithe")}</TableHead>
+                    <TableHead className="text-right">{t("donations.offering")}</TableHead>
+                    <TableHead className="text-right">{t("donations.building")}</TableHead>
+                    <TableHead className="text-right">{t("donations.mission")}</TableHead>
+                    <TableHead className="text-right">{t("donations.special")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -595,7 +586,7 @@ export default function FinancialReports() {
                   ))}
                   {/* Total Row */}
                   <TableRow className="bg-muted/50 font-bold">
-                    <TableCell>TOTAL</TableCell>
+                    <TableCell>{t("common.total").toUpperCase()}</TableCell>
                     <TableCell className="text-right">
                       ${monthlyData.reduce((s, m) => s + m.total, 0).toFixed(2)}
                     </TableCell>
