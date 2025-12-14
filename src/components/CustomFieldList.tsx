@@ -17,19 +17,19 @@ interface CustomFieldListProps {
 }
 
 const fieldTypeLabels: Record<string, string> = {
-  text: "Tèks",
-  textarea: "Tèks Long",
-  number: "Nimewo",
-  date: "Dat",
-  select: "Lis",
-  checkbox: "Kaz",
+  text: "Texte",
+  textarea: "Texte long",
+  number: "Nombre",
+  date: "Date",
+  select: "Liste",
+  checkbox: "Case à cocher",
 };
 
 export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListProps) {
   if (fields.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        Pa gen chan pèsonalize ankò. Klike sou "Ajoute Chan" pou kreye youn.
+        Aucun champ personnalisé pour le moment. Cliquez sur "Ajouter un champ" pour en créer un.
       </div>
     );
   }
@@ -38,11 +38,11 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Etikèt</TableHead>
-          <TableHead>Non Chan</TableHead>
-          <TableHead>Tip</TableHead>
-          <TableHead>Estati</TableHead>
-          <TableHead>Aksyon</TableHead>
+          <TableHead>Libellé</TableHead>
+          <TableHead>Nom du champ</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>Statut</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,12 +60,12 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
             <TableCell>
               <div className="flex gap-2">
                 {field.is_required && (
-                  <Badge variant="secondary">Obligatwa</Badge>
+                  <Badge variant="secondary">Obligatoire</Badge>
                 )}
                 {field.is_active ? (
-                  <Badge className="bg-green-500">Aktif</Badge>
+                  <Badge className="bg-green-500">Actif</Badge>
                 ) : (
-                  <Badge variant="destructive">Inaktif</Badge>
+                  <Badge variant="destructive">Inactif</Badge>
                 )}
               </div>
             </TableCell>
@@ -84,7 +84,7 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
                   onClick={() => {
                     if (
                       confirm(
-                        "Ou vle efase chan sa a? Tout done asosye yo pral pèdi."
+                        "Voulez-vous supprimer ce champ ? Toutes les données associées seront perdues."
                       )
                     ) {
                       onDelete(field.id);
