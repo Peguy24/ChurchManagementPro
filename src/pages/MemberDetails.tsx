@@ -507,14 +507,14 @@ export default function MemberDetails() {
                                 : "bg-muted text-muted-foreground border-border"
                             }
                           >
-                            {mm.ministry.status === "active" ? "Aktif" : "Inaktif"}
+                            {mm.ministry.status === "active" ? "Actif" : "Inactif"}
                           </Badge>
                         </div>
                         <div className="flex gap-3 text-xs text-muted-foreground mt-1">
-                          <span>Wòl: <span className="font-medium">{mm.role}</span></span>
+                          <span>Rôle: <span className="font-medium">{mm.role}</span></span>
                           <span>•</span>
                           <span>
-                            Rantre: {mm.joined_date
+                            Adhésion: {mm.joined_date
                               ? new Date(mm.joined_date).toLocaleDateString("fr-FR")
                               : "-"}
                           </span>
@@ -528,7 +528,7 @@ export default function MemberDetails() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Briefcase className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                <p>Manm sa a pa nan okenn ministè</p>
+                <p>Ce membre n'appartient à aucun ministère</p>
               </div>
             )}
           </CardContent>
@@ -549,17 +549,17 @@ export default function MemberDetails() {
       <Dialog open={addMinistryDialog} onOpenChange={setAddMinistryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajoute nan Ministè</DialogTitle>
+            <DialogTitle>Ajouter à un Ministère</DialogTitle>
             <DialogDescription>
-              Chwazi yon ministè pou ajoute manm sa a
+              Sélectionnez un ministère pour ajouter ce membre
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Ministè</Label>
+              <Label>Ministère</Label>
               <Select value={selectedMinistryId} onValueChange={setSelectedMinistryId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chwazi yon ministè" />
+                  <SelectValue placeholder="Sélectionner un ministère" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableMinistries.map((ministry: any) => (
@@ -572,21 +572,21 @@ export default function MemberDetails() {
             </div>
 
             <div className="grid gap-2">
-              <Label>Wòl</Label>
+              <Label>Rôle</Label>
               <Select value={ministryRole} onValueChange={setMinistryRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Manm</SelectItem>
-                  <SelectItem value="coordinator">Kowòdonatè</SelectItem>
-                  <SelectItem value="assistant">Asistan</SelectItem>
+                  <SelectItem value="member">Membre</SelectItem>
+                  <SelectItem value="coordinator">Coordinateur</SelectItem>
+                  <SelectItem value="assistant">Assistant</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label>Dat Rantre</Label>
+              <Label>Date d'adhésion</Label>
               <Input
                 type="date"
                 value={joinedDate}
@@ -599,13 +599,13 @@ export default function MemberDetails() {
               variant="outline"
               onClick={() => setAddMinistryDialog(false)}
             >
-              Anile
+              Annuler
             </Button>
             <Button
               onClick={handleAddToMinistry}
               disabled={!selectedMinistryId || addingMinistry}
             >
-              {addingMinistry ? "Chajman..." : "Ajoute"}
+              {addingMinistry ? "Chargement..." : "Ajouter"}
             </Button>
           </div>
         </DialogContent>

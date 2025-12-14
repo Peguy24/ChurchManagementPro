@@ -482,13 +482,13 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-secondary" />
-                Fèt Kap Vini
+                Anniversaires à venir
               </CardTitle>
             </CardHeader>
             <CardContent>
               {upcomingBirthdays.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Pa gen fèt semèn pwochèn
+                  Aucun anniversaire la semaine prochaine
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -538,12 +538,12 @@ export default function Dashboard() {
           {/* Recent Members */}
           <Card>
             <CardHeader>
-              <CardTitle>Manm Resan</CardTitle>
+              <CardTitle>Membres Récents</CardTitle>
             </CardHeader>
             <CardContent>
               {!recentMembers || recentMembers.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Pa gen nouvo manm 30 dènye jou yo
+                  Aucun nouveau membre ces 30 derniers jours
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -557,11 +557,11 @@ export default function Dashboard() {
                           {member.first_name} {member.last_name}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Rantre: {format(new Date(member.created_at), "dd/MM/yyyy")}
+                          Inscrit le: {format(new Date(member.created_at), "dd/MM/yyyy")}
                         </p>
                       </div>
                       <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                        Aktif
+                        Actif
                       </span>
                     </div>
                   ))}
@@ -573,15 +573,15 @@ export default function Dashboard() {
           {/* Statistics Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Rezime Estatistik</CardTitle>
+              <CardTitle>Résumé Statistique</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Branch Aktif</p>
+                    <p className="font-medium">Branches Actives</p>
                     <p className="text-sm text-muted-foreground">
-                      Total branch nan sistèm
+                      Total des branches dans le système
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-primary">
@@ -590,9 +590,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Ministè Aktif</p>
+                    <p className="font-medium">Ministères Actifs</p>
                     <p className="text-sm text-muted-foreground">
-                      Total ministè nan legliz
+                      Total des ministères de l'église
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-success">
@@ -601,9 +601,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">To Batize</p>
+                    <p className="font-medium">Taux de Baptême</p>
                     <p className="text-sm text-muted-foreground">
-                      {totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% manm batize
+                      {totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% des membres baptisés
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-info">

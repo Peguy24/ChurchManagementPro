@@ -501,7 +501,7 @@ export default function Attendance() {
 
               {scannedMembers.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Dènye Scan ({scannedMembers.length})</h4>
+                  <h4 className="text-sm font-medium">Derniers Scans ({scannedMembers.length})</h4>
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {scannedMembers.map((member, index) => (
                       <div
@@ -530,7 +530,7 @@ export default function Attendance() {
                           <p className="text-xs text-muted-foreground">{member.time}</p>
                         </div>
                         <Badge variant={member.status === 'success' ? 'default' : 'destructive'}>
-                          {member.status === 'success' ? 'Siksè' : 'Erè'}
+                          {member.status === 'success' ? 'Succès' : 'Erreur'}
                         </Badge>
                       </div>
                     ))}
@@ -545,19 +545,19 @@ export default function Attendance() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="border-primary/50 bg-primary/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Manm</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Membres</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalMembers}</div>
-              <p className="text-xs text-muted-foreground">Manm aktif</p>
+              <p className="text-xs text-muted-foreground">Membres actifs</p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Dènye Rankont
+                Dernière Rencontre
               </CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
