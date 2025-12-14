@@ -40,11 +40,11 @@ export default function CustomFields() {
       .eq("id", fieldId);
 
     if (error) {
-      toast.error("Erè pou efase chan an");
+      toast.error("Erreur lors de la suppression du champ");
       return;
     }
 
-    toast.success("Chan efase avèk siksè");
+    toast.success("Champ supprimé avec succès");
     refetch();
   };
 
@@ -66,35 +66,35 @@ export default function CustomFields() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Settings className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Chan Pèsonalize</h1>
+            <h1 className="text-3xl font-bold">Champs Personnalisés</h1>
           </div>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Ajoute Chan
+            Ajouter un Champ
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Jesyon Chan Pèsonalize</CardTitle>
+            <CardTitle>Gestion des Champs Personnalisés</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="member" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="member">
-                  Manm ({memberFields.length})
+                  Membres ({memberFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="branch">
-                  Branch ({branchFields.length})
+                  Branches ({branchFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="ministry">
-                  Ministè ({ministryFields.length})
+                  Ministères ({ministryFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="event">
-                  Evènman ({eventFields.length})
+                  Événements ({eventFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="donation">
-                  Don ({donationFields.length})
+                  Dons ({donationFields.length})
                 </TabsTrigger>
               </TabsList>
 
