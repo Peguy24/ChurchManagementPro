@@ -18,6 +18,9 @@ import FinancialDashboard from "./pages/FinancialDashboard";
 import Budgets from "./pages/Budgets";
 import Expenses from "./pages/Expenses";
 import BankReconciliation from "./pages/BankReconciliation";
+import SpecialFunds from "./pages/SpecialFunds";
+import CashRegister from "./pages/CashRegister";
+import FinancialAudit from "./pages/FinancialAudit";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
 import MinistryDetails from "./pages/MinistryDetails";
@@ -53,6 +56,9 @@ const App = () => (
             <Route path="/finance/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
             <Route path="/finance/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
             <Route path="/finance/bank" element={<ProtectedRoute><BankReconciliation /></ProtectedRoute>} />
+            <Route path="/finance/funds" element={<ProtectedRoute><SpecialFunds /></ProtectedRoute>} />
+            <Route path="/finance/cash" element={<ProtectedRoute><CashRegister /></ProtectedRoute>} />
+            <Route path="/finance/audit" element={<ProtectedRoute><FinancialAudit /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
             <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />

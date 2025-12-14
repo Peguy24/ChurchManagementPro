@@ -17,6 +17,9 @@ import {
   PieChart,
   Settings,
   Building2,
+  PiggyBank,
+  Wallet,
+  History,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +44,9 @@ const getNavItems = (t: (key: string) => string) => [
   { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
   { to: "/finance/expenses", icon: Briefcase, label: t("nav.expenses") },
   { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
+  { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
+  { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
+  { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
   { to: "/events", icon: Calendar, label: t("nav.events") },
   { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
   { to: "/branches", icon: Church, label: t("nav.branches") },
