@@ -8,8 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -139,51 +141,49 @@ export default function Dashboard() {
   ) || [];
 
   const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
-  const totalWeeklyAmount = weeklyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
   
   const paidThisWeek = weeklyDonations.filter(d => d.donation_type === 'tithe').length;
-  const unpaidThisWeek = totalMembers - paidThisWeek;
 
   const stats = [
     {
-      title: "Total Membres",
+      title: t("dashboard.totalMembers"),
       value: totalMembers.toString(),
-      detail: `${totalMembers} membres actifs`,
+      detail: `${totalMembers} ${t("dashboard.activeMembers").toLowerCase()}`,
       icon: Users,
       bgColor: "bg-gradient-to-br from-cyan-400 to-cyan-500",
     },
     {
-      title: "Total Baptisés",
+      title: t("dashboard.totalBaptized"),
       value: totalBaptized.toString(),
-      detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% membres`,
+      detail: `${totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% ${t("nav.members").toLowerCase()}`,
       icon: TrendingUp,
       bgColor: "bg-gradient-to-br from-green-500 to-green-600",
     },
     {
-      title: "Total Ministères",
+      title: t("dashboard.totalMinistries"),
       value: totalMinistries.toString(),
-      detail: `${totalMinistries} ministères actifs`,
+      detail: `${totalMinistries} ${t("common.activeMinistries").toLowerCase()}`,
       icon: Users,
       bgColor: "bg-gradient-to-br from-red-500 to-red-600",
     },
     {
-      title: "Présence Semaine",
+      title: t("dashboard.weeklyAttendance"),
       value: paidThisWeek.toString(),
-      detail: `${paidThisWeek} membres présents`,
+      detail: `${paidThisWeek} ${t("dashboard.membersPresent")}`,
       icon: Calendar,
       bgColor: "bg-gradient-to-br from-orange-400 to-orange-500",
     },
     {
-      title: "Total Branches",
+      title: t("dashboard.totalBranches"),
       value: totalBranches.toString(),
-      detail: `${totalBranches} branches actives`,
+      detail: `${totalBranches} ${t("dashboard.activeBranches")}`,
       icon: Building2,
       bgColor: "bg-gradient-to-br from-blue-500 to-blue-600",
     },
     {
-      title: "Offrandes du Mois",
+      title: t("dashboard.monthlyOfferings"),
       value: `$${totalMonthlyAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      detail: `${monthlyDonations.length} dons`,
+      detail: `${monthlyDonations.length} ${t("donations.donationCount").toLowerCase()}`,
       icon: DollarSign,
       bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",
     },
@@ -231,15 +231,15 @@ export default function Dashboard() {
 
   const chartConfig = {
     membres: {
-      label: "Nouveaux Membres",
+      label: t("dashboard.newMembers"),
       color: "hsl(var(--cyan))",
     },
     donations: {
-      label: "Donations ($)",
+      label: t("nav.donations"),
       color: "hsl(var(--green))",
     },
     presence: {
-      label: "Présence",
+      label: t("nav.attendance"),
       color: "hsl(var(--orange))",
     },
   };
@@ -282,9 +282,9 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Tableau de Bord</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h2>
           <p className="text-muted-foreground">
-            Bienvenue dans le système de gestion de votre église
+            {t("common.welcome")}
           </p>
         </div>
 
@@ -340,7 +340,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Users className="h-4 w-4" />
-                Évolution des Membres
+                {t("dashboard.membersTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -373,7 +373,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <DollarSign className="h-4 w-4" />
-                Évolution des Donations
+                {t("dashboard.donationsTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -406,7 +406,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Calendar className="h-4 w-4" />
-                Évolution de la Présence
+                {t("dashboard.attendanceTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -441,13 +441,13 @@ export default function Dashboard() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="flex items-center gap-2">
                 <Cake className="h-5 w-5 text-primary" />
-                Anniversaires du Jour
+                {t("dashboard.todayBirthdays")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {todayBirthdays.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Pas d'anniversaire aujourd'hui
+                  {t("common.noBirthdayToday")}
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -467,7 +467,7 @@ export default function Dashboard() {
                           {member.first_name} {member.last_name}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          🎉 Bon Fèt!
+                          🎉 {t("common.happyBirthday")}
                         </p>
                       </div>
                     </div>
@@ -482,13 +482,13 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-secondary" />
-                Anniversaires à venir
+                {t("dashboard.upcomingBirthdays")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {upcomingBirthdays.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Aucun anniversaire la semaine prochaine
+                  {t("common.noBirthdayNextWeek")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -538,12 +538,12 @@ export default function Dashboard() {
           {/* Recent Members */}
           <Card>
             <CardHeader>
-              <CardTitle>Membres Récents</CardTitle>
+              <CardTitle>{t("common.recentMembers")}</CardTitle>
             </CardHeader>
             <CardContent>
               {!recentMembers || recentMembers.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Aucun nouveau membre ces 30 derniers jours
+                  {t("common.noRecentMembers")}
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -557,11 +557,11 @@ export default function Dashboard() {
                           {member.first_name} {member.last_name}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Inscrit le: {format(new Date(member.created_at), "dd/MM/yyyy")}
+                          {t("common.registeredOn")}: {format(new Date(member.created_at), "dd/MM/yyyy")}
                         </p>
                       </div>
                       <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                        Actif
+                        {t("common.active")}
                       </span>
                     </div>
                   ))}
@@ -573,15 +573,15 @@ export default function Dashboard() {
           {/* Statistics Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Résumé Statistique</CardTitle>
+              <CardTitle>{t("common.statisticsSummary")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Branches Actives</p>
+                    <p className="font-medium">{t("common.activeBranches")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Total des branches dans le système
+                      {t("common.totalBranchesInSystem")}
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-primary">
@@ -590,9 +590,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Ministères Actifs</p>
+                    <p className="font-medium">{t("common.activeMinistries")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Total des ministères de l'église
+                      {t("common.totalMinistriesInChurch")}
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-success">
@@ -601,9 +601,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Taux de Baptême</p>
+                    <p className="font-medium">{t("common.baptismRate")}</p>
                     <p className="text-sm text-muted-foreground">
-                      {totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% des membres baptisés
+                      {totalBaptized > 0 ? Math.round((totalBaptized / totalMembers) * 100) : 0}% {t("common.baptizedMembers")}
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-info">

@@ -221,7 +221,7 @@ export default function Donations() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>{t("donations.donationDate")}</Label>
+                <Label>{t("common.startDate")}</Label>
                 <Input
                   type="date"
                   value={filters.startDate}
@@ -231,7 +231,7 @@ export default function Donations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>{t("donations.donationDate")}</Label>
+                <Label>{t("common.endDate")}</Label>
                 <Input
                   type="date"
                   value={filters.endDate}
