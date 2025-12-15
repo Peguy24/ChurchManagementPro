@@ -116,7 +116,7 @@ export default function Donations() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
-      currency: "HTG",
+      currency: "USD",
       minimumFractionDigits: 0,
     }).format(amount);
   };

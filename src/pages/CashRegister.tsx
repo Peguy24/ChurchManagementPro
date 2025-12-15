@@ -130,7 +130,7 @@ const CashRegister = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
-      currency: "HTG",
+      currency: "USD",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -199,7 +199,7 @@ const CashRegister = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label>Solde initial (HTG)</Label>
+                  <Label>Solde initial ($)</Label>
                   <Input
                     type="number"
                     value={registerForm.current_balance}
@@ -294,7 +294,7 @@ const CashRegister = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label>Montant (HTG) *</Label>
+                      <Label>Montant ($) *</Label>
                       <Input
                         type="number"
                         value={transactionForm.amount}
