@@ -20,6 +20,7 @@ import {
   PiggyBank,
   Wallet,
   History,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +44,7 @@ const getNavItems = (t: (key: string) => string) => [
   { to: "/finance", icon: LayoutDashboard, label: t("nav.financialDashboard") },
   { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
   { to: "/finance/expenses", icon: Briefcase, label: t("nav.expenses") },
+  { to: "/finance/expenses/categories", icon: FolderOpen, label: "Catégories Dépenses" },
   { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
   { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
   { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
