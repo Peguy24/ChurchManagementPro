@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,11 +10,57 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface WelcomeEmailRequest {
-  memberId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+// Input validation schema
+const WelcomeEmailSchema = z.object({
+  memberId: z.string().uuid({ message: "Invalid member ID format" }),
+  firstName: z.string().min(1).max(100).regex(/^[\p{L}\s'-]+$/u, { message: "Invalid characters in first name" }),
+  lastName: z.string().min(1).max(100).regex(/^[\p{L}\s'-]+$/u, { message: "Invalid characters in last name" }),
+  email: z.string().email({ message: "Invalid email format" }).max(255),
+});
+
+// Sanitize text for HTML to prevent XSS
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Verify JWT and check user roles
+async function verifyAuth(req: Request): Promise<{ valid: boolean; error?: string }> {
+  const authHeader = req.headers.get("Authorization");
+  
+  if (!authHeader?.startsWith("Bearer ")) {
+    return { valid: false, error: "Missing or invalid authorization header" };
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+  );
+
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+  
+  if (authError || !user) {
+    return { valid: false, error: "Invalid or expired token" };
+  }
+
+  // Check user roles
+  const { data: roles } = await supabaseClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id);
+
+  const allowedRoles = ["admin", "pastor", "secretary"];
+  if (!roles?.some((r) => allowedRoles.includes(r.role))) {
+    return { valid: false, error: "Insufficient permissions" };
+  }
+
+  return { valid: true };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,14 +70,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { memberId, firstName, lastName, email }: WelcomeEmailRequest = await req.json();
-
-    console.log(`Sending welcome email to ${firstName} ${lastName} (${email})`);
-
-    if (!email) {
-      console.error("No email provided for member:", memberId);
+    // Verify authentication
+    const authResult = await verifyAuth(req);
+    if (!authResult.valid) {
+      console.error("Auth failed:", authResult.error);
       return new Response(
-        JSON.stringify({ error: "Email address is required" }),
+        JSON.stringify({ error: authResult.error }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validationResult = WelcomeEmailSchema.safeParse(rawBody);
+    
+    if (!validationResult.success) {
+      console.error("Validation failed:", validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validationResult.error.errors }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -37,10 +98,18 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    const { memberId, firstName, lastName, email } = validationResult.data;
+    
+    // Sanitize for HTML output
+    const safeFirstName = escapeHtml(firstName);
+    const safeLastName = escapeHtml(lastName);
+
+    console.log(`Sending welcome email to ${safeFirstName} ${safeLastName} (${email})`);
+
     const emailResponse = await resend.emails.send({
       from: "Église <onboarding@resend.dev>",
       to: [email],
-      subject: `Byenveni ${firstName} nan fanmi nou an! 🙏`,
+      subject: `Byenveni ${safeFirstName} nan fanmi nou an! 🙏`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -97,7 +166,7 @@ const handler = async (req: Request): Promise<Response> => {
               <h1 style="margin: 0; font-size: 32px;">🙏 Byenveni nan Fanmi Nou!</h1>
             </div>
             <div class="content">
-              <p class="welcome-text">Chè ${firstName} ${lastName},</p>
+              <p class="welcome-text">Chè ${safeFirstName} ${safeLastName},</p>
               
               <p class="message">
                 Nou kontan anpil pou resevwa ou kòm nouvo manm nan kominote nou an! 
@@ -153,7 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending welcome email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Failed to send email" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
