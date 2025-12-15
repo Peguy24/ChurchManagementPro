@@ -107,9 +107,22 @@ export default function MemberDialog({
 
   useEffect(() => {
     if (member) {
-      const address = typeof member.address === 'string' 
-        ? JSON.parse(member.address || '{}') 
-        : member.address || {};
+      let address: Record<string, string> = {};
+      
+      // Safe JSON parsing for address field
+      if (member.address) {
+        if (typeof member.address === 'object') {
+          address = member.address;
+        } else if (typeof member.address === 'string') {
+          try {
+            address = JSON.parse(member.address);
+          } catch (e) {
+            // If parsing fails, treat address as a simple string
+            console.warn('Could not parse address as JSON, using as plain text');
+            address = { street: member.address };
+          }
+        }
+      }
       
       setFormData({
         firstName: member.first_name || "",
