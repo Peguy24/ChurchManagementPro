@@ -8,3 +8,12 @@ verify_jwt = true
 
 [functions.send-expense-notification]
 verify_jwt = true
+
+[functions.send-birthday-notification]
+verify_jwt = false
+
+[functions.send-event-reminder]
+verify_jwt = false
+
+[functions.check-attendance-alerts]
+verify_jwt = false
