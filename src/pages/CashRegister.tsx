@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Wallet, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import TransferDialog from "@/components/TransferDialog";
 
 const CashRegister = () => {
   const { t, language } = useLanguage();
@@ -169,10 +170,12 @@ const CashRegister = () => {
             <h1 className="text-3xl font-bold">{t("finance.cashRegister")}</h1>
             <p className="text-muted-foreground">Gérez les caisses physiques</p>
           </div>
-          <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="mr-2 h-4 w-4" />Nouvelle Caisse</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <TransferDialog />
+            <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="mr-2 h-4 w-4" />Nouvelle Caisse</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Créer une Caisse</DialogTitle>
@@ -211,8 +214,9 @@ const CashRegister = () => {
                   {createRegister.isPending ? "Création..." : "Créer la Caisse"}
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Summary Card */}
