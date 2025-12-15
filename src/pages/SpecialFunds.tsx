@@ -133,7 +133,7 @@ const SpecialFunds = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
-      currency: "HTG",
+      currency: "USD",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -185,7 +185,7 @@ const SpecialFunds = () => {
                   />
                 </div>
                 <div>
-                  <Label>Objectif (HTG)</Label>
+                  <Label>Objectif ($)</Label>
                   <Input
                     type="number"
                     value={fundForm.target_amount}
@@ -302,7 +302,7 @@ const SpecialFunds = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label>Montant (HTG) *</Label>
+                      <Label>Montant ($) *</Label>
                       <Input
                         type="number"
                         value={transactionForm.amount}

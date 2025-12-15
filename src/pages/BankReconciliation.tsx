@@ -307,7 +307,7 @@ export default function BankReconciliation() {
                   {account.is_active && <Badge variant="outline">{t("common.active")}</Badge>}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{Number(account.current_balance).toLocaleString()} HTG</p>
+                  <p className="text-2xl font-bold">${Number(account.current_balance).toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">
                     {account.bank_name || t("bank.notSpecified")}
                     {account.account_number && ` • ${account.account_number.slice(-4)}`}
@@ -417,11 +417,11 @@ export default function BankReconciliation() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalIncome")}</p>
-                  <p className="text-xl font-bold text-primary">{totalIncome.toLocaleString()} HTG</p>
+                  <p className="text-xl font-bold text-primary">${totalIncome.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalExpense")}</p>
-                  <p className="text-xl font-bold text-destructive">{totalExpense.toLocaleString()} HTG</p>
+                  <p className="text-xl font-bold text-destructive">${totalExpense.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.reconciled")}</p>
@@ -519,7 +519,7 @@ function TransactionTable({ transactions, language, t, onToggleReconcile }: Tran
             <TableCell className="text-right font-medium">
               <span className={tx.transaction_type === "income" ? "text-primary" : "text-destructive"}>
                 {tx.transaction_type === "income" ? "+" : "-"}
-                {Number(tx.amount).toLocaleString()} HTG
+                ${Number(tx.amount).toLocaleString()}
               </span>
             </TableCell>
             <TableCell>

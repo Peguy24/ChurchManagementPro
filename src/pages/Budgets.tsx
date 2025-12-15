@@ -283,7 +283,7 @@ export default function Budgets() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalPlanned.toLocaleString()} HTG</div>
+              <div className="text-2xl font-bold">${totalPlanned.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">{t("budget.fiscalYear")} {selectedYear}</p>
             </CardContent>
           </Card>
@@ -293,7 +293,7 @@ export default function Budgets() {
               <TrendingDown className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">{totalSpent.toLocaleString()} HTG</div>
+              <div className="text-2xl font-bold text-destructive">${totalSpent.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">{t("budget.expensesApproved")}</p>
             </CardContent>
           </Card>
@@ -304,7 +304,7 @@ export default function Budgets() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">
-                {(totalPlanned - totalSpent).toLocaleString()} HTG
+                ${(totalPlanned - totalSpent).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">{t("budget.available")}</p>
             </CardContent>
@@ -356,11 +356,11 @@ export default function Budgets() {
                         <TableCell className="font-medium">{budget.name}</TableCell>
                         <TableCell>{budget.category?.name || "-"}</TableCell>
                         <TableCell>{budget.branch?.name || t("common.all")}</TableCell>
-                        <TableCell className="text-right">{planned.toLocaleString()} HTG</TableCell>
-                        <TableCell className="text-right text-destructive">{spent.toLocaleString()} HTG</TableCell>
+                        <TableCell className="text-right">${planned.toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-destructive">${spent.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
                           <span className={remaining < 0 ? "text-destructive" : "text-primary"}>
-                            {remaining.toLocaleString()} HTG
+                            ${remaining.toLocaleString()}
                           </span>
                         </TableCell>
                         <TableCell>

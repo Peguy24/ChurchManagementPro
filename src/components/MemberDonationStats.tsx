@@ -108,9 +108,9 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   }));
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("fr-FR", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "HTG",
+      currency: "USD",
       minimumFractionDigits: 0,
     }).format(value);
   };
