@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   DollarSign, 
@@ -11,7 +13,9 @@ import {
   PiggyBank,
   CreditCard,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  AlertTriangle,
+  Banknote
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -105,15 +109,43 @@ const FinancialDashboard = () => {
     },
   });
 
-  // Fetch budgets for current year
+  // Fetch budgets for current year with category info
   const { data: budgets } = useQuery({
     queryKey: ["budgets-current-year"],
     queryFn: async () => {
       const { data } = await supabase
         .from("budgets")
-        .select("planned_amount, name")
+        .select("*, category:expense_categories(id, name)")
         .eq("fiscal_year", currentDate.getFullYear())
         .eq("status", "active");
+      return data || [];
+    },
+  });
+
+  // Fetch cash registers
+  const { data: cashRegisters } = useQuery({
+    queryKey: ["cash-registers"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("cash_registers")
+        .select("*")
+        .eq("is_active", true);
+      return data || [];
+    },
+  });
+
+  // Fetch approved expenses by category for budget comparison
+  const { data: approvedExpenses } = useQuery({
+    queryKey: ["approved-expenses-current-year"],
+    queryFn: async () => {
+      const yearStart = `${currentDate.getFullYear()}-01-01`;
+      const yearEnd = `${currentDate.getFullYear()}-12-31`;
+      const { data } = await supabase
+        .from("expenses")
+        .select("amount, category_id")
+        .eq("status", "approved")
+        .gte("expense_date", yearStart)
+        .lte("expense_date", yearEnd);
       return data || [];
     },
   });
@@ -166,9 +198,33 @@ const FinancialDashboard = () => {
   const expenseChange = lastMonthExpensesTotal > 0 ? ((totalExpenses - lastMonthExpensesTotal) / lastMonthExpensesTotal) * 100 : 0;
 
   const totalBankBalance = bankAccounts?.reduce((sum, a) => sum + Number(a.current_balance || 0), 0) || 0;
+  const totalCashBalance = cashRegisters?.reduce((sum, r) => sum + Number(r.current_balance || 0), 0) || 0;
   const totalBudget = budgets?.reduce((sum, b) => sum + Number(b.planned_amount), 0) || 0;
 
   const netIncome = totalIncome - totalExpenses;
+
+  // Calculate budget alerts
+  const budgetAlerts = budgets?.map(budget => {
+    const categoryId = (budget.category as any)?.id;
+    const spentAmount = approvedExpenses
+      ?.filter(e => e.category_id === categoryId)
+      .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const plannedAmount = Number(budget.planned_amount);
+    const percentage = plannedAmount > 0 ? (spentAmount / plannedAmount) * 100 : 0;
+    const isOverBudget = percentage > 100;
+    const isNearLimit = percentage >= 80 && percentage <= 100;
+    
+    return {
+      name: budget.name,
+      categoryName: (budget.category as any)?.name || "Non catégorisé",
+      planned: plannedAmount,
+      spent: spentAmount,
+      percentage,
+      isOverBudget,
+      isNearLimit,
+      remaining: plannedAmount - spentAmount,
+    };
+  }).filter(b => b.isOverBudget || b.isNearLimit) || [];
 
   // Income by type for pie chart
   const incomeByType = currentDonations?.reduce((acc, d) => {
@@ -396,28 +452,126 @@ const FinancialDashboard = () => {
           </Card>
         </div>
 
-        {/* Bank Accounts Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              {t("finance.bankAccounts")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              {bankAccounts?.map((account) => (
-                <div key={account.id} className="p-4 rounded-lg border bg-card">
-                  <p className="font-medium">{account.name}</p>
-                  <p className="text-sm text-muted-foreground">{account.bank_name}</p>
-                  <p className="text-xl font-bold mt-2">{formatCurrency(Number(account.current_balance || 0))}</p>
-                </div>
-              ))}
-              {(!bankAccounts || bankAccounts.length === 0) && (
-                <p className="text-muted-foreground col-span-3 text-center py-4">
-                  {t("common.noData")}
+        {/* Budget Alerts */}
+        {budgetAlerts.length > 0 && (
+          <Card className="border-orange-200 bg-orange-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-700">
+                <AlertTriangle className="h-5 w-5" />
+                Alertes Budgétaires
+              </CardTitle>
+              <CardDescription>Budgets proches ou dépassés</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {budgetAlerts.map((alert, index) => (
+                  <div key={index} className="p-4 rounded-lg border bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-medium">{alert.name}</p>
+                        <p className="text-sm text-muted-foreground">{alert.categoryName}</p>
+                      </div>
+                      <Badge variant={alert.isOverBudget ? "destructive" : "secondary"}>
+                        {alert.isOverBudget ? "Dépassé" : "Proche limite"}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Dépensé: {formatCurrency(alert.spent)}</span>
+                        <span>Budget: {formatCurrency(alert.planned)}</span>
+                      </div>
+                      <Progress 
+                        value={Math.min(alert.percentage, 100)} 
+                        className={alert.isOverBudget ? "[&>div]:bg-destructive" : "[&>div]:bg-orange-500"}
+                      />
+                      <p className={`text-sm font-medium ${alert.remaining < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                        {alert.remaining < 0 
+                          ? `Dépassement: ${formatCurrency(Math.abs(alert.remaining))}` 
+                          : `Restant: ${formatCurrency(alert.remaining)}`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Cash Registers & Bank Accounts Overview */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Cash Registers */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Banknote className="h-5 w-5 text-green-600" />
+                Caisses
+              </CardTitle>
+              <CardDescription>Solde total: {formatCurrency(totalCashBalance)}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {cashRegisters?.map((register) => (
+                  <div key={register.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{register.name}</span>
+                    </div>
+                    <span className={`font-bold ${Number(register.current_balance) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {formatCurrency(Number(register.current_balance || 0))}
+                    </span>
+                  </div>
+                ))}
+                {(!cashRegisters || cashRegisters.length === 0) && (
+                  <p className="text-muted-foreground text-center py-4">{t("common.noData")}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bank Accounts */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                {t("finance.bankAccounts")}
+              </CardTitle>
+              <CardDescription>Solde total: {formatCurrency(totalBankBalance)}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {bankAccounts?.map((account) => (
+                  <div key={account.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                    <div>
+                      <p className="font-medium">{account.name}</p>
+                      <p className="text-xs text-muted-foreground">{account.bank_name}</p>
+                    </div>
+                    <span className="font-bold text-blue-600">
+                      {formatCurrency(Number(account.current_balance || 0))}
+                    </span>
+                  </div>
+                ))}
+                {(!bankAccounts || bankAccounts.length === 0) && (
+                  <p className="text-muted-foreground text-center py-4">{t("common.noData")}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Total Available Funds */}
+        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Fonds Disponibles Totaux</p>
+                <p className="text-3xl font-bold text-primary">
+                  {formatCurrency(totalCashBalance + totalBankBalance)}
                 </p>
-              )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Caisses: {formatCurrency(totalCashBalance)} + Banques: {formatCurrency(totalBankBalance)}
+                </p>
+              </div>
+              <DollarSign className="h-12 w-12 text-primary/50" />
             </div>
           </CardContent>
         </Card>

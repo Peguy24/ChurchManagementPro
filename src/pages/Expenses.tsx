@@ -222,6 +222,47 @@ export default function Expenses() {
         .eq("id", id);
       if (error) throw error;
 
+      // When approved, deduct from account balance
+      if (status === "approved" && expense) {
+        const amount = Number(expense.amount);
+        
+        if (expense.cash_register_id) {
+          const register = cashRegisters.find(r => r.id === expense.cash_register_id);
+          if (register) {
+            const newBalance = Number(register.current_balance) - amount;
+            await supabase.from("cash_registers").update({ current_balance: newBalance }).eq("id", expense.cash_register_id);
+            
+            // Add cash transaction
+            await supabase.from("cash_transactions").insert({
+              cash_register_id: expense.cash_register_id,
+              transaction_type: "expense",
+              amount: -amount,
+              description: expense.description,
+              transaction_date: expense.expense_date,
+              linked_expense_id: id,
+            });
+          }
+        }
+        
+        if (expense.bank_account_id) {
+          const account = bankAccounts.find(a => a.id === expense.bank_account_id);
+          if (account) {
+            const newBalance = Number(account.current_balance) - amount;
+            await supabase.from("bank_accounts").update({ current_balance: newBalance }).eq("id", expense.bank_account_id);
+            
+            // Add bank transaction
+            await supabase.from("bank_transactions").insert({
+              bank_account_id: expense.bank_account_id,
+              transaction_type: "expense",
+              amount: amount,
+              description: expense.description,
+              transaction_date: expense.expense_date,
+              linked_expense_id: id,
+            });
+          }
+        }
+      }
+
       // Send email notification if approved or rejected
       if ((status === "approved" || status === "rejected") && expense?.created_by) {
         const creatorProfile = userProfiles.find((p) => p.id === expense.created_by);
@@ -257,6 +298,8 @@ export default function Expenses() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
+      queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast({ title: t("common.save") });
     },
   });
