@@ -40,6 +40,7 @@ const getNavItems = (t: (key: string) => string) => [
   { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
   { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
   { to: "/donations", icon: DollarSign, label: t("nav.donations") },
+  { to: "/donations/categories", icon: FolderOpen, label: "Catégories Recettes" },
   { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
   { to: "/finance", icon: LayoutDashboard, label: t("nav.financialDashboard") },
   { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
