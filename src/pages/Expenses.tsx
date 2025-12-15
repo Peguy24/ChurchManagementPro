@@ -209,15 +209,51 @@ export default function Expenses() {
   };
 
   const updateExpenseStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "pending" | "approved" | "rejected" }) => {
+    mutationFn: async ({ id, status, expense }: { id: string; status: "pending" | "approved" | "rejected"; expense?: any }) => {
+      const { data: userData } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from("expenses")
         .update({ 
           status, 
-          approved_at: status === "approved" ? new Date().toISOString() : null 
+          approved_at: status === "approved" ? new Date().toISOString() : null,
+          approved_by: userData?.user?.id || null
         })
         .eq("id", id);
       if (error) throw error;
+
+      // Send email notification if approved or rejected
+      if ((status === "approved" || status === "rejected") && expense?.created_by) {
+        const creatorProfile = userProfiles.find((p) => p.id === expense.created_by);
+        const approverProfile = userProfiles.find((p) => p.id === userData?.user?.id);
+        
+        // Get creator email from auth (we need to fetch it)
+        const { data: members } = await supabase
+          .from("members")
+          .select("email")
+          .eq("user_id", expense.created_by)
+          .single();
+
+        const creatorEmail = members?.email;
+        
+        if (creatorEmail) {
+          try {
+            await supabase.functions.invoke("send-expense-notification", {
+              body: {
+                expenseId: id,
+                description: expense.description,
+                amount: Number(expense.amount),
+                status,
+                creatorEmail,
+                creatorName: creatorProfile ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim() || "Utilisateur" : "Utilisateur",
+                approverName: approverProfile ? `${approverProfile.first_name || ""} ${approverProfile.last_name || ""}`.trim() || "Administrateur" : "Administrateur",
+              },
+            });
+          } catch (emailError) {
+            console.error("Failed to send notification email:", emailError);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
@@ -671,7 +707,7 @@ export default function Expenses() {
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8 text-primary"
-                                onClick={() => updateExpenseStatus.mutate({ id: expense.id, status: "approved" })}
+                                onClick={() => updateExpenseStatus.mutate({ id: expense.id, status: "approved", expense })}
                               >
                                 <Check className="h-4 w-4" />
                               </Button>
@@ -679,7 +715,7 @@ export default function Expenses() {
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8 text-destructive"
-                                onClick={() => updateExpenseStatus.mutate({ id: expense.id, status: "rejected" })}
+                                onClick={() => updateExpenseStatus.mutate({ id: expense.id, status: "rejected", expense })}
                               >
                                 <X className="h-4 w-4" />
                               </Button>
