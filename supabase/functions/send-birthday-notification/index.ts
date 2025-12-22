@@ -19,6 +19,14 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function replaceTemplateVariables(template: string, variables: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,6 +40,26 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Get email template
+    const { data: template, error: templateError } = await supabaseClient
+      .from("email_templates")
+      .select("subject, body_html, is_active")
+      .eq("template_type", "birthday")
+      .maybeSingle();
+
+    if (templateError) {
+      console.error("Error fetching template:", templateError);
+    }
+
+    // Check if template is active
+    if (template && !template.is_active) {
+      console.log("Birthday email template is disabled");
+      return new Response(
+        JSON.stringify({ message: "Birthday notifications are disabled" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Get today's date components for birthday matching
     const today = new Date();
     const month = today.getMonth() + 1;
@@ -40,7 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Checking birthdays for ${month}/${day}`);
 
     // Query members with birthdays today
-    // Use extract to match month and day from date_of_birth
     const { data: birthdayMembers, error: queryError } = await supabaseClient
       .from("members")
       .select("id, first_name, last_name, email, date_of_birth")
@@ -69,32 +96,40 @@ const handler = async (req: Request): Promise<Response> => {
 
       const safeFirstName = escapeHtml(member.first_name);
       const safeLastName = escapeHtml(member.last_name);
+      const memberName = `${safeFirstName} ${safeLastName}`;
 
       // Calculate age
       const dob = new Date(member.date_of_birth);
       const age = today.getFullYear() - dob.getFullYear();
 
+      // Prepare template variables
+      const variables = {
+        member_name: memberName,
+        age: age.toString(),
+      };
+
+      // Use custom template or default
+      const emailSubject = template?.subject 
+        ? replaceTemplateVariables(template.subject, variables)
+        : `🎂 Joyeux Anniversaire ${memberName}!`;
+      
+      const emailBody = template?.body_html 
+        ? replaceTemplateVariables(template.body_html, variables)
+        : `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #4F46E5;">🎉 Joyeux Anniversaire ${memberName}! 🎉</h1>
+            <p>En ce jour spécial, toute la communauté de l'église vous souhaite un très joyeux ${age}ème anniversaire!</p>
+            <p>Que cette nouvelle année de vie soit remplie de bénédictions.</p>
+            <p>Avec amour,<br><strong>Votre église</strong></p>
+          </div>
+        `;
+
       try {
         const emailResponse = await resend.emails.send({
           from: "Église <onboarding@resend.dev>",
           to: [member.email],
-          subject: "🎂 Joyeux Anniversaire!",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4F46E5;">🎉 Joyeux Anniversaire ${safeFirstName}! 🎉</h1>
-              <p style="font-size: 18px;">Cher(e) ${safeFirstName} ${safeLastName},</p>
-              <p>En ce jour spécial, toute la communauté de l'église vous souhaite un très joyeux ${age}ème anniversaire!</p>
-              <p>Que cette nouvelle année de vie soit remplie de:</p>
-              <ul>
-                <li>🙏 Bénédictions divines</li>
-                <li>❤️ Amour et joie</li>
-                <li>✨ Succès et accomplissements</li>
-                <li>🌟 Santé et bonheur</li>
-              </ul>
-              <p style="font-size: 16px; font-style: italic;">"L'Éternel te bénira et te gardera." - Nombres 6:24</p>
-              <p>Avec tout notre amour,<br><strong>L'équipe de l'église</strong></p>
-            </div>
-          `,
+          subject: emailSubject,
+          html: emailBody,
         });
 
         console.log(`Birthday email sent to ${member.email}:`, emailResponse);

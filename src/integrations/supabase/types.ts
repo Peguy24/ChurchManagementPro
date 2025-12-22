@@ -575,6 +575,36 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          body_html: string
+          created_at: string
+          id: string
+          is_active: boolean
+          subject: string
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          body_html: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject: string
+          template_type: string
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          template_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expense_categories: {
         Row: {
           created_at: string

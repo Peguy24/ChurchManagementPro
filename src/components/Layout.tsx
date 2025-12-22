@@ -21,6 +21,7 @@ import {
   Wallet,
   History,
   FolderOpen,
+  Mail,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,6 +55,7 @@ const getNavItems = (t: (key: string) => string) => [
   { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
   { to: "/branches", icon: Church, label: t("nav.branches") },
   { to: "/custom-fields", icon: Settings, label: t("nav.customFields") },
+  { to: "/settings/email-templates", icon: Mail, label: "Modèles d'emails" },
 ];
 
 export default function Layout({ children }: LayoutProps) {
