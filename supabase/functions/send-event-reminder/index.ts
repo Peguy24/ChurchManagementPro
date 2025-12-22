@@ -19,6 +19,14 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function replaceTemplateVariables(template: string, variables: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,25 +40,30 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Get email template
+    const { data: template, error: templateError } = await supabaseClient
+      .from("email_templates")
+      .select("subject, body_html, is_active")
+      .eq("template_type", "event_reminder")
+      .maybeSingle();
+
+    if (templateError) {
+      console.error("Error fetching template:", templateError);
+    }
+
+    // Check if template is active
+    if (template && !template.is_active) {
+      console.log("Event reminder email template is disabled");
+      return new Response(
+        JSON.stringify({ message: "Event reminders are disabled" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Get tomorrow's date for upcoming events
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
-
-    // Also check for events in 3 days for early reminder
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
-    const threeDaysStr = threeDaysLater.toISOString().split("T")[0];
-
-    console.log(`Checking events for ${tomorrowStr} and ${threeDaysStr}`);
-
-    // Get upcoming attendance events (services, meetings, etc.)
-    const { data: upcomingEvents, error: eventsError } = await supabaseClient
-      .from("attendance_records")
-      .select("event_date, event_type")
-      .or(`event_date.eq.${tomorrowStr},event_date.eq.${threeDaysStr}`)
-      .limit(1);
 
     // Get all active members with email for notifications
     const { data: members, error: membersError } = await supabaseClient
@@ -67,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     // For demonstration, we'll send reminders about regular Sunday service
     const dayOfWeek = tomorrow.getDay();
     const isSundayTomorrow = dayOfWeek === 0;
-    const isWednesdayTomorrow = dayOfWeek === 3; // Assuming Wednesday service
+    const isWednesdayTomorrow = dayOfWeek === 3;
 
     if (!isSundayTomorrow && !isWednesdayTomorrow) {
       console.log("No regular service tomorrow, skipping reminders");
@@ -83,16 +96,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const eventType = isSundayTomorrow ? "Culte du Dimanche" : "Service du Mercredi";
-    const eventTime = isSundayTomorrow ? "9h00" : "18h30";
-    const eventDate = tomorrow.toLocaleDateString("fr-FR", { 
+    const serviceType = isSundayTomorrow ? "Dimanche" : "Mercredi";
+    const serviceDate = tomorrow.toLocaleDateString("fr-FR", { 
       weekday: 'long', 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
 
-    console.log(`Sending reminders for ${eventType} on ${eventDate}`);
+    console.log(`Sending reminders for Culte du ${serviceType} on ${serviceDate}`);
 
     const results: any[] = [];
     let successCount = 0;
@@ -102,29 +114,39 @@ const handler = async (req: Request): Promise<Response> => {
       if (!member.email) continue;
 
       const safeFirstName = escapeHtml(member.first_name);
+      const safeLastName = escapeHtml(member.last_name);
+      const memberName = `${safeFirstName} ${safeLastName}`;
+
+      // Prepare template variables
+      const variables = {
+        member_name: memberName,
+        service_type: serviceType,
+        service_date: serviceDate,
+      };
+
+      // Use custom template or default
+      const emailSubject = template?.subject 
+        ? replaceTemplateVariables(template.subject, variables)
+        : `📅 Rappel: Culte du ${serviceType} demain`;
+      
+      const emailBody = template?.body_html 
+        ? replaceTemplateVariables(template.body_html, variables)
+        : `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #4F46E5;">📅 Rappel de Service</h1>
+            <p style="font-size: 18px;">Bonjour ${memberName},</p>
+            <p>Nous vous rappelons notre culte de <strong>${serviceType}</strong> prévu le <strong>${serviceDate}</strong>.</p>
+            <p>Nous espérons vous voir!</p>
+            <p>Votre église</p>
+          </div>
+        `;
 
       try {
         const emailResponse = await resend.emails.send({
           from: "Église <onboarding@resend.dev>",
           to: [member.email],
-          subject: `📅 Rappel: ${eventType} demain`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4F46E5;">📅 Rappel de Service</h1>
-              <p style="font-size: 18px;">Bonjour ${safeFirstName},</p>
-              <p>Nous vous rappelons le service de demain:</p>
-              <div style="background: #F3F4F6; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>📍 Événement:</strong> ${eventType}</p>
-                <p style="margin: 5px 0;"><strong>📆 Date:</strong> ${eventDate}</p>
-                <p style="margin: 5px 0;"><strong>🕐 Heure:</strong> ${eventTime}</p>
-              </div>
-              <p>Nous avons hâte de vous voir!</p>
-              <p style="font-size: 14px; color: #6B7280; font-style: italic;">
-                "Là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux." - Matthieu 18:20
-              </p>
-              <p>À bientôt,<br><strong>L'équipe de l'église</strong></p>
-            </div>
-          `,
+          subject: emailSubject,
+          html: emailBody,
         });
 
         successCount++;
@@ -143,11 +165,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({ 
-        message: `Sent ${successCount} event reminders for ${eventType}`,
+        message: `Sent ${successCount} event reminders for Culte du ${serviceType}`,
         successCount,
         errorCount,
-        eventType,
-        eventDate
+        serviceType,
+        serviceDate
       }),
       {
         status: 200,

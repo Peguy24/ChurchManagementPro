@@ -19,6 +19,14 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function replaceTemplateVariables(template: string, variables: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 interface AttendanceAlert {
   memberId: string;
   memberName: string;
@@ -41,6 +49,26 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Get email template
+    const { data: template, error: templateError } = await supabaseClient
+      .from("email_templates")
+      .select("subject, body_html, is_active")
+      .eq("template_type", "attendance_alert")
+      .maybeSingle();
+
+    if (templateError) {
+      console.error("Error fetching template:", templateError);
+    }
+
+    // Check if template is active
+    if (template && !template.is_active) {
+      console.log("Attendance alert email template is disabled");
+      return new Response(
+        JSON.stringify({ message: "Attendance alerts are disabled" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Get date ranges for current and previous month
     const today = new Date();
@@ -136,30 +164,37 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (const alert of alerts) {
       const safeMemberName = escapeHtml(alert.memberName);
-      const lastAttendanceText = alert.lastAttendance 
-        ? new Date(alert.lastAttendance).toLocaleDateString("fr-FR")
-        : "aucune présence récente";
+      const attendanceRate = `${alert.currentMonthRate.toFixed(0)}%`;
+
+      // Prepare template variables
+      const variables = {
+        member_name: safeMemberName,
+        attendance_rate: attendanceRate,
+      };
+
+      // Use custom template or default
+      const emailSubject = template?.subject 
+        ? replaceTemplateVariables(template.subject, variables)
+        : "💙 Nous pensons à vous";
+      
+      const emailBody = template?.body_html 
+        ? replaceTemplateVariables(template.body_html, variables)
+        : `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #4F46E5;">💙 Nous pensons à vous</h1>
+            <p style="font-size: 18px;">Bonjour ${safeMemberName},</p>
+            <p>Nous avons remarqué que nous ne vous avons pas vu récemment à l'église et nous voulions simplement vous faire savoir que vous nous manquez.</p>
+            <p>Votre présence nous manque! Si vous traversez une période difficile ou si vous avez besoin de soutien, n'hésitez pas à nous contacter.</p>
+            <p>Avec amour,<br><strong>Votre église</strong></p>
+          </div>
+        `;
 
       try {
         const emailResponse = await resend.emails.send({
           from: "Église <onboarding@resend.dev>",
           to: [alert.email],
-          subject: "💙 Nous pensons à vous",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4F46E5;">💙 Nous pensons à vous</h1>
-              <p style="font-size: 18px;">Bonjour ${safeMemberName},</p>
-              <p>Nous avons remarqué que nous ne vous avons pas vu récemment à l'église et nous voulions simplement vous faire savoir que vous nous manquez.</p>
-              <div style="background: #FEF3C7; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>📅 Dernière visite:</strong> ${escapeHtml(lastAttendanceText)}</p>
-              </div>
-              <p>Si vous traversez une période difficile ou si vous avez besoin de quoi que ce soit, n'hésitez pas à nous contacter. Notre communauté est là pour vous soutenir.</p>
-              <p style="font-size: 14px; color: #6B7280; font-style: italic;">
-                "Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux." - Matthieu 18:20
-              </p>
-              <p>Avec tout notre amour et nos prières,<br><strong>L'équipe de l'église</strong></p>
-            </div>
-          `,
+          subject: emailSubject,
+          html: emailBody,
         });
 
         successCount++;
