@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar, FileText, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
+import { generateFiscalReceiptPDF, downloadFiscalReceiptPDF, FiscalReceiptData } from "@/lib/fiscalReceiptPDF";
 
 interface MemberDonationStatsProps {
   memberId: string;
@@ -14,6 +19,8 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning
 
 export default function MemberDonationStats({ memberId }: MemberDonationStatsProps) {
   const { t } = useLanguage();
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [generatingReceipt, setGeneratingReceipt] = useState(false);
 
   const { data: donations, isLoading } = useQuery({
     queryKey: ["member-donations", memberId],
@@ -45,6 +52,90 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
       return data || [];
     },
   });
+
+  // Fetch donations for selected year (for fiscal receipt)
+  const { data: yearDonations } = useQuery({
+    queryKey: ["member-donations-year", memberId, selectedYear],
+    queryFn: async () => {
+      const startDate = `${selectedYear}-01-01`;
+      const endDate = `${selectedYear}-12-31`;
+      
+      const { data, error } = await supabase
+        .from("donations")
+        .select("id, amount, donation_type, donation_date, payment_method, description")
+        .eq("member_id", memberId)
+        .gte("donation_date", startDate)
+        .lte("donation_date", endDate)
+        .order("donation_date", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch member info for receipt
+  const { data: memberInfo } = useQuery({
+    queryKey: ["member-info-receipt", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("first_name, last_name, address, email, phone")
+        .eq("id", memberId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Generate available years
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+  // Handle fiscal receipt generation
+  const handleGenerateFiscalReceipt = async () => {
+    if (!memberInfo || !yearDonations || yearDonations.length === 0) {
+      toast.error("Aucune donation trouvée pour cette année");
+      return;
+    }
+
+    setGeneratingReceipt(true);
+    try {
+      const receiptData: FiscalReceiptData = {
+        member: {
+          first_name: memberInfo.first_name,
+          last_name: memberInfo.last_name,
+          address: memberInfo.address,
+          email: memberInfo.email,
+          phone: memberInfo.phone,
+        },
+        churchInfo: {
+          name: "ChurchCRM - Votre Église",
+          address: "Adresse de l'église",
+          phone: "+509 XXXX-XXXX",
+          email: "contact@eglise.org",
+          taxId: "NIF-XXXXXXXX",
+        },
+        year: selectedYear,
+        donations: yearDonations.map((d) => ({
+          date: d.donation_date,
+          type: d.donation_type,
+          description: d.description,
+          amount: Number(d.amount),
+          payment_method: d.payment_method,
+        })),
+      };
+
+      const blob = await generateFiscalReceiptPDF(receiptData);
+      downloadFiscalReceiptPDF(blob, `${memberInfo.first_name}_${memberInfo.last_name}`, selectedYear);
+      toast.success("Relevé fiscal généré avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la génération:", error);
+      toast.error("Erreur lors de la génération du relevé");
+    } finally {
+      setGeneratingReceipt(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -115,16 +206,65 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
     }).format(value);
   };
 
+  // Calculate year total for display
+  const yearTotal = yearDonations?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+  const yearTitheTotal = yearDonations?.filter(d => d.donation_type === "tithe").reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
-          {t("donations.donationHistory")}
-        </CardTitle>
-        <CardDescription>
-          {t("attendance.last6Months")}
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              {t("donations.donationHistory")}
+            </CardTitle>
+            <CardDescription>
+              {t("attendance.last6Months")}
+            </CardDescription>
+          </div>
+          
+          {/* Fiscal Receipt Section */}
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+            <FileText className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                <SelectTrigger className="w-[100px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                size="sm" 
+                onClick={handleGenerateFiscalReceipt}
+                disabled={generatingReceipt || !yearDonations?.length}
+              >
+                {generatingReceipt ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Génération...
+                  </>
+                ) : (
+                  "Relevé Fiscal"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Year summary info */}
+        {yearDonations && yearDonations.length > 0 && (
+          <div className="mt-3 p-2 bg-primary/10 rounded-md text-sm">
+            <span className="font-medium">{selectedYear}:</span>{" "}
+            {yearDonations.length} contributions | Total: {formatCurrency(yearTotal)} | Dîmes: {formatCurrency(yearTitheTotal)}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Stats Overview */}
