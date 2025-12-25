@@ -629,6 +629,75 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          bank_account_id: string | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          hire_date: string | null
+          id: string
+          is_active: boolean | null
+          last_name: string
+          payment_frequency: string | null
+          phone: string | null
+          position: string
+          salary_amount: number
+          updated_at: string
+        }
+        Insert: {
+          bank_account_id?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          hire_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name: string
+          payment_frequency?: string | null
+          phone?: string | null
+          position: string
+          salary_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          bank_account_id?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          hire_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string
+          payment_frequency?: string | null
+          phone?: string | null
+          position?: string
+          salary_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_categories: {
         Row: {
           created_at: string
@@ -1176,6 +1245,79 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      salary_payments: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          cash_register_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          period_end: string
+          period_start: string
+          reference_number: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          cash_register_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          period_end: string
+          period_start: string
+          reference_number?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          cash_register_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          period_end?: string
+          period_start?: string
+          reference_number?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_payments_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_payments_cash_register_id_fkey"
+            columns: ["cash_register_id"]
+            isOneToOne: false
+            referencedRelation: "cash_registers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_payments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       special_funds: {
         Row: {
