@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -18,14 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
+import CameraScanner from "@/components/CameraScanner";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AttendanceRecord {
   event_type: string;
@@ -58,6 +60,8 @@ export default function Attendance() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
   const [kioskMode, setKioskMode] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [kioskCameraActive, setKioskCameraActive] = useState(false);
   const [qrCodeInput, setQrCodeInput] = useState("");
   const [scannedMembers, setScannedMembers] = useState<ScannedMember[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -102,7 +106,7 @@ export default function Attendance() {
     }
   };
 
-  const handleQrCodeScan = async (qrCode: string) => {
+  const handleQrCodeScan = useCallback(async (qrCode: string) => {
     if (!qrCode.trim()) return;
 
     try {
@@ -175,7 +179,7 @@ export default function Attendance() {
           member_id: member.id,
           event_date: today,
           event_type: "Culte",
-          scan_method: "scanner_externe",
+          scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
         });
 
       if (insertError) throw insertError;
@@ -208,7 +212,7 @@ export default function Attendance() {
         scanInputRef.current.focus();
       }
     }
-  };
+  }, [toast, t, playSound, kioskCameraActive, cameraActive]);
 
   const handleScanInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQrCodeInput(e.target.value);
@@ -318,17 +322,19 @@ export default function Attendance() {
   if (kioskMode) {
     return (
       <div className="fixed inset-0 bg-background z-50 flex flex-col">
-        {/* Hidden scanner input */}
-        <Input
-          ref={scanInputRef}
-          type="text"
-          value={qrCodeInput}
-          onChange={handleScanInputChange}
-          onKeyDown={handleScanInputKeyDown}
-          onBlur={() => scanInputRef.current?.focus()}
-          className="absolute opacity-0 pointer-events-none"
-          autoFocus
-        />
+        {/* Hidden scanner input for external scanner */}
+        {!kioskCameraActive && (
+          <Input
+            ref={scanInputRef}
+            type="text"
+            value={qrCodeInput}
+            onChange={handleScanInputChange}
+            onKeyDown={handleScanInputKeyDown}
+            onBlur={() => scanInputRef.current?.focus()}
+            className="absolute opacity-0 pointer-events-none"
+            autoFocus
+          />
+        )}
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-card">
@@ -337,11 +343,22 @@ export default function Attendance() {
             <p className="text-xl text-muted-foreground mt-1">{t("attendance.scanQrToMarkAttendance")}</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              size="lg"
+              variant={kioskCameraActive ? "default" : "outline"}
+              onClick={() => setKioskCameraActive(!kioskCameraActive)}
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              {kioskCameraActive ? t("attendance.stopCamera") : t("attendance.startCamera")}
+            </Button>
             <ScannerSettings onSettingsChange={setSoundSettings} />
             <Button 
               size="lg"
               variant="outline"
-              onClick={() => setKioskMode(false)}
+              onClick={() => {
+                setKioskMode(false);
+                setKioskCameraActive(false);
+              }}
             >
               <Minimize className="mr-2 h-5 w-5" />
               {t("attendance.closeKioskMode")}
@@ -349,58 +366,84 @@ export default function Attendance() {
           </div>
         </div>
 
-        {/* Scanned Members Grid */}
+        {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
-          {scannedMembers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <Scan className="h-32 w-32 text-muted-foreground/20 mb-6" />
-              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">{t("attendance.readyToScan")}</h2>
-              <p className="text-xl text-muted-foreground">{t("attendance.scanQrToStart")}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {scannedMembers.map((member, index) => (
-                <Card 
-                  key={`${member.id}-${index}`}
-                  className={`overflow-hidden transition-all duration-300 ${
-                    member.status === 'success' 
-                      ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
-                      : 'border-red-500 bg-red-50 dark:bg-red-950/20'
-                  } ${index === 0 ? 'ring-4 ring-primary' : ''}`}
-                >
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
-                        <AvatarImage src={member.photo_url || undefined} />
-                        <AvatarFallback className="text-2xl">
-                          {member.first_name[0]}{member.last_name[0] || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <CardTitle className="text-2xl mb-1">
-                          {member.first_name} {member.last_name}
-                        </CardTitle>
-                        <p className="text-lg text-muted-foreground">{member.time}</p>
-                      </div>
-                      {member.status === 'success' ? (
-                        <CheckCircle className="h-16 w-16 text-green-600" />
-                      ) : (
-                        <XCircle className="h-16 w-16 text-red-600" />
-                      )}
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+            {/* Camera Scanner Section */}
+            {kioskCameraActive && (
+              <div className="flex flex-col">
+                <Card className="flex-1 border-primary">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Camera className="h-5 w-5" />
+                      {t("attendance.cameraScanner")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Badge 
-                      variant={member.status === 'success' ? 'default' : 'destructive'}
-                      className="text-lg px-4 py-2 w-full justify-center"
-                    >
-                      {member.status === 'success' ? `✓ ${t("attendance.attendanceMarked")}` : `✗ ${t("attendance.error")}`}
-                    </Badge>
+                    <CameraScanner 
+                      onScan={handleQrCodeScan}
+                      isActive={kioskCameraActive}
+                      onActiveChange={setKioskCameraActive}
+                    />
                   </CardContent>
                 </Card>
-              ))}
+              </div>
+            )}
+
+            {/* Scanned Members Grid */}
+            <div className={`flex flex-col ${kioskCameraActive ? '' : 'lg:col-span-2'}`}>
+              {scannedMembers.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <Scan className="h-32 w-32 text-muted-foreground/20 mb-6" />
+                  <h2 className="text-3xl font-semibold text-muted-foreground mb-2">{t("attendance.readyToScan")}</h2>
+                  <p className="text-xl text-muted-foreground">{t("attendance.scanQrToStart")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {scannedMembers.map((member, index) => (
+                    <Card 
+                      key={`${member.id}-${index}`}
+                      className={`overflow-hidden transition-all duration-300 ${
+                        member.status === 'success' 
+                          ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
+                          : 'border-red-500 bg-red-50 dark:bg-red-950/20'
+                      } ${index === 0 ? 'ring-4 ring-primary' : ''}`}
+                    >
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+                            <AvatarImage src={member.photo_url || undefined} />
+                            <AvatarFallback className="text-2xl">
+                              {member.first_name[0]}{member.last_name[0] || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <CardTitle className="text-2xl mb-1">
+                              {member.first_name} {member.last_name}
+                            </CardTitle>
+                            <p className="text-lg text-muted-foreground">{member.time}</p>
+                          </div>
+                          {member.status === 'success' ? (
+                            <CheckCircle className="h-16 w-16 text-green-600" />
+                          ) : (
+                            <XCircle className="h-16 w-16 text-red-600" />
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Badge 
+                          variant={member.status === 'success' ? 'default' : 'destructive'}
+                          className="text-lg px-4 py-2 w-full justify-center"
+                        >
+                          {member.status === 'success' ? `✓ ${t("attendance.attendanceMarked")}` : `✗ ${t("attendance.error")}`}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer Stats */}
@@ -483,23 +526,46 @@ export default function Attendance() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t("attendance.scanField")}</label>
-                <Input
-                  ref={scanInputRef}
-                  type="text"
-                  value={qrCodeInput}
-                  onChange={handleScanInputChange}
-                  onKeyDown={handleScanInputKeyDown}
-                  onBlur={() => scanInputRef.current?.focus()}
-                  placeholder={t("attendance.scanQrHere")}
-                  className="text-lg font-mono"
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("attendance.scannerAutoType")}
-                </p>
-              </div>
+              <Tabs defaultValue="external" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="external" className="gap-2">
+                    <Scan className="h-4 w-4" />
+                    {t("attendance.externalScanner")}
+                  </TabsTrigger>
+                  <TabsTrigger value="camera" className="gap-2">
+                    <Camera className="h-4 w-4" />
+                    {t("attendance.cameraScanner")}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="external" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t("attendance.scanField")}</label>
+                    <Input
+                      ref={scanInputRef}
+                      type="text"
+                      value={qrCodeInput}
+                      onChange={handleScanInputChange}
+                      onKeyDown={handleScanInputKeyDown}
+                      onBlur={() => scanInputRef.current?.focus()}
+                      placeholder={t("attendance.scanQrHere")}
+                      className="text-lg font-mono"
+                      autoFocus
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("attendance.scannerAutoType")}
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="camera" className="space-y-4 mt-4">
+                  <CameraScanner 
+                    onScan={handleQrCodeScan}
+                    isActive={cameraActive}
+                    onActiveChange={setCameraActive}
+                  />
+                </TabsContent>
+              </Tabs>
 
               {scannedMembers.length > 0 && (
                 <div className="space-y-2">
@@ -510,8 +576,8 @@ export default function Attendance() {
                         key={`${member.id}-${index}`}
                         className={`flex items-center gap-3 p-3 rounded-lg border ${
                           member.status === 'success' 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
+                            ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800' 
+                            : 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
                         }`}
                       >
                         {member.status === 'success' ? (
