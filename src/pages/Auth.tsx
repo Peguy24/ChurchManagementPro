@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Church } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ export default function Auth() {
       return;
     }
 
-    const { error } = await signUp(
+    const { error, data } = await signUp(
       signupForm.email,
       signupForm.password,
       signupForm.firstName,
@@ -127,9 +128,24 @@ export default function Auth() {
         });
       }
     } else {
+      // Notify admins about new user
+      try {
+        await supabase.functions.invoke('notify-admin-new-user', {
+          body: {
+            userId: data?.user?.id,
+            userEmail: signupForm.email,
+            firstName: signupForm.firstName,
+            lastName: signupForm.lastName,
+          },
+        });
+      } catch (notifyError) {
+        console.error('Failed to notify admins:', notifyError);
+        // Don't block signup if notification fails
+      }
+
       toast({
         title: 'Inscription réussie!',
-        description: 'Votre compte a été créé avec succès. Vous êtes connecté automatiquement.',
+        description: 'Votre compte a été créé. Un administrateur doit approuver votre accès.',
       });
       navigate('/');
     }
