@@ -13,9 +13,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Clock, MapPin, Plus, Users, Loader2 } from "lucide-react";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import EventDialog from "@/components/EventDialog";
+
+// Helper to parse date string without timezone issues
+const parseEventDate = (dateStr: string): Date => {
+  // Parse as local date to avoid timezone offset issues
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 interface Event {
   id: string;
@@ -65,14 +72,18 @@ export default function Events() {
   });
 
   const eventsOnSelectedDate = selectedDate
-    ? events.filter((event) => isSameDay(new Date(event.event_date), selectedDate))
+    ? events.filter((event) => isSameDay(parseEventDate(event.event_date), selectedDate))
     : [];
 
-  const eventDates = events.map((event) => new Date(event.event_date));
+  const eventDates = events.map((event) => parseEventDate(event.event_date));
 
-  const upcomingEvents = events.filter(
-    (event) => new Date(event.event_date) >= new Date(new Date().setHours(0, 0, 0, 0))
-  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingEvents = events.filter((event) => {
+    const eventDate = parseEventDate(event.event_date);
+    return eventDate >= today;
+  });
 
   const handleEditEvent = (event: Event) => {
     setSelectedEvent(event);
@@ -245,7 +256,7 @@ export default function Events() {
                             <div>
                               <CardTitle className="text-base">{event.name}</CardTitle>
                               <CardDescription className="mt-1 text-sm">
-                                {format(new Date(event.event_date), "PPP", { locale: fr })}
+                                {format(parseEventDate(event.event_date), "PPP", { locale: fr })}
                               </CardDescription>
                             </div>
                             <Badge
