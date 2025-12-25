@@ -233,9 +233,10 @@ export default function Attendance() {
       // Mark attendance for today
       const today = new Date().toISOString().split('T')[0];
       
-      // Get selected event info
-      const selectedEvent = todayEvents.find(e => e.id === selectedEventId);
+      // Get selected event info - only use if selectedEventId is valid and exists in todayEvents
+      const selectedEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
       const eventType = selectedEvent?.name || "Culte";
+      const eventIdToUse = selectedEvent ? selectedEventId : null;
       
       // Check if already marked today for this event (or any event if no event selected)
       let existingQuery = supabase
@@ -244,8 +245,11 @@ export default function Attendance() {
         .eq("member_id", member.id)
         .eq("event_date", today);
       
-      if (selectedEventId) {
-        existingQuery = existingQuery.eq("event_id", selectedEventId);
+      if (eventIdToUse) {
+        existingQuery = existingQuery.eq("event_id", eventIdToUse);
+      } else {
+        // If no specific event, check for any attendance today without event_id
+        existingQuery = existingQuery.is("event_id", null);
       }
       
       const { data: existing } = await existingQuery.maybeSingle();
@@ -276,7 +280,7 @@ export default function Attendance() {
           member_id: member.id,
           event_date: today,
           event_type: eventType,
-          event_id: selectedEventId || null,
+          event_id: eventIdToUse,
           scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
         });
 
