@@ -520,139 +520,206 @@ export default function MemberCards() {
             return (
               <Card
                 key={member.id}
-                className={`overflow-hidden border-2 transition-all cursor-pointer print:break-inside-avoid print:mb-4 relative bg-gradient-to-br from-background to-muted/30 ${
+                className={`group overflow-hidden transition-all duration-300 cursor-pointer print:break-inside-avoid print:mb-4 relative ${
                   shouldPrint ? "" : "print:hidden"
-                } ${isSelected ? "border-primary shadow-lg" : "border-primary/20 opacity-60 hover:opacity-80"}`}
+                } ${isSelected 
+                  ? "ring-2 ring-primary shadow-xl scale-[1.02]" 
+                  : "hover:shadow-lg hover:scale-[1.01] opacity-70 hover:opacity-90"
+                }`}
                 onClick={() => toggleMemberSelection(member.id)}
+                style={{
+                  background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 0%, ${cardCustomization?.secondaryColor || 'hsl(221, 83%, 25%)'} 100%)`,
+                }}
               >
-                {/* Selection Checkbox - Hidden when printing */}
+                {/* Selection Indicator */}
+                <div className={`absolute top-0 left-0 w-full h-1 transition-all duration-300 ${
+                  isSelected ? 'bg-secondary' : 'bg-transparent'
+                }`} />
+                
+                {/* Selection Checkbox */}
                 <div 
-                  className="absolute top-2 right-2 z-10 print:hidden"
+                  className="absolute top-3 right-3 z-10 print:hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => toggleMemberSelection(member.id)}
-                    className="h-5 w-5 bg-background border-2"
-                  />
+                  <div className={`p-1 rounded-full transition-all duration-300 ${
+                    isSelected ? 'bg-secondary shadow-lg' : 'bg-white/20 backdrop-blur-sm'
+                  }`}>
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleMemberSelection(member.id)}
+                      className="h-5 w-5 border-2 border-white data-[state=checked]:bg-white data-[state=checked]:text-primary"
+                    />
+                  </div>
                 </div>
                 
-                {/* Card Header with gradient */}
-                <div 
-                  className="px-3 sm:px-4 py-2 sm:py-3 text-white flex items-center gap-2"
-                  style={{ 
-                    backgroundColor: cardCustomization?.primaryColor || 'hsl(var(--primary))'
-                  }}
-                >
+                {/* Card Header with Logo */}
+                <div className="px-4 py-3 flex items-center gap-3">
                   {cardCustomization?.showLogo && cardCustomization?.logoUrl && (
-                    <img 
-                      src={cardCustomization.logoUrl} 
-                      alt="Logo" 
-                      className="h-8 w-8 object-contain rounded-full bg-white p-0.5"
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-white rounded-full blur-sm opacity-50" />
+                      <img 
+                        src={cardCustomization.logoUrl} 
+                        alt="Logo" 
+                        className="relative h-10 w-10 object-contain rounded-full bg-white p-1 shadow-lg"
+                      />
+                    </div>
                   )}
-                  <div className="flex-1 flex items-center justify-between">
-                    <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wide">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-sm uppercase tracking-wider text-white drop-shadow-md">
                       {cardCustomization?.churchNameOnCard && cardCustomization?.churchName 
-                        ? cardCustomization.churchName.length > 25 
-                          ? cardCustomization.churchName.slice(0, 25) + "..." 
+                        ? cardCustomization.churchName.length > 30 
+                          ? cardCustomization.churchName.slice(0, 30) + "..." 
                           : cardCustomization.churchName
                         : t("memberCards.memberCard")}
                     </h4>
                     {member.member_number && (
-                      <span className="text-xs font-mono bg-white/20 px-2 py-0.5 rounded">
-                        {member.member_number}
+                      <span className="text-xs font-mono text-white/80">
+                        N° {member.member_number}
                       </span>
                     )}
                   </div>
                 </div>
                 
-                <CardContent className="p-3 sm:p-4">
+                {/* Card Body - White Section */}
+                <CardContent className="bg-white dark:bg-card p-4 relative">
+                  {/* Decorative corner */}
+                  <div 
+                    className="absolute top-0 right-0 w-20 h-20 opacity-10"
+                    style={{
+                      background: `radial-gradient(circle at top right, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, transparent 70%)`,
+                    }}
+                  />
+                  
                   {/* Photo and Name Section */}
-                  <div className="flex gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    {/* Photo */}
-                    <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border-2 border-primary/20 shadow-md">
-                      {member.photo_url ? (
-                        <img
-                          src={member.photo_url}
-                          alt={`${member.first_name} ${member.last_name}`}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                          <UserCircle className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
-                        </div>
-                      )}
+                  <div className="flex gap-4 mb-4">
+                    {/* Photo with modern frame */}
+                    <div className="relative group/photo">
+                      <div 
+                        className="absolute -inset-1 rounded-xl opacity-75 blur-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'})`,
+                        }}
+                      />
+                      <div className="relative h-24 w-24 rounded-xl overflow-hidden bg-muted shadow-xl">
+                        {member.photo_url ? (
+                          <img
+                            src={member.photo_url}
+                            alt={`${member.first_name} ${member.last_name}`}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                            <UserCircle className="h-14 w-14 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Name and Details */}
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <h3 className="font-bold text-base sm:text-lg leading-tight truncate">
+                    {/* Name and Role */}
+                    <div className="flex-1 min-w-0 space-y-1 pt-1">
+                      <h3 className="font-bold text-lg leading-tight text-foreground">
                         {member.first_name}
                       </h3>
-                      <h3 className="font-bold text-base sm:text-lg leading-tight text-primary truncate">
+                      <h3 
+                        className="font-bold text-lg leading-tight"
+                        style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }}
+                      >
                         {member.last_name}
                       </h3>
                       {member.role && (
-                        <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                        <span 
+                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold text-white shadow-sm"
+                          style={{ backgroundColor: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }}
+                        >
                           {member.role}
                         </span>
                       )}
                     </div>
                   </div>
                   
-                  {/* Member Info */}
-                  <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 text-xs sm:text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                      <span className="font-medium">{t("memberCards.bornOn")}</span>
-                      <span className="truncate">{formatDate(member.date_of_birth)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Church className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                      <span className="font-medium">{t("memberCards.memberSince")}</span>
-                      <span className="truncate">{formatDate(member.join_date)}</span>
-                    </div>
-                    {member.phone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Hash className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                        <span className="font-medium">{t("memberCards.phone")}</span>
-                        <span className="truncate">{member.phone}</span>
+                  {/* Member Info with icons */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div 
+                        className="p-1.5 rounded-lg"
+                        style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
+                      >
+                        <Calendar className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
                       </div>
-                    )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground">{t("memberCards.bornOn")}</p>
+                        <p className="font-medium text-foreground truncate">{formatDate(member.date_of_birth)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <div 
+                        className="p-1.5 rounded-lg"
+                        style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
+                      >
+                        <Church className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground">{t("memberCards.memberSince")}</p>
+                        <p className="font-medium text-foreground truncate">{formatDate(member.join_date)}</p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* QR Code Section */}
-                  <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-primary/10">
+                  <div 
+                    className="flex items-end justify-between pt-3 border-t"
+                    style={{ borderColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}20` }}
+                  >
                     <div className="text-center">
-                      <div className="bg-white p-1.5 sm:p-2 rounded-lg border border-muted shadow-sm">
+                      <div 
+                        className="p-2 rounded-xl shadow-inner"
+                        style={{ 
+                          background: `linear-gradient(135deg, white, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}08)`,
+                          border: `2px solid ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}20`
+                        }}
+                      >
                         {qrCodes[member.id] ? (
                           <img
                             src={qrCodes[member.id]}
                             alt={`QR Code - ${member.first_name} ${member.last_name}`}
-                            className="w-16 h-16 sm:w-20 sm:h-20"
+                            className="w-20 h-20"
                           />
                         ) : (
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted animate-pulse rounded"></div>
+                          <div className="w-20 h-20 bg-muted animate-pulse rounded-lg"></div>
                         )}
                       </div>
-                      <p className="text-[8px] sm:text-[10px] text-muted-foreground font-mono mt-1 max-w-[80px] sm:max-w-none truncate">
+                      <p className="text-[9px] text-muted-foreground font-mono mt-1.5 max-w-[90px] truncate">
                         {member.qr_code || `MEMBER-${member.id.slice(0, 8)}`}
                       </p>
                     </div>
                     
-                    {/* Church Branding */}
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-primary">ÉgliseApp</p>
-                      <p className="text-[10px] text-muted-foreground">{t("memberCards.activeMember")}</p>
+                    {/* Status Badges */}
+                    <div className="text-right space-y-1.5">
+                      <div 
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-md"
+                        style={{ 
+                          background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(221, 83%, 30%)'})` 
+                        }}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        {t("memberCards.activeMember")}
+                      </div>
                       {member.baptism_status === "baptise" && (
-                        <span className="inline-block mt-1 text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">
-                          {t("memberCards.baptized")}
-                        </span>
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm">
+                          ✓ {t("memberCards.baptized")}
+                        </div>
                       )}
                     </div>
                   </div>
                 </CardContent>
+                
+                {/* Bottom accent bar */}
+                <div 
+                  className="h-1.5"
+                  style={{
+                    background: `linear-gradient(90deg, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'}, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'})`,
+                  }}
+                />
               </Card>
             );
           })}
