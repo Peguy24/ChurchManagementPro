@@ -111,6 +111,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     icon: Settings,
     items: [
       { to: "/settings/church", icon: Church, label: "Infos Église" },
+      { to: "/settings/users", icon: Users, label: "Gestion Utilisateurs" },
       { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
     ],
   },
