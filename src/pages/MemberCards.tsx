@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash, FileDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ import {
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { generateMemberCardsPDF, downloadPDF } from "@/lib/memberCardPDF";
 
 interface Member {
   id: string;
@@ -55,6 +57,8 @@ export default function MemberCards() {
   const [eventType, setEventType] = useState("");
   const [eventDate, setEventDate] = useState(new Date().toISOString().split("T")[0]);
   const [submittingAttendance, setSubmittingAttendance] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0);
 
   const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
@@ -191,11 +195,52 @@ export default function MemberCards() {
     window.print();
   };
 
-  const downloadAllCards = () => {
-    toast({
-      title: "Fonction bientôt disponible",
-      description: "Le téléchargement de toutes les cartes sera bientôt disponible.",
-    });
+  const downloadAllCards = async () => {
+    const selectedMembersList = members.filter((m) => selectedMembers.has(m.id));
+    
+    if (selectedMembersList.length === 0) {
+      toast({
+        title: "Aucun membre sélectionné",
+        description: "Veuillez sélectionner au moins un membre pour télécharger les cartes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingPDF(true);
+    setPdfProgress(0);
+
+    try {
+      toast({
+        title: "Génération en cours",
+        description: `Création des cartes pour ${selectedMembersList.length} membres...`,
+      });
+
+      const pdfBlob = await generateMemberCardsPDF(selectedMembersList, (progress) => {
+        setPdfProgress(progress);
+      });
+
+      const filename = selectedMembersList.length === 1
+        ? `carte-${selectedMembersList[0].first_name}-${selectedMembersList[0].last_name}.pdf`
+        : `cartes-membres-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+
+      downloadPDF(pdfBlob, filename);
+
+      toast({
+        title: "PDF généré avec succès",
+        description: `${selectedMembersList.length} carte(s) téléchargée(s).`,
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le PDF. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPDF(false);
+      setPdfProgress(0);
+    }
   };
 
   const handleMarkAttendance = async () => {
@@ -275,31 +320,50 @@ export default function MemberCards() {
     <Layout>
       <div className="space-y-6">
         {/* Header - Hidden when printing */}
-        <div className="flex justify-between items-center print:hidden">
-          <div>
-            <h1 className="text-3xl font-bold">Cartes des Membres</h1>
-            <p className="text-muted-foreground">
-              {selectedCount} cartes à imprimer / {members.length} filtrés / {allMembers.length} total
-            </p>
+        <div className="flex flex-col gap-4 print:hidden">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Cartes des Membres</h1>
+              <p className="text-muted-foreground">
+                {selectedCount} cartes sélectionnées / {members.length} filtrés / {allMembers.length} total
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="default" 
+                onClick={() => setAttendanceDialogOpen(true)}
+                disabled={selectedCount === 0}
+              >
+                <ClipboardCheck className="mr-2 h-4 w-4" />
+                Marquer Présence ({selectedCount})
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={downloadAllCards}
+                disabled={selectedCount === 0 || generatingPDF}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                {generatingPDF ? "Génération..." : `Télécharger PDF (${selectedCount})`}
+              </Button>
+              <Button onClick={handlePrint} disabled={selectedCount === 0}>
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimer ({selectedCount})
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="default" 
-              onClick={() => setAttendanceDialogOpen(true)}
-              disabled={selectedCount === 0}
-            >
-              <ClipboardCheck className="mr-2 h-4 w-4" />
-              Marquer Présence ({selectedCount})
-            </Button>
-            <Button variant="outline" onClick={downloadAllCards}>
-              <Download className="mr-2 h-4 w-4" />
-              Télécharger
-            </Button>
-            <Button onClick={handlePrint} disabled={selectedCount === 0}>
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimer ({selectedCount})
-            </Button>
-          </div>
+
+          {/* PDF Generation Progress */}
+          {generatingPDF && (
+            <div className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30">
+              <div className="flex-1">
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-muted-foreground">Génération du PDF en cours...</span>
+                  <span className="font-medium">{pdfProgress}%</span>
+                </div>
+                <Progress value={pdfProgress} className="h-2" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Filters Section - Hidden when printing */}
