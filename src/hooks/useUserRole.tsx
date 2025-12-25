@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { canAccessRoute, canSeeNavGroup, canSeeNavItem, hasPermission, type RouteGroup } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -64,6 +65,23 @@ export function useUserRole() {
     return checkRoles.some((role) => roles.includes(role));
   };
 
+  // Permission helpers
+  const canAccess = (path: string): boolean => {
+    return canAccessRoute(roles, path);
+  };
+
+  const canSeeNav = (navGroupLabel: string): boolean => {
+    return canSeeNavGroup(roles, navGroupLabel);
+  };
+
+  const canSeeItem = (itemPath: string): boolean => {
+    return canSeeNavItem(roles, itemPath);
+  };
+
+  const hasPermissionFor = (group: RouteGroup): boolean => {
+    return hasPermission(roles, group);
+  };
+
   return {
     roles,
     loading: authLoading || loading,
@@ -71,5 +89,9 @@ export function useUserRole() {
     isAdmin,
     hasRole,
     hasAnyRole,
+    canAccess,
+    canSeeNav,
+    canSeeItem,
+    hasPermissionFor,
   };
 }
