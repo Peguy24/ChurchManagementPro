@@ -698,6 +698,62 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_time: string | null
+          event_date: string
+          event_time: string | null
+          expected_attendees: number | null
+          id: string
+          location: string | null
+          name: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          event_time?: string | null
+          expected_attendees?: number | null
+          id?: string
+          location?: string | null
+          name: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          event_time?: string | null
+          expected_attendees?: number | null
+          id?: string
+          location?: string | null
+          name?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_categories: {
         Row: {
           created_at: string
