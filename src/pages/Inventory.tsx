@@ -11,8 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, ScanBarcode } from "lucide-react";
+import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags } from "lucide-react";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
+import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ interface InventoryItem {
   description: string | null;
   category: string;
   serial_number: string | null;
+  barcode: string | null;
   purchase_date: string | null;
   purchase_price: number | null;
   current_value: number | null;
@@ -462,6 +464,7 @@ export default function Inventory() {
               onItemFound={(item) => handleViewItem(item)}
               onItemNotFound={(code) => console.log("Code not found:", code)}
             />
+            <InventoryLabelPrinter items={items} />
             <Dialog open={isUsageDialogOpen} onOpenChange={setIsUsageDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
