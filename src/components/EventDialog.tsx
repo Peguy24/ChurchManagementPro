@@ -9,6 +9,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface Event {
   id: string;
@@ -154,6 +165,33 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!event) return;
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", event.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Événement supprimé",
+        description: "L'événement a été supprimé avec succès.",
+      });
+      onSuccess?.();
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      console.error("Error deleting event:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'événement.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isEditing) {
@@ -163,7 +201,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
     }
   };
 
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  const isLoading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -287,7 +325,39 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {isEditing && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={isLoading}
+                    className="w-full sm:w-auto sm:mr-auto"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer l'événement?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Cette action est irréversible. L'événement "{formData.name}" sera définitivement supprimé.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteMutation.mutate()}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Supprimer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button
               type="button"
               variant="outline"
