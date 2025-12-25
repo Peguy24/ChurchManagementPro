@@ -19,6 +19,7 @@ export type Database = {
           branch_id: string | null
           created_at: string | null
           event_date: string
+          event_id: string | null
           event_type: string
           id: string
           marked_at: string | null
@@ -30,6 +31,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string | null
           event_date: string
+          event_id?: string | null
           event_type: string
           id?: string
           marked_at?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string | null
           event_date?: string
+          event_id?: string | null
           event_type?: string
           id?: string
           marked_at?: string | null
@@ -54,6 +57,13 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
           {

@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
@@ -28,6 +28,20 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface TodayEvent {
+  id: string;
+  name: string;
+  event_time: string | null;
+  status: string;
+}
 
 interface AttendanceRecord {
   event_type: string;
@@ -83,10 +97,13 @@ export default function Attendance() {
     soundStyle: "musical",
   });
   const [scanCount, setScanCount] = useState(0);
+  const [todayEvents, setTodayEvents] = useState<TodayEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAttendanceRecords();
     loadTotalMembers();
+    loadTodayEvents();
   }, []);
 
   // Keep scanner input focused when in scanner mode or kiosk mode
@@ -216,13 +233,22 @@ export default function Attendance() {
       // Mark attendance for today
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if already marked today
-      const { data: existing } = await supabase
+      // Get selected event info
+      const selectedEvent = todayEvents.find(e => e.id === selectedEventId);
+      const eventType = selectedEvent?.name || "Culte";
+      
+      // Check if already marked today for this event (or any event if no event selected)
+      let existingQuery = supabase
         .from("attendance_records")
         .select("id")
         .eq("member_id", member.id)
-        .eq("event_date", today)
-        .maybeSingle();
+        .eq("event_date", today);
+      
+      if (selectedEventId) {
+        existingQuery = existingQuery.eq("event_id", selectedEventId);
+      }
+      
+      const { data: existing } = await existingQuery.maybeSingle();
 
       if (existing) {
         toast({
@@ -249,7 +275,8 @@ export default function Attendance() {
         .insert({
           member_id: member.id,
           event_date: today,
-          event_type: "Culte",
+          event_type: eventType,
+          event_id: selectedEventId || null,
           scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
         });
 
@@ -283,7 +310,7 @@ export default function Attendance() {
         scanInputRef.current.focus();
       }
     }
-  }, [toast, t, playSound, kioskCameraActive, cameraActive]);
+  }, [toast, t, playSound, kioskCameraActive, cameraActive, selectedEventId, todayEvents]);
 
   const handleScanInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQrCodeInput(e.target.value);
@@ -307,6 +334,28 @@ export default function Attendance() {
       setTotalMembers(count || 0);
     } catch (error) {
       console.error("Error loading total members:", error);
+    }
+  };
+
+  const loadTodayEvents = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, name, event_time, status")
+        .eq("event_date", today)
+        .in("status", ["planned", "confirmed"])
+        .order("event_time", { ascending: true });
+
+      if (error) throw error;
+      setTodayEvents(data || []);
+      
+      // Auto-select first event if available
+      if (data && data.length > 0 && !selectedEventId) {
+        setSelectedEventId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Error loading today events:", error);
     }
   };
 
@@ -554,6 +603,26 @@ export default function Attendance() {
               {t("attendance.trackMemberAttendance")}
             </p>
           </div>
+          
+          {/* Event Selector */}
+          {todayEvents.length > 0 && (
+            <div className="w-full sm:w-auto">
+              <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <CalendarDays className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Sélectionner un événement" />
+                </SelectTrigger>
+                <SelectContent>
+                  {todayEvents.map((event) => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.name} {event.event_time ? `(${event.event_time.substring(0, 5)})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <ScannerSettings onSettingsChange={setSoundSettings} />
             <Button 
