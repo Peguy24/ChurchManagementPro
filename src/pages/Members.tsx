@@ -71,29 +71,32 @@ export default function Members() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">{t("members.title")}</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("members.title")}</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">
               {t("members.subtitle")}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
               <Upload className="mr-2 h-4 w-4" />
-              {t("common.import")}
+              <span className="hidden sm:inline">{t("common.import")}</span>
+              <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
               <Download className="mr-2 h-4 w-4" />
-              {t("common.export")}
+              <span className="hidden sm:inline">{t("common.export")}</span>
+              <span className="sm:hidden">Export</span>
             </Button>
-            <Button size="sm" onClick={() => {
+            <Button size="sm" className="flex-1 sm:flex-none" onClick={() => {
               setSelectedMember(undefined);
               setDialogOpen(true);
             }}>
               <Plus className="mr-2 h-4 w-4" />
-              {t("members.addMember")}
+              <span className="hidden sm:inline">{t("members.addMember")}</span>
+              <span className="sm:hidden">Ajouter</span>
             </Button>
           </div>
         </div>
@@ -118,7 +121,8 @@ export default function Members() {
               </div>
             </div>
 
-            <div className="rounded-md border">
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -193,6 +197,65 @@ export default function Members() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+              {filteredMembers.map((member: any) => (
+                <div 
+                  key={member.id}
+                  className="border rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-semibold">{member.last_name} {member.first_name}</p>
+                      {member.member_number && (
+                        <p className="text-sm font-mono text-primary">{member.member_number}</p>
+                      )}
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusColors[member.status || "active"]}
+                    >
+                      {getStatusLabel(member.status || "active")}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                    <div>
+                      <span className="font-medium">{t("common.phone")}:</span> {member.phone || "-"}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("members.gender")}:</span>{" "}
+                      {member.gender === "M" ? t("members.male") : member.gender === "F" ? t("members.female") : "-"}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/members/details?memberId=${member.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Voir
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Modifier
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

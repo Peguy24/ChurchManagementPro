@@ -280,16 +280,16 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("dashboard.title")}</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
             {t("common.welcome")}
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
             const isHovered = hoveredCard === stat.title;
@@ -300,18 +300,18 @@ export default function Dashboard() {
                 onMouseMove={(e) => handleMouseMove(e, stat.title)}
                 onMouseLeave={handleMouseLeave}
               >
-                <CardContent className="p-8 relative z-10">
-                  <div className="space-y-4">
+                <CardContent className="p-4 sm:p-8 relative z-10">
+                  <div className="space-y-2 sm:space-y-4">
                     <div>
-                      <h3 className="text-6xl font-bold text-white mb-1 transition-transform duration-300">
+                      <h3 className="text-4xl sm:text-6xl font-bold text-white mb-1 transition-transform duration-300">
                         {stat.value}
                       </h3>
-                      <p className="text-lg font-medium text-white/90">
+                      <p className="text-sm sm:text-lg font-medium text-white/90">
                         {stat.title}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/20">
-                      <p className="text-sm text-white/80">
+                    <div className="flex items-center justify-between pt-2 sm:pt-4 border-t border-white/20">
+                      <p className="text-xs sm:text-sm text-white/80">
                         {stat.detail}
                       </p>
                     </div>
@@ -326,7 +326,7 @@ export default function Dashboard() {
                       : 'translate(24px, 24px)'
                   }}
                 >
-                  <Icon className="h-40 w-40 text-white" />
+                  <Icon className="h-24 w-24 sm:h-40 sm:w-40 text-white" />
                 </div>
               </Card>
             );
@@ -334,33 +334,33 @@ export default function Dashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {/* Members Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                 <Users className="h-4 w-4" />
                 {t("dashboard.membersTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{ membres: chartConfig.membres }} className="h-[200px] w-full">
+              <ChartContainer config={{ membres: chartConfig.membres }} className="h-[160px] sm:h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="month" 
                       className="text-xs"
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 9 }}
                     />
-                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <YAxis className="text-xs" tick={{ fontSize: 9 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line 
                       type="monotone" 
                       dataKey="membres" 
                       stroke="var(--color-membres)" 
                       strokeWidth={2}
-                      dot={{ fill: "var(--color-membres)", r: 4 }}
+                      dot={{ fill: "var(--color-membres)", r: 3 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -370,30 +370,30 @@ export default function Dashboard() {
 
           {/* Donations Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                 <DollarSign className="h-4 w-4" />
                 {t("dashboard.donationsTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{ donations: chartConfig.donations }} className="h-[200px] w-full">
+              <ChartContainer config={{ donations: chartConfig.donations }} className="h-[160px] sm:h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="month" 
                       className="text-xs"
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 9 }}
                     />
-                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <YAxis className="text-xs" tick={{ fontSize: 9 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line 
                       type="monotone" 
                       dataKey="donations" 
                       stroke="var(--color-donations)" 
                       strokeWidth={2}
-                      dot={{ fill: "var(--color-donations)", r: 4 }}
+                      dot={{ fill: "var(--color-donations)", r: 3 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -402,31 +402,31 @@ export default function Dashboard() {
           </Card>
 
           {/* Attendance Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+          <Card className="md:col-span-2 lg:col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                 <Calendar className="h-4 w-4" />
                 {t("dashboard.attendanceTrend")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{ presence: chartConfig.presence }} className="h-[200px] w-full">
+              <ChartContainer config={{ presence: chartConfig.presence }} className="h-[160px] sm:h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="month" 
                       className="text-xs"
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 9 }}
                     />
-                    <YAxis className="text-xs" tick={{ fontSize: 10 }} />
+                    <YAxis className="text-xs" tick={{ fontSize: 9 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line 
                       type="monotone" 
                       dataKey="presence" 
                       stroke="var(--color-presence)" 
                       strokeWidth={2}
-                      dot={{ fill: "var(--color-presence)", r: 4 }}
+                      dot={{ fill: "var(--color-presence)", r: 3 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -435,7 +435,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {/* Today's Birthdays */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
