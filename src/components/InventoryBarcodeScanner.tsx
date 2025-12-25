@@ -119,13 +119,29 @@ export default function InventoryBarcodeScanner({
   const handleScanResult = (code: string) => {
     setLastScannedCode(code);
     
-    // Search for item by serial_number or name containing the code
-    const foundItem = items.find(
-      (item) =>
-        item.serial_number?.toLowerCase() === code.toLowerCase() ||
-        item.serial_number?.includes(code) ||
-        item.name.toLowerCase().includes(code.toLowerCase())
-    );
+    // Normalize the scanned code for comparison
+    const normalizedCode = code.toLowerCase().trim();
+    
+    // Search for item by barcode, serial_number, or name
+    const foundItem = items.find((item) => {
+      // Check barcode (primary)
+      if (item.barcode) {
+        if (item.barcode.toLowerCase() === normalizedCode) return true;
+        if (item.barcode.toLowerCase().includes(normalizedCode)) return true;
+        if (normalizedCode.includes(item.barcode.toLowerCase())) return true;
+      }
+      
+      // Check serial_number
+      if (item.serial_number) {
+        if (item.serial_number.toLowerCase() === normalizedCode) return true;
+        if (item.serial_number.toLowerCase().includes(normalizedCode)) return true;
+      }
+      
+      // Check name as fallback
+      if (item.name.toLowerCase() === normalizedCode) return true;
+      
+      return false;
+    });
 
     if (foundItem) {
       setLastScannedItem(foundItem);
@@ -138,7 +154,7 @@ export default function InventoryBarcodeScanner({
       setScanResult("not_found");
       playErrorSound();
       onItemNotFound?.(code);
-      toast.error(`Aucun article trouvé pour: ${code}`);
+      toast.error(`Aucun article trouvé pour le code: ${code}`);
     }
   };
 
