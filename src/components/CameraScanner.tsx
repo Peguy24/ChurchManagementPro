@@ -37,7 +37,7 @@ export default function CameraScanner({
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         rememberLastUsedCamera: false,
         videoConstraints: {
-          facingMode: { exact: facing }
+          facingMode: facing
         }
       },
       false
