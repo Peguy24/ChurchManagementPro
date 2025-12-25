@@ -949,6 +949,7 @@ export type Database = {
       }
       inventory_items: {
         Row: {
+          barcode: string | null
           branch_id: string | null
           category: string
           condition: string | null
@@ -970,6 +971,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          barcode?: string | null
           branch_id?: string | null
           category?: string
           condition?: string | null
@@ -991,6 +993,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          barcode?: string | null
           branch_id?: string | null
           category?: string
           condition?: string | null

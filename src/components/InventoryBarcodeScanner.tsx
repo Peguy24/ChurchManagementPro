@@ -15,6 +15,7 @@ interface InventoryItem {
   description: string | null;
   category: string;
   serial_number: string | null;
+  barcode: string | null;
   purchase_date: string | null;
   purchase_price: number | null;
   current_value: number | null;
