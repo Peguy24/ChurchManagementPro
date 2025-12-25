@@ -79,7 +79,10 @@ export default function Attendance() {
     volume: 50,
     successSound: "/success-beep.mp3",
     errorSound: "/error-beep.mp3",
+    continuousMode: true,
+    soundStyle: "musical",
   });
+  const [scanCount, setScanCount] = useState(0);
 
   useEffect(() => {
     loadAttendanceRecords();
@@ -96,14 +99,40 @@ export default function Attendance() {
   const playSound = (type: "success" | "error") => {
     if (!soundSettings.enabled) return;
     
-    try {
-      const soundUrl = type === "success" ? soundSettings.successSound : soundSettings.errorSound;
-      const audio = new Audio(soundUrl);
-      audio.volume = soundSettings.volume / 100;
-      audio.play().catch(() => {});
-    } catch (e) {
-      console.error("Error playing sound:", e);
-    }
+    const volume = soundSettings.volume / 100;
+    
+    // Dynamic import to avoid issues with SSR
+    import("@/lib/soundGenerator").then(({ playSuccessSound, playErrorSound, playMemberAnnounceSound }) => {
+      if (type === "success") {
+        if (soundSettings.soundStyle === "musical") {
+          playSuccessSound(volume);
+        } else if (soundSettings.soundStyle === "ascending") {
+          playMemberAnnounceSound(scanCount, volume);
+          setScanCount(prev => prev + 1);
+        } else {
+          // Classic file-based sound
+          try {
+            const audio = new Audio(soundSettings.successSound);
+            audio.volume = volume;
+            audio.play().catch(() => {});
+          } catch (e) {
+            console.error("Error playing sound:", e);
+          }
+        }
+      } else {
+        if (soundSettings.soundStyle === "classic") {
+          try {
+            const audio = new Audio(soundSettings.errorSound);
+            audio.volume = volume;
+            audio.play().catch(() => {});
+          } catch (e) {
+            console.error("Error playing sound:", e);
+          }
+        } else {
+          playErrorSound(volume);
+        }
+      }
+    });
   };
 
   const handleQrCodeScan = useCallback(async (qrCode: string) => {
