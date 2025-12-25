@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon } from "lucide-react";
+import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText } from "lucide-react";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
 import InventoryPhotoUpload from "@/components/InventoryPhotoUpload";
 import InventoryAuditMode from "@/components/InventoryAuditMode";
+import InventoryReportGenerator from "@/components/InventoryReportGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -476,6 +477,10 @@ export default function Inventory() {
               onAuditComplete={() => queryClient.invalidateQueries({ queryKey: ["inventory-items"] })}
             />
             <InventoryLabelPrinter items={items} />
+            <InventoryReportGenerator 
+              items={items} 
+              maintenanceRecords={maintenanceRecords}
+            />
             <Dialog open={isUsageDialogOpen} onOpenChange={setIsUsageDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
