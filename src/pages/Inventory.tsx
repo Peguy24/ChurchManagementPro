@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, ScanBarcode } from "lucide-react";
+import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -455,7 +456,12 @@ export default function Inventory() {
             <h2 className="text-3xl font-bold tracking-tight">Inventaire</h2>
             <p className="text-muted-foreground">Gestion du matériel de l'église</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <InventoryBarcodeScanner 
+              items={items} 
+              onItemFound={(item) => handleViewItem(item)}
+              onItemNotFound={(code) => console.log("Code not found:", code)}
+            />
             <Dialog open={isUsageDialogOpen} onOpenChange={setIsUsageDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
