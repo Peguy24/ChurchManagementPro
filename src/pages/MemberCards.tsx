@@ -152,19 +152,21 @@ export default function MemberCards() {
     members.some((m) => m.id === id)
   ).length;
 
-  // Generate QR codes for all members
+  // Generate QR codes for all members - use allMembers to avoid infinite loop
   useEffect(() => {
-    if (members.length > 0) {
+    if (allMembers.length > 0 && Object.keys(qrCodes).length === 0) {
       generateAllQRCodes();
     }
-  }, [members]);
+  }, [allMembers.length]);
 
   const generateAllQRCodes = async () => {
+    if (allMembers.length === 0) return;
+    
     setGeneratingQRs(true);
     const codes: Record<string, string> = {};
     const membersNeedingQR: string[] = [];
 
-    for (const member of members) {
+    for (const member of allMembers) {
       try {
         // If member doesn't have a QR code in database, create one
         if (!member.qr_code) {
