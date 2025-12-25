@@ -31,6 +31,7 @@ import Auth from "./pages/Auth";
 import Branches from "./pages/Branches";
 import CustomFields from "./pages/CustomFields";
 import EmailTemplates from "./pages/EmailTemplates";
+import ChurchSettings from "./pages/ChurchSettings";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
             <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
             <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
+            <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
