@@ -947,6 +947,193 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          branch_id: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          current_value: number | null
+          description: string | null
+          id: string
+          location: string | null
+          min_quantity: number | null
+          name: string
+          notes: string | null
+          photo_url: string | null
+          purchase_date: string | null
+          purchase_price: number | null
+          quantity: number | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          category?: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          min_quantity?: number | null
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          category?: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          min_quantity?: number | null
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_maintenance: {
+        Row: {
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          item_id: string
+          maintenance_date: string
+          maintenance_type: string
+          next_maintenance_date: string | null
+          notes: string | null
+          performed_by: string | null
+          status: string | null
+          vendor: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          item_id: string
+          maintenance_date?: string
+          maintenance_type?: string
+          next_maintenance_date?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          status?: string | null
+          vendor?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          item_id?: string
+          maintenance_date?: string
+          maintenance_type?: string
+          next_maintenance_date?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          status?: string | null
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_maintenance_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_usage: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          event_name: string | null
+          id: string
+          item_id: string
+          notes: string | null
+          quantity_used: number | null
+          returned: boolean | null
+          start_date: string
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          event_name?: string | null
+          id?: string
+          item_id: string
+          notes?: string | null
+          quantity_used?: number | null
+          returned?: boolean | null
+          start_date: string
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          event_name?: string | null
+          id?: string
+          item_id?: string
+          notes?: string | null
+          quantity_used?: number | null
+          returned?: boolean | null
+          start_date?: string
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_usage_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_usage_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_documents: {
         Row: {
           created_at: string
