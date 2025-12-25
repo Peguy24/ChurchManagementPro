@@ -32,6 +32,8 @@ import Branches from "./pages/Branches";
 import CustomFields from "./pages/CustomFields";
 import EmailTemplates from "./pages/EmailTemplates";
 import ChurchSettings from "./pages/ChurchSettings";
+import UserManagement from "./pages/UserManagement";
+import PendingApproval from "./pages/PendingApproval";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,6 +48,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
             <Route path="/members/cards" element={<ProtectedRoute><MemberCards /></ProtectedRoute>} />
@@ -73,6 +76,7 @@ const App = () => (
             <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
             <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
             <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
+            <Route path="/settings/users" element={<ProtectedRoute requireAdmin><UserManagement /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
