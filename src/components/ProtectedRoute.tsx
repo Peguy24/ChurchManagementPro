@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isApproved, isAdmin, loading: roleLoading } = useUserRole();
+  const { isApproved, isAdmin, canAccess, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,6 +38,16 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       navigate('/');
     }
   }, [user, loading, isApproved, isAdmin, requireAdmin, navigate]);
+
+  useEffect(() => {
+    if (!loading && user && isApproved && !requireAdmin) {
+      // Check route-level permissions
+      if (!canAccess(location.pathname) && location.pathname !== '/pending-approval') {
+        // User doesn't have permission for this route
+        navigate('/');
+      }
+    }
+  }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
   if (loading) {
     return (
@@ -66,6 +76,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   // If admin is required, user must be admin
   if (requireAdmin && !isAdmin) {
+    return null;
+  }
+
+  // Check route permissions
+  if (!canAccess(location.pathname)) {
     return null;
   }
 

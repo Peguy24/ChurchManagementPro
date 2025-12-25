@@ -26,9 +26,11 @@ import {
   FileText,
   Package,
   MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
@@ -111,7 +113,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     icon: Settings,
     items: [
       { to: "/settings/church", icon: Church, label: "Infos Église" },
-      { to: "/settings/users", icon: Users, label: "Gestion Utilisateurs" },
+      { to: "/settings/users", icon: ShieldAlert, label: "Gestion Utilisateurs" },
       { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
     ],
   },
@@ -125,10 +127,21 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const { canSeeNav, canSeeItem } = useUserRole();
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const navGroups = getNavGroups(t);
+  const allNavGroups = getNavGroups(t);
+  
+  // Filter nav groups and items based on user permissions
+  const navGroups = allNavGroups
+    .filter(group => canSeeNav(group.label))
+    .map(group => ({
+      ...group,
+      items: group.items.filter(item => canSeeItem(item.to))
+    }))
+    .filter(group => group.items.length > 0 || group.label === "Inventaire");
+
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     // Open the group that contains the current route by default
     const currentGroup = navGroups.find(group => 
