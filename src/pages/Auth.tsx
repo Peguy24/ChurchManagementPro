@@ -157,7 +157,11 @@ export default function Auth() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
+          <img 
+            src="/images/church-logo.png" 
+            alt="Logo de l'église" 
+            className="mx-auto h-16 w-16 animate-pulse"
+          />
           <p className="mt-4 text-muted-foreground">Chargement...</p>
         </div>
       </div>
@@ -165,14 +169,18 @@ export default function Auth() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Church className="h-10 w-10 text-primary" />
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <img 
+              src="/images/church-logo.png" 
+              alt="Logo de l'église" 
+              className="h-24 w-24 object-contain"
+            />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">ÉgliseApp</h1>
-              <p className="text-sm text-muted-foreground">Système de Gestion d'Église</p>
+              <h1 className="text-xl font-bold text-foreground">Church of God</h1>
+              <p className="text-sm text-muted-foreground">Ministry of Prayer and of The Word Inc.</p>
             </div>
           </div>
         </div>
