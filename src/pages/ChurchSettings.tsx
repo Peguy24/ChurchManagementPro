@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash } from "lucide-react";
+import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
 
 interface ChurchSettings {
   church_name: string;
@@ -18,6 +18,11 @@ interface ChurchSettings {
   church_tax_id: string;
   church_logo_url: string;
   fiscal_receipt_footer: string;
+  card_primary_color: string;
+  card_secondary_color: string;
+  card_text_color: string;
+  card_show_logo: string;
+  card_church_name_on_card: string;
 }
 
 export default function ChurchSettings() {
@@ -30,6 +35,11 @@ export default function ChurchSettings() {
     church_tax_id: "",
     church_logo_url: "",
     fiscal_receipt_footer: "",
+    card_primary_color: "#3B82F6",
+    card_secondary_color: "#1E40AF",
+    card_text_color: "#FFFFFF",
+    card_show_logo: "true",
+    card_church_name_on_card: "true",
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -60,6 +70,11 @@ export default function ChurchSettings() {
         church_tax_id: settingsData.church_tax_id || "",
         church_logo_url: settingsData.church_logo_url || "",
         fiscal_receipt_footer: settingsData.fiscal_receipt_footer || "",
+        card_primary_color: settingsData.card_primary_color || "#3B82F6",
+        card_secondary_color: settingsData.card_secondary_color || "#1E40AF",
+        card_text_color: settingsData.card_text_color || "#FFFFFF",
+        card_show_logo: settingsData.card_show_logo || "true",
+        card_church_name_on_card: settingsData.card_church_name_on_card || "true",
       });
     }
   }, [settingsData]);
@@ -227,6 +242,177 @@ export default function ChurchSettings() {
                   placeholder="Ce document est un reçu officiel pour fins fiscales..."
                   rows={3}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Member Card Customization */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Personnalisation des Cartes Membres
+              </CardTitle>
+              <CardDescription>
+                Personnalisez l'apparence des cartes de membres avec les couleurs et le logo de votre église.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="card_primary_color" className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Couleur Principale
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="card_primary_color"
+                      type="color"
+                      value={settings.card_primary_color}
+                      onChange={(e) => setSettings({ ...settings, card_primary_color: e.target.value })}
+                      className="w-16 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.card_primary_color}
+                      onChange={(e) => setSettings({ ...settings, card_primary_color: e.target.value })}
+                      placeholder="#3B82F6"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="card_secondary_color" className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Couleur Secondaire
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="card_secondary_color"
+                      type="color"
+                      value={settings.card_secondary_color}
+                      onChange={(e) => setSettings({ ...settings, card_secondary_color: e.target.value })}
+                      className="w-16 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.card_secondary_color}
+                      onChange={(e) => setSettings({ ...settings, card_secondary_color: e.target.value })}
+                      placeholder="#1E40AF"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="card_text_color" className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Couleur du Texte (En-tête)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="card_text_color"
+                      type="color"
+                      value={settings.card_text_color}
+                      onChange={(e) => setSettings({ ...settings, card_text_color: e.target.value })}
+                      className="w-16 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.card_text_color}
+                      onChange={(e) => setSettings({ ...settings, card_text_color: e.target.value })}
+                      placeholder="#FFFFFF"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="card_show_logo"
+                    checked={settings.card_show_logo === "true"}
+                    onChange={(e) => setSettings({ ...settings, card_show_logo: e.target.checked ? "true" : "false" })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="card_show_logo">Afficher le logo sur les cartes</Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="card_church_name_on_card"
+                    checked={settings.card_church_name_on_card === "true"}
+                    onChange={(e) => setSettings({ ...settings, card_church_name_on_card: e.target.checked ? "true" : "false" })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="card_church_name_on_card">Afficher le nom de l'église</Label>
+                </div>
+              </div>
+
+              {/* Card Preview */}
+              <div className="space-y-2">
+                <Label>Aperçu de la carte</Label>
+                <div 
+                  className="relative w-full max-w-[340px] h-[200px] rounded-lg overflow-hidden border-2"
+                  style={{ borderColor: settings.card_primary_color }}
+                >
+                  {/* Header */}
+                  <div 
+                    className="h-12 flex items-center justify-between px-3"
+                    style={{ backgroundColor: settings.card_primary_color }}
+                  >
+                    {settings.card_show_logo === "true" && settings.church_logo_url && (
+                      <img 
+                        src={settings.church_logo_url} 
+                        alt="Logo" 
+                        className="h-8 w-8 object-contain rounded"
+                      />
+                    )}
+                    <span 
+                      className="font-bold text-sm flex-1 text-center"
+                      style={{ color: settings.card_text_color }}
+                    >
+                      {settings.card_church_name_on_card === "true" 
+                        ? (settings.church_name || "Nom de l'Église")
+                        : "CARTE DE MEMBRE"}
+                    </span>
+                    <span 
+                      className="text-xs"
+                      style={{ color: settings.card_text_color }}
+                    >
+                      N°001
+                    </span>
+                  </div>
+                  
+                  {/* Body */}
+                  <div className="p-3 bg-background">
+                    <div className="flex gap-3">
+                      <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                        <span className="text-2xl text-muted-foreground">👤</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold" style={{ color: settings.card_primary_color }}>Jean DUPONT</p>
+                        <p className="text-xs text-muted-foreground">Membre</p>
+                        <p className="text-xs text-muted-foreground mt-1">Né: 01/01/1990</p>
+                        <p className="text-xs text-muted-foreground">Membre depuis: 15/03/2020</p>
+                      </div>
+                      <div className="w-14 h-14 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                        QR
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Footer */}
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 h-6 flex items-center justify-end px-3"
+                    style={{ backgroundColor: settings.card_secondary_color }}
+                  >
+                    <span className="text-xs font-medium" style={{ color: settings.card_text_color }}>
+                      {settings.card_church_name_on_card === "true" ? "Membre Actif" : (settings.church_name || "Nom de l'Église")}
+                    </span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

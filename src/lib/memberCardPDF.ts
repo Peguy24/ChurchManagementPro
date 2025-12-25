@@ -17,6 +17,27 @@ interface MemberCardData {
   baptism_status: string | null;
 }
 
+export interface CardCustomization {
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+  showLogo: boolean;
+  churchNameOnCard: boolean;
+  churchName: string;
+  logoUrl: string;
+}
+
+const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 59, g: 130, b: 246 }; // Default blue
+};
+
 const CARD_WIDTH = 85.6; // mm (credit card size)
 const CARD_HEIGHT = 54; // mm
 const CARDS_PER_ROW = 2;
@@ -60,28 +81,51 @@ const drawCard = async (
   pdf: jsPDF,
   member: MemberCardData,
   x: number,
-  y: number
+  y: number,
+  customization?: CardCustomization
 ) => {
+  const primaryColor = hexToRgb(customization?.primaryColor || "#3B82F6");
+  const secondaryColor = hexToRgb(customization?.secondaryColor || "#1E40AF");
+  const textColor = hexToRgb(customization?.textColor || "#FFFFFF");
+
   // Card background
   pdf.setFillColor(255, 255, 255);
   pdf.roundedRect(x, y, CARD_WIDTH, CARD_HEIGHT, 3, 3, "F");
 
   // Card border
-  pdf.setDrawColor(59, 130, 246); // Primary blue color
+  pdf.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.setLineWidth(0.5);
   pdf.roundedRect(x, y, CARD_WIDTH, CARD_HEIGHT, 3, 3, "S");
 
   // Header bar
-  pdf.setFillColor(59, 130, 246);
+  pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.roundedRect(x, y, CARD_WIDTH, 10, 3, 3, "F");
-  pdf.setFillColor(59, 130, 246);
+  pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.rect(x, y + 5, CARD_WIDTH, 5, "F");
 
+  // Logo in header
+  let headerTextX = x + 3;
+  if (customization?.showLogo && customization?.logoUrl) {
+    try {
+      const logoBase64 = await loadImageAsBase64(customization.logoUrl);
+      if (logoBase64) {
+        pdf.addImage(logoBase64, "PNG", x + 2, y + 1.5, 7, 7);
+        headerTextX = x + 11;
+      }
+    } catch (e) {
+      console.error("Error loading logo:", e);
+    }
+  }
+
   // Header text
-  pdf.setTextColor(255, 255, 255);
+  pdf.setTextColor(textColor.r, textColor.g, textColor.b);
   pdf.setFontSize(7);
   pdf.setFont("helvetica", "bold");
-  pdf.text("CARTE DE MEMBRE", x + 3, y + 6);
+  
+  const headerTitle = customization?.churchNameOnCard && customization?.churchName 
+    ? customization.churchName 
+    : "CARTE DE MEMBRE";
+  pdf.text(headerTitle, headerTextX, y + 6);
 
   if (member.member_number) {
     pdf.setFontSize(6);
@@ -119,14 +163,14 @@ const drawCard = async (
   pdf.setFont("helvetica", "bold");
   pdf.text(member.first_name, x + 24, y + 16);
   
-  pdf.setTextColor(59, 130, 246);
+  pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.text(member.last_name.toUpperCase(), x + 24, y + 21);
 
   // Role badge
   if (member.role) {
     pdf.setFillColor(239, 246, 255);
     pdf.roundedRect(x + 24, y + 23, 20, 4, 1, 1, "F");
-    pdf.setTextColor(59, 130, 246);
+    pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
     pdf.setFontSize(5);
     pdf.setFont("helvetica", "normal");
     pdf.text(member.role, x + 25, y + 26);
@@ -187,8 +231,11 @@ const drawCard = async (
   // Footer branding
   pdf.setFontSize(6);
   pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(59, 130, 246);
-  pdf.text("ÉgliseApp", x + CARD_WIDTH - 3, y + CARD_HEIGHT - 6, { align: "right" });
+  pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
+  const footerName = customization?.churchNameOnCard 
+    ? "Membre Actif" 
+    : (customization?.churchName || "ÉgliseApp");
+  pdf.text(footerName, x + CARD_WIDTH - 3, y + CARD_HEIGHT - 6, { align: "right" });
 
   pdf.setFontSize(4);
   pdf.setFont("helvetica", "normal");
@@ -207,7 +254,8 @@ const drawCard = async (
 
 export const generateMemberCardsPDF = async (
   members: MemberCardData[],
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  customization?: CardCustomization
 ): Promise<Blob> => {
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -216,7 +264,6 @@ export const generateMemberCardsPDF = async (
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
 
   // Calculate starting positions for centering cards
   const totalCardsWidth = CARDS_PER_ROW * CARD_WIDTH + (CARDS_PER_ROW - 1) * CARD_MARGIN;
@@ -241,7 +288,7 @@ export const generateMemberCardsPDF = async (
     const x = startX + col * (CARD_WIDTH + CARD_MARGIN);
     const y = PAGE_MARGIN + row * (CARD_HEIGHT + CARD_MARGIN);
 
-    await drawCard(pdf, member, x, y);
+    await drawCard(pdf, member, x, y, customization);
 
     cardIndex++;
     onProgress?.(Math.round((cardIndex / totalCards) * 100));
@@ -251,7 +298,8 @@ export const generateMemberCardsPDF = async (
 };
 
 export const generateSingleMemberCardPDF = async (
-  member: MemberCardData
+  member: MemberCardData,
+  customization?: CardCustomization
 ): Promise<Blob> => {
   const pdf = new jsPDF({
     orientation: "landscape",
@@ -259,7 +307,7 @@ export const generateSingleMemberCardPDF = async (
     format: [CARD_WIDTH + 20, CARD_HEIGHT + 20],
   });
 
-  await drawCard(pdf, member, 10, 10);
+  await drawCard(pdf, member, 10, 10, customization);
 
   return pdf.output("blob");
 };

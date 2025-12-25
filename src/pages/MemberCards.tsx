@@ -28,7 +28,7 @@ import {
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
-import { generateMemberCardsPDF, downloadPDF } from "@/lib/memberCardPDF";
+import { generateMemberCardsPDF, downloadPDF, CardCustomization } from "@/lib/memberCardPDF";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Member {
@@ -75,6 +75,35 @@ export default function MemberCards() {
       return data as Member[];
     },
   });
+
+  // Fetch church settings for card customization
+  const { data: churchSettings } = useQuery({
+    queryKey: ["church-settings-cards"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("church_settings")
+        .select("setting_key, setting_value");
+      
+      if (error) throw error;
+      
+      const settingsMap: Record<string, string> = {};
+      data?.forEach((s) => {
+        settingsMap[s.setting_key] = s.setting_value || "";
+      });
+      
+      return settingsMap;
+    },
+  });
+
+  const cardCustomization: CardCustomization | undefined = churchSettings ? {
+    primaryColor: churchSettings.card_primary_color || "#3B82F6",
+    secondaryColor: churchSettings.card_secondary_color || "#1E40AF",
+    textColor: churchSettings.card_text_color || "#FFFFFF",
+    showLogo: churchSettings.card_show_logo === "true",
+    churchNameOnCard: churchSettings.card_church_name_on_card === "true",
+    churchName: churchSettings.church_name || "",
+    logoUrl: churchSettings.church_logo_url || "",
+  } : undefined;
 
   // Filter members based on search and filters
   const members = allMembers.filter((member) => {
@@ -218,7 +247,7 @@ export default function MemberCards() {
 
       const pdfBlob = await generateMemberCardsPDF(selectedMembersList, (progress) => {
         setPdfProgress(progress);
-      });
+      }, cardCustomization);
 
       const filename = selectedMembersList.length === 1
         ? `carte-${selectedMembersList[0].first_name}-${selectedMembersList[0].last_name}.pdf`
