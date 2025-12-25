@@ -242,9 +242,11 @@ export default function MemberDialog({
   };
 
   const handleCropComplete = (croppedBlob: Blob) => {
-    // Convert blob to file
-    const croppedFile = new File([croppedBlob], "cropped-photo.jpg", {
-      type: "image/jpeg",
+    // Determine file extension based on blob type (PNG for transparent, JPEG otherwise)
+    const isPng = croppedBlob.type === "image/png";
+    const extension = isPng ? "png" : "jpg";
+    const croppedFile = new File([croppedBlob], `cropped-photo.${extension}`, {
+      type: croppedBlob.type,
     });
     setPhotoFile(croppedFile);
     const previewUrl = URL.createObjectURL(croppedBlob);
@@ -257,7 +259,9 @@ export default function MemberDialog({
 
     setUploadingPhoto(true);
     try {
-      const fileExt = photoFile.name.split('.').pop();
+      // Get extension from file type
+      const isPng = photoFile.type === "image/png";
+      const fileExt = isPng ? "png" : "jpg";
       const fileName = `${memberId}.${fileExt}`;
       const filePath = `${fileName}`;
 
