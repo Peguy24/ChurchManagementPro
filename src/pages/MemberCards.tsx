@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import QRCode from "qrcode";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Member {
   id: string;
@@ -36,6 +38,9 @@ interface Member {
   email: string | null;
   role: string | null;
   baptism_status: string | null;
+  date_of_birth: string | null;
+  join_date: string | null;
+  member_number: string | null;
 }
 
 export default function MemberCards() {
@@ -56,7 +61,7 @@ export default function MemberCards() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status")
+        .select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status, date_of_birth, join_date, member_number")
         .eq("status", "active")
         .order("first_name");
 
@@ -401,10 +406,19 @@ export default function MemberCards() {
             const isSelected = selectedMembers.has(member.id);
             const shouldPrint = isSelected;
             
+            const formatDate = (dateStr: string | null) => {
+              if (!dateStr) return "Non défini";
+              try {
+                return format(new Date(dateStr), "dd MMM yyyy", { locale: fr });
+              } catch {
+                return "Non défini";
+              }
+            };
+            
             return (
               <Card
                 key={member.id}
-                className={`overflow-hidden border-2 print:break-inside-avoid print:mb-4 relative ${
+                className={`overflow-hidden border-2 border-primary/20 print:break-inside-avoid print:mb-4 relative bg-gradient-to-br from-background to-muted/30 ${
                   shouldPrint ? "" : "print:hidden"
                 } ${!isSelected ? "opacity-50" : ""}`}
               >
@@ -417,58 +431,105 @@ export default function MemberCards() {
                   />
                 </div>
                 
-                <CardContent className="p-6">
-                {/* Header with Photo */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="relative h-16 w-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                    {member.photo_url ? (
-                      <img
-                        src={member.photo_url}
-                        alt={`${member.first_name} ${member.last_name}`}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <UserCircle className="h-12 w-12 text-muted-foreground" />
+                {/* Card Header with gradient */}
+                <div className="bg-gradient-to-r from-primary to-primary/80 px-4 py-3 text-primary-foreground">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-sm uppercase tracking-wide">Carte de Membre</h4>
+                    {member.member_number && (
+                      <span className="text-xs font-mono bg-primary-foreground/20 px-2 py-0.5 rounded">
+                        {member.member_number}
+                      </span>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">
-                      {member.first_name} {member.last_name}
-                    </h3>
+                </div>
+                
+                <CardContent className="p-4">
+                  {/* Photo and Name Section */}
+                  <div className="flex gap-4 mb-4">
+                    {/* Photo */}
+                    <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border-2 border-primary/20 shadow-md">
+                      {member.photo_url ? (
+                        <img
+                          src={member.photo_url}
+                          alt={`${member.first_name} ${member.last_name}`}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                          <UserCircle className="h-16 w-16 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Name and Details */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h3 className="font-bold text-lg leading-tight">
+                        {member.first_name}
+                      </h3>
+                      <h3 className="font-bold text-lg leading-tight text-primary">
+                        {member.last_name}
+                      </h3>
+                      {member.role && (
+                        <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                          {member.role}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Member Info */}
+                  <div className="space-y-2 mb-4 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Né(e) le:</span>
+                      <span>{formatDate(member.date_of_birth)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Church className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Membre depuis:</span>
+                      <span>{formatDate(member.join_date)}</span>
+                    </div>
                     {member.phone && (
-                      <p className="text-sm text-muted-foreground truncate">
-                        {member.phone}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Hash className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Tél:</span>
+                        <span>{member.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* QR Code Section */}
+                  <div className="flex items-center justify-between pt-3 border-t border-primary/10">
+                    <div className="text-center">
+                      <div className="bg-white p-2 rounded-lg border border-muted shadow-sm">
+                        {qrCodes[member.id] ? (
+                          <img
+                            src={qrCodes[member.id]}
+                            alt={`QR Code - ${member.first_name} ${member.last_name}`}
+                            className="w-20 h-20"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 bg-muted animate-pulse rounded"></div>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-mono mt-1">
+                        {member.qr_code || `MEMBER-${member.id.slice(0, 8)}`}
                       </p>
-                    )}
+                    </div>
+                    
+                    {/* Church Branding */}
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-primary">ÉgliseApp</p>
+                      <p className="text-[10px] text-muted-foreground">Membre Actif</p>
+                      {member.baptism_status === "baptise" && (
+                        <span className="inline-block mt-1 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                          Baptisé
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                {/* QR Code */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="bg-white p-3 rounded-lg border-2 border-muted">
-                    {qrCodes[member.id] ? (
-                      <img
-                        src={qrCodes[member.id]}
-                        alt={`QR Code - ${member.first_name} ${member.last_name}`}
-                        className="w-32 h-32"
-                      />
-                    ) : (
-                      <div className="w-32 h-32 bg-muted animate-pulse rounded"></div>
-                    )}
-                  </div>
-                  <p className="text-xs text-center text-muted-oreground font-mono">
-                    ID: {member.id.slice(0, 8)}
-                  </p>
-                </div>
-
-                {/* Footer */}
-                <div className="mt-4 pt-4 border-t text-center">
-                  <p className="text-xs font-semibold text-primary">
-                    EgliseApp - Membre Actif
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
