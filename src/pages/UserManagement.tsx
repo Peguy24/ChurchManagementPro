@@ -7,9 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Shield, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Users, Shield, Clock, CheckCircle, XCircle, Settings } from "lucide-react";
+import RolePermissionsManager from "@/components/RolePermissionsManager";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -195,9 +197,22 @@ export default function UserManagement() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Gestion des Utilisateurs</h1>
-          <p className="text-muted-foreground">Gérez les accès et les rôles des utilisateurs</p>
+          <p className="text-muted-foreground">Gérez les accès, les rôles et les permissions</p>
         </div>
 
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Utilisateurs
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Permissions
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users" className="space-y-6">
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
@@ -382,6 +397,12 @@ export default function UserManagement() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="permissions">
+            <RolePermissionsManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

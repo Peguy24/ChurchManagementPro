@@ -16,8 +16,8 @@ export type RouteGroup =
   | "settings"
   | "users";
 
-// Define permissions per role
-export const ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
+// Default permissions (fallback when DB is not available)
+export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
   admin: [
     "dashboard",
     "members",
@@ -104,13 +104,18 @@ export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
   "Inventaire": [],
 };
 
-// Helper to check if a role has permission for a route group
+// Helper to check if a role has permission for a route group (using provided permissions)
+export function hasPermissionWithPerms(roles: AppRole[], group: RouteGroup, permissions: Record<AppRole, RouteGroup[]>): boolean {
+  return roles.some(role => permissions[role]?.includes(group));
+}
+
+// Helper to check if a role has permission for a route group (using defaults)
 export function hasPermission(roles: AppRole[], group: RouteGroup): boolean {
-  return roles.some(role => ROLE_PERMISSIONS[role]?.includes(group));
+  return hasPermissionWithPerms(roles, group, DEFAULT_ROLE_PERMISSIONS);
 }
 
 // Helper to check if a role can access a specific route
-export function canAccessRoute(roles: AppRole[], path: string): boolean {
+export function canAccessRouteWithPerms(roles: AppRole[], path: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
   // Remove query params for matching
   const cleanPath = path.split("?")[0];
   const group = ROUTE_TO_GROUP[cleanPath];
@@ -120,22 +125,30 @@ export function canAccessRoute(roles: AppRole[], path: string): boolean {
     return roles.some(role => role !== "user");
   }
   
-  return hasPermission(roles, group);
+  return hasPermissionWithPerms(roles, group, permissions);
+}
+
+export function canAccessRoute(roles: AppRole[], path: string): boolean {
+  return canAccessRouteWithPerms(roles, path, DEFAULT_ROLE_PERMISSIONS);
 }
 
 // Helper to check if a nav group should be visible to user
-export function canSeeNavGroup(roles: AppRole[], navGroupLabel: string): boolean {
+export function canSeeNavGroupWithPerms(roles: AppRole[], navGroupLabel: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
   const routeGroups = NAV_GROUP_TO_ROUTE_GROUP[navGroupLabel];
   
   if (!routeGroups || routeGroups.length === 0) {
     return false;
   }
   
-  return routeGroups.some(group => hasPermission(roles, group));
+  return routeGroups.some(group => hasPermissionWithPerms(roles, group, permissions));
+}
+
+export function canSeeNavGroup(roles: AppRole[], navGroupLabel: string): boolean {
+  return canSeeNavGroupWithPerms(roles, navGroupLabel, DEFAULT_ROLE_PERMISSIONS);
 }
 
 // Helper to check if a nav item should be visible
-export function canSeeNavItem(roles: AppRole[], itemPath: string): boolean {
+export function canSeeNavItemWithPerms(roles: AppRole[], itemPath: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
   const cleanPath = itemPath.split("?")[0];
   const group = ROUTE_TO_GROUP[cleanPath];
   
@@ -143,7 +156,11 @@ export function canSeeNavItem(roles: AppRole[], itemPath: string): boolean {
     return roles.some(role => role !== "user");
   }
   
-  return hasPermission(roles, group);
+  return hasPermissionWithPerms(roles, group, permissions);
+}
+
+export function canSeeNavItem(roles: AppRole[], itemPath: string): boolean {
+  return canSeeNavItemWithPerms(roles, itemPath, DEFAULT_ROLE_PERMISSIONS);
 }
 
 // Get readable permission names for display

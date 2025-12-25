@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { canAccessRoute, canSeeNavGroup, canSeeNavItem, hasPermission, type RouteGroup } from "@/lib/permissions";
+import { 
+  canAccessRouteWithPerms, 
+  canSeeNavGroupWithPerms, 
+  canSeeNavItemWithPerms, 
+  hasPermissionWithPerms, 
+  DEFAULT_ROLE_PERMISSIONS,
+  type RouteGroup 
+} from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -11,12 +18,13 @@ const APPROVED_ROLES: AppRole[] = ["admin", "pastor", "treasurer", "secretary", 
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(DEFAULT_ROLE_PERMISSIONS);
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    async function fetchRoles() {
+    async function fetchRolesAndPermissions() {
       if (!user) {
         setRoles([]);
         setLoading(false);
@@ -26,14 +34,15 @@ export function useUserRole() {
       }
 
       try {
-        const { data, error } = await supabase
+        // Fetch user roles
+        const { data: rolesData, error: rolesError } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id);
 
-        if (error) throw error;
+        if (rolesError) throw rolesError;
 
-        const userRoles = data?.map((r) => r.role) || [];
+        const userRoles = rolesData?.map((r) => r.role) || [];
         setRoles(userRoles);
         
         // Check if user has any approved role
@@ -42,6 +51,33 @@ export function useUserRole() {
         
         // Check if user is admin
         setIsAdmin(userRoles.includes("admin"));
+
+        // Fetch permissions from database
+        const { data: permData, error: permError } = await supabase
+          .from("role_permissions")
+          .select("role, permission_group");
+
+        if (permError) {
+          console.error("Error fetching permissions, using defaults:", permError);
+        } else if (permData && permData.length > 0) {
+          // Build permissions map from database
+          const dbPermissions: Record<AppRole, RouteGroup[]> = {
+            admin: [],
+            pastor: [],
+            treasurer: [],
+            secretary: [],
+            volunteer: [],
+            user: [],
+          };
+
+          permData.forEach((p) => {
+            if (dbPermissions[p.role]) {
+              dbPermissions[p.role].push(p.permission_group as RouteGroup);
+            }
+          });
+
+          setPermissions(dbPermissions);
+        }
       } catch (error) {
         console.error("Error fetching user roles:", error);
         setRoles([]);
@@ -53,7 +89,7 @@ export function useUserRole() {
     }
 
     if (!authLoading) {
-      fetchRoles();
+      fetchRolesAndPermissions();
     }
   }, [user, authLoading]);
 
@@ -65,21 +101,21 @@ export function useUserRole() {
     return checkRoles.some((role) => roles.includes(role));
   };
 
-  // Permission helpers
+  // Permission helpers using DB permissions
   const canAccess = (path: string): boolean => {
-    return canAccessRoute(roles, path);
+    return canAccessRouteWithPerms(roles, path, permissions);
   };
 
   const canSeeNav = (navGroupLabel: string): boolean => {
-    return canSeeNavGroup(roles, navGroupLabel);
+    return canSeeNavGroupWithPerms(roles, navGroupLabel, permissions);
   };
 
   const canSeeItem = (itemPath: string): boolean => {
-    return canSeeNavItem(roles, itemPath);
+    return canSeeNavItemWithPerms(roles, itemPath, permissions);
   };
 
   const hasPermissionFor = (group: RouteGroup): boolean => {
-    return hasPermission(roles, group);
+    return hasPermissionWithPerms(roles, group, permissions);
   };
 
   return {
