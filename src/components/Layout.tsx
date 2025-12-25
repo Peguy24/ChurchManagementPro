@@ -84,6 +84,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
       { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
       { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
       { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
+      { to: "/finance/salaries", icon: Users, label: "Salaires" },
       { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
     ],
   },
