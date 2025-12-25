@@ -534,11 +534,29 @@ export default function MemberCards() {
                 </div>
                 
                 {/* Card Header with gradient */}
-                <div className="bg-gradient-to-r from-primary to-primary/80 px-3 sm:px-4 py-2 sm:py-3 text-primary-foreground">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wide">{t("memberCards.memberCard")}</h4>
+                <div 
+                  className="px-3 sm:px-4 py-2 sm:py-3 text-white flex items-center gap-2"
+                  style={{ 
+                    backgroundColor: cardCustomization?.primaryColor || 'hsl(var(--primary))'
+                  }}
+                >
+                  {cardCustomization?.showLogo && cardCustomization?.logoUrl && (
+                    <img 
+                      src={cardCustomization.logoUrl} 
+                      alt="Logo" 
+                      className="h-8 w-8 object-contain rounded-full bg-white p-0.5"
+                    />
+                  )}
+                  <div className="flex-1 flex items-center justify-between">
+                    <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wide">
+                      {cardCustomization?.churchNameOnCard && cardCustomization?.churchName 
+                        ? cardCustomization.churchName.length > 25 
+                          ? cardCustomization.churchName.slice(0, 25) + "..." 
+                          : cardCustomization.churchName
+                        : t("memberCards.memberCard")}
+                    </h4>
                     {member.member_number && (
-                      <span className="text-xs font-mono bg-primary-foreground/20 px-2 py-0.5 rounded">
+                      <span className="text-xs font-mono bg-white/20 px-2 py-0.5 rounded">
                         {member.member_number}
                       </span>
                     )}
