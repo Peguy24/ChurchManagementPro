@@ -15,6 +15,7 @@ import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Ey
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
 import InventoryPhotoUpload from "@/components/InventoryPhotoUpload";
+import InventoryAuditMode from "@/components/InventoryAuditMode";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -469,6 +470,10 @@ export default function Inventory() {
               items={items} 
               onItemFound={(item) => handleViewItem(item)}
               onItemNotFound={(code) => console.log("Code not found:", code)}
+            />
+            <InventoryAuditMode 
+              items={items}
+              onAuditComplete={() => queryClient.invalidateQueries({ queryKey: ["inventory-items"] })}
             />
             <InventoryLabelPrinter items={items} />
             <Dialog open={isUsageDialogOpen} onOpenChange={setIsUsageDialogOpen}>
