@@ -38,6 +38,7 @@ async function verifyAuth(req: Request): Promise<{ valid: boolean; error?: strin
 
   const token = authHeader.replace("Bearer ", "");
   
+  // Use ANON key to verify the user token
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -49,11 +50,22 @@ async function verifyAuth(req: Request): Promise<{ valid: boolean; error?: strin
     return { valid: false, error: "Invalid or expired token" };
   }
 
-  // Check user roles
-  const { data: roles } = await supabaseClient
+  // Use SERVICE_ROLE_KEY to check user roles (bypasses RLS)
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
+  // Check user roles using admin client to bypass RLS
+  const { data: roles, error: rolesError } = await supabaseAdmin
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id);
+
+  if (rolesError) {
+    console.error("Error fetching roles:", rolesError);
+    return { valid: false, error: "Failed to verify permissions" };
+  }
 
   const allowedRoles = ["admin", "pastor", "secretary"];
   if (!roles?.some((r) => allowedRoles.includes(r.role))) {
