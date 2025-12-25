@@ -11,9 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags } from "lucide-react";
+import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon } from "lucide-react";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
+import InventoryPhotoUpload from "@/components/InventoryPhotoUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -136,6 +137,7 @@ export default function Inventory() {
     quantity: "1",
     min_quantity: "0",
     notes: "",
+    photo_url: null as string | null,
   });
 
   const [maintenanceForm, setMaintenanceForm] = useState({
@@ -229,6 +231,7 @@ export default function Inventory() {
         quantity: parseInt(data.quantity) || 1,
         min_quantity: parseInt(data.min_quantity) || 0,
         notes: data.notes || null,
+        photo_url: data.photo_url,
       });
       if (error) throw error;
     },
@@ -259,6 +262,7 @@ export default function Inventory() {
           quantity: parseInt(data.quantity) || 1,
           min_quantity: parseInt(data.min_quantity) || 0,
           notes: data.notes || null,
+          photo_url: data.photo_url,
         })
         .eq("id", id);
       if (error) throw error;
@@ -348,6 +352,7 @@ export default function Inventory() {
       quantity: "1",
       min_quantity: "0",
       notes: "",
+      photo_url: null,
     });
   };
 
@@ -395,6 +400,7 @@ export default function Inventory() {
       quantity: item.quantity.toString(),
       min_quantity: item.min_quantity.toString(),
       notes: item.notes || "",
+      photo_url: item.photo_url,
     });
     setIsItemDialogOpen(true);
   };
@@ -711,6 +717,11 @@ export default function Inventory() {
                       <Input type="number" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: e.target.value })} />
                     </div>
                   </div>
+                  <InventoryPhotoUpload
+                    currentPhotoUrl={itemForm.photo_url}
+                    onPhotoChange={(url) => setItemForm({ ...itemForm, photo_url: url })}
+                    itemId={editingItem?.id}
+                  />
                   <div className="space-y-2">
                     <Label>Notes</Label>
                     <Textarea value={itemForm.notes} onChange={(e) => setItemForm({ ...itemForm, notes: e.target.value })} />
@@ -865,11 +876,24 @@ export default function Inventory() {
                     {filteredItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{item.name}</div>
-                            {item.serial_number && (
-                              <div className="text-xs text-muted-foreground">SN: {item.serial_number}</div>
+                          <div className="flex items-center gap-3">
+                            {item.photo_url ? (
+                              <img
+                                src={item.photo_url}
+                                alt={item.name}
+                                className="w-10 h-10 rounded object-cover border"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
+                              </div>
                             )}
+                            <div>
+                              <div className="font-medium">{item.name}</div>
+                              {item.serial_number && (
+                                <div className="text-xs text-muted-foreground">SN: {item.serial_number}</div>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>{getCategoryLabel(item.category)}</TableCell>
@@ -1042,6 +1066,16 @@ export default function Inventory() {
             </DialogHeader>
             {selectedItem && (
               <div className="grid gap-4 py-4">
+                {/* Photo */}
+                {selectedItem.photo_url && (
+                  <div className="flex justify-center">
+                    <img
+                      src={selectedItem.photo_url}
+                      alt={selectedItem.name}
+                      className="max-w-full max-h-48 rounded-lg object-contain border"
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-muted-foreground">Nom</Label>
