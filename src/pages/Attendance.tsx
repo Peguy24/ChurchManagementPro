@@ -502,25 +502,27 @@ export default function Attendance() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
               {t("attendance.title")}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm sm:text-base">
               {t("attendance.trackMemberAttendance")}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <ScannerSettings onSettingsChange={setSoundSettings} />
             <Button 
               variant={scannerMode ? "default" : "outline"} 
               size="sm" 
               onClick={() => setScannerMode(!scannerMode)}
+              className="flex-1 sm:flex-none"
             >
               <Scan className="mr-2 h-4 w-4" />
-              {scannerMode ? t("attendance.closeScanner") : t("attendance.openScanner")}
+              <span className="hidden sm:inline">{scannerMode ? t("attendance.closeScanner") : t("attendance.openScanner")}</span>
+              <span className="sm:hidden">Scanner</span>
             </Button>
             <Button 
               variant={kioskMode ? "default" : "outline"} 
@@ -531,13 +533,16 @@ export default function Attendance() {
                   setScannerMode(false);
                 }
               }}
+              className="flex-1 sm:flex-none"
             >
               <Maximize className="mr-2 h-4 w-4" />
-              {t("attendance.kioskMode")}
+              <span className="hidden sm:inline">{t("attendance.kioskMode")}</span>
+              <span className="sm:hidden">Kiosk</span>
             </Button>
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Button size="sm" onClick={() => setDialogOpen(true)} className="flex-1 sm:flex-none">
               <Plus className="mr-2 h-4 w-4" />
-              {t("attendance.recordAttendance")}
+              <span className="hidden sm:inline">{t("attendance.recordAttendance")}</span>
+              <span className="sm:hidden">Ajouter</span>
             </Button>
           </div>
         </div>
@@ -639,7 +644,7 @@ export default function Attendance() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
           <Card className="border-primary/50 bg-primary/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t("attendance.totalMembers")}</CardTitle>
@@ -694,7 +699,7 @@ export default function Attendance() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
