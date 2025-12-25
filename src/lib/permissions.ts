@@ -14,7 +14,8 @@ export type RouteGroup =
   | "reports"
   | "communication"
   | "settings"
-  | "users";
+  | "users"
+  | "inventory";
 
 // Default permissions (fallback when DB is not available)
 export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
@@ -30,6 +31,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "communication",
     "settings",
     "users",
+    "inventory",
   ],
   pastor: [
     "dashboard",
@@ -41,11 +43,13 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "reports",
     "communication",
     "settings",
+    "inventory",
   ],
   treasurer: [
     "dashboard",
     "finances",
     "reports",
+    "inventory",
   ],
   secretary: [
     "dashboard",
@@ -53,6 +57,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "attendance",
     "events",
     "communication",
+    "inventory",
   ],
   volunteer: [
     "dashboard",
@@ -91,6 +96,8 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/settings/email-templates": "communication",
   "/settings/church": "settings",
   "/settings/users": "users",
+  "/inventory": "inventory",
+  "/finance/salaries": "finances",
 };
 
 // Map nav groups to route groups
@@ -101,7 +108,7 @@ export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
   "Communication": ["communication"],
   "Planning": ["events"],
   "Paramètres": ["settings", "users"],
-  "Inventaire": [],
+  "Inventaire": ["inventory"],
 };
 
 // Helper to check if a role has permission for a route group (using provided permissions)
@@ -176,4 +183,5 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   communication: "Communication",
   settings: "Paramètres",
   users: "Gestion utilisateurs",
+  inventory: "Inventaire",
 };
