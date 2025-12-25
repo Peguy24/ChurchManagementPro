@@ -23,8 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import QRCode from "qrcode";
-import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X } from "lucide-react";
+import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X, Crop } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import PhotoCropper from "./PhotoCropper";
 
 interface MemberDialogProps {
   open: boolean;
@@ -46,6 +47,8 @@ export default function MemberDialog({
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     // Personal Information
@@ -232,10 +235,21 @@ export default function MemberDialog({
         return;
       }
 
-      setPhotoFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setPhotoPreview(previewUrl);
+      // Open cropper dialog with the selected file
+      setTempPhotoFile(file);
+      setCropperOpen(true);
     }
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    // Convert blob to file
+    const croppedFile = new File([croppedBlob], "cropped-photo.jpg", {
+      type: "image/jpeg",
+    });
+    setPhotoFile(croppedFile);
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setPhotoPreview(previewUrl);
+    setTempPhotoFile(null);
   };
 
   const uploadPhoto = async (memberId: string): Promise<string | null> => {
@@ -1030,6 +1044,19 @@ export default function MemberDialog({
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Photo Cropper Dialog */}
+        {tempPhotoFile && (
+          <PhotoCropper
+            open={cropperOpen}
+            onOpenChange={(open) => {
+              setCropperOpen(open);
+              if (!open) setTempPhotoFile(null);
+            }}
+            imageFile={tempPhotoFile}
+            onCropComplete={handleCropComplete}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
