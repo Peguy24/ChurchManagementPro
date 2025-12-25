@@ -88,6 +88,25 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
     },
   });
 
+  // Fetch church settings for fiscal receipt
+  const { data: churchSettings } = useQuery({
+    queryKey: ["church-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("church_settings")
+        .select("setting_key, setting_value");
+      
+      if (error) throw error;
+      
+      const settingsMap: Record<string, string> = {};
+      data?.forEach((s) => {
+        settingsMap[s.setting_key] = s.setting_value || "";
+      });
+      
+      return settingsMap;
+    },
+  });
+
   // Generate available years
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -110,11 +129,11 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           phone: memberInfo.phone,
         },
         churchInfo: {
-          name: "ChurchCRM - Votre Église",
-          address: "Adresse de l'église",
-          phone: "+509 XXXX-XXXX",
-          email: "contact@eglise.org",
-          taxId: "NIF-XXXXXXXX",
+          name: churchSettings?.church_name || "Église",
+          address: churchSettings?.church_address || "",
+          phone: churchSettings?.church_phone || "",
+          email: churchSettings?.church_email || "",
+          taxId: churchSettings?.church_tax_id || "",
         },
         year: selectedYear,
         donations: yearDonations.map((d) => ({
