@@ -138,30 +138,72 @@ export default function Attendance() {
   const handleQrCodeScan = useCallback(async (qrCode: string) => {
     if (!qrCode.trim()) return;
 
+    const scannedCode = qrCode.trim();
+
     try {
-      // Find member by QR code
-      const { data: member, error } = await supabase
+      // Find member by QR code OR member_number (for flexibility)
+      let member = null;
+      let error = null;
+
+      // First try by qr_code
+      const { data: memberByQr, error: qrError } = await supabase
         .from("members")
         .select("id, first_name, last_name, photo_url")
-        .eq("qr_code", qrCode.trim())
+        .eq("qr_code", scannedCode)
         .eq("status", "active")
         .maybeSingle();
 
-      if (error) throw error;
+      if (qrError) {
+        console.error("Error searching by qr_code:", qrError);
+        error = qrError;
+      } else if (memberByQr) {
+        member = memberByQr;
+      }
+
+      // If not found by qr_code, try by member_number
+      if (!member) {
+        const { data: memberByNumber, error: numError } = await supabase
+          .from("members")
+          .select("id, first_name, last_name, photo_url")
+          .eq("member_number", scannedCode)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (numError) {
+          console.error("Error searching by member_number:", numError);
+        } else if (memberByNumber) {
+          member = memberByNumber;
+        }
+      }
+
+      // If still not found, try partial match on qr_code or member_number
+      if (!member) {
+        const { data: memberByPartial, error: partialError } = await supabase
+          .from("members")
+          .select("id, first_name, last_name, photo_url")
+          .eq("status", "active")
+          .or(`qr_code.ilike.%${scannedCode}%,member_number.ilike.%${scannedCode}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (!partialError && memberByPartial) {
+          member = memberByPartial;
+        }
+      }
 
       if (!member) {
         toast({
           title: t("attendance.memberNotFound"),
-          description: t("attendance.qrCodeNotFound").replace("{qrCode}", qrCode),
+          description: t("attendance.qrCodeNotFound").replace("{qrCode}", scannedCode),
           variant: "destructive",
         });
         
         playSound("error");
         
         setScannedMembers(prev => [{
-          id: qrCode,
+          id: scannedCode,
           first_name: t("attendance.unknown"),
-          last_name: "",
+          last_name: `(${scannedCode})`,
           photo_url: null,
           time: new Date().toLocaleTimeString("fr-FR"),
           status: 'error' as const
