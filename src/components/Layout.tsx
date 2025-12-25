@@ -124,7 +124,9 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
   {
     label: "Inventaire",
     icon: Package,
-    items: [],
+    items: [
+      { to: "/inventory", icon: Package, label: "Gestion Inventaire" },
+    ],
   },
 ];
 
@@ -145,7 +147,7 @@ export default function Layout({ children }: LayoutProps) {
       ...group,
       items: group.items.filter(item => canSeeItem(item.to))
     }))
-    .filter(group => group.items.length > 0 || group.label === "Inventaire");
+    .filter(group => group.items.length > 0);
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     // Open the group that contains the current route by default

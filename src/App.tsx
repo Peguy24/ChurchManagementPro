@@ -35,6 +35,7 @@ import ChurchSettings from "./pages/ChurchSettings";
 import UserManagement from "./pages/UserManagement";
 import PendingApproval from "./pages/PendingApproval";
 import Salaries from "./pages/Salaries";
+import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/finance/cash" element={<ProtectedRoute><CashRegister /></ProtectedRoute>} />
             <Route path="/finance/audit" element={<ProtectedRoute><FinancialAudit /></ProtectedRoute>} />
             <Route path="/finance/salaries" element={<ProtectedRoute><Salaries /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
             <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
