@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   History, 
@@ -12,10 +14,14 @@ import {
   FileText,
   Church,
   Heart,
-  Award
+  Award,
+  Download,
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "sonner";
+import { generateMemberHistoryPDF, downloadMemberHistoryPDF, MemberHistoryData } from "@/lib/memberHistoryPDF";
 
 interface MemberTimelineProps {
   memberId: string;
@@ -33,6 +39,7 @@ interface TimelineEvent {
 }
 
 export default function MemberTimeline({ memberId }: MemberTimelineProps) {
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
@@ -100,13 +107,13 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     enabled: !!memberId,
   });
 
-  // Fetch member info for milestones
+  // Fetch member info for milestones and PDF export
   const { data: member } = useQuery({
     queryKey: ["member-info-timeline", memberId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("join_date, baptism_date, conversion_date, marriage_date")
+        .select("first_name, last_name, email, phone, address, photo_url, status, role, join_date, baptism_date, conversion_date, marriage_date")
         .eq("id", memberId)
         .maybeSingle();
       if (error) throw error;
@@ -114,6 +121,63 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     },
     enabled: !!memberId,
   });
+
+  // Export to PDF function
+  const handleExportPDF = async () => {
+    if (!member) {
+      toast.error("Données du membre non disponibles");
+      return;
+    }
+
+    setGeneratingPDF(true);
+    try {
+      const historyData: MemberHistoryData = {
+        member: {
+          first_name: member.first_name,
+          last_name: member.last_name,
+          email: member.email,
+          phone: member.phone,
+          address: member.address,
+          photo_url: member.photo_url,
+          status: member.status,
+          role: member.role,
+          join_date: member.join_date,
+          baptism_date: member.baptism_date,
+          conversion_date: member.conversion_date,
+        },
+        attendance: attendanceRecords.map((a) => ({
+          event_type: a.event_type,
+          event_date: a.event_date,
+          scan_method: a.scan_method,
+        })),
+        donations: donations.map((d) => ({
+          amount: Number(d.amount),
+          donation_type: d.donation_type,
+          donation_date: d.donation_date,
+          payment_method: d.payment_method,
+        })),
+        ministries: ministryMemberships.map((m: any) => ({
+          ministry_name: m.ministry?.name || "Ministère",
+          role: m.role,
+          joined_date: m.joined_date,
+        })),
+        documents: documents.map((d) => ({
+          document_name: d.document_name,
+          document_type: d.document_type,
+          document_date: d.document_date,
+        })),
+      };
+
+      const blob = await generateMemberHistoryPDF(historyData);
+      downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
+      toast.success("PDF généré avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la génération du PDF:", error);
+      toast.error("Erreur lors de la génération du PDF");
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
 
   // Build timeline events
   const timelineEvents: TimelineEvent[] = [];
@@ -229,7 +293,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
@@ -239,17 +303,37 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               Toutes les activités du membre
             </CardDescription>
           </div>
-          <div className="flex gap-4 text-sm">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{totalAttendance}</p>
-              <p className="text-muted-foreground">Présences</p>
+          <div className="flex items-center gap-4">
+            <div className="flex gap-4 text-sm">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{totalAttendance}</p>
+                <p className="text-muted-foreground">Présences</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600">
+                  {totalDonations.toLocaleString("fr-FR")} €
+                </p>
+                <p className="text-muted-foreground">Cotisations</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
-                {totalDonations.toLocaleString("fr-FR")} €
-              </p>
-              <p className="text-muted-foreground">Cotisations</p>
-            </div>
+            <Button 
+              onClick={handleExportPDF} 
+              disabled={generatingPDF || !member}
+              size="sm"
+              className="gap-2"
+            >
+              {generatingPDF ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Génération...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Export PDF
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </CardHeader>
