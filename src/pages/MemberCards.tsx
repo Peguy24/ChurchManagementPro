@@ -520,12 +520,16 @@ export default function MemberCards() {
             return (
               <Card
                 key={member.id}
-                className={`overflow-hidden border-2 border-primary/20 print:break-inside-avoid print:mb-4 relative bg-gradient-to-br from-background to-muted/30 ${
+                className={`overflow-hidden border-2 transition-all cursor-pointer print:break-inside-avoid print:mb-4 relative bg-gradient-to-br from-background to-muted/30 ${
                   shouldPrint ? "" : "print:hidden"
-                } ${!isSelected ? "opacity-50" : ""}`}
+                } ${isSelected ? "border-primary shadow-lg" : "border-primary/20 opacity-60 hover:opacity-80"}`}
+                onClick={() => toggleMemberSelection(member.id)}
               >
                 {/* Selection Checkbox - Hidden when printing */}
-                <div className="absolute top-2 right-2 z-10 print:hidden">
+                <div 
+                  className="absolute top-2 right-2 z-10 print:hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Checkbox
                     checked={isSelected}
                     onCheckedChange={() => toggleMemberSelection(member.id)}
