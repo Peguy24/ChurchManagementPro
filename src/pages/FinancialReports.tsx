@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Users, Calendar, CalendarCheck, Shield } from "lucide-react";
+import { DollarSign, Users, Calendar, CalendarCheck, Shield, Cake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import FinancialReportsTab from "@/components/reports/FinancialReportsTab";
@@ -16,6 +16,7 @@ import MembersReportTab from "@/components/reports/MembersReportTab";
 import AttendanceReportTab from "@/components/reports/AttendanceReportTab";
 import EventsReportTab from "@/components/reports/EventsReportTab";
 import AuditReportTab from "@/components/reports/AuditReportTab";
+import BirthdaysReportTab from "@/components/reports/BirthdaysReportTab";
 
 export default function FinancialReports() {
   const [activeTab, setActiveTab] = useState("financial");
@@ -62,7 +63,7 @@ export default function FinancialReports() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="financial" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               <span className="hidden sm:inline">Financier</span>
@@ -70,6 +71,10 @@ export default function FinancialReports() {
             <TabsTrigger value="members" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Membres</span>
+            </TabsTrigger>
+            <TabsTrigger value="birthdays" className="flex items-center gap-2">
+              <Cake className="h-4 w-4" />
+              <span className="hidden sm:inline">Anniversaires</span>
             </TabsTrigger>
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -91,6 +96,10 @@ export default function FinancialReports() {
 
           <TabsContent value="members" className="mt-6">
             <MembersReportTab selectedBranch={selectedBranch} />
+          </TabsContent>
+
+          <TabsContent value="birthdays" className="mt-6">
+            <BirthdaysReportTab selectedBranch={selectedBranch} />
           </TabsContent>
 
           <TabsContent value="events" className="mt-6">
