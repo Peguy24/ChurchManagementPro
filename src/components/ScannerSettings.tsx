@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Volume2, VolumeX, Settings } from "lucide-react";
+import { Volume2, VolumeX, Settings, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,12 +9,22 @@ import {
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { playSuccessSound, playErrorSound, playMemberAnnounceSound } from "@/lib/soundGenerator";
 
 export interface ScannerSoundSettings {
   enabled: boolean;
   volume: number;
   successSound: string;
   errorSound: string;
+  continuousMode: boolean;
+  soundStyle: "classic" | "musical" | "ascending";
 }
 
 const DEFAULT_SETTINGS: ScannerSoundSettings = {
@@ -22,6 +32,8 @@ const DEFAULT_SETTINGS: ScannerSoundSettings = {
   volume: 50,
   successSound: "/success-beep.mp3",
   errorSound: "/error-beep.mp3",
+  continuousMode: true,
+  soundStyle: "musical",
 };
 
 interface ScannerSettingsProps {
@@ -31,14 +43,17 @@ interface ScannerSettingsProps {
 export default function ScannerSettings({ onSettingsChange }: ScannerSettingsProps) {
   const [settings, setSettings] = useState<ScannerSoundSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
+  const [testIndex, setTestIndex] = useState(0);
 
   // Load settings from localStorage on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem("scannerSoundSettings");
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
-      setSettings(parsed);
-      onSettingsChange(parsed);
+      // Merge with defaults for new properties
+      const merged = { ...DEFAULT_SETTINGS, ...parsed };
+      setSettings(merged);
+      onSettingsChange(merged);
     } else {
       onSettingsChange(DEFAULT_SETTINGS);
     }
@@ -54,12 +69,36 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
   const playTestSound = (type: "success" | "error") => {
     if (!settings.enabled) return;
     
-    try {
-      const audio = new Audio(type === "success" ? settings.successSound : settings.errorSound);
-      audio.volume = settings.volume / 100;
-      audio.play().catch(() => {});
-    } catch (e) {
-      console.error("Error playing test sound:", e);
+    const volume = settings.volume / 100;
+    
+    if (type === "success") {
+      if (settings.soundStyle === "musical") {
+        playSuccessSound(volume);
+      } else if (settings.soundStyle === "ascending") {
+        playMemberAnnounceSound(testIndex, volume);
+        setTestIndex(prev => prev + 1);
+      } else {
+        // Classic file-based sound
+        try {
+          const audio = new Audio(settings.successSound);
+          audio.volume = volume;
+          audio.play().catch(() => {});
+        } catch (e) {
+          console.error("Error playing sound:", e);
+        }
+      }
+    } else {
+      if (settings.soundStyle === "classic") {
+        try {
+          const audio = new Audio(settings.errorSound);
+          audio.volume = volume;
+          audio.play().catch(() => {});
+        } catch (e) {
+          console.error("Error playing sound:", e);
+        }
+      } else {
+        playErrorSound(volume);
+      }
     }
   };
 
@@ -94,6 +133,51 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
               checked={settings.enabled}
               onCheckedChange={(enabled) => updateSettings({ enabled })}
             />
+          </div>
+
+          {/* Continuous Mode */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="continuous-mode" className="cursor-pointer flex items-center gap-2">
+                <RefreshCw className="h-3 w-3" />
+                Mode continu
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Scan automatique sans pause
+              </p>
+            </div>
+            <Switch
+              id="continuous-mode"
+              checked={settings.continuousMode}
+              onCheckedChange={(continuousMode) => updateSettings({ continuousMode })}
+            />
+          </div>
+
+          {/* Sound Style */}
+          <div className="space-y-2">
+            <Label>Style de son</Label>
+            <Select
+              value={settings.soundStyle}
+              onValueChange={(value: "classic" | "musical" | "ascending") => {
+                updateSettings({ soundStyle: value });
+                setTestIndex(0);
+              }}
+              disabled={!settings.enabled}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="classic">Classique (fichiers audio)</SelectItem>
+                <SelectItem value="musical">Musical (accords variés)</SelectItem>
+                <SelectItem value="ascending">Ascendant (tonalité croissante)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {settings.soundStyle === "musical" && "Sons d'accords différents à chaque scan"}
+              {settings.soundStyle === "ascending" && "Tonalité qui monte avec chaque membre scanné"}
+              {settings.soundStyle === "classic" && "Sons audio classiques (beep)"}
+            </p>
           </div>
 
           {/* Volume Control */}
@@ -135,11 +219,21 @@ export default function ScannerSettings({ onSettingsChange }: ScannerSettingsPro
                 ✗ Son Erreur
               </Button>
             </div>
+            {settings.soundStyle === "ascending" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTestIndex(0)}
+                className="w-full text-xs"
+              >
+                Réinitialiser la séquence
+              </Button>
+            )}
           </div>
 
           {/* Info */}
           <p className="text-xs text-muted-foreground">
-            Les sons sont émis lors du scan d'un QR code. Vous pouvez ajuster le volume ou désactiver complètement les sons.
+            Mode continu: le scanner reste actif entre chaque scan. Sons variés: chaque scan a une tonalité unique.
           </p>
         </div>
       </PopoverContent>
