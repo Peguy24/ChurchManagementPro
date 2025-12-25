@@ -25,15 +25,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus } from "lucide-react";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import MemberAttendanceStats from "@/components/MemberAttendanceStats";
 import MemberDonationStats from "@/components/MemberDonationStats";
+import MemberDocuments from "@/components/MemberDocuments";
+import MemberTimeline from "@/components/MemberTimeline";
 
 interface MemberSimple {
   id: string;
@@ -463,11 +466,45 @@ export default function MemberDetails() {
           </Card>
         )}
 
-        {/* Attendance Statistics Section */}
-        {memberId && <MemberAttendanceStats memberId={memberId} />}
+        {/* Tabs for different sections */}
+        {memberId && (
+          <Tabs defaultValue="timeline" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="timeline" className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Historique
+              </TabsTrigger>
+              <TabsTrigger value="attendance" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Présences
+              </TabsTrigger>
+              <TabsTrigger value="donations" className="flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Cotisations
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="flex items-center gap-2">
+                <Book className="h-4 w-4" />
+                Documents
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Donation Statistics Section */}
-        {memberId && <MemberDonationStats memberId={memberId} />}
+            <TabsContent value="timeline" className="mt-6">
+              <MemberTimeline memberId={memberId} />
+            </TabsContent>
+
+            <TabsContent value="attendance" className="mt-6">
+              <MemberAttendanceStats memberId={memberId} />
+            </TabsContent>
+
+            <TabsContent value="donations" className="mt-6">
+              <MemberDonationStats memberId={memberId} />
+            </TabsContent>
+
+            <TabsContent value="documents" className="mt-6">
+              <MemberDocuments memberId={memberId} />
+            </TabsContent>
+          </Tabs>
+        )}
 
         {/* Ministries Section */}
         <Card>

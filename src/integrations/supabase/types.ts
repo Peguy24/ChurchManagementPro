@@ -854,6 +854,45 @@ export type Database = {
         }
         Relationships: []
       }
+      member_documents: {
+        Row: {
+          created_at: string
+          document_date: string | null
+          document_name: string
+          document_type: string
+          document_url: string | null
+          id: string
+          member_id: string
+          notes: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_date?: string | null
+          document_name: string
+          document_type: string
+          document_url?: string | null
+          id?: string
+          member_id: string
+          notes?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_date?: string | null
+          document_name?: string
+          document_type?: string
+          document_url?: string | null
+          id?: string
+          member_id?: string
+          notes?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           academic_formation: string | null
