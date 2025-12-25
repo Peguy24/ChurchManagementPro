@@ -179,13 +179,17 @@ export default function Layout({ children }: LayoutProps) {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Church className="h-8 w-8 text-primary" />
+          <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <img 
+              src="/images/church-logo.png" 
+              alt="Logo de l'église" 
+              className="h-12 w-12 object-contain"
+            />
             <div>
-              <h1 className="text-xl font-bold text-foreground">ÉgliseApp</h1>
-              <p className="text-xs text-muted-foreground">Système de Gestion d'Église</p>
+              <h1 className="text-lg font-bold text-foreground leading-tight">Church of God</h1>
+              <p className="text-xs text-muted-foreground leading-tight">Ministry of Prayer and of The Word</p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-4">
             <LanguageSelector />
             <div className="flex items-center gap-2">
