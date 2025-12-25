@@ -343,7 +343,12 @@ export default function Attendance() {
 
   const loadTodayEvents = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      // Use local date to avoid timezone issues
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      console.log("Loading events for today:", today);
+      
       const { data, error } = await supabase
         .from("events")
         .select("id, name, event_time, status")
@@ -352,6 +357,8 @@ export default function Attendance() {
         .order("event_time", { ascending: true });
 
       if (error) throw error;
+      
+      console.log("Events found:", data);
       setTodayEvents(data || []);
       
       // Auto-select first event if available
