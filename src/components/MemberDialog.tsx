@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import QRCode from "qrcode";
-import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church } from "lucide-react";
+import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MemberDialogProps {
@@ -43,6 +43,10 @@ export default function MemberDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
@@ -62,6 +66,7 @@ export default function MemberDialog({
     joinDate: "",
     status: "active",
     branchId: "",
+    photoUrl: "",
     // Spiritual Information
     baptismStatus: "",
     baptismDate: "",
@@ -136,6 +141,7 @@ export default function MemberDialog({
         role: member.role || "",
         branchId: member.branch_id || "",
         joinDate: member.join_date || "",
+        photoUrl: member.photo_url || "",
         addressNumber: address.number || "",
         street: address.street || "",
         apartment: address.apartment || "",
@@ -155,6 +161,13 @@ export default function MemberDialog({
         childrenNames: member.children_names || "",
       });
 
+      // Set photo preview if exists
+      if (member.photo_url) {
+        setPhotoPreview(member.photo_url);
+      } else {
+        setPhotoPreview("");
+      }
+
       // Generate QR code for existing member
       if (member.qr_code) {
         generateQRCode(member.qr_code);
@@ -172,6 +185,7 @@ export default function MemberDialog({
         role: "",
         branchId: "",
         joinDate: "",
+        photoUrl: "",
         addressNumber: "",
         street: "",
         apartment: "",
@@ -190,8 +204,83 @@ export default function MemberDialog({
         numberOfChildren: "",
         childrenNames: "",
       });
+      setPhotoPreview("");
+      setPhotoFile(null);
     }
   }, [member]);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Fichier trop volumineux",
+          description: "La photo ne doit pas dépasser 5 Mo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+        toast({
+          title: "Format non supporté",
+          description: "Veuillez utiliser un format JPEG, PNG, WebP ou GIF.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setPhotoFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+    }
+  };
+
+  const uploadPhoto = async (memberId: string): Promise<string | null> => {
+    if (!photoFile) return formData.photoUrl || null;
+
+    setUploadingPhoto(true);
+    try {
+      const fileExt = photoFile.name.split('.').pop();
+      const fileName = `${memberId}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('member-photos')
+        .upload(filePath, photoFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('member-photos')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: error.message || "Impossible de télécharger la photo.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview("");
+    setFormData({ ...formData, photoUrl: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const generateQRCode = async (qrCodeData: string) => {
     try {
@@ -233,32 +322,41 @@ export default function MemberDialog({
         country: formData.country,
       };
 
-      const memberData = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        gender: formData.gender || null,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        date_of_birth: formData.dateOfBirth || null,
-        emergency_phone: formData.emergencyPhone || null,
-        status: formData.status,
-        role: formData.role || null,
-        branch_id: formData.branchId || null,
-        join_date: formData.joinDate || null,
-        address: JSON.stringify(addressData),
-        marital_status: formData.maritalStatus || null,
-        conversion_date: formData.conversionDate || null,
-        baptism_date: formData.baptismDate || null,
-        baptism_status: formData.baptismStatus || null,
-        origin_church: formData.originChurch || null,
-        christian_experience: formData.christianExperience || null,
-        marriage_date: formData.marriageDate || null,
-        spouse_name: formData.spouseName || null,
-        number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : null,
-        children_names: formData.childrenNames || null,
-      };
+      let photoUrl = formData.photoUrl;
 
       if (member?.id) {
+        // Upload photo if new file selected
+        if (photoFile) {
+          const uploadedUrl = await uploadPhoto(member.id);
+          if (uploadedUrl) photoUrl = uploadedUrl;
+        }
+
+        const memberData = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          gender: formData.gender || null,
+          email: formData.email || null,
+          phone: formData.phone || null,
+          date_of_birth: formData.dateOfBirth || null,
+          emergency_phone: formData.emergencyPhone || null,
+          status: formData.status,
+          role: formData.role || null,
+          branch_id: formData.branchId || null,
+          join_date: formData.joinDate || null,
+          address: JSON.stringify(addressData),
+          photo_url: photoUrl || null,
+          marital_status: formData.maritalStatus || null,
+          conversion_date: formData.conversionDate || null,
+          baptism_date: formData.baptismDate || null,
+          baptism_status: formData.baptismStatus || null,
+          origin_church: formData.originChurch || null,
+          christian_experience: formData.christianExperience || null,
+          marriage_date: formData.marriageDate || null,
+          spouse_name: formData.spouseName || null,
+          number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : null,
+          children_names: formData.childrenNames || null,
+        };
+
         const { error } = await supabase
           .from("members")
           .update(memberData)
@@ -266,21 +364,56 @@ export default function MemberDialog({
 
         if (error) throw error;
       } else {
-        // For new members, insert and get the ID to generate QR code
+        // For new members, insert first to get the ID
+        const memberDataWithoutPhoto = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          gender: formData.gender || null,
+          email: formData.email || null,
+          phone: formData.phone || null,
+          date_of_birth: formData.dateOfBirth || null,
+          emergency_phone: formData.emergencyPhone || null,
+          status: formData.status,
+          role: formData.role || null,
+          branch_id: formData.branchId || null,
+          join_date: formData.joinDate || null,
+          address: JSON.stringify(addressData),
+          marital_status: formData.maritalStatus || null,
+          conversion_date: formData.conversionDate || null,
+          baptism_date: formData.baptismDate || null,
+          baptism_status: formData.baptismStatus || null,
+          origin_church: formData.originChurch || null,
+          christian_experience: formData.christianExperience || null,
+          marriage_date: formData.marriageDate || null,
+          spouse_name: formData.spouseName || null,
+          number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : null,
+          children_names: formData.childrenNames || null,
+        };
+
         const { data, error } = await supabase
           .from("members")
-          .insert([memberData])
+          .insert([memberDataWithoutPhoto])
           .select()
           .single();
 
         if (error) throw error;
 
-        // Generate and update QR code with the member ID
+        // Upload photo and update member with photo_url and qr_code
         if (data) {
           const qrCodeData = `MEMBER-${data.id}`;
+          
+          // Upload photo if selected
+          if (photoFile) {
+            const uploadedUrl = await uploadPhoto(data.id);
+            if (uploadedUrl) photoUrl = uploadedUrl;
+          }
+
           const { error: updateError } = await supabase
             .from("members")
-            .update({ qr_code: qrCodeData })
+            .update({ 
+              qr_code: qrCodeData,
+              photo_url: photoUrl || null
+            })
             .eq("id", data.id);
 
           if (updateError) throw updateError;
@@ -312,6 +445,7 @@ export default function MemberDialog({
         description: `${formData.firstName} ${formData.lastName}`,
       });
       
+      setPhotoFile(null);
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
@@ -360,6 +494,61 @@ export default function MemberDialog({
             
             {/* Personal Information Tab */}
             <TabsContent value="personal" className="space-y-4 mt-4">
+              {/* Photo Upload Section */}
+              <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
+                <Label className="text-base font-semibold">Photo du Membre</Label>
+                <div className="flex items-center gap-4">
+                  {/* Photo Preview */}
+                  <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted border-2 border-dashed border-primary/30 flex items-center justify-center">
+                    {photoPreview ? (
+                      <>
+                        <img
+                          src={photoPreview}
+                          alt="Photo du membre"
+                          className="h-full w-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6"
+                          onClick={removePhoto}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Camera className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  
+                  {/* Upload Controls */}
+                  <div className="flex-1 space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handlePhotoSelect}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {photoPreview ? "Changer la photo" : "Ajouter une photo"}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      JPEG, PNG, WebP ou GIF. Max 5 Mo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="lastName">{t("members.lastName")} *</Label>
