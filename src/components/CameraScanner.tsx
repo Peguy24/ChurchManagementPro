@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { Camera, CameraOff, SwitchCamera, CheckCircle } from "lucide-react";
+import { Camera, CameraOff, SwitchCamera, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+export type ScanFeedbackStatus = 'success' | 'duplicate' | 'error' | null;
 
 interface CameraScannerProps {
   onScan: (qrCode: string) => void;
   isActive: boolean;
   onActiveChange: (active: boolean) => void;
   className?: string;
+  feedbackStatus?: ScanFeedbackStatus;
+  feedbackMessage?: string;
 }
 
 // Audio context for mobile compatibility
@@ -87,7 +91,9 @@ export default function CameraScanner({
   onScan, 
   isActive, 
   onActiveChange,
-  className = "" 
+  className = "",
+  feedbackStatus,
+  feedbackMessage
 }: CameraScannerProps) {
   const { t } = useLanguage();
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
@@ -311,10 +317,35 @@ export default function CameraScanner({
           
           {/* Flash overlay when QR code is detected */}
           {showFlash && (
-            <div className="absolute inset-0 bg-green-500/40 flex items-center justify-center animate-[pulse_0.3s_ease-out] pointer-events-none z-50">
-              <div className="bg-green-500 rounded-full p-4 animate-scale-in shadow-lg">
-                <CheckCircle className="h-16 w-16 text-white" />
+            <div className={`absolute inset-0 flex items-center justify-center animate-[pulse_0.3s_ease-out] pointer-events-none z-50 ${
+              feedbackStatus === 'duplicate' ? 'bg-orange-500/40' :
+              feedbackStatus === 'error' ? 'bg-red-500/40' :
+              'bg-green-500/40'
+            }`}>
+              <div className={`rounded-full p-4 animate-scale-in shadow-lg ${
+                feedbackStatus === 'duplicate' ? 'bg-orange-500' :
+                feedbackStatus === 'error' ? 'bg-red-500' :
+                'bg-green-500'
+              }`}>
+                {feedbackStatus === 'duplicate' ? (
+                  <AlertCircle className="h-16 w-16 text-white" />
+                ) : feedbackStatus === 'error' ? (
+                  <XCircle className="h-16 w-16 text-white" />
+                ) : (
+                  <CheckCircle className="h-16 w-16 text-white" />
+                )}
               </div>
+            </div>
+          )}
+          
+          {/* Feedback message overlay */}
+          {showFlash && feedbackMessage && (
+            <div className={`absolute bottom-0 left-0 right-0 p-3 text-center text-white font-bold text-lg z-50 ${
+              feedbackStatus === 'duplicate' ? 'bg-orange-500' :
+              feedbackStatus === 'error' ? 'bg-red-500' :
+              'bg-green-500'
+            }`}>
+              {feedbackMessage}
             </div>
           )}
         </div>
@@ -323,12 +354,20 @@ export default function CameraScanner({
       {/* Last scanned code indicator */}
       {lastScannedCode && isActive && (
         <div className={`text-center py-2 px-4 rounded-lg transition-all duration-300 ${
-          showFlash ? 'bg-green-100 dark:bg-green-900/30 border border-green-500' : 'bg-muted'
+          showFlash && feedbackStatus === 'duplicate' ? 'bg-orange-100 dark:bg-orange-900/30 border border-orange-500' :
+          showFlash && feedbackStatus === 'error' ? 'bg-red-100 dark:bg-red-900/30 border border-red-500' :
+          showFlash ? 'bg-green-100 dark:bg-green-900/30 border border-green-500' : 
+          'bg-muted'
         }`}>
           <p className="text-sm text-muted-foreground">
             {t("attendance.lastScan") || "Dernier scan"}:
           </p>
-          <p className={`font-mono font-bold ${showFlash ? 'text-green-600 dark:text-green-400' : ''}`}>
+          <p className={`font-mono font-bold ${
+            showFlash && feedbackStatus === 'duplicate' ? 'text-orange-600 dark:text-orange-400' :
+            showFlash && feedbackStatus === 'error' ? 'text-red-600 dark:text-red-400' :
+            showFlash ? 'text-green-600 dark:text-green-400' : 
+            ''
+          }`}>
             {lastScannedCode}
           </p>
         </div>
