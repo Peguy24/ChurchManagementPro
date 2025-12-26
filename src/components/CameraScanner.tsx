@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { Camera, CameraOff, SwitchCamera } from "lucide-react";
@@ -22,8 +22,38 @@ export default function CameraScanner({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scannerReady, setScannerReady] = useState(false);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  
+  // Use ref for onScan to avoid stale closure issues
+  const onScanRef = useRef(onScan);
+  const lastScannedRef = useRef<string>("");
+  const lastScanTimeRef = useRef<number>(0);
 
-  const initializeScanner = (facing: "environment" | "user") => {
+  // Keep the ref updated
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
+  const handleScan = useCallback((decodedText: string) => {
+    const now = Date.now();
+    const trimmedCode = decodedText.trim();
+    
+    // Debounce: prevent same code being scanned within 3 seconds
+    if (trimmedCode === lastScannedRef.current && now - lastScanTimeRef.current < 3000) {
+      console.log("Camera scan debounced:", trimmedCode);
+      return;
+    }
+    
+    console.log("Camera scanned QR code:", trimmedCode);
+    lastScannedRef.current = trimmedCode;
+    lastScanTimeRef.current = now;
+    
+    // Call the callback using the ref to ensure we have the latest function
+    if (onScanRef.current) {
+      onScanRef.current(trimmedCode);
+    }
+  }, []);
+
+  const initializeScanner = useCallback((facing: "environment" | "user") => {
     if (scannerRef.current) {
       scannerRef.current.clear().catch(() => {});
       scannerRef.current = null;
@@ -45,14 +75,14 @@ export default function CameraScanner({
 
     scannerRef.current.render(
       (decodedText) => {
-        onScan(decodedText);
+        handleScan(decodedText);
       },
       (error) => {
-        // Silently handle scan errors
+        // Silently handle scan errors (common when no QR code in view)
       }
     );
     setScannerReady(true);
-  };
+  }, [handleScan]);
 
   useEffect(() => {
     if (isActive && containerRef.current) {
@@ -71,7 +101,7 @@ export default function CameraScanner({
         setScannerReady(false);
       }
     };
-  }, [isActive]);
+  }, [isActive, initializeScanner]);
 
   // Cleanup on unmount
   useEffect(() => {
