@@ -104,6 +104,27 @@ export default function Attendance() {
     loadAttendanceRecords();
     loadTotalMembers();
     loadTodayEvents();
+
+    // Subscribe to real-time updates for attendance records
+    const channel = supabase
+      .channel('attendance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attendance_records'
+        },
+        () => {
+          // Reload attendance records when any change happens
+          loadAttendanceRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Keep scanner input focused when in scanner mode or kiosk mode
