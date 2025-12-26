@@ -570,22 +570,38 @@ export default function Attendance() {
                       className={`overflow-hidden transition-all duration-300 ${
                         member.status === 'success' 
                           ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
-                          : 'border-red-500 bg-red-50 dark:bg-red-950/20'
+                          : 'border-red-500 border-4 bg-red-100 dark:bg-red-950/40 animate-pulse'
                       } ${index === 0 ? 'ring-4 ring-primary' : ''}`}
                     >
+                      {/* Error banner for duplicate scans */}
+                      {member.status === 'error' && (
+                        <div className="bg-red-600 text-white py-3 px-4 flex items-center justify-center gap-2">
+                          <XCircle className="h-6 w-6" />
+                          <span className="text-xl font-bold tracking-wide">{t("attendance.codeAlreadyScanned")}</span>
+                        </div>
+                      )}
                       <CardHeader className="pb-4">
                         <div className="flex items-center gap-4">
-                          <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+                          <Avatar className={`h-20 w-20 border-4 shadow-lg ${
+                            member.status === 'success' 
+                              ? 'border-green-500' 
+                              : 'border-red-500'
+                          }`}>
                             <AvatarImage src={member.photo_url || undefined} />
                             <AvatarFallback className="text-2xl">
                               {member.first_name[0]}{member.last_name[0] || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <CardTitle className="text-2xl mb-1">
+                            <CardTitle className={`text-2xl mb-1 ${member.status === 'error' ? 'text-red-700 dark:text-red-400' : ''}`}>
                               {member.first_name} {member.last_name}
                             </CardTitle>
                             <p className="text-lg text-muted-foreground">{member.time}</p>
+                            {member.status === 'error' && (
+                              <p className="text-sm text-red-600 dark:text-red-400 font-medium mt-1">
+                                {t("attendance.duplicateScan")}
+                              </p>
+                            )}
                           </div>
                           {member.status === 'success' ? (
                             <CheckCircle className="h-16 w-16 text-green-600" />
@@ -597,9 +613,13 @@ export default function Attendance() {
                       <CardContent>
                         <Badge 
                           variant={member.status === 'success' ? 'default' : 'destructive'}
-                          className="text-lg px-4 py-2 w-full justify-center"
+                          className={`text-lg px-4 py-2 w-full justify-center ${
+                            member.status === 'error' ? 'bg-red-600 hover:bg-red-700 text-white text-xl py-3' : ''
+                          }`}
                         >
-                          {member.status === 'success' ? `✓ ${t("attendance.attendanceMarked")}` : `✗ ${t("attendance.error")}`}
+                          {member.status === 'success' 
+                            ? `✓ ${t("attendance.attendanceMarked")}` 
+                            : `✗ ${t("attendance.codeAlreadyScanned")}`}
                         </Badge>
                       </CardContent>
                     </Card>
