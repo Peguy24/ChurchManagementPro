@@ -615,24 +615,28 @@ export default function Attendance() {
             </p>
           </div>
           
-          {/* Event Selector */}
-          {todayEvents.length > 0 && (
-            <div className="w-full sm:w-auto">
-              <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sélectionner un événement" />
-                </SelectTrigger>
-                <SelectContent>
-                  {todayEvents.map((event) => (
+          {/* Event Selector - Always show */}
+          <div className="w-full sm:w-auto">
+            <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
+              <SelectTrigger className="w-full sm:w-[300px]">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                <SelectValue placeholder={todayEvents.length === 0 ? "Aucun événement aujourd'hui" : "Sélectionner un événement"} />
+              </SelectTrigger>
+              <SelectContent>
+                {todayEvents.length === 0 ? (
+                  <SelectItem value="none" disabled>
+                    Aucun événement programmé pour aujourd'hui
+                  </SelectItem>
+                ) : (
+                  todayEvents.map((event) => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.name} {event.event_time ? `(${event.event_time.substring(0, 5)})` : ""}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="flex flex-wrap gap-2">
             <ScannerSettings onSettingsChange={setSoundSettings} />
