@@ -38,13 +38,22 @@ interface Member {
   status: string;
 }
 
+interface EventOption {
+  id: string;
+  name: string;
+  event_time: string | null;
+  event_date: string;
+}
+
 export default function AttendanceDialog({
   open,
   onOpenChange,
   onSuccess,
 }: AttendanceDialogProps) {
   const { toast } = useToast();
-  const [eventType, setEventType] = useState("Culte du Dimanche");
+  const [eventType, setEventType] = useState("");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [events, setEvents] = useState<EventOption[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [checkedMembers, setCheckedMembers] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -55,10 +64,11 @@ export default function AttendanceDialog({
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const qrReaderRef = useRef<HTMLDivElement>(null);
 
-  // Load members from database
+  // Load members and events from database
   useEffect(() => {
     if (open) {
       loadMembers();
+      loadEvents();
     }
   }, [open]);
 
@@ -108,6 +118,45 @@ export default function AttendanceDialog({
     }
   };
 
+  const loadEvents = async () => {
+    try {
+      // Load events for the selected date
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, name, event_time, event_date")
+        .eq("event_date", date)
+        .in("status", ["planned", "confirmed"])
+        .order("event_time", { ascending: true });
+
+      if (error) throw error;
+      
+      setEvents(data || []);
+      
+      // Auto-select first event if available
+      if (data && data.length > 0) {
+        setSelectedEventId(data[0].id);
+        setEventType(data[0].name);
+      }
+    } catch (error) {
+      console.error("Error loading events:", error);
+    }
+  };
+
+  // Reload events when date changes
+  useEffect(() => {
+    if (open) {
+      loadEvents();
+    }
+  }, [date, open]);
+
+  const handleEventChange = (eventId: string) => {
+    setSelectedEventId(eventId);
+    const selectedEvent = events.find(e => e.id === eventId);
+    if (selectedEvent) {
+      setEventType(selectedEvent.name);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (checkedMembers.length === 0) {
@@ -124,11 +173,12 @@ export default function AttendanceDialog({
       const { data: { user } } = await supabase.auth.getUser();
       
       const attendanceRecords = checkedMembers.map((memberId) => ({
-        event_type: eventType,
+        event_type: eventType || "Culte",
         event_date: date,
         member_id: memberId,
         marked_by: user?.id,
         scan_method: "manual",
+        event_id: selectedEventId,
       }));
 
       const { error } = await supabase
@@ -239,20 +289,6 @@ export default function AttendanceDialog({
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="event">Type de Réunion</Label>
-              <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Culte du Dimanche">Culte du Dimanche</SelectItem>
-                  <SelectItem value="Étude Biblique">Étude Biblique</SelectItem>
-                  <SelectItem value="Réunion de Prière">Réunion de Prière</SelectItem>
-                  <SelectItem value="Rencontre Jeunesse">Rencontre Jeunesse</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
               <Label htmlFor="date">Date</Label>
               <Input
                 id="date"
@@ -261,6 +297,32 @@ export default function AttendanceDialog({
                 onChange={(e) => setDate(e.target.value)}
                 required
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="event">Type de Réunion</Label>
+              <Select value={selectedEventId || ""} onValueChange={handleEventChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={events.length === 0 ? "Aucun événement pour cette date" : "Sélectionner un événement"} />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  {events.length === 0 ? (
+                    <SelectItem value="none" disabled>
+                      Aucun événement programmé pour cette date
+                    </SelectItem>
+                  ) : (
+                    events.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.name} {event.event_time ? `(${event.event_time.substring(0, 5)})` : ""}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {events.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Créez un événement pour cette date dans la page Événements
+                </p>
+              )}
             </div>
             
             <Tabs defaultValue="manual" className="w-full">
