@@ -14,30 +14,50 @@ interface CameraScannerProps {
 // Audio context for mobile compatibility
 let audioContext: AudioContext | null = null;
 
-const getAudioContext = (): AudioContext => {
+const getAudioContext = async (): Promise<AudioContext> => {
   if (!audioContext) {
     audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
-  // Resume if suspended (required for mobile)
+  // Always try to resume on mobile (required for each interaction)
   if (audioContext.state === 'suspended') {
-    audioContext.resume();
+    try {
+      await audioContext.resume();
+      console.log("Audio context resumed successfully");
+    } catch (e) {
+      console.error("Failed to resume audio context:", e);
+    }
   }
   return audioContext;
 };
 
-const playScanBeep = (volume: number = 0.5): void => {
+// Vibrate device if supported (fallback for mobile)
+const vibrateDevice = (pattern: number | number[] = 100): void => {
   try {
-    const ctx = getAudioContext();
+    if ('vibrate' in navigator) {
+      navigator.vibrate(pattern);
+      console.log("Device vibrated");
+    }
+  } catch (e) {
+    console.error("Vibration not supported:", e);
+  }
+};
+
+const playScanBeep = async (volume: number = 0.5): Promise<void> => {
+  // Always vibrate as immediate feedback (works reliably on mobile)
+  vibrateDevice([50, 30, 50]); // Short vibration pattern
+  
+  try {
+    const ctx = await getAudioContext();
     const now = ctx.currentTime;
     
     const masterGain = ctx.createGain();
     masterGain.connect(ctx.destination);
-    masterGain.gain.value = volume * 0.4;
+    masterGain.gain.value = volume * 0.5; // Slightly louder
     
     // Create a pleasant "beep" sound
     const frequencies = [880, 1108.73]; // A5 + C#6 - major third
     
-    frequencies.forEach((freq, i) => {
+    frequencies.forEach((freq) => {
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
       
@@ -50,11 +70,11 @@ const playScanBeep = (volume: number = 0.5): void => {
       // Quick attack, short sustain, fast decay
       gainNode.gain.setValueAtTime(0, now);
       gainNode.gain.linearRampToValueAtTime(1, now + 0.02);
-      gainNode.gain.setValueAtTime(1, now + 0.08);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      gainNode.gain.setValueAtTime(1, now + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
       
       oscillator.start(now);
-      oscillator.stop(now + 0.25);
+      oscillator.stop(now + 0.3);
     });
     
     console.log("Scan beep played");
@@ -91,10 +111,10 @@ export default function CameraScanner({
   }, [onScan]);
 
   // Initialize audio context on first user interaction
-  const initializeAudio = useCallback(() => {
+  const initializeAudio = useCallback(async () => {
     if (!audioInitialized) {
       try {
-        const ctx = getAudioContext();
+        const ctx = await getAudioContext();
         // Create and immediately stop a silent oscillator to unlock audio
         const oscillator = ctx.createOscillator();
         oscillator.connect(ctx.destination);
