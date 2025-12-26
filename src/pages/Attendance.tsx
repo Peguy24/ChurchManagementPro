@@ -22,7 +22,7 @@ import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircl
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
-import CameraScanner from "@/components/CameraScanner";
+import CameraScanner, { ScanFeedbackStatus } from "@/components/CameraScanner";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -99,6 +99,8 @@ export default function Attendance() {
   const [scanCount, setScanCount] = useState(0);
   const [todayEvents, setTodayEvents] = useState<TodayEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [scanFeedbackStatus, setScanFeedbackStatus] = useState<ScanFeedbackStatus>(null);
+  const [scanFeedbackMessage, setScanFeedbackMessage] = useState<string>("");
 
   useEffect(() => {
     loadAttendanceRecords();
@@ -230,6 +232,14 @@ export default function Attendance() {
       }
 
       if (!member) {
+        // Set feedback for camera scanner (error - not found)
+        setScanFeedbackStatus('error');
+        setScanFeedbackMessage(t("attendance.memberNotFound") || "Membre non trouvé");
+        setTimeout(() => {
+          setScanFeedbackStatus(null);
+          setScanFeedbackMessage("");
+        }, 2000);
+        
         toast({
           title: t("attendance.memberNotFound"),
           description: t("attendance.qrCodeNotFound").replace("{qrCode}", scannedCode),
@@ -288,6 +298,14 @@ export default function Attendance() {
             .replace("{name}", `${member.first_name} ${member.last_name}`);
         }
         
+        // Set feedback for camera scanner (duplicate)
+        setScanFeedbackStatus('duplicate');
+        setScanFeedbackMessage(`${member.first_name} ${member.last_name} - ${t("attendance.alreadyMarked") || "Déjà présent"}`);
+        setTimeout(() => {
+          setScanFeedbackStatus(null);
+          setScanFeedbackMessage("");
+        }, 2000);
+        
         toast({
           title: t("attendance.alreadyMarked"),
           description,
@@ -320,6 +338,13 @@ export default function Attendance() {
       if (insertError) throw insertError;
 
       // Success feedback
+      setScanFeedbackStatus('success');
+      setScanFeedbackMessage(`${member.first_name} ${member.last_name} - ${t("attendance.attendanceMarked") || "Présent"}`);
+      setTimeout(() => {
+        setScanFeedbackStatus(null);
+        setScanFeedbackMessage("");
+      }, 2000);
+      
       toast({
         title: t("attendance.attendanceMarked"),
         description: t("attendance.memberMarkedPresent").replace("{name}", `${member.first_name} ${member.last_name}`),
@@ -548,6 +573,8 @@ export default function Attendance() {
                       onScan={handleQrCodeScan}
                       isActive={kioskCameraActive}
                       onActiveChange={setKioskCameraActive}
+                      feedbackStatus={scanFeedbackStatus}
+                      feedbackMessage={scanFeedbackMessage}
                     />
                   </CardContent>
                 </Card>
@@ -776,6 +803,8 @@ export default function Attendance() {
                     onScan={handleQrCodeScan}
                     isActive={cameraActive}
                     onActiveChange={setCameraActive}
+                    feedbackStatus={scanFeedbackStatus}
+                    feedbackMessage={scanFeedbackMessage}
                   />
                 </TabsContent>
               </Tabs>
