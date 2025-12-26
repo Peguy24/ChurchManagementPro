@@ -886,7 +886,10 @@ export default function Attendance() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.highestAttendance}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.highestDate ? new Date(stats.highestDate).toLocaleDateString("fr-FR") : "-"}
+                {stats.highestDate ? (() => {
+                  const [year, month, day] = stats.highestDate.split('-').map(Number);
+                  return new Date(year, month - 1, day).toLocaleDateString("fr-FR");
+                })() : "-"}
               </p>
             </CardContent>
           </Card>
@@ -931,10 +934,14 @@ export default function Attendance() {
                         ? Math.round((record.total / totalMembers) * 100)
                         : 0;
                       
+                      // Parse date without timezone conversion
+                      const [year, month, day] = record.event_date.split('-').map(Number);
+                      const displayDate = new Date(year, month - 1, day).toLocaleDateString("fr-FR");
+                      
                       return (
                         <TableRow key={`${record.event_type}-${record.event_date}-${index}`}>
                           <TableCell className="font-medium">{record.event_type}</TableCell>
-                          <TableCell>{new Date(record.event_date).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell>{displayDate}</TableCell>
                           <TableCell>{record.total}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
