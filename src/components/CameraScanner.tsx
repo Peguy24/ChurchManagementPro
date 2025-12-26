@@ -11,6 +11,58 @@ interface CameraScannerProps {
   className?: string;
 }
 
+// Audio context for mobile compatibility
+let audioContext: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  // Resume if suspended (required for mobile)
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+  return audioContext;
+};
+
+const playScanBeep = (volume: number = 0.5): void => {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    
+    const masterGain = ctx.createGain();
+    masterGain.connect(ctx.destination);
+    masterGain.gain.value = volume * 0.4;
+    
+    // Create a pleasant "beep" sound
+    const frequencies = [880, 1108.73]; // A5 + C#6 - major third
+    
+    frequencies.forEach((freq, i) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(masterGain);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      
+      // Quick attack, short sustain, fast decay
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(1, now + 0.02);
+      gainNode.gain.setValueAtTime(1, now + 0.08);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      
+      oscillator.start(now);
+      oscillator.stop(now + 0.25);
+    });
+    
+    console.log("Scan beep played");
+  } catch (e) {
+    console.error("Error playing scan beep:", e);
+  }
+};
+
 export default function CameraScanner({ 
   onScan, 
   isActive, 
@@ -24,6 +76,7 @@ export default function CameraScanner({
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [showFlash, setShowFlash] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState<string>("");
+  const [audioInitialized, setAudioInitialized] = useState(false);
   
   // Use ref for onScan to avoid stale closure issues
   const onScanRef = useRef(onScan);
@@ -34,6 +87,24 @@ export default function CameraScanner({
   useEffect(() => {
     onScanRef.current = onScan;
   }, [onScan]);
+
+  // Initialize audio context on first user interaction
+  const initializeAudio = useCallback(() => {
+    if (!audioInitialized) {
+      try {
+        const ctx = getAudioContext();
+        // Create and immediately stop a silent oscillator to unlock audio
+        const oscillator = ctx.createOscillator();
+        oscillator.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.001);
+        setAudioInitialized(true);
+        console.log("Audio context initialized for mobile");
+      } catch (e) {
+        console.error("Failed to initialize audio:", e);
+      }
+    }
+  }, [audioInitialized]);
 
   const handleScan = useCallback((decodedText: string) => {
     const now = Date.now();
@@ -48,6 +119,9 @@ export default function CameraScanner({
     console.log("Camera scanned QR code:", trimmedCode);
     lastScannedRef.current = trimmedCode;
     lastScanTimeRef.current = now;
+    
+    // Play immediate beep sound for camera scan
+    playScanBeep(0.6);
     
     // Show flash animation
     setShowFlash(true);
@@ -121,6 +195,9 @@ export default function CameraScanner({
   }, []);
 
   const toggleScanner = () => {
+    // Initialize audio on first button click (required for mobile)
+    initializeAudio();
+    
     if (isActive) {
       if (scannerRef.current) {
         scannerRef.current.clear().catch(() => {});
