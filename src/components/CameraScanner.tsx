@@ -77,11 +77,13 @@ export default function CameraScanner({
   const [showFlash, setShowFlash] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState<string>("");
   const [audioInitialized, setAudioInitialized] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Use ref for onScan to avoid stale closure issues
   const onScanRef = useRef(onScan);
   const lastScannedRef = useRef<string>("");
   const lastScanTimeRef = useRef<number>(0);
+  const processingRef = useRef(false);
 
   // Keep the ref updated
   useEffect(() => {
@@ -110,11 +112,21 @@ export default function CameraScanner({
     const now = Date.now();
     const trimmedCode = decodedText.trim();
     
-    // Debounce: prevent same code being scanned within 3 seconds
-    if (trimmedCode === lastScannedRef.current && now - lastScanTimeRef.current < 3000) {
+    // Prevent concurrent processing
+    if (processingRef.current) {
+      console.log("Camera scan blocked - already processing");
+      return;
+    }
+    
+    // Debounce: prevent same code being scanned within 5 seconds
+    if (trimmedCode === lastScannedRef.current && now - lastScanTimeRef.current < 5000) {
       console.log("Camera scan debounced:", trimmedCode);
       return;
     }
+    
+    // Lock processing
+    processingRef.current = true;
+    setIsProcessing(true);
     
     console.log("Camera scanned QR code:", trimmedCode);
     lastScannedRef.current = trimmedCode;
@@ -126,12 +138,18 @@ export default function CameraScanner({
     // Show flash animation
     setShowFlash(true);
     setLastScannedCode(trimmedCode);
-    setTimeout(() => setShowFlash(false), 600);
     
     // Call the callback using the ref to ensure we have the latest function
     if (onScanRef.current) {
       onScanRef.current(trimmedCode);
     }
+    
+    // Release processing lock after animation and cooldown
+    setTimeout(() => {
+      setShowFlash(false);
+      processingRef.current = false;
+      setIsProcessing(false);
+    }, 1500); // 1.5 second cooldown before next scan is allowed
   }, []);
 
   const initializeScanner = useCallback((facing: "environment" | "user") => {
