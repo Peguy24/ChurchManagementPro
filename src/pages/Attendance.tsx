@@ -277,9 +277,20 @@ export default function Attendance() {
       const { data: existing } = await existingQuery.maybeSingle();
 
       if (existing) {
+        // Build message based on whether an event is selected
+        let description: string;
+        if (selectedEvent) {
+          description = t("attendance.alreadyMarkedForEvent")
+            .replace("{name}", `${member.first_name} ${member.last_name}`)
+            .replace("{event}", selectedEvent.name);
+        } else {
+          description = t("attendance.alreadyMarkedToday")
+            .replace("{name}", `${member.first_name} ${member.last_name}`);
+        }
+        
         toast({
           title: t("attendance.alreadyMarked"),
-          description: t("attendance.alreadyMarkedToday").replace("{name}", `${member.first_name} ${member.last_name}`),
+          description,
           variant: "destructive",
         });
 
