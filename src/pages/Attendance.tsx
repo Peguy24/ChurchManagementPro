@@ -230,8 +230,9 @@ export default function Attendance() {
         return;
       }
 
-      // Mark attendance for today
-      const today = new Date().toISOString().split('T')[0];
+      // Mark attendance for today - use local date to avoid timezone issues
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       
       // Get selected event info - only use if selectedEventId is valid and exists in todayEvents
       const selectedEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
