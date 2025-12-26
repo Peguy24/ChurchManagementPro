@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { Camera, CameraOff, SwitchCamera } from "lucide-react";
+import { Camera, CameraOff, SwitchCamera, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CameraScannerProps {
@@ -22,6 +22,8 @@ export default function CameraScanner({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scannerReady, setScannerReady] = useState(false);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [showFlash, setShowFlash] = useState(false);
+  const [lastScannedCode, setLastScannedCode] = useState<string>("");
   
   // Use ref for onScan to avoid stale closure issues
   const onScanRef = useRef(onScan);
@@ -46,6 +48,11 @@ export default function CameraScanner({
     console.log("Camera scanned QR code:", trimmedCode);
     lastScannedRef.current = trimmedCode;
     lastScanTimeRef.current = now;
+    
+    // Show flash animation
+    setShowFlash(true);
+    setLastScannedCode(trimmedCode);
+    setTimeout(() => setShowFlash(false), 600);
     
     // Call the callback using the ref to ensure we have the latest function
     if (onScanRef.current) {
@@ -183,9 +190,32 @@ export default function CameraScanner({
       {isActive && (
         <div 
           ref={containerRef}
-          className="rounded-lg overflow-hidden border bg-muted"
+          className="rounded-lg overflow-hidden border bg-muted relative"
         >
           <div id="camera-scanner-container" className="w-full" />
+          
+          {/* Flash overlay when QR code is detected */}
+          {showFlash && (
+            <div className="absolute inset-0 bg-green-500/40 flex items-center justify-center animate-[pulse_0.3s_ease-out] pointer-events-none z-50">
+              <div className="bg-green-500 rounded-full p-4 animate-scale-in shadow-lg">
+                <CheckCircle className="h-16 w-16 text-white" />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Last scanned code indicator */}
+      {lastScannedCode && isActive && (
+        <div className={`text-center py-2 px-4 rounded-lg transition-all duration-300 ${
+          showFlash ? 'bg-green-100 dark:bg-green-900/30 border border-green-500' : 'bg-muted'
+        }`}>
+          <p className="text-sm text-muted-foreground">
+            {t("attendance.lastScan") || "Dernier scan"}:
+          </p>
+          <p className={`font-mono font-bold ${showFlash ? 'text-green-600 dark:text-green-400' : ''}`}>
+            {lastScannedCode}
+          </p>
         </div>
       )}
     </div>
