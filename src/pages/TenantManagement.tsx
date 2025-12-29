@@ -108,10 +108,6 @@ export default function TenantManagement() {
     mutationFn: async (data: typeof formData) => {
       const planConfig = PLAN_CONFIG[data.plan];
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Utilisateur non connecté");
-      
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
         .insert({
@@ -141,26 +137,6 @@ export default function TenantManagement() {
         });
 
       if (subError) throw subError;
-
-      // Assign creator as tenant admin with approval
-      const { error: roleError } = await supabase
-        .from("tenant_user_roles")
-        .insert({
-          tenant_id: tenant.id,
-          user_id: user.id,
-          role: "admin",
-          is_approved: true,
-        });
-
-      if (roleError) throw roleError;
-
-      // Update creator's profile with tenant_id
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ tenant_id: tenant.id })
-        .eq("id", user.id);
-
-      if (profileError) throw profileError;
 
       return tenant;
     },
