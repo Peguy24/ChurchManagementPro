@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2 } from "lucide-react";
+import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2, Church } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +9,11 @@ import { useState, useMemo } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -28,56 +30,74 @@ export default function Dashboard() {
     setHoveredCard(null);
   };
 
-  // Fetch members data
+  // Fetch members data filtered by tenant
   const { data: members } = useQuery({
-    queryKey: ["members"],
+    queryKey: ["members", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("members")
         .select("id, first_name, last_name, date_of_birth, photo_url, baptism_status, baptism_date, created_at")
         .eq("status", "active");
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
-  // Fetch branches data
+  // Fetch branches data filtered by tenant
   const { data: branches } = useQuery({
-    queryKey: ["branches"],
+    queryKey: ["branches", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("branches")
         .select("id, name, status")
         .eq("status", "active");
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
-  // Fetch ministries data
+  // Fetch ministries data filtered by tenant
   const { data: ministries } = useQuery({
-    queryKey: ["ministries"],
+    queryKey: ["ministries", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("ministries")
         .select("id, name, status")
         .eq("status", "active");
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
-  // Fetch recent members (last 30 days)
+  // Fetch recent members (last 30 days) filtered by tenant
   const { data: recentMembers } = useQuery({
-    queryKey: ["recentMembers"],
+    queryKey: ["recentMembers", tenantId],
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const { data, error } = await supabase
+      let query = supabase
         .from("members")
         .select("id, first_name, last_name, created_at, status")
         .eq("status", "active")
@@ -85,37 +105,55 @@ export default function Dashboard() {
         .order("created_at", { ascending: false })
         .limit(3);
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
-  // Fetch donations data
+  // Fetch donations data filtered by tenant
   const { data: donations } = useQuery({
-    queryKey: ["donations"],
+    queryKey: ["donations", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("donations")
         .select("id, amount, donation_type, donation_date, payment_method");
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
-  // Fetch attendance data
+  // Fetch attendance data filtered by tenant
   const { data: attendanceRecords } = useQuery({
-    queryKey: ["attendanceRecords"],
+    queryKey: ["attendanceRecords", tenantId],
     queryFn: async () => {
       const sixMonthsAgo = subMonths(new Date(), 6);
-      const { data, error } = await supabase
+      let query = supabase
         .from("attendance_records")
         .select("id, event_date, member_id")
         .gte("event_date", sixMonthsAgo.toISOString().split('T')[0]);
       
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
+    enabled: !tenantLoading,
   });
 
   // Calculate statistics
@@ -282,10 +320,23 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-4 sm:space-y-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("dashboard.title")}</h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            {t("common.welcome")}
-          </p>
+          <div className="flex items-center gap-3 mb-1">
+            {tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.name} className="h-10 w-10 rounded-full object-cover" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Church className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                {tenant?.name || t("dashboard.title")}
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                {tenant ? t("common.welcome") : t("dashboard.title")}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
