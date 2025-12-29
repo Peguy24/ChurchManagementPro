@@ -30,10 +30,12 @@ import {
   Menu,
   X,
   Palette,
+  UserCog,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useTenantRole } from "@/hooks/useTenantRole";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
@@ -61,89 +63,107 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const getNavGroups = (t: (key: string) => string): NavGroup[] => [
-  {
-    label: "Membres",
-    icon: Users,
-    items: [
-      { to: "/members", icon: Users, label: t("nav.members") },
-      { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
-      { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
-      { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
-      { to: "/branches", icon: Church, label: t("nav.branches") },
-      { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
-    ],
-  },
-  {
-    label: "Finances",
-    icon: DollarSign,
-    items: [
-      { to: "/donations", icon: DollarSign, label: t("nav.donations") },
-      { to: "/donations/categories", icon: FolderOpen, label: "Catégories Recettes" },
-      { to: "/finance/expenses", icon: Briefcase, label: t("nav.expenses") },
-      { to: "/finance/expenses/categories", icon: FolderOpen, label: "Catégories Dépenses" },
-      { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
-      { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
-      { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
-      { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
-      { to: "/finance/salaries", icon: Users, label: "Salaires" },
-      { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
-    ],
-  },
-  {
-    label: "Rapports",
-    icon: PieChart,
-    items: [
-      { to: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
-      { to: "/finance", icon: LayoutDashboard, label: t("nav.financialDashboard") },
-      { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
-      { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
-    ],
-  },
-  {
-    label: "Communication",
-    icon: MessageSquare,
-    items: [
-      { to: "/settings/email-templates", icon: Mail, label: "Modèles d'emails" },
-    ],
-  },
-  {
-    label: "Planning",
-    icon: Calendar,
-    items: [
-      { to: "/events", icon: Calendar, label: t("nav.events") },
-    ],
-  },
-  {
-    label: "Paramètres",
-    icon: Settings,
-    items: [
-      { to: "/settings/church", icon: Church, label: "Infos Église" },
-      { to: "/settings/white-label", icon: Palette, label: "White-Label" },
-      { to: "/settings/users", icon: ShieldAlert, label: "Gestion Utilisateurs" },
-      { to: "/settings/tenants", icon: Building2, label: "Gestion Multi-Tenant" },
-      { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
-    ],
-  },
-  {
-    label: "Inventaire",
-    icon: Package,
-    items: [
-      { to: "/inventory", icon: Package, label: "Gestion Inventaire" },
-    ],
-  },
-];
+const getNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGroup[] => {
+  const groups: NavGroup[] = [
+    {
+      label: "Membres",
+      icon: Users,
+      items: [
+        { to: "/members", icon: Users, label: t("nav.members") },
+        { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
+        { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
+        { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
+        { to: "/branches", icon: Church, label: t("nav.branches") },
+        { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
+      ],
+    },
+    {
+      label: "Finances",
+      icon: DollarSign,
+      items: [
+        { to: "/donations", icon: DollarSign, label: t("nav.donations") },
+        { to: "/donations/categories", icon: FolderOpen, label: "Catégories Recettes" },
+        { to: "/finance/expenses", icon: Briefcase, label: t("nav.expenses") },
+        { to: "/finance/expenses/categories", icon: FolderOpen, label: "Catégories Dépenses" },
+        { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
+        { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
+        { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
+        { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
+        { to: "/finance/salaries", icon: Users, label: "Salaires" },
+        { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
+      ],
+    },
+    {
+      label: "Rapports",
+      icon: PieChart,
+      items: [
+        { to: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
+        { to: "/finance", icon: LayoutDashboard, label: t("nav.financialDashboard") },
+        { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
+        { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
+      ],
+    },
+    {
+      label: "Communication",
+      icon: MessageSquare,
+      items: [
+        { to: "/settings/email-templates", icon: Mail, label: "Modèles d'emails" },
+      ],
+    },
+    {
+      label: "Planning",
+      icon: Calendar,
+      items: [
+        { to: "/events", icon: Calendar, label: t("nav.events") },
+      ],
+    },
+    {
+      label: "Paramètres",
+      icon: Settings,
+      items: [
+        { to: "/settings/church", icon: Church, label: "Infos Église" },
+        { to: "/settings/white-label", icon: Palette, label: "White-Label" },
+        { to: "/settings/users", icon: ShieldAlert, label: "Gestion Utilisateurs" },
+        { to: "/settings/tenants", icon: Building2, label: "Gestion Multi-Tenant" },
+        { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
+      ],
+    },
+    {
+      label: "Inventaire",
+      icon: Package,
+      items: [
+        { to: "/inventory", icon: Package, label: "Gestion Inventaire" },
+      ],
+    },
+  ];
+
+  // Add tenant user management for tenant admins
+  if (isTenantAdmin) {
+    const settingsGroup = groups.find(g => g.label === "Paramètres");
+    if (settingsGroup) {
+      // Add after "Gestion Utilisateurs" (index 2)
+      settingsGroup.items.splice(3, 0, {
+        to: "/settings/tenant-users",
+        icon: UserCog,
+        label: "Utilisateurs Église",
+      });
+    }
+  }
+
+  return groups;
+};
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { canSeeNav, canSeeItem } = useUserRole();
+  const { isTenantAdmin } = useTenantRole();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const allNavGroups = getNavGroups(t);
+  const allNavGroups = getNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions
   const navGroups = allNavGroups
