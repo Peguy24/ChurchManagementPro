@@ -1,127 +1,13 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { 
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
-  Church, Heart, Clock, Smartphone, Send, Phone, MapPin,
+  Church, Heart, Clock, Smartphone, Phone, MapPin,
   TrendingUp, TrendingDown, Wallet, PiggyBank
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-const ContactForm = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    churchName: "",
-    message: ""
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success("Message envoyé avec succès! Nous vous contacterons bientôt.");
-    setFormData({ name: "", email: "", phone: "", churchName: "", message: "" });
-    setIsSubmitting(false);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nom complet *</Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Jean Dupont"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="jean@example.com"
-            required
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="phone">Téléphone</Label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="+1 (555) 000-0000"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="churchName">Nom de l'église</Label>
-          <Input
-            id="churchName"
-            name="churchName"
-            value={formData.churchName}
-            onChange={handleChange}
-            placeholder="Église de la Grâce"
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="message">Message *</Label>
-        <Textarea
-          id="message"
-          name="message"
-          value={formData.message}
-          onChange={handleChange}
-          placeholder="Décrivez vos besoins ou posez vos questions..."
-          rows={4}
-          required
-        />
-      </div>
-      <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
-        {isSubmitting ? (
-          "Envoi en cours..."
-        ) : (
-          <>
-            <Send className="w-4 h-4" />
-            Envoyer le Message
-          </>
-        )}
-      </Button>
-    </form>
-  );
-};
 
 const Commercial = () => {
   const navigate = useNavigate();
@@ -584,7 +470,7 @@ const Commercial = () => {
         </div>
       </section>
 
-      {/* Contact Form Section */}
+      {/* Contact Info Section */}
       <section id="contact" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -595,17 +481,15 @@ const Commercial = () => {
               Vous avez des questions? Notre équipe est là pour vous aider.
             </p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            {/* Contact Info */}
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-semibold mb-6">Parlons de votre projet</h3>
-                <p className="text-muted-foreground mb-8">
-                  Que vous ayez besoin d'une démonstration personnalisée ou de renseignements sur nos tarifs, 
-                  nous sommes là pour répondre à toutes vos questions.
-                </p>
-              </div>
-              <div className="space-y-4">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Nos Coordonnées</CardTitle>
+                <CardDescription>
+                  N'hésitez pas à nous contacter pour toute question ou demande de démonstration.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                     <Mail className="w-5 h-5 text-primary" />
@@ -633,19 +517,6 @@ const Commercial = () => {
                     <p className="text-muted-foreground">123 Rue de l'Église, Montréal, QC</p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Envoyez-nous un message</CardTitle>
-                <CardDescription>
-                  Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ContactForm />
               </CardContent>
             </Card>
           </div>
