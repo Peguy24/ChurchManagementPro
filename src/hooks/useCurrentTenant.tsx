@@ -1,0 +1,134 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+
+interface TenantInfo {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  primary_color: string | null;
+}
+
+interface UseCurrentTenantReturn {
+  tenantId: string | null;
+  tenant: TenantInfo | null;
+  loading: boolean;
+  error: string | null;
+  // Helper to inject tenant_id into any object
+  withTenantId: <T extends object>(data: T) => T & { tenant_id: string | null };
+  // Helper to create insert data with tenant_id
+  forInsert: <T extends object>(data: T) => T & { tenant_id: string };
+  // Check if user has a tenant
+  hasTenant: boolean;
+  // Refresh tenant info
+  refresh: () => Promise<void>;
+}
+
+export function useCurrentTenant(): UseCurrentTenantReturn {
+  const { user } = useAuth();
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [tenant, setTenant] = useState<TenantInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTenantInfo = useCallback(async () => {
+    if (!user) {
+      setTenantId(null);
+      setTenant(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Get user's tenant_id from profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw new Error('Impossible de récupérer le profil utilisateur');
+      }
+
+      if (!profile?.tenant_id) {
+        setTenantId(null);
+        setTenant(null);
+        setLoading(false);
+        return;
+      }
+
+      setTenantId(profile.tenant_id);
+
+      // Get full tenant info
+      const { data: tenantData, error: tenantError } = await supabase
+        .from('tenants')
+        .select('id, name, slug, logo_url, primary_color')
+        .eq('id', profile.tenant_id)
+        .single();
+
+      if (tenantError) {
+        throw new Error('Impossible de récupérer les informations du tenant');
+      }
+
+      setTenant(tenantData);
+    } catch (err) {
+      console.error('Error fetching tenant info:', err);
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchTenantInfo();
+  }, [fetchTenantInfo]);
+
+  // Helper to add tenant_id to any object
+  const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
+    return {
+      ...data,
+      tenant_id: tenantId,
+    };
+  }, [tenantId]);
+
+  // Helper specifically for inserts - throws if no tenant
+  const forInsert = useCallback(<T extends object>(data: T): T & { tenant_id: string } => {
+    if (!tenantId) {
+      throw new Error('Aucun tenant associé à cet utilisateur. Impossible de créer des données.');
+    }
+    return {
+      ...data,
+      tenant_id: tenantId,
+    };
+  }, [tenantId]);
+
+  return {
+    tenantId,
+    tenant,
+    loading,
+    error,
+    withTenantId,
+    forInsert,
+    hasTenant: !!tenantId,
+    refresh: fetchTenantInfo,
+  };
+}
+
+// Type helper for forms that need tenant_id
+export type WithTenantId<T> = T & { tenant_id: string };
+
+// Utility function to use outside of React components
+export async function getCurrentUserTenantId(userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', userId)
+    .single();
+  
+  return data?.tenant_id || null;
+}
