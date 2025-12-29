@@ -33,6 +33,7 @@ import Branches from "./pages/Branches";
 import CustomFields from "./pages/CustomFields";
 import EmailTemplates from "./pages/EmailTemplates";
 import ChurchSettings from "./pages/ChurchSettings";
+import WhiteLabelSettings from "./pages/WhiteLabelSettings";
 import UserManagement from "./pages/UserManagement";
 import PendingApproval from "./pages/PendingApproval";
 import Salaries from "./pages/Salaries";
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
             <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
             <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
+            <Route path="/settings/white-label" element={<ProtectedRoute requireAdmin><WhiteLabelSettings /></ProtectedRoute>} />
             <Route path="/settings/users" element={<ProtectedRoute requireAdmin><UserManagement /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

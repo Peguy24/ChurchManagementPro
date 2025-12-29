@@ -29,6 +29,7 @@ import {
   ShieldAlert,
   Menu,
   X,
+  Palette,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +37,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
+import { useWhiteLabel } from "@/hooks/useWhiteLabel";
 import {
   Collapsible,
   CollapsibleContent,
@@ -117,6 +119,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     icon: Settings,
     items: [
       { to: "/settings/church", icon: Church, label: "Infos Église" },
+      { to: "/settings/white-label", icon: Palette, label: "White-Label" },
       { to: "/settings/users", icon: ShieldAlert, label: "Gestion Utilisateurs" },
       { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
     ],
@@ -136,6 +139,7 @@ export default function Layout({ children }: LayoutProps) {
   const { canSeeNav, canSeeItem } = useUserRole();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const allNavGroups = getNavGroups(t);
@@ -274,13 +278,13 @@ export default function Layout({ children }: LayoutProps) {
             <SheetContent side="left" className="w-72 p-0">
               <div className="flex items-center gap-3 p-4 border-b">
                 <img 
-                  src="/images/church-logo.png" 
+                  src={whiteLabelSettings.logo_url} 
                   alt="Logo" 
                   className="h-10 w-10 object-contain"
                 />
                 <div>
-                  <h1 className="text-sm font-bold leading-tight">Church of God</h1>
-                  <p className="text-xs text-muted-foreground leading-tight">Ministry of Prayer</p>
+                  <h1 className="text-sm font-bold leading-tight">{whiteLabelSettings.app_name}</h1>
+                  <p className="text-xs text-muted-foreground leading-tight">{whiteLabelSettings.app_subtitle}</p>
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
@@ -291,13 +295,13 @@ export default function Layout({ children }: LayoutProps) {
 
           <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
             <img 
-              src="/images/church-logo.png" 
-              alt="Logo de l'église" 
+              src={whiteLabelSettings.logo_url} 
+              alt="Logo" 
               className="h-8 w-8 sm:h-12 sm:w-12 object-contain"
             />
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-foreground leading-tight">Church of God</h1>
-              <p className="text-xs text-muted-foreground leading-tight">Ministry of Prayer and of The Word</p>
+              <h1 className="text-lg font-bold text-foreground leading-tight">{whiteLabelSettings.app_name}</h1>
+              <p className="text-xs text-muted-foreground leading-tight">{whiteLabelSettings.app_subtitle}</p>
             </div>
           </Link>
           
