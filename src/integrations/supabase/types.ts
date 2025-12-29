@@ -204,6 +204,7 @@ export type Database = {
           parent_branch_id: string | null
           phone: string | null
           status: string | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -217,6 +218,7 @@ export type Database = {
           parent_branch_id?: string | null
           phone?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -230,6 +232,7 @@ export type Database = {
           parent_branch_id?: string | null
           phone?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -245,6 +248,13 @@ export type Database = {
             columns: ["parent_branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branches_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -1628,6 +1638,160 @@ export type Database = {
           },
         ]
       }
+      tenant_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          features: Json | null
+          id: string
+          max_branches: number | null
+          max_members: number | null
+          max_storage_mb: number | null
+          max_users: number | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly: number
+          status: Database["public"]["Enums"]["tenant_status"]
+          tenant_id: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          features?: Json | null
+          id?: string
+          max_branches?: number | null
+          max_members?: number | null
+          max_storage_mb?: number | null
+          max_users?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly?: number
+          status?: Database["public"]["Enums"]["tenant_status"]
+          tenant_id: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          features?: Json | null
+          id?: string
+          max_branches?: number | null
+          max_members?: number | null
+          max_storage_mb?: number | null
+          max_users?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly?: number
+          status?: Database["public"]["Enums"]["tenant_status"]
+          tenant_id?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_usage: {
+        Row: {
+          branches_count: number | null
+          created_at: string
+          donations_count: number | null
+          events_count: number | null
+          id: string
+          members_count: number | null
+          period_end: string
+          period_start: string
+          storage_used_mb: number | null
+          tenant_id: string
+          updated_at: string
+          users_count: number | null
+        }
+        Insert: {
+          branches_count?: number | null
+          created_at?: string
+          donations_count?: number | null
+          events_count?: number | null
+          id?: string
+          members_count?: number | null
+          period_end: string
+          period_start: string
+          storage_used_mb?: number | null
+          tenant_id: string
+          updated_at?: string
+          users_count?: number | null
+        }
+        Update: {
+          branches_count?: number | null
+          created_at?: string
+          donations_count?: number | null
+          events_count?: number | null
+          id?: string
+          members_count?: number | null
+          period_end?: string
+          period_start?: string
+          storage_used_mb?: number | null
+          tenant_id?: string
+          updated_at?: string
+          users_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_usage_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          address: string | null
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1679,6 +1843,8 @@ export type Database = {
         | "select"
         | "checkbox"
       entity_type: "member" | "branch" | "ministry" | "event" | "donation"
+      subscription_plan: "basic" | "standard" | "premium" | "enterprise"
+      tenant_status: "active" | "suspended" | "trial" | "cancelled"
       transaction_status: "pending" | "approved" | "rejected"
       transaction_type: "income" | "expense"
     }
@@ -1825,6 +1991,8 @@ export const Constants = {
         "checkbox",
       ],
       entity_type: ["member", "branch", "ministry", "event", "donation"],
+      subscription_plan: ["basic", "standard", "premium", "enterprise"],
+      tenant_status: ["active", "suspended", "trial", "cancelled"],
       transaction_status: ["pending", "approved", "rejected"],
       transaction_type: ["income", "expense"],
     },
