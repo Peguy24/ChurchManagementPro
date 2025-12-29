@@ -110,7 +110,7 @@ export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
   "Rapports": ["dashboard", "reports", "finances"],
   "Communication": ["communication"],
   "Planning": ["events"],
-  "Paramètres": ["settings", "users"],
+  "Paramètres": ["settings", "users", "tenants"],
   "Inventaire": ["inventory"],
 };
 
