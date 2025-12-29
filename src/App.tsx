@@ -38,6 +38,7 @@ import UserManagement from "./pages/UserManagement";
 import PendingApproval from "./pages/PendingApproval";
 import Salaries from "./pages/Salaries";
 import Inventory from "./pages/Inventory";
+import TenantManagement from "./pages/TenantManagement";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
             <Route path="/settings/white-label" element={<ProtectedRoute requireAdmin><WhiteLabelSettings /></ProtectedRoute>} />
             <Route path="/settings/users" element={<ProtectedRoute requireAdmin><UserManagement /></ProtectedRoute>} />
+            <Route path="/settings/tenants" element={<ProtectedRoute requireAdmin><TenantManagement /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

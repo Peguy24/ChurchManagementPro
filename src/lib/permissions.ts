@@ -15,7 +15,8 @@ export type RouteGroup =
   | "communication"
   | "settings"
   | "users"
-  | "inventory";
+  | "inventory"
+  | "tenants";
 
 // Default permissions (fallback when DB is not available)
 export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
@@ -32,6 +33,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "settings",
     "users",
     "inventory",
+    "tenants",
   ],
   pastor: [
     "dashboard",
@@ -96,6 +98,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/settings/email-templates": "communication",
   "/settings/church": "settings",
   "/settings/users": "users",
+  "/settings/tenants": "tenants",
   "/inventory": "inventory",
   "/finance/salaries": "finances",
 };
@@ -184,4 +187,5 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   settings: "Paramètres",
   users: "Gestion utilisateurs",
   inventory: "Inventaire",
+  tenants: "Gestion Multi-Tenant",
 };
