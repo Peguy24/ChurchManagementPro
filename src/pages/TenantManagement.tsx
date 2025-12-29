@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -49,6 +49,7 @@ interface TenantSubscription {
 
 interface TenantWithSubscription extends Tenant {
   subscription?: TenantSubscription;
+  hasAdmin?: boolean;
 }
 
 const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
@@ -95,9 +96,21 @@ export default function TenantManagement() {
 
       if (subsError) throw subsError;
 
+      // Fetch admin roles for each tenant
+      const { data: adminRolesData, error: rolesError } = await supabase
+        .from("tenant_user_roles")
+        .select("tenant_id")
+        .eq("role", "admin")
+        .eq("is_approved", true);
+
+      if (rolesError) throw rolesError;
+
+      const tenantsWithAdmins = new Set(adminRolesData?.map(r => r.tenant_id) || []);
+
       const tenantsWithSubs: TenantWithSubscription[] = (tenantsData || []).map((tenant) => ({
         ...tenant,
         subscription: subscriptionsData?.find((s) => s.tenant_id === tenant.id) as TenantSubscription | undefined,
+        hasAdmin: tenantsWithAdmins.has(tenant.id),
       }));
 
       return tenantsWithSubs;
@@ -452,6 +465,7 @@ export default function TenantManagement() {
                   <TableRow>
                     <TableHead>Église</TableHead>
                     <TableHead>Contact</TableHead>
+                    <TableHead>Admin</TableHead>
                     <TableHead>Plan</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Prix/mois</TableHead>
@@ -475,6 +489,19 @@ export default function TenantManagement() {
                             <p className="text-sm text-muted-foreground">{tenant.contact_phone}</p>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {tenant.hasAdmin ? (
+                          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                            <UserCheck className="h-3 w-3 mr-1" />
+                            Assigné
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-amber-600 border-amber-600">
+                            <UserX className="h-3 w-3 mr-1" />
+                            En attente
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge className={PLAN_CONFIG[tenant.subscription?.plan || "basic"].color}>
