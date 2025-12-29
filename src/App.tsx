@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import Commercial from "./pages/Commercial";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MemberCards from "./pages/MemberCards";
@@ -49,6 +50,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/commercial" element={<Commercial />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
