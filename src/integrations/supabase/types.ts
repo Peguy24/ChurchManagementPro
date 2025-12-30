@@ -1605,6 +1605,7 @@ export type Database = {
           id: string
           permission_group: string
           role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1612,6 +1613,7 @@ export type Database = {
           id?: string
           permission_group: string
           role: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1619,9 +1621,18 @@ export type Database = {
           id?: string
           permission_group?: string
           role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       salary_payments: {
         Row: {
