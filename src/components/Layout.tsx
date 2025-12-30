@@ -305,6 +305,11 @@ export default function Layout({ children }: LayoutProps) {
     </nav>
   );
 
+  // Branding for super admin vs church users
+  const brandingName = isSuperAdmin ? "Church Management" : whiteLabelSettings.app_name;
+  const brandingSubtitle = isSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
+  const brandingLogo = isSuperAdmin ? null : whiteLabelSettings.logo_url;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -319,14 +324,20 @@ export default function Layout({ children }: LayoutProps) {
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <div className="flex items-center gap-3 p-4 border-b">
-                <img 
-                  src={whiteLabelSettings.logo_url} 
-                  alt="Logo" 
-                  className="h-10 w-10 object-contain"
-                />
+                {brandingLogo ? (
+                  <img 
+                    src={brandingLogo} 
+                    alt="Logo" 
+                    className="h-10 w-10 object-contain"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
+                    <Building2 className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                )}
                 <div>
-                  <h1 className="text-sm font-bold leading-tight">{whiteLabelSettings.app_name}</h1>
-                  <p className="text-xs text-muted-foreground leading-tight">{whiteLabelSettings.app_subtitle}</p>
+                  <h1 className="text-sm font-bold leading-tight">{brandingName}</h1>
+                  <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
@@ -335,15 +346,21 @@ export default function Layout({ children }: LayoutProps) {
             </SheetContent>
           </Sheet>
 
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
-            <img 
-              src={whiteLabelSettings.logo_url} 
-              alt="Logo" 
-              className="h-8 w-8 sm:h-12 sm:w-12 object-contain"
-            />
+          <Link to={isSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+            {brandingLogo ? (
+              <img 
+                src={brandingLogo} 
+                alt="Logo" 
+                className="h-8 w-8 sm:h-12 sm:w-12 object-contain"
+              />
+            ) : (
+              <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg bg-primary flex items-center justify-center">
+                <Building2 className="h-5 w-5 sm:h-7 sm:w-7 text-primary-foreground" />
+              </div>
+            )}
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-foreground leading-tight">{whiteLabelSettings.app_name}</h1>
-              <p className="text-xs text-muted-foreground leading-tight">{whiteLabelSettings.app_subtitle}</p>
+              <h1 className="text-lg font-bold text-foreground leading-tight">{brandingName}</h1>
+              <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>
             </div>
           </Link>
           
