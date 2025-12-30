@@ -1,20 +1,44 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Church } from 'lucide-react';
+import { Church, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get tenant info from URL params (from invitation link)
+  const tenantId = searchParams.get('tenant');
+  const invitedRole = searchParams.get('role');
+  const [tenantInfo, setTenantInfo] = useState<{ name: string; slug: string } | null>(null);
+
+  // Fetch tenant info if tenant param exists
+  useEffect(() => {
+    const fetchTenantInfo = async () => {
+      if (tenantId) {
+        const { data, error } = await supabase
+          .from('tenants')
+          .select('name, slug')
+          .eq('id', tenantId)
+          .single();
+        
+        if (!error && data) {
+          setTenantInfo(data);
+        }
+      }
+    };
+    fetchTenantInfo();
+  }, [tenantId]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -128,11 +152,44 @@ export default function Auth() {
         });
       }
     } else {
+      const userId = data?.user?.id;
+      
+      // If this is a tenant admin invitation, assign user to tenant
+      if (tenantId && invitedRole === 'admin' && userId) {
+        try {
+          // Update user profile with tenant_id
+          await supabase
+            .from('profiles')
+            .update({ tenant_id: tenantId })
+            .eq('id', userId);
+          
+          // Assign admin role for this tenant
+          await supabase
+            .from('tenant_user_roles')
+            .insert({
+              user_id: userId,
+              tenant_id: tenantId,
+              role: 'admin',
+              is_approved: true,
+            });
+          
+          toast({
+            title: 'Inscription réussie!',
+            description: `Vous êtes maintenant administrateur de ${tenantInfo?.name || 'l\'église'}.`,
+          });
+          navigate('/');
+          setIsLoading(false);
+          return;
+        } catch (assignError) {
+          console.error('Failed to assign admin role:', assignError);
+        }
+      }
+      
       // Notify admins about new user
       try {
         await supabase.functions.invoke('notify-admin-new-user', {
           body: {
-            userId: data?.user?.id,
+            userId: userId,
             userEmail: signupForm.email,
             firstName: signupForm.firstName,
             lastName: signupForm.lastName,
@@ -171,6 +228,23 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
       <div className="w-full max-w-md">
+        {/* Tenant invitation banner */}
+        {tenantInfo && (
+          <Card className="mb-4 border-primary/50 bg-primary/5">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <Building2 className="h-8 w-8 text-primary" />
+                <div>
+                  <p className="font-semibold text-primary">Invitation Administrateur</p>
+                  <p className="text-sm text-muted-foreground">
+                    Vous êtes invité à administrer <strong>{tenantInfo.name}</strong>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         <div className="mb-8 text-center">
           <div className="flex flex-col items-center gap-3 mb-4">
             <img 

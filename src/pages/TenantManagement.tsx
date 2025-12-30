@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -78,7 +78,9 @@ export default function TenantManagement() {
     address: "",
     plan: "basic" as SubscriptionPlan,
     status: "trial" as TenantStatus,
+    admin_email: "",
   });
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -151,6 +153,28 @@ export default function TenantManagement() {
 
       if (subError) throw subError;
 
+      // Send admin invite if email provided
+      if (data.admin_email) {
+        try {
+          const { error: inviteError } = await supabase.functions.invoke('send-admin-invite', {
+            body: {
+              email: data.admin_email,
+              tenantId: tenant.id,
+              tenantName: tenant.name,
+              tenantSlug: tenant.slug,
+            },
+          });
+          if (inviteError) {
+            console.error('Failed to send admin invite:', inviteError);
+            toast.error("Invitation envoyée mais erreur lors de l'envoi de l'email");
+          } else {
+            toast.success(`Invitation envoyée à ${data.admin_email}`);
+          }
+        } catch (inviteErr) {
+          console.error('Failed to send admin invite:', inviteErr);
+        }
+      }
+
       return tenant;
     },
     onSuccess: () => {
@@ -163,6 +187,30 @@ export default function TenantManagement() {
       toast.error("Erreur lors de la création: " + error.message);
     },
   });
+
+  const sendAdminInvite = async (tenant: TenantWithSubscription) => {
+    const email = prompt("Email de l'administrateur à inviter:");
+    if (!email) return;
+    
+    setIsSendingInvite(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-invite', {
+        body: {
+          email,
+          tenantId: tenant.id,
+          tenantName: tenant.name,
+          tenantSlug: tenant.slug,
+        },
+      });
+      
+      if (error) throw error;
+      toast.success(`Invitation envoyée à ${email}`);
+    } catch (err: any) {
+      toast.error("Erreur lors de l'envoi: " + err.message);
+    } finally {
+      setIsSendingInvite(false);
+    }
+  };
 
   const updateTenantMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
@@ -230,6 +278,7 @@ export default function TenantManagement() {
       address: "",
       plan: "basic",
       status: "trial",
+      admin_email: "",
     });
     setEditingTenant(null);
   };
@@ -244,6 +293,7 @@ export default function TenantManagement() {
       address: tenant.address || "",
       plan: tenant.subscription?.plan || "basic",
       status: tenant.subscription?.status || "trial",
+      admin_email: "",
     });
     setIsDialogOpen(true);
   };
@@ -365,6 +415,24 @@ export default function TenantManagement() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {!editingTenant && (
+                    <div className="col-span-2 space-y-2">
+                      <Label htmlFor="admin_email">
+                        <Mail className="h-4 w-4 inline mr-2" />
+                        Email de l'administrateur (optionnel)
+                      </Label>
+                      <Input
+                        id="admin_email"
+                        type="email"
+                        placeholder="admin@eglise.com"
+                        value={formData.admin_email}
+                        onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Un email d'invitation sera envoyé à cette adresse pour créer le compte admin de l'église.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Plan details preview */}
@@ -491,17 +559,30 @@ export default function TenantManagement() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {tenant.hasAdmin ? (
-                          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                            <UserCheck className="h-3 w-3 mr-1" />
-                            Assigné
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-amber-600 border-amber-600">
-                            <UserX className="h-3 w-3 mr-1" />
-                            En attente
-                          </Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {tenant.hasAdmin ? (
+                            <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                              <UserCheck className="h-3 w-3 mr-1" />
+                              Assigné
+                            </Badge>
+                          ) : (
+                            <>
+                              <Badge variant="outline" className="text-amber-600 border-amber-600">
+                                <UserX className="h-3 w-3 mr-1" />
+                                En attente
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => sendAdminInvite(tenant)}
+                                disabled={isSendingInvite}
+                              >
+                                <Send className="h-3 w-3 mr-1" />
+                                Inviter
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge className={PLAN_CONFIG[tenant.subscription?.plan || "basic"].color}>
