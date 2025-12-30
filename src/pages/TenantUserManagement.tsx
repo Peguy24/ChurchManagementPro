@@ -7,12 +7,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import TenantRolePermissionsManager from '@/components/TenantRolePermissionsManager';
 
 interface TenantUser {
   id: string;
@@ -228,7 +230,7 @@ export default function TenantUserManagement() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Gestion des Utilisateurs</h1>
             <p className="text-muted-foreground">
-              Gérez les utilisateurs de votre église
+              Gérez les utilisateurs et les permissions de votre église
             </p>
           </div>
           <Button onClick={() => setInviteDialogOpen(true)}>
@@ -237,136 +239,155 @@ export default function TenantUserManagement() {
           </Button>
         </div>
 
-        {pendingUsers.length > 0 && (
-          <Card className="border-orange-200 bg-orange-50/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-700">
-                <UserPlus className="h-5 w-5" />
-                Demandes en attente ({pendingUsers.length})
-              </CardTitle>
-              <CardDescription>
-                Ces utilisateurs attendent votre approbation pour accéder au système
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Rôle demandé</TableHead>
-                    <TableHead>Date d'inscription</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingUsers.map((pendingUser) => (
-                    <TableRow key={pendingUser.id}>
-                      <TableCell className="font-medium">
-                        {pendingUser.profile?.first_name} {pendingUser.profile?.last_name}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{ROLE_LABELS[pendingUser.role]}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(pendingUser.created_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleApprove(pendingUser.user_id)}
-                          >
-                            <Check className="h-4 w-4 mr-1" />
-                            Approuver
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleReject(pendingUser.user_id)}
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Rejeter
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+        <Tabs defaultValue="users" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Utilisateurs
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Permissions
+            </TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Utilisateurs actifs ({approvedUsers.length})
-            </CardTitle>
-            <CardDescription>
-              Liste des utilisateurs approuvés de votre église
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="py-8 text-center text-muted-foreground">
-                Chargement...
-              </div>
-            ) : approvedUsers.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
-                Aucun utilisateur actif
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Rôle</TableHead>
-                    <TableHead>Date d'inscription</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {approvedUsers.map((approvedUser) => (
-                    <TableRow key={approvedUser.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
-                          {approvedUser.role === 'admin' && (
-                            <Crown className="h-4 w-4 text-primary" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={approvedUser.role === 'admin' ? 'default' : 'secondary'}
-                        >
-                          {ROLE_LABELS[approvedUser.role]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(approvedUser.created_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingUser(approvedUser);
-                            setSelectedRole(approvedUser.role);
-                          }}
-                        >
-                          <Shield className="h-4 w-4 mr-1" />
-                          Modifier le rôle
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          <TabsContent value="users" className="space-y-4">
+            {pendingUsers.length > 0 && (
+              <Card className="border-orange-200 bg-orange-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <UserPlus className="h-5 w-5" />
+                    Demandes en attente ({pendingUsers.length})
+                  </CardTitle>
+                  <CardDescription>
+                    Ces utilisateurs attendent votre approbation pour accéder au système
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Rôle demandé</TableHead>
+                        <TableHead>Date d'inscription</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingUsers.map((pendingUser) => (
+                        <TableRow key={pendingUser.id}>
+                          <TableCell className="font-medium">
+                            {pendingUser.profile?.first_name} {pendingUser.profile?.last_name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{ROLE_LABELS[pendingUser.role]}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(pendingUser.created_at).toLocaleDateString('fr-FR')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleApprove(pendingUser.user_id)}
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Approuver
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleReject(pendingUser.user_id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Rejeter
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Utilisateurs actifs ({approvedUsers.length})
+                </CardTitle>
+                <CardDescription>
+                  Liste des utilisateurs approuvés de votre église
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    Chargement...
+                  </div>
+                ) : approvedUsers.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    Aucun utilisateur actif
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Rôle</TableHead>
+                        <TableHead>Date d'inscription</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {approvedUsers.map((approvedUser) => (
+                        <TableRow key={approvedUser.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
+                              {approvedUser.role === 'admin' && (
+                                <Crown className="h-4 w-4 text-primary" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={approvedUser.role === 'admin' ? 'default' : 'secondary'}
+                            >
+                              {ROLE_LABELS[approvedUser.role]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(approvedUser.created_at).toLocaleDateString('fr-FR')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingUser(approvedUser);
+                                setSelectedRole(approvedUser.role);
+                              }}
+                            >
+                              <Shield className="h-4 w-4 mr-1" />
+                              Modifier le rôle
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="permissions">
+            <TenantRolePermissionsManager />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>

@@ -49,34 +49,59 @@ export function useUserRole() {
         const hasApprovedRole = userRoles.some((role) => APPROVED_ROLES.includes(role));
         setIsApproved(hasApprovedRole);
         
-        // Check if user is admin
-        setIsAdmin(userRoles.includes("admin"));
+        // Check if user is admin (super admin)
+        const isSuperAdmin = userRoles.includes("admin");
+        setIsAdmin(isSuperAdmin);
 
-        // Fetch permissions from database
-        const { data: permData, error: permError } = await supabase
-          .from("role_permissions")
-          .select("role, permission_group");
+        // For super admins, use full permissions
+        if (isSuperAdmin) {
+          setPermissions(DEFAULT_ROLE_PERMISSIONS);
+          setLoading(false);
+          return;
+        }
 
-        if (permError) {
-          console.error("Error fetching permissions, using defaults:", permError);
-        } else if (permData && permData.length > 0) {
-          // Build permissions map from database
-          const dbPermissions: Record<AppRole, RouteGroup[]> = {
-            admin: [],
-            pastor: [],
-            treasurer: [],
-            secretary: [],
-            volunteer: [],
-            user: [],
-          };
+        // Get user's tenant
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tenant_id")
+          .eq("id", user.id)
+          .single();
 
-          permData.forEach((p) => {
-            if (dbPermissions[p.role]) {
-              dbPermissions[p.role].push(p.permission_group as RouteGroup);
-            }
-          });
+        if (profile?.tenant_id) {
+          // Fetch tenant-specific permissions
+          const { data: permData, error: permError } = await supabase
+            .from("role_permissions")
+            .select("role, permission_group")
+            .eq("tenant_id", profile.tenant_id);
 
-          setPermissions(dbPermissions);
+          if (permError) {
+            console.error("Error fetching permissions, using defaults:", permError);
+          } else if (permData && permData.length > 0) {
+            // Build permissions map from database
+            const dbPermissions: Record<AppRole, RouteGroup[]> = {
+              admin: DEFAULT_ROLE_PERMISSIONS.admin, // Admin always has full access
+              pastor: [],
+              treasurer: [],
+              secretary: [],
+              volunteer: [],
+              user: [],
+            };
+
+            permData.forEach((p) => {
+              if (dbPermissions[p.role] && p.role !== 'admin') {
+                dbPermissions[p.role].push(p.permission_group as RouteGroup);
+              }
+            });
+
+            // Use defaults for roles with no specific permissions set
+            (['pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as AppRole[]).forEach(role => {
+              if (dbPermissions[role].length === 0) {
+                dbPermissions[role] = DEFAULT_ROLE_PERMISSIONS[role];
+              }
+            });
+
+            setPermissions(dbPermissions);
+          }
         }
       } catch (error) {
         console.error("Error fetching user roles:", error);
