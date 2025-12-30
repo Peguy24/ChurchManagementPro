@@ -1,7 +1,8 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { Church } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -12,10 +13,12 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
   const { isApproved, isAdmin, canAccess, loading: roleLoading } = useUserRole();
+  const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const navigate = useNavigate();
   const location = useLocation();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
-  const loading = authLoading || roleLoading;
+  const loading = authLoading || roleLoading || tenantLoading;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,6 +41,17 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       navigate('/');
     }
   }, [user, loading, isApproved, isAdmin, requireAdmin, navigate]);
+
+  // Super admin redirection: if admin without tenant, redirect to tenant management
+  useEffect(() => {
+    if (!loading && user && isApproved && isAdmin && !tenantId && !hasRedirected) {
+      // Super admin without tenant - redirect to tenant management if on dashboard
+      if (location.pathname === '/') {
+        setHasRedirected(true);
+        navigate('/settings/tenants');
+      }
+    }
+  }, [user, loading, isApproved, isAdmin, tenantId, hasRedirected, navigate, location.pathname]);
 
   useEffect(() => {
     if (!loading && user && isApproved && !requireAdmin) {
