@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Shield, Check, X, UserPlus, Crown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 
 interface TenantUser {
   id: string;
@@ -36,40 +38,24 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function TenantUserManagement() {
   const { user } = useAuth();
+  const { tenantId, tenant } = useCurrentTenant();
   const { toast } = useToast();
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tenantId, setTenantId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<TenantUser | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('');
-
-  useEffect(() => {
-    fetchCurrentUserTenant();
-  }, [user]);
+  
+  // Invite dialog state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   useEffect(() => {
     if (tenantId) {
       fetchTenantUsers();
     }
   }, [tenantId]);
-
-  async function fetchCurrentUserTenant() {
-    if (!user) return;
-    
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.tenant_id) {
-        setTenantId(profile.tenant_id);
-      }
-    } catch (err) {
-      console.error('Error fetching user tenant:', err);
-    }
-  }
 
   async function fetchTenantUsers() {
     if (!tenantId) return;
@@ -195,6 +181,43 @@ export default function TenantUserManagement() {
     }
   }
 
+  async function handleSendInvite() {
+    if (!inviteEmail || !tenantId || !tenant) return;
+
+    setSendingInvite(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-user-invite', {
+        body: {
+          email: inviteEmail,
+          tenantId: tenantId,
+          tenantName: tenant.name,
+          role: inviteRole,
+          inviterName: user?.email,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Invitation envoyée',
+        description: `Une invitation a été envoyée à ${inviteEmail}`,
+      });
+      
+      setInviteDialogOpen(false);
+      setInviteEmail('');
+      setInviteRole('user');
+    } catch (err) {
+      console.error('Error sending invite:', err);
+      toast({
+        title: 'Erreur',
+        description: "Impossible d'envoyer l'invitation",
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingInvite(false);
+    }
+  }
+
   const pendingUsers = users.filter(u => !u.is_approved);
   const approvedUsers = users.filter(u => u.is_approved);
 
@@ -208,6 +231,10 @@ export default function TenantUserManagement() {
               Gérez les utilisateurs de votre église
             </p>
           </div>
+          <Button onClick={() => setInviteDialogOpen(true)}>
+            <Mail className="mr-2 h-4 w-4" />
+            Inviter un utilisateur
+          </Button>
         </div>
 
         {pendingUsers.length > 0 && (
@@ -370,6 +397,63 @@ export default function TenantUserManagement() {
             </Button>
             <Button onClick={handleUpdateRole}>
               Sauvegarder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Inviter un utilisateur
+            </DialogTitle>
+            <DialogDescription>
+              Envoyez une invitation par email pour rejoindre {tenant?.name || 'votre église'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Adresse email</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="email@exemple.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-role">Rôle</Label>
+              <Select value={inviteRole} onValueChange={setInviteRole}>
+                <SelectTrigger id="invite-role">
+                  <SelectValue placeholder="Sélectionner un rôle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendInvite} disabled={!inviteEmail || sendingInvite}>
+              {sendingInvite ? (
+                "Envoi..."
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Envoyer l'invitation
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
