@@ -36,6 +36,7 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTenantRole } from "@/hooks/useTenantRole";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
@@ -63,7 +64,8 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const getNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGroup[] => {
+// Navigation for church/tenant users
+const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGroup[] => {
   const groups: NavGroup[] = [
     {
       label: "Membres",
@@ -122,9 +124,6 @@ const getNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGr
       icon: Settings,
       items: [
         { to: "/settings/church", icon: Church, label: "Infos Église" },
-        { to: "/settings/white-label", icon: Palette, label: "White-Label" },
-        { to: "/settings/users", icon: ShieldAlert, label: "Gestion Utilisateurs" },
-        { to: "/settings/tenants", icon: Building2, label: "Gestion Multi-Tenant" },
         { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
       ],
     },
@@ -141,8 +140,7 @@ const getNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGr
   if (isTenantAdmin) {
     const settingsGroup = groups.find(g => g.label === "Paramètres");
     if (settingsGroup) {
-      // Add after "Gestion Utilisateurs" (index 2)
-      settingsGroup.items.splice(3, 0, {
+      settingsGroup.items.push({
         to: "/settings/tenant-users",
         icon: UserCog,
         label: "Utilisateurs Église",
@@ -153,26 +151,49 @@ const getNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGr
   return groups;
 };
 
+// Navigation for super admins (platform-level)
+const getSuperAdminNavGroups = (): NavGroup[] => [
+  {
+    label: "Administration",
+    icon: ShieldAlert,
+    items: [
+      { to: "/super-admin", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/settings/tenants", icon: Building2, label: "Gestion Églises" },
+      { to: "/settings/users", icon: Users, label: "Gestion Utilisateurs" },
+      { to: "/settings/white-label", icon: Palette, label: "White-Label" },
+    ],
+  },
+];
+
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { signOut, user } = useAuth();
-  const { canSeeNav, canSeeItem } = useUserRole();
+  const { canSeeNav, canSeeItem, isAdmin } = useUserRole();
   const { isTenantAdmin } = useTenantRole();
+  const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const allNavGroups = getNavGroups(t, isTenantAdmin);
+  // Determine if user is a super admin (admin without tenant)
+  const isSuperAdmin = isAdmin && !tenantId && !tenantLoading;
+
+  // Get appropriate navigation based on user type
+  const allNavGroups = isSuperAdmin 
+    ? getSuperAdminNavGroups() 
+    : getChurchNavGroups(t, isTenantAdmin);
   
-  // Filter nav groups and items based on user permissions
-  const navGroups = allNavGroups
-    .filter(group => canSeeNav(group.label))
-    .map(group => ({
-      ...group,
-      items: group.items.filter(item => canSeeItem(item.to))
-    }))
-    .filter(group => group.items.length > 0);
+  // Filter nav groups and items based on user permissions (only for church users)
+  const navGroups = isSuperAdmin 
+    ? allNavGroups 
+    : allNavGroups
+        .filter(group => canSeeNav(group.label))
+        .map(group => ({
+          ...group,
+          items: group.items.filter(item => canSeeItem(item.to))
+        }))
+        .filter(group => group.items.length > 0);
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     // Open the group that contains the current route by default
