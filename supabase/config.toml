@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.check-attendance-alerts]
 verify_jwt = false
+
+[functions.send-admin-invite]
+verify_jwt = false
