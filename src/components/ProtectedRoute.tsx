@@ -42,13 +42,13 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     }
   }, [user, loading, isApproved, isAdmin, requireAdmin, navigate]);
 
-  // Super admin redirection: if admin without tenant, redirect to tenant management
+  // Super admin redirection: if admin without tenant, redirect to super admin dashboard
   useEffect(() => {
     if (!loading && user && isApproved && isAdmin && !tenantId && !hasRedirected) {
-      // Super admin without tenant - redirect to tenant management if on dashboard
+      // Super admin without tenant - redirect to super admin dashboard if on root
       if (location.pathname === '/') {
         setHasRedirected(true);
-        navigate('/settings/tenants');
+        navigate('/super-admin');
       }
     }
   }, [user, loading, isApproved, isAdmin, tenantId, hasRedirected, navigate, location.pathname]);
