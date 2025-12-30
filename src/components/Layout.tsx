@@ -136,15 +136,22 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
     },
   ];
 
-  // Add tenant user management for tenant admins
+  // Add tenant user management and branding for tenant admins
   if (isTenantAdmin) {
     const settingsGroup = groups.find(g => g.label === "Paramètres");
     if (settingsGroup) {
-      settingsGroup.items.push({
-        to: "/settings/tenant-users",
-        icon: UserCog,
-        label: "Utilisateurs Église",
-      });
+      settingsGroup.items.push(
+        {
+          to: "/settings/tenant-users",
+          icon: UserCog,
+          label: "Utilisateurs Église",
+        },
+        {
+          to: "/settings/branding",
+          icon: Palette,
+          label: "Personnalisation",
+        }
+      );
     }
   }
 
