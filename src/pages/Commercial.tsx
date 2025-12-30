@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,10 +8,12 @@ import {
   Church, Heart, Clock, Smartphone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 
 const Commercial = () => {
   const navigate = useNavigate();
-
+  const [requestFormOpen, setRequestFormOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("basic");
   const features = [
     {
       icon: Users,
@@ -80,6 +83,7 @@ const Commercial = () => {
       price: "49",
       period: "/mois",
       description: "Pour les petites églises",
+      planKey: "basic",
       features: [
         "Jusqu'à 200 membres",
         "1 succursale",
@@ -94,6 +98,7 @@ const Commercial = () => {
       price: "99",
       period: "/mois",
       description: "Pour les églises en croissance",
+      planKey: "standard",
       features: [
         "Jusqu'à 1000 membres",
         "3 succursales",
@@ -109,6 +114,7 @@ const Commercial = () => {
       price: "199",
       period: "/mois",
       description: "Pour les grandes organisations",
+      planKey: "premium",
       features: [
         "Membres illimités",
         "Succursales illimitées",
@@ -120,6 +126,11 @@ const Commercial = () => {
       popular: false
     }
   ];
+
+  const handlePlanSelect = (planKey: string) => {
+    setSelectedPlan(planKey);
+    setRequestFormOpen(true);
+  };
 
   const testimonials = [
     {
@@ -160,8 +171,8 @@ const Commercial = () => {
               Une solution complète et moderne pour gérer vos membres, finances, événements et bien plus encore.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
-                Commencer Gratuitement
+              <Button size="lg" onClick={() => setRequestFormOpen(true)} className="gap-2">
+                Demander un Essai Gratuit
                 <ArrowRight className="w-4 h-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -244,7 +255,7 @@ const Commercial = () => {
                   <Button 
                     className="w-full mt-6" 
                     variant={plan.popular ? "default" : "outline"}
-                    onClick={() => navigate("/auth")}
+                    onClick={() => handlePlanSelect(plan.planKey)}
                   >
                     Choisir ce Plan
                   </Button>
@@ -296,7 +307,7 @@ const Commercial = () => {
           <Button 
             size="lg" 
             variant="secondary" 
-            onClick={() => navigate("/auth")}
+            onClick={() => setRequestFormOpen(true)}
             className="gap-2"
           >
             Démarrer l'Essai Gratuit
@@ -324,6 +335,13 @@ const Commercial = () => {
           </div>
         </div>
       </footer>
+
+      {/* Church Request Form Dialog */}
+      <ChurchRequestForm 
+        open={requestFormOpen} 
+        onOpenChange={setRequestFormOpen}
+        selectedPlan={selectedPlan}
+      />
     </div>
   );
 };

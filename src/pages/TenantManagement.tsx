@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox } from "lucide-react";
+import { TenantRequestsManager } from "@/components/TenantRequestsManager";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -516,120 +517,149 @@ export default function TenantManagement() {
           </Card>
         </div>
 
-        {/* Tenants Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Liste des Clients</CardTitle>
-            <CardDescription>Gérez vos églises clientes et leurs abonnements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : tenants && tenants.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Église</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Admin</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Prix/mois</TableHead>
-                    <TableHead>Créé le</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tenants.map((tenant) => (
-                    <TableRow key={tenant.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{tenant.name}</p>
-                          <p className="text-sm text-muted-foreground">{tenant.slug}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm">{tenant.contact_email}</p>
-                          {tenant.contact_phone && (
-                            <p className="text-sm text-muted-foreground">{tenant.contact_phone}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {tenant.hasAdmin ? (
-                            <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                              <UserCheck className="h-3 w-3 mr-1" />
-                              Assigné
-                            </Badge>
-                          ) : (
-                            <>
-                              <Badge variant="outline" className="text-amber-600 border-amber-600">
-                                <UserX className="h-3 w-3 mr-1" />
-                                En attente
+        {/* Tabs for Tenants and Requests */}
+        <Tabs defaultValue="tenants" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="tenants">
+              <Building2 className="h-4 w-4 mr-2" />
+              Clients
+            </TabsTrigger>
+            <TabsTrigger value="requests">
+              <Inbox className="h-4 w-4 mr-2" />
+              Demandes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="tenants">
+            {/* Tenants Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Liste des Clients</CardTitle>
+                <CardDescription>Gérez vos églises clientes et leurs abonnements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : tenants && tenants.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Église</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Admin</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Prix/mois</TableHead>
+                        <TableHead>Créé le</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tenants.map((tenant) => (
+                        <TableRow key={tenant.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{tenant.name}</p>
+                              <p className="text-sm text-muted-foreground">{tenant.slug}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm">{tenant.contact_email}</p>
+                              {tenant.contact_phone && (
+                                <p className="text-sm text-muted-foreground">{tenant.contact_phone}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {tenant.hasAdmin ? (
+                              <Badge variant="default" className="gap-1">
+                                <UserCheck className="h-3 w-3" />
+                                Configuré
                               </Badge>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => sendAdminInvite(tenant)}
-                                disabled={isSendingInvite}
-                              >
-                                <Send className="h-3 w-3 mr-1" />
-                                Inviter
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="gap-1 text-amber-600 border-amber-300">
+                                  <UserX className="h-3 w-3" />
+                                  Non configuré
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2"
+                                  onClick={() => sendAdminInvite(tenant)}
+                                  disabled={isSendingInvite}
+                                >
+                                  <Send className="h-3 w-3 mr-1" />
+                                  Inviter
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {tenant.subscription ? (
+                              <Badge className={PLAN_CONFIG[tenant.subscription.plan]?.color}>
+                                {PLAN_CONFIG[tenant.subscription.plan]?.label}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">Non configuré</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {tenant.subscription ? (
+                              <Badge variant={STATUS_CONFIG[tenant.subscription.status]?.variant}>
+                                {STATUS_CONFIG[tenant.subscription.status]?.label}
+                              </Badge>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {tenant.subscription ? `$${tenant.subscription.price_monthly}` : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(tenant.created_at), "dd MMM yyyy", { locale: fr })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(tenant)}>
+                                <Edit className="h-4 w-4" />
                               </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={PLAN_CONFIG[tenant.subscription?.plan || "basic"].color}>
-                          {PLAN_CONFIG[tenant.subscription?.plan || "basic"].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={STATUS_CONFIG[tenant.subscription?.status || "trial"].variant}>
-                          {STATUS_CONFIG[tenant.subscription?.status || "trial"].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>${tenant.subscription?.price_monthly || 0}</TableCell>
-                      <TableCell>
-                        {format(new Date(tenant.created_at), "dd MMM yyyy", { locale: fr })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(tenant)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => {
-                              if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
-                                deleteTenantMutation.mutate(tenant.id);
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Aucun client enregistré</p>
-                <p className="text-sm">Cliquez sur "Nouveau Client" pour ajouter votre première église</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
+                                    deleteTenantMutation.mutate(tenant.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun client enregistré</p>
+                    <p className="text-sm">Cliquez sur "Nouveau Client" pour ajouter votre première église</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="requests">
+            <TenantRequestsManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
