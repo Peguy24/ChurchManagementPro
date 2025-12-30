@@ -37,6 +37,7 @@ import CustomFields from "./pages/CustomFields";
 import EmailTemplates from "./pages/EmailTemplates";
 import ChurchSettings from "./pages/ChurchSettings";
 import WhiteLabelSettings from "./pages/WhiteLabelSettings";
+import TenantBranding from "./pages/TenantBranding";
 import UserManagement from "./pages/UserManagement";
 import PendingApproval from "./pages/PendingApproval";
 import Salaries from "./pages/Salaries";
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/settings/users" element={<ProtectedRoute requireAdmin><UserManagement /></ProtectedRoute>} />
               <Route path="/settings/tenants" element={<ProtectedRoute requireAdmin><TenantManagement /></ProtectedRoute>} />
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
+              <Route path="/settings/branding" element={<ProtectedRoute><TenantBranding /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
