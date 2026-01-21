@@ -166,6 +166,7 @@ const getSuperAdminNavGroups = (): NavGroup[] => [
     items: [
       { to: "/super-admin", icon: LayoutDashboard, label: "Dashboard" },
       { to: "/settings/tenants", icon: Building2, label: "Gestion Églises" },
+      { to: "/settings/invitations", icon: Mail, label: "Invitations Admin" },
       { to: "/settings/users", icon: Users, label: "Gestion Utilisateurs" },
     ],
   },
