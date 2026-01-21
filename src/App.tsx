@@ -45,6 +45,7 @@ import Inventory from "./pages/Inventory";
 import TenantManagement from "./pages/TenantManagement";
 import TenantUserManagement from "./pages/TenantUserManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import AdminInvitations from "./pages/AdminInvitations";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -96,6 +97,7 @@ const App = () => (
               
               <Route path="/settings/users" element={<ProtectedRoute requireAdmin><UserManagement /></ProtectedRoute>} />
               <Route path="/settings/tenants" element={<ProtectedRoute requireAdmin><TenantManagement /></ProtectedRoute>} />
+              <Route path="/settings/invitations" element={<ProtectedRoute requireAdmin><AdminInvitations /></ProtectedRoute>} />
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
               <Route path="/settings/branding" element={<ProtectedRoute><TenantBranding /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireAdmin><SuperAdminDashboard /></ProtectedRoute>} />
