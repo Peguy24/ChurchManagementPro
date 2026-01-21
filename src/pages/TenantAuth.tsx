@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Church, Crown, Users } from 'lucide-react';
+import { Church, Crown, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,14 +20,26 @@ interface Tenant {
   primary_color: string | null;
 }
 
+interface InvitationData {
+  id: string;
+  email: string;
+  tenant_id: string;
+  expires_at: string;
+  used_at: string | null;
+}
+
 export default function TenantAuth() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite');
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [hasAdmin, setHasAdmin] = useState(false);
+  const [invitation, setInvitation] = useState<InvitationData | null>(null);
+  const [invitationValid, setInvitationValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,12 +57,12 @@ export default function TenantAuth() {
     confirmPassword: '',
   });
 
-  // Fetch tenant info
+  // Fetch tenant info and validate invitation
   useEffect(() => {
     if (slug) {
-      fetchTenant();
+      fetchTenantAndInvitation();
     }
-  }, [slug]);
+  }, [slug, inviteToken]);
 
   // Redirect if already logged in and has access to tenant
   useEffect(() => {
@@ -59,7 +71,7 @@ export default function TenantAuth() {
     }
   }, [user, authLoading, tenant]);
 
-  async function fetchTenant() {
+  async function fetchTenantAndInvitation() {
     try {
       const { data, error: fetchError } = await supabase
         .from('tenants')
@@ -79,6 +91,32 @@ export default function TenantAuth() {
       const { data: adminExists } = await supabase
         .rpc('tenant_has_admin', { _tenant_id: data.id });
       setHasAdmin(!!adminExists);
+
+      // Validate invitation token if present
+      if (inviteToken) {
+        const { data: inviteData, error: inviteError } = await supabase
+          .from('admin_invitations')
+          .select('id, email, tenant_id, expires_at, used_at')
+          .eq('token', inviteToken)
+          .eq('tenant_id', data.id)
+          .single();
+
+        if (inviteError || !inviteData) {
+          setInvitationValid(false);
+          console.log('Invalid invitation token');
+        } else if (inviteData.used_at) {
+          setInvitationValid(false);
+          console.log('Invitation already used');
+        } else if (new Date(inviteData.expires_at) < new Date()) {
+          setInvitationValid(false);
+          console.log('Invitation expired');
+        } else {
+          setInvitation(inviteData);
+          setInvitationValid(true);
+          // Pre-fill email from invitation
+          setSignupForm(prev => ({ ...prev, email: inviteData.email }));
+        }
+      }
       
       setLoading(false);
     } catch (err) {
@@ -171,6 +209,21 @@ export default function TenantAuth() {
       return;
     }
 
+    // Check if user has a valid invitation
+    const hasValidInvitation = invitationValid && invitation && 
+      invitation.email.toLowerCase() === signupForm.email.toLowerCase();
+
+    // If no admin exists AND no valid invitation, block signup for admin role
+    if (!hasAdmin && !hasValidInvitation) {
+      toast({
+        title: 'Inscription non autorisée',
+        description: 'Seul un administrateur invité peut créer le premier compte. Contactez le Super Admin.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     // Sign up the user
     const { error, data } = await signUp(
       signupForm.email,
@@ -206,9 +259,10 @@ export default function TenantAuth() {
           .update({ tenant_id: tenant.id })
           .eq('id', data.user.id);
         
-        // Assign role - if no admin exists, make this user admin
-        const roleToAssign = !hasAdmin ? 'admin' : 'user';
-        const isAutoApproved = !hasAdmin; // First user (admin) is auto-approved
+        // Determine role based on invitation
+        const isAdminInvite = hasValidInvitation;
+        const roleToAssign = isAdminInvite ? 'admin' : 'user';
+        const isAutoApproved = isAdminInvite; // Only invited admins are auto-approved
         
         await supabase
           .from('tenant_user_roles')
@@ -219,7 +273,15 @@ export default function TenantAuth() {
             is_approved: isAutoApproved,
           });
 
-        if (!hasAdmin) {
+        // Mark invitation as used if applicable
+        if (isAdminInvite && invitation) {
+          await supabase
+            .from('admin_invitations')
+            .update({ used_at: new Date().toISOString() })
+            .eq('id', invitation.id);
+        }
+
+        if (isAdminInvite) {
           toast({
             title: 'Félicitations!',
             description: `Vous êtes maintenant l'administrateur de ${tenant.name}. Votre compte est actif.`,
@@ -280,6 +342,40 @@ export default function TenantAuth() {
     );
   }
 
+  // Show invitation status messages
+  const renderInvitationAlert = () => {
+    if (!inviteToken) return null;
+
+    if (invitationValid === false) {
+      return (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Lien d'invitation invalide ou expiré.</strong> Contactez le Super Admin pour obtenir une nouvelle invitation.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (invitationValid && invitation) {
+      return (
+        <Alert className="mb-4 border-green-500/50 bg-green-50 dark:bg-green-950">
+          <ShieldCheck className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800 dark:text-green-200">
+            <strong>Invitation valide!</strong> Vous êtes invité en tant qu'administrateur. Créez votre compte avec l'email: <strong>{invitation.email}</strong>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return null;
+  };
+
+  // Determine what signup options to show
+  const canSignupAsAdmin = invitationValid === true && invitation !== null;
+  const canSignupAsUser = hasAdmin; // Regular users can only signup if admin exists
+  const showSignupTab = canSignupAsAdmin || canSignupAsUser;
+
   return (
     <div 
       className="flex min-h-screen items-center justify-center p-4"
@@ -312,23 +408,27 @@ export default function TenantAuth() {
             </div>
           </div>
           
-          {!hasAdmin && (
-            <Alert className="mb-4 border-primary/20 bg-primary/5">
-              <Crown className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Soyez le premier!</strong> Le premier inscrit deviendra automatiquement l'administrateur de cette église.
+          {renderInvitationAlert()}
+          
+          {!hasAdmin && !canSignupAsAdmin && (
+            <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800 dark:text-amber-200">
+                <strong>Aucun administrateur configuré.</strong> Seule une personne avec une invitation valide peut créer le compte administrateur.
               </AlertDescription>
             </Alert>
           )}
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue={canSignupAsAdmin ? "signup" : "login"} className="w-full">
+          <TabsList className={`grid w-full ${showSignupTab ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <TabsTrigger value="login">Connexion</TabsTrigger>
-            <TabsTrigger value="signup" className="flex items-center gap-2">
-              Inscription
-              {!hasAdmin && <Badge variant="secondary" className="text-xs">Admin</Badge>}
-            </TabsTrigger>
+            {showSignupTab && (
+              <TabsTrigger value="signup" className="flex items-center gap-2">
+                Inscription
+                {canSignupAsAdmin && <Badge variant="secondary" className="text-xs">Admin</Badge>}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="login">
@@ -380,116 +480,124 @@ export default function TenantAuth() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="signup">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {!hasAdmin ? (
-                    <>
-                      <Crown className="h-5 w-5 text-primary" />
-                      Devenir Administrateur
-                    </>
-                  ) : (
-                    <>
-                      <Users className="h-5 w-5" />
-                      Créer un Compte
-                    </>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  {!hasAdmin 
-                    ? `Créez votre compte pour administrer ${tenant.name}`
-                    : `Rejoignez ${tenant.name} - un admin doit approuver votre accès`
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-firstname">Prénom</Label>
-                      <Input
-                        id="signup-firstname"
-                        placeholder="Jean"
-                        value={signupForm.firstName}
-                        onChange={(e) =>
-                          setSignupForm({ ...signupForm, firstName: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-lastname">Nom</Label>
-                      <Input
-                        id="signup-lastname"
-                        placeholder="Pierre"
-                        value={signupForm.lastName}
-                        onChange={(e) =>
-                          setSignupForm({ ...signupForm, lastName: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="nom@exemple.com"
-                      value={signupForm.email}
-                      onChange={(e) =>
-                        setSignupForm({ ...signupForm, email: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Mot de passe</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signupForm.password}
-                      onChange={(e) =>
-                        setSignupForm({ ...signupForm, password: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
-                    <Input
-                      id="signup-confirm"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signupForm.confirmPassword}
-                      onChange={(e) =>
-                        setSignupForm({
-                          ...signupForm,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isLoading}
-                    style={{ backgroundColor: tenant.primary_color || undefined }}
-                  >
-                    {isLoading 
-                      ? 'Chargement...' 
-                      : !hasAdmin 
-                        ? 'Créer mon compte Admin'
-                        : 'Créer le Compte'
+          {showSignupTab && (
+            <TabsContent value="signup">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {canSignupAsAdmin ? (
+                      <>
+                        <Crown className="h-5 w-5 text-primary" />
+                        Devenir Administrateur
+                      </>
+                    ) : (
+                      <>
+                        <Users className="h-5 w-5" />
+                        Créer un Compte
+                      </>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    {canSignupAsAdmin 
+                      ? `Créez votre compte pour administrer ${tenant.name}`
+                      : `Rejoignez ${tenant.name} - un admin doit approuver votre accès`
                     }
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-firstname">Prénom</Label>
+                        <Input
+                          id="signup-firstname"
+                          placeholder="Jean"
+                          value={signupForm.firstName}
+                          onChange={(e) =>
+                            setSignupForm({ ...signupForm, firstName: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-lastname">Nom</Label>
+                        <Input
+                          id="signup-lastname"
+                          placeholder="Pierre"
+                          value={signupForm.lastName}
+                          onChange={(e) =>
+                            setSignupForm({ ...signupForm, lastName: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="nom@exemple.com"
+                        value={signupForm.email}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, email: e.target.value })
+                        }
+                        required
+                        disabled={canSignupAsAdmin} // Lock email if from invitation
+                      />
+                      {canSignupAsAdmin && (
+                        <p className="text-xs text-muted-foreground">
+                          L'email est verrouillé car il provient de votre invitation.
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Mot de passe</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={signupForm.password}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, password: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
+                      <Input
+                        id="signup-confirm"
+                        type="password"
+                        placeholder="••••••••"
+                        value={signupForm.confirmPassword}
+                        onChange={(e) =>
+                          setSignupForm({
+                            ...signupForm,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={isLoading}
+                      style={{ backgroundColor: tenant.primary_color || undefined }}
+                    >
+                      {isLoading 
+                        ? 'Chargement...' 
+                        : canSignupAsAdmin 
+                          ? 'Créer mon compte Admin'
+                          : 'Créer le Compte'
+                      }
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
