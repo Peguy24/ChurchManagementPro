@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import Commercial from "./pages/Commercial";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MemberCards from "./pages/MemberCards";
@@ -65,7 +66,7 @@ const App = () => (
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/" element={<Home />} />
               <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
               <Route path="/members/cards" element={<ProtectedRoute><MemberCards /></ProtectedRoute>} />
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
