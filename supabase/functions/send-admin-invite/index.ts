@@ -15,6 +15,7 @@ interface AdminInviteRequest {
   tenantId: string;
   tenantName: string;
   tenantSlug: string;
+  skipEmail?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, tenantId, tenantName, tenantSlug }: AdminInviteRequest = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, skipEmail = false }: AdminInviteRequest = await req.json();
 
-    console.log(`Creating secure invitation for ${email} to become admin of ${tenantName} (${tenantId})`);
+    console.log(`Creating secure invitation for ${email} to become admin of ${tenantName} (${tenantId}), skipEmail: ${skipEmail}`);
 
     // Create Supabase client with service role
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -72,6 +73,23 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the app URL from environment or request origin
     const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://lovable.dev";
     const registrationLink = `${siteUrl}/t/${tenantSlug}/auth?invite=${token}`;
+
+    // If skipEmail is true, return the link without sending email
+    if (skipEmail) {
+      console.log("Skipping email, returning invitation link directly");
+      return new Response(JSON.stringify({ 
+        success: true, 
+        invitationLink: registrationLink,
+        token: token,
+        message: "Invitation created successfully (email skipped)"
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
 
     const emailResponse = await resend.emails.send({
       from: "Church Management <onboarding@resend.dev>",
@@ -141,7 +159,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Admin invite email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse,
+      invitationLink: registrationLink 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

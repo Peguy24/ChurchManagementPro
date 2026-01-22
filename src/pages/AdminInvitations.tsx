@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Mail, Trash2, RefreshCw, Clock, CheckCircle, XCircle, Send, Shield } from "lucide-react";
+import { Mail, Trash2, RefreshCw, Clock, CheckCircle, XCircle, Send, Shield, Copy, Check } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -30,6 +30,7 @@ interface AdminInvitation {
 export default function AdminInvitations() {
   const queryClient = useQueryClient();
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const { data: invitations, isLoading } = useQuery({
     queryKey: ["admin-invitations"],
@@ -113,6 +114,22 @@ export default function AdminInvitations() {
       return { label: "Expirée", variant: "destructive" as const, icon: XCircle };
     }
     return { label: "En attente", variant: "secondary" as const, icon: Clock };
+  };
+
+  const copyInvitationLink = async (invitation: AdminInvitation) => {
+    if (!invitation.tenant) return;
+    
+    const siteUrl = window.location.origin;
+    const link = `${siteUrl}/t/${invitation.tenant.slug}/auth?invite=${invitation.token}`;
+    
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(invitation.id);
+      toast.success("Lien copié dans le presse-papiers");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      toast.error("Impossible de copier le lien");
+    }
   };
 
   const activeCount = invitations?.filter(inv => 
@@ -261,19 +278,34 @@ export default function AdminInvitations() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {isActive && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => resendInvitation(invitation)}
-                                disabled={resendingId === invitation.id}
-                              >
-                                {resendingId === invitation.id ? (
-                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Send className="h-4 w-4" />
-                                )}
-                                <span className="ml-1 hidden sm:inline">Renvoyer</span>
-                              </Button>
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyInvitationLink(invitation)}
+                                  title="Copier le lien d'invitation"
+                                >
+                                  {copiedId === invitation.id ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                  <span className="ml-1 hidden sm:inline">Copier</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => resendInvitation(invitation)}
+                                  disabled={resendingId === invitation.id}
+                                >
+                                  {resendingId === invitation.id ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Send className="h-4 w-4" />
+                                  )}
+                                  <span className="ml-1 hidden sm:inline">Renvoyer</span>
+                                </Button>
+                              </>
                             )}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
