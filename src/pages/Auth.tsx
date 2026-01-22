@@ -247,14 +247,12 @@ export default function Auth() {
         
         <div className="mb-8 text-center">
           <div className="flex flex-col items-center gap-3 mb-4">
-            <img 
-              src="/images/church-logo.png" 
-              alt="Logo de l'église" 
-              className="h-24 w-24 object-contain"
-            />
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Building2 className="h-8 w-8 text-primary" />
+            </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Church of God</h1>
-              <p className="text-sm text-muted-foreground">Ministry of Prayer and of The Word Inc.</p>
+              <h1 className="text-xl font-bold text-foreground">Administration</h1>
+              <p className="text-sm text-muted-foreground">Portail Super Admin</p>
             </div>
           </div>
         </div>
