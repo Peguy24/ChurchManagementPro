@@ -2,18 +2,72 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
-  Church, Heart, Clock, Smartphone
+  Church, Heart, Clock, Smartphone, Search, LogIn
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Commercial = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
+  const [churchSearch, setChurchSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; slug: string }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const handleChurchSearch = async (searchTerm: string) => {
+    setChurchSearch(searchTerm);
+    
+    if (searchTerm.length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, name, slug')
+        .ilike('name', `%${searchTerm}%`)
+        .limit(5);
+
+      if (error) throw error;
+      
+      setSearchResults(data || []);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Error searching churches:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleChurchSelect = (slug: string) => {
+    navigate(`/t/${slug}/auth`);
+  };
+
+  const handleDirectSlugAccess = () => {
+    if (churchSearch.trim()) {
+      // Try to navigate directly with the search term as a slug
+      navigate(`/t/${churchSearch.toLowerCase().replace(/\s+/g, '-')}/auth`);
+    } else {
+      toast({
+        title: "Entrez le nom de votre église",
+        description: "Veuillez saisir le nom ou l'identifiant de votre église.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const features = [
     {
       icon: Users,
@@ -179,6 +233,74 @@ const Commercial = () => {
                 Voir les Tarifs
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Church Finder Section */}
+      <section className="py-12 bg-gradient-to-r from-primary/5 to-secondary/5 border-y">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <LogIn className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold">Déjà membre d'une église?</h2>
+            </div>
+            <p className="text-muted-foreground mb-6">
+              Recherchez votre église pour accéder à votre espace de connexion
+            </p>
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Nom de votre église ou identifiant..."
+                    value={churchSearch}
+                    onChange={(e) => handleChurchSearch(e.target.value)}
+                    onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                    className="pl-10"
+                  />
+                  {/* Search Results Dropdown */}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50">
+                      {searchResults.map((church) => (
+                        <button
+                          key={church.id}
+                          onClick={() => handleChurchSelect(church.slug)}
+                          className="w-full px-4 py-3 text-left hover:bg-muted transition-colors flex items-center gap-3 first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          <Church className="w-4 h-4 text-primary flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">{church.name}</p>
+                            <p className="text-sm text-muted-foreground">/{church.slug}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showSearchResults && searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 p-4 text-center">
+                      <p className="text-muted-foreground text-sm">Aucune église trouvée</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Essayez avec l'identifiant exact ou contactez votre administrateur
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <Button onClick={handleDirectSlugAccess} className="gap-2">
+                  <LogIn className="w-4 h-4" />
+                  Accéder
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Vous ne trouvez pas votre église? Demandez l'identifiant à votre administrateur ou{" "}
+              <button 
+                onClick={() => setRequestFormOpen(true)} 
+                className="text-primary hover:underline"
+              >
+                créez un nouveau compte
+              </button>
+            </p>
           </div>
         </div>
       </section>
