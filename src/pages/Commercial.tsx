@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
-  Church, Heart, Clock, Smartphone, Search, LogIn
+  Church, Heart, Clock, Smartphone, Search, LogIn, Copy, ExternalLink
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
@@ -262,19 +262,52 @@ const Commercial = () => {
                   {/* Search Results Dropdown */}
                   {showSearchResults && searchResults.length > 0 && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50">
-                      {searchResults.map((church) => (
-                        <button
-                          key={church.id}
-                          onClick={() => handleChurchSelect(church.slug)}
-                          className="w-full px-4 py-3 text-left hover:bg-muted transition-colors flex items-center gap-3 first:rounded-t-lg last:rounded-b-lg"
-                        >
-                          <Church className="w-4 h-4 text-primary flex-shrink-0" />
-                          <div>
-                            <p className="font-medium">{church.name}</p>
-                            <p className="text-sm text-muted-foreground">/{church.slug}</p>
+                      {searchResults.map((church) => {
+                        const churchUrl = `${window.location.origin}/t/${church.slug}/auth`;
+                        return (
+                          <div
+                            key={church.id}
+                            className="px-4 py-3 hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <Church className="w-5 h-5 text-primary flex-shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="font-medium truncate">{church.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{churchUrl}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(churchUrl);
+                                    toast({
+                                      title: "Lien copié!",
+                                      description: `Le lien de ${church.name} a été copié dans le presse-papiers.`,
+                                    });
+                                  }}
+                                  title="Copier le lien"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-8 gap-1"
+                                  onClick={() => handleChurchSelect(church.slug)}
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  Ouvrir
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                        </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                   {showSearchResults && searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
