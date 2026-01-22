@@ -73,6 +73,9 @@ export default function TenantAuth() {
 
   async function fetchTenantAndInvitation() {
     try {
+      console.log('Fetching tenant with slug:', slug);
+      console.log('Invite token from URL:', inviteToken);
+      
       const { data, error: fetchError } = await supabase
         .from('tenants')
         .select('id, name, slug, logo_url, primary_color')
@@ -80,20 +83,24 @@ export default function TenantAuth() {
         .single();
       
       if (fetchError) {
+        console.error('Error fetching tenant:', fetchError);
         setError('Église non trouvée');
         setLoading(false);
         return;
       }
       
+      console.log('Tenant found:', data);
       setTenant(data);
       
       // Check if tenant has admin
       const { data: adminExists } = await supabase
         .rpc('tenant_has_admin', { _tenant_id: data.id });
+      console.log('Tenant has admin:', adminExists);
       setHasAdmin(!!adminExists);
 
       // Validate invitation token if present
       if (inviteToken) {
+        console.log('Validating invitation token...');
         const { data: inviteData, error: inviteError } = await supabase
           .from('admin_invitations')
           .select('id, email, tenant_id, expires_at, used_at')
@@ -101,25 +108,31 @@ export default function TenantAuth() {
           .eq('tenant_id', data.id)
           .single();
 
+        console.log('Invitation query result:', { inviteData, inviteError });
+
         if (inviteError || !inviteData) {
+          console.log('Invalid invitation token - error or no data');
           setInvitationValid(false);
-          console.log('Invalid invitation token');
         } else if (inviteData.used_at) {
+          console.log('Invitation already used at:', inviteData.used_at);
           setInvitationValid(false);
-          console.log('Invitation already used');
         } else if (new Date(inviteData.expires_at) < new Date()) {
+          console.log('Invitation expired at:', inviteData.expires_at);
           setInvitationValid(false);
-          console.log('Invitation expired');
         } else {
+          console.log('Invitation is valid! Email:', inviteData.email);
           setInvitation(inviteData);
           setInvitationValid(true);
           // Pre-fill email from invitation
           setSignupForm(prev => ({ ...prev, email: inviteData.email }));
         }
+      } else {
+        console.log('No invite token in URL');
       }
       
       setLoading(false);
     } catch (err) {
+      console.error('Error in fetchTenantAndInvitation:', err);
       setError('Erreur lors du chargement');
       setLoading(false);
     }
@@ -211,7 +224,17 @@ export default function TenantAuth() {
 
     // Check if user has a valid invitation
     const hasValidInvitation = invitationValid && invitation && 
-      invitation.email.toLowerCase() === signupForm.email.toLowerCase();
+      invitation.email.toLowerCase().trim() === signupForm.email.toLowerCase().trim();
+
+    console.log('Signup validation:', {
+      invitationValid,
+      hasInvitation: !!invitation,
+      invitationEmail: invitation?.email,
+      formEmail: signupForm.email,
+      emailsMatch: invitation?.email?.toLowerCase().trim() === signupForm.email.toLowerCase().trim(),
+      hasValidInvitation,
+      hasAdmin
+    });
 
     // If no admin exists AND no valid invitation, block signup for admin role
     if (!hasAdmin && !hasValidInvitation) {
