@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox } from "lucide-react";
 import { TenantRequestsManager } from "@/components/TenantRequestsManager";
+import { AdminInviteDialog } from "@/components/AdminInviteDialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -81,7 +82,8 @@ export default function TenantManagement() {
     status: "trial" as TenantStatus,
     admin_email: "",
   });
-  const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [selectedTenantForInvite, setSelectedTenantForInvite] = useState<TenantWithSubscription | null>(null);
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -189,28 +191,9 @@ export default function TenantManagement() {
     },
   });
 
-  const sendAdminInvite = async (tenant: TenantWithSubscription) => {
-    const email = prompt("Email de l'administrateur à inviter:");
-    if (!email) return;
-    
-    setIsSendingInvite(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-admin-invite', {
-        body: {
-          email,
-          tenantId: tenant.id,
-          tenantName: tenant.name,
-          tenantSlug: tenant.slug,
-        },
-      });
-      
-      if (error) throw error;
-      toast.success(`Invitation envoyée à ${email}`);
-    } catch (err: any) {
-      toast.error("Erreur lors de l'envoi: " + err.message);
-    } finally {
-      setIsSendingInvite(false);
-    }
+  const openInviteDialog = (tenant: TenantWithSubscription) => {
+    setSelectedTenantForInvite(tenant);
+    setInviteDialogOpen(true);
   };
 
   const updateTenantMutation = useMutation({
@@ -589,8 +572,7 @@ export default function TenantManagement() {
                                   variant="ghost"
                                   size="sm"
                                   className="h-7 px-2"
-                                  onClick={() => sendAdminInvite(tenant)}
-                                  disabled={isSendingInvite}
+                                  onClick={() => openInviteDialog(tenant)}
                                 >
                                   <Send className="h-3 w-3 mr-1" />
                                   Inviter
@@ -660,6 +642,12 @@ export default function TenantManagement() {
             <TenantRequestsManager />
           </TabsContent>
         </Tabs>
+
+        <AdminInviteDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          tenant={selectedTenantForInvite}
+        />
       </div>
     </Layout>
   );
