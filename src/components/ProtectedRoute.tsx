@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/auth');
+      navigate('/commercial');
     }
   }, [user, loading, navigate]);
 
