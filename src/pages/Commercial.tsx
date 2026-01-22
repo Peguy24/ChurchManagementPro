@@ -482,9 +482,10 @@ const Commercial = () => {
             <p className="text-sm text-muted-foreground">
               © 2024 ChurchManager Pro. Tous droits réservés.
             </p>
-            <div className="flex gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
-                Connexion
+            <div className="flex gap-4 items-center">
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>
+                <Shield className="w-4 h-4" />
+                Super Admin
               </Button>
             </div>
           </div>
