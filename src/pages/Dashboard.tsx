@@ -11,6 +11,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } fro
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { SubscriptionCard } from "@/components/SubscriptionCard";
+import { PlanUsageCard } from "@/components/PlanUsageCard";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -586,8 +587,9 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Subscription Card */}
+        {/* Subscription & Usage Cards */}
         <div className="grid gap-4 md:grid-cols-2">
+          <PlanUsageCard />
           <SubscriptionCard />
         </div>
 

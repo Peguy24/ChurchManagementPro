@@ -24,6 +24,8 @@ import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 
 const statusColors: Record<string, string> = {
   Actif: "bg-success/10 text-success border-success/20",
@@ -40,6 +42,18 @@ export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  
+  const { canAddMember, usage, limits, plan } = usePlanLimits();
+
+  const handleAddMember = () => {
+    if (!canAddMember()) {
+      setLimitDialogOpen(true);
+      return;
+    }
+    setSelectedMember(undefined);
+    setDialogOpen(true);
+  };
 
   const { data: members = [], refetch } = useQuery({
     queryKey: ["members"],
@@ -90,10 +104,7 @@ export default function Members() {
               <span className="hidden sm:inline">{t("common.export")}</span>
               <span className="sm:hidden">Export</span>
             </Button>
-            <Button size="sm" className="flex-1 sm:flex-none" onClick={() => {
-              setSelectedMember(undefined);
-              setDialogOpen(true);
-            }}>
+            <Button size="sm" className="flex-1 sm:flex-none" onClick={handleAddMember}>
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">{t("members.addMember")}</span>
               <span className="sm:hidden">Ajouter</span>
@@ -265,6 +276,14 @@ export default function Members() {
           onOpenChange={setDialogOpen}
           member={selectedMember}
           onSuccess={refetch}
+        />
+        <PlanLimitDialog
+          open={limitDialogOpen}
+          onOpenChange={setLimitDialogOpen}
+          limitType="members"
+          currentCount={usage.membersCount}
+          maxCount={limits.maxMembers}
+          planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Essentiel"}
         />
     </Layout>
   );

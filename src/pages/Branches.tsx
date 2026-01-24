@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 
 interface Branch {
   id: string;
@@ -143,6 +145,18 @@ export default function Branches() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | undefined>();
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+
+  const { canAddBranch, usage, limits, plan } = usePlanLimits();
+
+  const handleAddBranch = () => {
+    if (!canAddBranch()) {
+      setLimitDialogOpen(true);
+      return;
+    }
+    setSelectedBranch(undefined);
+    setIsDialogOpen(true);
+  };
 
   const { data: branches, refetch } = useQuery({
     queryKey: ["branches"],
@@ -291,12 +305,7 @@ export default function Branches() {
             Gérez les différentes branches et départements de votre église
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedBranch(undefined);
-            setIsDialogOpen(true);
-          }}
-        >
+        <Button onClick={handleAddBranch}>
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle branche
         </Button>
@@ -515,6 +524,15 @@ export default function Branches() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PlanLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        limitType="branches"
+        currentCount={usage.branchesCount}
+        maxCount={limits.maxBranches}
+        planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Essentiel"}
+      />
     </div>
   );
 }
