@@ -117,12 +117,12 @@ export default function Subscription() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Abonnement</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Abonnement</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Gérez votre abonnement et consultez votre historique de paiements
             </p>
           </div>
@@ -134,9 +134,11 @@ export default function Subscription() {
               fetchInvoices();
               toast({ title: "Actualisation en cours..." });
             }}
+            className="self-start sm:self-auto"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
+            <span className="hidden sm:inline">Actualiser</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
         </div>
 
@@ -158,16 +160,16 @@ export default function Subscription() {
           <CardContent>
             {subscribed && currentPlan ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <p className="text-3xl font-bold">{currentPlan.name}</p>
+                    <p className="text-2xl sm:text-3xl font-bold">{currentPlan.name}</p>
                     <p className="text-muted-foreground">
                       ${currentPlan.price}/mois
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="sm:text-right">
                     <p className="text-sm text-muted-foreground">Prochain renouvellement</p>
-                    <p className="font-medium text-lg">
+                    <p className="font-medium text-base sm:text-lg">
                       {subscriptionEnd 
                         ? format(new Date(subscriptionEnd), "d MMMM yyyy", { locale: fr })
                         : "—"
@@ -381,30 +383,32 @@ export default function Subscription() {
                 {invoices.map((invoice) => (
                   <div 
                     key={invoice.id}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors gap-3"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <Receipt className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-medium">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">
                           {invoice.number || `Facture ${invoice.id.slice(-8)}`}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(invoice.created), "d MMMM yyyy", { locale: fr })}
+                          <Calendar className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">
+                            {format(new Date(invoice.created), "d MMM yyyy", { locale: fr })}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="font-semibold">
-                          ${invoice.amount.toFixed(2)} {invoice.currency.toUpperCase()}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-13 sm:ml-0">
+                      <div className="sm:text-right">
+                        <p className="font-semibold text-sm sm:text-base">
+                          ${invoice.amount.toFixed(2)}
                         </p>
                         {getStatusBadge(invoice.status)}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         {invoice.invoice_pdf && (
                           <Button
                             size="sm"

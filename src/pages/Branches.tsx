@@ -53,19 +53,19 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
     <div className="flex flex-col items-center">
       <Card 
         className={cn(
-          "w-80 hover:shadow-lg transition-all cursor-pointer",
+          "w-full max-w-[280px] sm:w-80 hover:shadow-lg transition-all cursor-pointer",
           branch.status === "inactive" && "opacity-60"
         )}
         onClick={() => hasChildren && setIsExpanded(!isExpanded)}
       >
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 flex-1">
-              <Building2 className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">{branch.name}</CardTitle>
+        <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-lg truncate">{branch.name}</CardTitle>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <Badge variant={branch.status === "active" ? "default" : "secondary"}>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <Badge variant={branch.status === "active" ? "default" : "secondary"} className="text-xs">
                 {branch.status === "active" ? "Actif" : "Inactif"}
               </Badge>
               {hasChildren && (
@@ -297,33 +297,35 @@ export default function Branches() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Branches</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Branches</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Gérez les différentes branches et départements de votre église
           </p>
         </div>
-        <Button onClick={handleAddBranch}>
+        <Button onClick={handleAddBranch} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
-          Nouvelle branche
+          <span className="hidden sm:inline">Nouvelle branche</span>
+          <span className="sm:hidden">Ajouter</span>
         </Button>
       </div>
 
       <Tabs defaultValue="list" className="w-full">
-        <TabsList>
-          <TabsTrigger value="list">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="list" className="flex-1 sm:flex-none">
             <List className="h-4 w-4 mr-2" />
             Liste
           </TabsTrigger>
-          <TabsTrigger value="hierarchy">
+          <TabsTrigger value="hierarchy" className="flex-1 sm:flex-none">
             <Network className="h-4 w-4 mr-2" />
-            Organigramme
+            <span className="hidden sm:inline">Organigramme</span>
+            <span className="sm:hidden">Orga</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="list" className="space-y-6">
+        <TabsContent value="list" className="space-y-4 sm:space-y-6">
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -336,7 +338,7 @@ export default function Branches() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {filteredBranches?.map((branch) => (
               <Card key={branch.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>

@@ -108,19 +108,20 @@ export default function Events() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Gestion des Événements
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm sm:text-base">
               Planifiez et gérez les événements de votre église
             </p>
           </div>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => setDialogOpen(true)} className="self-start sm:self-auto">
             <Plus className="mr-2 h-4 w-4" />
-            Créer Événement
+            <span className="hidden sm:inline">Créer Événement</span>
+            <span className="sm:hidden">Créer</span>
           </Button>
         </div>
 
@@ -130,7 +131,7 @@ export default function Events() {
           </div>
         ) : (
           <>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
               {/* Calendar */}
               <Card>
                 <CardHeader>

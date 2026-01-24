@@ -45,17 +45,18 @@ export function PlanUsageCard() {
 
   return (
     <Card className={atMemberLimit || atBranchLimit ? "border-destructive/50" : ""}>
-      <CardContent className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
+      <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Plan {planName}</span>
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span className="font-semibold text-sm sm:text-base">Plan {planName}</span>
           </div>
           {plan !== "entreprise" && (
             <Button 
               size="sm" 
               variant="outline"
               onClick={() => navigate("/settings/subscription")}
+              className="self-start sm:self-auto"
             >
               Améliorer
               <ArrowRight className="h-4 w-4 ml-1" />
