@@ -13,7 +13,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { addDays, addMonths, addYears } from "date-fns";
 import { TenantRequestsManager } from "@/components/TenantRequestsManager";
 import { AdminInviteDialog } from "@/components/AdminInviteDialog";
 import { format } from "date-fns";
@@ -68,6 +71,37 @@ const STATUS_CONFIG: Record<TenantStatus, { label: string; variant: "default" | 
   cancelled: { label: "Annulé", variant: "outline" },
 };
 
+type TrialDuration = "14_days" | "1_month" | "3_months" | "6_months" | "1_year" | "custom";
+
+const TRIAL_DURATION_OPTIONS: { value: TrialDuration; label: string }[] = [
+  { value: "14_days", label: "14 jours" },
+  { value: "1_month", label: "1 mois" },
+  { value: "3_months", label: "3 mois" },
+  { value: "6_months", label: "6 mois" },
+  { value: "1_year", label: "1 an" },
+  { value: "custom", label: "Date personnalisée" },
+];
+
+const calculateTrialEndDate = (duration: TrialDuration, customDate?: Date): Date => {
+  const now = new Date();
+  switch (duration) {
+    case "14_days":
+      return addDays(now, 14);
+    case "1_month":
+      return addMonths(now, 1);
+    case "3_months":
+      return addMonths(now, 3);
+    case "6_months":
+      return addMonths(now, 6);
+    case "1_year":
+      return addYears(now, 1);
+    case "custom":
+      return customDate || addDays(now, 14);
+    default:
+      return addDays(now, 14);
+  }
+};
+
 export default function TenantManagement() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -81,7 +115,13 @@ export default function TenantManagement() {
     plan: "basic" as SubscriptionPlan,
     status: "trial" as TenantStatus,
     admin_email: "",
+    trial_duration: "14_days" as TrialDuration,
+    custom_trial_date: undefined as Date | undefined,
   });
+  const [extendTrialDialogOpen, setExtendTrialDialogOpen] = useState(false);
+  const [selectedTenantForExtend, setSelectedTenantForExtend] = useState<TenantWithSubscription | null>(null);
+  const [extendTrialDuration, setExtendTrialDuration] = useState<TrialDuration>("1_month");
+  const [extendCustomDate, setExtendCustomDate] = useState<Date | undefined>(undefined);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [selectedTenantForInvite, setSelectedTenantForInvite] = useState<TenantWithSubscription | null>(null);
 
@@ -151,7 +191,9 @@ export default function TenantManagement() {
           max_branches: planConfig.branches,
           max_users: planConfig.users,
           max_storage_mb: planConfig.storage,
-          trial_ends_at: data.status === "trial" ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : null,
+          trial_ends_at: data.status === "trial" 
+            ? calculateTrialEndDate(data.trial_duration, data.custom_trial_date).toISOString() 
+            : null,
         });
 
       if (subError) throw subError;
@@ -223,6 +265,9 @@ export default function TenantManagement() {
           max_branches: planConfig.branches,
           max_users: planConfig.users,
           max_storage_mb: planConfig.storage,
+          trial_ends_at: data.status === "trial" 
+            ? calculateTrialEndDate(data.trial_duration, data.custom_trial_date).toISOString() 
+            : null,
         })
         .eq("tenant_id", id);
 
@@ -253,6 +298,49 @@ export default function TenantManagement() {
     },
   });
 
+  const extendTrialMutation = useMutation({
+    mutationFn: async ({ tenantId, duration, customDate }: { tenantId: string; duration: TrialDuration; customDate?: Date }) => {
+      const newTrialEnd = calculateTrialEndDate(duration, customDate);
+      
+      const { error } = await supabase
+        .from("tenant_subscriptions")
+        .update({
+          status: "trial",
+          trial_ends_at: newTrialEnd.toISOString(),
+        })
+        .eq("tenant_id", tenantId);
+
+      if (error) throw error;
+      return newTrialEnd;
+    },
+    onSuccess: (newTrialEnd) => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      toast.success(`Essai prolongé jusqu'au ${format(newTrialEnd, "dd MMM yyyy", { locale: fr })}`);
+      setExtendTrialDialogOpen(false);
+      setSelectedTenantForExtend(null);
+    },
+    onError: (error) => {
+      toast.error("Erreur lors de la prolongation: " + error.message);
+    },
+  });
+
+  const openExtendTrialDialog = (tenant: TenantWithSubscription) => {
+    setSelectedTenantForExtend(tenant);
+    setExtendTrialDuration("1_month");
+    setExtendCustomDate(undefined);
+    setExtendTrialDialogOpen(true);
+  };
+
+  const handleExtendTrial = () => {
+    if (selectedTenantForExtend) {
+      extendTrialMutation.mutate({
+        tenantId: selectedTenantForExtend.id,
+        duration: extendTrialDuration,
+        customDate: extendCustomDate,
+      });
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -263,12 +351,18 @@ export default function TenantManagement() {
       plan: "basic",
       status: "trial",
       admin_email: "",
+      trial_duration: "14_days",
+      custom_trial_date: undefined,
     });
     setEditingTenant(null);
   };
 
   const handleEdit = (tenant: TenantWithSubscription) => {
     setEditingTenant(tenant);
+    const existingTrialEnd = tenant.subscription?.trial_ends_at 
+      ? new Date(tenant.subscription.trial_ends_at) 
+      : undefined;
+    
     setFormData({
       name: tenant.name,
       slug: tenant.slug,
@@ -278,6 +372,8 @@ export default function TenantManagement() {
       plan: tenant.subscription?.plan || "basic",
       status: tenant.subscription?.status || "trial",
       admin_email: "",
+      trial_duration: existingTrialEnd ? "custom" : "14_days",
+      custom_trial_date: existingTrialEnd,
     });
     setIsDialogOpen(true);
   };
@@ -399,6 +495,61 @@ export default function TenantManagement() {
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {/* Trial Duration Selector - shown when status is trial */}
+                  {formData.status === "trial" && (
+                    <div className="col-span-2 space-y-2">
+                      <Label htmlFor="trial_duration">
+                        <Clock className="h-4 w-4 inline mr-2" />
+                        Durée de l'essai gratuit
+                      </Label>
+                      <Select 
+                        value={formData.trial_duration} 
+                        onValueChange={(v) => setFormData({ ...formData, trial_duration: v as TrialDuration })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TRIAL_DURATION_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {formData.trial_duration === "custom" && (
+                        <div className="pt-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {formData.custom_trial_date 
+                                  ? format(formData.custom_trial_date, "dd MMM yyyy", { locale: fr })
+                                  : "Sélectionner une date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <CalendarComponent
+                                mode="single"
+                                selected={formData.custom_trial_date}
+                                onSelect={(date) => setFormData({ ...formData, custom_trial_date: date })}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      )}
+                      
+                      {formData.trial_duration !== "custom" && (
+                        <p className="text-xs text-muted-foreground">
+                          L'essai se terminera le {format(calculateTrialEndDate(formData.trial_duration), "dd MMM yyyy", { locale: fr })}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   {!editingTenant && (
                     <div className="col-span-2 space-y-2">
                       <Label htmlFor="admin_email">
@@ -591,9 +742,16 @@ export default function TenantManagement() {
                           </TableCell>
                           <TableCell>
                             {tenant.subscription ? (
-                              <Badge variant={STATUS_CONFIG[tenant.subscription.status]?.variant}>
-                                {STATUS_CONFIG[tenant.subscription.status]?.label}
-                              </Badge>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant={STATUS_CONFIG[tenant.subscription.status]?.variant}>
+                                  {STATUS_CONFIG[tenant.subscription.status]?.label}
+                                </Badge>
+                                {tenant.subscription.status === "trial" && tenant.subscription.trial_ends_at && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Fin: {format(new Date(tenant.subscription.trial_ends_at), "dd MMM yyyy", { locale: fr })}
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               "-"
                             )}
@@ -605,7 +763,18 @@ export default function TenantManagement() {
                             {format(new Date(tenant.created_at), "dd MMM yyyy", { locale: fr })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1">
+                              {tenant.subscription?.status === "trial" && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="h-8 px-2 text-primary hover:text-primary"
+                                  onClick={() => openExtendTrialDialog(tenant)}
+                                >
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Prolonger
+                                </Button>
+                              )}
                               <Button variant="ghost" size="icon" onClick={() => handleEdit(tenant)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -648,6 +817,100 @@ export default function TenantManagement() {
           onOpenChange={setInviteDialogOpen}
           tenant={selectedTenantForInvite}
         />
+
+        {/* Extend Trial Dialog */}
+        <Dialog open={extendTrialDialogOpen} onOpenChange={setExtendTrialDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Prolonger l'essai gratuit
+              </DialogTitle>
+              <DialogDescription>
+                {selectedTenantForExtend && (
+                  <>
+                    Prolonger l'essai pour <strong>{selectedTenantForExtend.name}</strong>
+                    {selectedTenantForExtend.subscription?.trial_ends_at && (
+                      <span className="block mt-1 text-sm">
+                        Essai actuel se termine le: {format(new Date(selectedTenantForExtend.subscription.trial_ends_at), "dd MMM yyyy", { locale: fr })}
+                      </span>
+                    )}
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Nouvelle durée d'essai</Label>
+                <Select 
+                  value={extendTrialDuration} 
+                  onValueChange={(v) => setExtendTrialDuration(v as TrialDuration)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRIAL_DURATION_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {extendTrialDuration === "custom" && (
+                <div className="space-y-2">
+                  <Label>Date de fin personnalisée</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {extendCustomDate 
+                          ? format(extendCustomDate, "dd MMM yyyy", { locale: fr })
+                          : "Sélectionner une date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={extendCustomDate}
+                        onSelect={setExtendCustomDate}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+
+              {extendTrialDuration !== "custom" && (
+                <div className="rounded-lg bg-muted p-3">
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">Nouvel essai jusqu'au:</span>{" "}
+                    <strong>{format(calculateTrialEndDate(extendTrialDuration), "dd MMMM yyyy", { locale: fr })}</strong>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setExtendTrialDialogOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleExtendTrial}
+                disabled={extendTrialMutation.isPending || (extendTrialDuration === "custom" && !extendCustomDate)}
+              >
+                {extendTrialMutation.isPending ? "Prolongation..." : "Prolonger l'essai"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
