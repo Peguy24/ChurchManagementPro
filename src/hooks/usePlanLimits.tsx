@@ -10,6 +10,23 @@ export const PLAN_LIMITS = {
     maxBranches: 1,
     maxUsers: 5,
     features: {
+      attendance: true,
+      donations: true,
+      advancedReports: false,
+      emailNotifications: false,
+      inventory: false,
+      api: false,
+      whiteLabel: false,
+    },
+  },
+  // "none" plan for users without active subscription (after trial)
+  none: {
+    maxMembers: 50,
+    maxBranches: 1,
+    maxUsers: 2,
+    features: {
+      attendance: false,
+      donations: false,
       advancedReports: false,
       emailNotifications: false,
       inventory: false,
@@ -22,6 +39,8 @@ export const PLAN_LIMITS = {
     maxBranches: 3,
     maxUsers: 15,
     features: {
+      attendance: true,
+      donations: true,
       advancedReports: true,
       emailNotifications: true,
       inventory: true,
@@ -34,6 +53,8 @@ export const PLAN_LIMITS = {
     maxBranches: Infinity,
     maxUsers: Infinity,
     features: {
+      attendance: true,
+      donations: true,
       advancedReports: true,
       emailNotifications: true,
       inventory: true,
@@ -54,6 +75,8 @@ export interface PlanLimits {
   maxBranches: number;
   maxUsers: number;
   features: {
+    attendance: boolean;
+    donations: boolean;
     advancedReports: boolean;
     emailNotifications: boolean;
     inventory: boolean;
@@ -104,11 +127,11 @@ export function usePlanLimits() {
     enabled: !!tenantId && !tenantLoading,
   });
 
-  // Get current plan limits
+  // Get current plan limits - use "none" plan if not subscribed
   const currentPlan = plan as PlanKey | null;
-  const limits: PlanLimits = currentPlan && PLAN_LIMITS[currentPlan] 
+  const limits: PlanLimits = subscribed && currentPlan && PLAN_LIMITS[currentPlan] 
     ? PLAN_LIMITS[currentPlan] 
-    : PLAN_LIMITS.essentiel; // Default to essentiel if no subscription
+    : PLAN_LIMITS.none; // Default to "none" (locked) if no active subscription
 
   const loading = subscriptionLoading || tenantLoading || usageLoading;
 

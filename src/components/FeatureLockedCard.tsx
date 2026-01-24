@@ -6,16 +6,18 @@ import { useNavigate } from "react-router-dom";
 interface FeatureLockedCardProps {
   featureName: string;
   featureDescription: string;
-  requiredPlan: "professionnel" | "entreprise";
+  requiredPlan: "essentiel" | "professionnel" | "entreprise";
   icon?: React.ReactNode;
 }
 
 const planNames = {
+  essentiel: "Essentiel",
   professionnel: "Professionnel",
   entreprise: "Entreprise",
 };
 
 const planPrices = {
+  essentiel: "49",
   professionnel: "99",
   entreprise: "199",
 };
