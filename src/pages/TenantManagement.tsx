@@ -13,10 +13,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar, History } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { addDays, addMonths, addYears } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { TenantRequestsManager } from "@/components/TenantRequestsManager";
 import { AdminInviteDialog } from "@/components/AdminInviteDialog";
 import { format } from "date-fns";
@@ -55,6 +56,19 @@ interface TenantSubscription {
 interface TenantWithSubscription extends Tenant {
   subscription?: TenantSubscription;
   hasAdmin?: boolean;
+}
+
+interface AuditLog {
+  id: string;
+  tenant_id: string;
+  user_id: string | null;
+  user_email: string | null;
+  action_type: string;
+  old_values: Record<string, unknown> | null;
+  new_values: Record<string, unknown> | null;
+  notes: string | null;
+  created_at: string;
+  tenant_name?: string;
 }
 
 const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
@@ -159,6 +173,31 @@ export default function TenantManagement() {
       }));
 
       return tenantsWithSubs;
+    },
+  });
+
+  const { data: auditLogs, isLoading: isLoadingAuditLogs } = useQuery({
+    queryKey: ["subscription-audit-logs"],
+    queryFn: async () => {
+      const { data: logs, error } = await supabase
+        .from("subscription_audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      // Get tenant names for display
+      const { data: tenantsData } = await supabase
+        .from("tenants")
+        .select("id, name");
+
+      const tenantMap = new Map(tenantsData?.map(t => [t.id, t.name]) || []);
+
+      return (logs || []).map(log => ({
+        ...log,
+        tenant_name: tenantMap.get(log.tenant_id) || "Tenant supprimé",
+      })) as AuditLog[];
     },
   });
 
@@ -299,8 +338,17 @@ export default function TenantManagement() {
   });
 
   const extendTrialMutation = useMutation({
-    mutationFn: async ({ tenantId, duration, customDate }: { tenantId: string; duration: TrialDuration; customDate?: Date }) => {
+    mutationFn: async ({ tenantId, tenantName, oldTrialEnd, duration, customDate }: { 
+      tenantId: string; 
+      tenantName: string;
+      oldTrialEnd: string | null;
+      duration: TrialDuration; 
+      customDate?: Date 
+    }) => {
       const newTrialEnd = calculateTrialEndDate(duration, customDate);
+      
+      // Get current user info
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { error } = await supabase
         .from("tenant_subscriptions")
@@ -311,10 +359,32 @@ export default function TenantManagement() {
         .eq("tenant_id", tenantId);
 
       if (error) throw error;
+
+      // Log the audit entry
+      const { error: auditError } = await supabase
+        .from("subscription_audit_logs")
+        .insert({
+          tenant_id: tenantId,
+          user_id: user?.id,
+          user_email: user?.email,
+          action_type: "trial_extended",
+          old_values: { trial_ends_at: oldTrialEnd },
+          new_values: { 
+            trial_ends_at: newTrialEnd.toISOString(),
+            duration: duration,
+          },
+          notes: `Essai prolongé de ${TRIAL_DURATION_OPTIONS.find(o => o.value === duration)?.label || duration} pour ${tenantName}`,
+        });
+
+      if (auditError) {
+        console.error("Failed to log audit:", auditError);
+      }
+
       return newTrialEnd;
     },
     onSuccess: (newTrialEnd) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
       toast.success(`Essai prolongé jusqu'au ${format(newTrialEnd, "dd MMM yyyy", { locale: fr })}`);
       setExtendTrialDialogOpen(false);
       setSelectedTenantForExtend(null);
@@ -335,6 +405,8 @@ export default function TenantManagement() {
     if (selectedTenantForExtend) {
       extendTrialMutation.mutate({
         tenantId: selectedTenantForExtend.id,
+        tenantName: selectedTenantForExtend.name,
+        oldTrialEnd: selectedTenantForExtend.subscription?.trial_ends_at || null,
         duration: extendTrialDuration,
         customDate: extendCustomDate,
       });
@@ -662,6 +734,10 @@ export default function TenantManagement() {
               <Inbox className="h-4 w-4 mr-2" />
               Demandes
             </TabsTrigger>
+            <TabsTrigger value="history">
+              <History className="h-4 w-4 mr-2" />
+              Historique
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tenants">
@@ -809,6 +885,90 @@ export default function TenantManagement() {
 
           <TabsContent value="requests">
             <TenantRequestsManager />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Historique des modifications
+                </CardTitle>
+                <CardDescription>
+                  Journal d'audit des modifications d'abonnements et prolongations d'essai
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingAuditLogs ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : auditLogs && auditLogs.length > 0 ? (
+                  <ScrollArea className="h-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Église</TableHead>
+                          <TableHead>Action</TableHead>
+                          <TableHead>Détails</TableHead>
+                          <TableHead>Par</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {auditLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <div className="text-sm">
+                                <p>{format(new Date(log.created_at), "dd MMM yyyy", { locale: fr })}</p>
+                                <p className="text-muted-foreground text-xs">
+                                  {format(new Date(log.created_at), "HH:mm", { locale: fr })}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <p className="font-medium">{log.tenant_name}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={log.action_type === "trial_extended" ? "secondary" : "outline"}>
+                                {log.action_type === "trial_extended" && "Prolongation essai"}
+                                {log.action_type === "subscription_updated" && "Mise à jour abonnement"}
+                                {log.action_type === "tenant_created" && "Création tenant"}
+                                {!["trial_extended", "subscription_updated", "tenant_created"].includes(log.action_type) && log.action_type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm max-w-xs">
+                                {log.notes && <p className="truncate">{log.notes}</p>}
+                                {log.new_values?.trial_ends_at && (
+                                  <p className="text-muted-foreground text-xs">
+                                    Nouvel essai jusqu'au: {format(new Date(log.new_values.trial_ends_at as string), "dd MMM yyyy", { locale: fr })}
+                                  </p>
+                                )}
+                                {log.old_values?.trial_ends_at && (
+                                  <p className="text-muted-foreground text-xs">
+                                    Ancien: {format(new Date(log.old_values.trial_ends_at as string), "dd MMM yyyy", { locale: fr })}
+                                  </p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-sm">{log.user_email || "Système"}</p>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun historique</p>
+                    <p className="text-sm">Les modifications d'abonnements seront enregistrées ici</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
