@@ -14,20 +14,20 @@ export const PLAN_DETAILS = {
   essentiel: {
     name: "Essentiel",
     price: 49,
-    priceId: "price_1SsxJlF3VvKmdn5GBdTPhZQm",
-    productId: "prod_TqecYRFk8CmIlL",
+    priceId: "price_1SsxZvF3VvKmdn5Gokml3EOt",
+    productId: "prod_Tqetfpt7pnhNFf",
   },
   professionnel: {
     name: "Professionnel", 
     price: 99,
-    priceId: "price_1SsxKRF3VvKmdn5G041kZCSL",
-    productId: "prod_TqedPtxaYCNq5P",
+    priceId: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
+    productId: "prod_TqetHNAL0zc5kD",
   },
   entreprise: {
     name: "Entreprise",
     price: 199,
-    priceId: "price_1SsxL4F3VvKmdn5GFwoKmXpm",
-    productId: "prod_TqeeLpV3wlqdXY",
+    priceId: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
+    productId: "prod_TqeuZk0jVNwjEp",
   },
 } as const;
 
