@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
+import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -586,6 +587,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Trial Countdown - show prominently if in trial */}
+        <TrialCountdownCard />
 
         {/* Subscription & Usage Cards */}
         <div className="grid gap-4 md:grid-cols-2">
