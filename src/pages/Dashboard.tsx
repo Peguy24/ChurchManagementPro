@@ -10,6 +10,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { SubscriptionCard } from "@/components/SubscriptionCard";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -583,6 +584,11 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        {/* Subscription Card */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <SubscriptionCard />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

@@ -158,9 +158,44 @@ const Commercial = () => {
     }
   ];
 
-  const handlePlanSelect = (planKey: string) => {
-    setSelectedPlan(planKey);
-    setRequestFormOpen(true);
+  const handlePlanSelect = async (planKey: string) => {
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      // User is logged in, redirect to checkout
+      try {
+        const planMap: Record<string, string> = {
+          'basic': 'essentiel',
+          'standard': 'professionnel', 
+          'premium': 'entreprise'
+        };
+        
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: { plan: planMap[planKey] || planKey },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data?.url) {
+          window.open(data.url, '_blank');
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer la session de paiement.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // User not logged in, show request form
+      setSelectedPlan(planKey);
+      setRequestFormOpen(true);
+    }
   };
 
   const testimonials = [
