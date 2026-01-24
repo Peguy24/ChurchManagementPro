@@ -18,8 +18,39 @@ import EventsReportTab from "@/components/reports/EventsReportTab";
 import AuditReportTab from "@/components/reports/AuditReportTab";
 import BirthdaysReportTab from "@/components/reports/BirthdaysReportTab";
 import InventoryReportTab from "@/components/reports/InventoryReportTab";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 export default function FinancialReports() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
+
+  // Check for advanced reports feature access
+  if (!planLoading && !hasFeature("advancedReports")) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName="Rapports Avancés"
+          featureDescription="Accédez à des analyses complètes, des statistiques détaillées et des exports personnalisés pour votre église."
+          requiredPlan="professionnel"
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Chargement...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return <FinancialReportsContent />;
+}
+
+function FinancialReportsContent() {
   const [activeTab, setActiveTab] = useState("financial");
   const [selectedBranch, setSelectedBranch] = useState("all");
 

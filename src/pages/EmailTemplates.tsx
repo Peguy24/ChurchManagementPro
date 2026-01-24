@@ -18,6 +18,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 type TemplateType = "birthday" | "event_reminder" | "attendance_alert";
 
@@ -68,6 +70,36 @@ const templateInfo: Record<TemplateType, {
 };
 
 export default function EmailTemplates() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
+
+  // Check for email notifications feature access
+  if (!planLoading && !hasFeature("emailNotifications")) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName="Notifications Email"
+          featureDescription="Personnalisez et envoyez des emails automatiques pour les anniversaires, rappels d'événements et alertes de présence."
+          requiredPlan="professionnel"
+          icon={<Mail className="w-8 h-8 text-muted-foreground" />}
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Chargement...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return <EmailTemplatesContent />;
+}
+
+function EmailTemplatesContent() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [editedTemplates, setEditedTemplates] = useState<Record<string, Partial<EmailTemplate>>>({});
