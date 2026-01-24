@@ -17,6 +17,8 @@ import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
 import InventoryPhotoUpload from "@/components/InventoryPhotoUpload";
 import InventoryAuditMode from "@/components/InventoryAuditMode";
 import InventoryReportGenerator from "@/components/InventoryReportGenerator";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -112,6 +114,36 @@ const maintenanceTypes = [
 ];
 
 export default function Inventory() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
+
+  // Check for inventory feature access - must be before other hooks to avoid conditional hook calls
+  if (!planLoading && !hasFeature("inventory")) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName="Gestion d'Inventaire"
+          featureDescription="Gérez votre inventaire d'équipements, suivez la maintenance et générez des rapports détaillés."
+          requiredPlan="professionnel"
+          icon={<Package className="w-8 h-8 text-muted-foreground" />}
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Chargement...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return <InventoryContent />;
+}
+
+function InventoryContent() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("items");
   const [searchTerm, setSearchTerm] = useState("");
