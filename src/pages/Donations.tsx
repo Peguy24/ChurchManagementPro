@@ -39,6 +39,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const categoryColors: Record<string, string> = {
   tithe: "bg-primary/10 text-primary border-primary/20",
@@ -51,6 +53,36 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Donations() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
+
+  // Check for donations feature access
+  if (!planLoading && !hasFeature("donations")) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName="Gestion des Donations"
+          featureDescription="Gérez les dons, dîmes et offrandes avec génération de reçus fiscaux. Souscrivez pour accéder à cette fonctionnalité."
+          requiredPlan="essentiel"
+          icon={<DollarSign className="w-8 h-8 text-muted-foreground" />}
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Chargement...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return <DonationsContent />;
+}
+
+function DonationsContent() {
   const { t, language } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDonation, setEditDonation] = useState<any>(null);

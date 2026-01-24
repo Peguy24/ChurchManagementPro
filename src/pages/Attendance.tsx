@@ -35,6 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 interface TodayEvent {
   id: string;
@@ -67,6 +69,36 @@ interface ScannedMember {
 }
 
 export default function Attendance() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
+
+  // Check for attendance feature access
+  if (!planLoading && !hasFeature("attendance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName="Suivi des Présences"
+          featureDescription="Gérez les présences avec scanner QR, statistiques et rapports détaillés. Souscrivez pour accéder à cette fonctionnalité."
+          requiredPlan="essentiel"
+          icon={<Calendar className="w-8 h-8 text-muted-foreground" />}
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Chargement...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return <AttendanceContent />;
+}
+
+function AttendanceContent() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
