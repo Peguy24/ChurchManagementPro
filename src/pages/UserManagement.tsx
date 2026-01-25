@@ -25,8 +25,9 @@ interface UserWithRoles {
   roles: AppRole[];
 }
 
+// Super Admin only manages global admin roles - tenant roles are managed in TenantUserManagement
 const ROLE_LABELS: Record<AppRole, string> = {
-  admin: "Administrateur",
+  admin: "Super Administrateur",
   pastor: "Pasteur",
   treasurer: "Trésorier",
   secretary: "Secrétaire",
@@ -43,7 +44,8 @@ const ROLE_COLORS: Record<AppRole, string> = {
   user: "bg-gray-500/10 text-gray-500 border-gray-500/20",
 };
 
-const APPROVED_ROLES: AppRole[] = ["admin", "pastor", "treasurer", "secretary", "volunteer"];
+// Only admin role can be assigned at the platform level - other roles are tenant-specific
+const APPROVED_ROLES: AppRole[] = ["admin"];
 
 export default function UserManagement() {
   const { toast } = useToast();
