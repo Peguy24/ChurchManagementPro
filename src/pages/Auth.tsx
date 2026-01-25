@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Church, Building2 } from 'lucide-react';
+import { Church, Building2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +20,43 @@ export default function Auth() {
   // Get tenant info from URL params (from invitation link)
   const tenantId = searchParams.get('tenant');
   const invitedRole = searchParams.get('role');
+  const superAdminInviteToken = searchParams.get('superadmin_invite');
+  
   const [tenantInfo, setTenantInfo] = useState<{ name: string; slug: string } | null>(null);
+  const [superAdminInvite, setSuperAdminInvite] = useState<{ email: string; valid: boolean } | null>(null);
+  const [isValidatingToken, setIsValidatingToken] = useState(false);
+
+  // Validate Super Admin invitation token
+  useEffect(() => {
+    const validateSuperAdminToken = async () => {
+      if (superAdminInviteToken) {
+        setIsValidatingToken(true);
+        try {
+          const { data, error } = await supabase
+            .from('super_admin_invitations')
+            .select('email, expires_at, used_at')
+            .eq('token', superAdminInviteToken)
+            .single();
+          
+          if (!error && data && !data.used_at && new Date(data.expires_at) > new Date()) {
+            setSuperAdminInvite({ email: data.email, valid: true });
+          } else {
+            setSuperAdminInvite({ email: '', valid: false });
+            toast({
+              title: 'Invitation invalide',
+              description: 'Ce lien d\'invitation est expiré ou déjà utilisé.',
+              variant: 'destructive',
+            });
+          }
+        } catch (err) {
+          console.error('Failed to validate token:', err);
+          setSuperAdminInvite({ email: '', valid: false });
+        }
+        setIsValidatingToken(false);
+      }
+    };
+    validateSuperAdminToken();
+  }, [superAdminInviteToken, toast]);
 
   // Fetch tenant info if tenant param exists
   useEffect(() => {
@@ -55,10 +91,17 @@ export default function Auth() {
   const [signupForm, setSignupForm] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: superAdminInvite?.email || '',
     password: '',
     confirmPassword: '',
   });
+
+  // Update signup form email when super admin invite is validated
+  useEffect(() => {
+    if (superAdminInvite?.email) {
+      setSignupForm(prev => ({ ...prev, email: superAdminInvite.email }));
+    }
+  }, [superAdminInvite]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +197,41 @@ export default function Auth() {
     } else {
       const userId = data?.user?.id;
       
+      // Handle Super Admin invitation
+      if (superAdminInviteToken && superAdminInvite?.valid && userId) {
+        try {
+          // Assign admin role for platform
+          await supabase
+            .from('user_roles')
+            .delete()
+            .eq('user_id', userId)
+            .eq('role', 'user');
+            
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: userId,
+              role: 'admin',
+            });
+          
+          // Mark invitation as used
+          await supabase
+            .from('super_admin_invitations')
+            .update({ used_at: new Date().toISOString() })
+            .eq('token', superAdminInviteToken);
+          
+          toast({
+            title: 'Inscription réussie!',
+            description: 'Vous êtes maintenant Super Administrateur de la plateforme.',
+          });
+          navigate('/');
+          setIsLoading(false);
+          return;
+        } catch (assignError) {
+          console.error('Failed to assign super admin role:', assignError);
+        }
+      }
+      
       // If this is a tenant admin invitation, assign user to tenant
       if (tenantId && invitedRole === 'admin' && userId) {
         try {
@@ -228,6 +306,39 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
       <div className="w-full max-w-md">
+        {/* Super Admin invitation banner */}
+        {superAdminInvite?.valid && (
+          <Card className="mb-4 border-purple-500/50 bg-purple-500/5">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <Shield className="h-8 w-8 text-purple-600" />
+                <div>
+                  <p className="font-semibold text-purple-600">Invitation Super Administrateur</p>
+                  <p className="text-sm text-muted-foreground">
+                    Vous êtes invité à devenir Super Admin de la plateforme
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {superAdminInvite && !superAdminInvite.valid && (
+          <Card className="mb-4 border-destructive/50 bg-destructive/5">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <Shield className="h-8 w-8 text-destructive" />
+                <div>
+                  <p className="font-semibold text-destructive">Invitation invalide</p>
+                  <p className="text-sm text-muted-foreground">
+                    Ce lien d'invitation est expiré ou a déjà été utilisé.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         {/* Tenant invitation banner */}
         {tenantInfo && (
           <Card className="mb-4 border-primary/50 bg-primary/5">

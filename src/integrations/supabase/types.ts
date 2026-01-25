@@ -2061,6 +2061,36 @@ export type Database = {
           },
         ]
       }
+      super_admin_invitations: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       tenant_requests: {
         Row: {
           address: string | null

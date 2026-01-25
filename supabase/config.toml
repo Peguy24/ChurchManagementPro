@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.generate-pastoral-alerts]
 verify_jwt = false
+
+[functions.send-superadmin-invite]
+verify_jwt = false
