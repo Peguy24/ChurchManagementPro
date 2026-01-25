@@ -239,7 +239,7 @@ const Commercial = () => {
               <Church className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ChurchManager
+              Church Manager Pro
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8">
