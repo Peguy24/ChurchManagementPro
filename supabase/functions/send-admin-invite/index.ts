@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
               <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} Church Management System. Tous droits réservés.<br>
+                © ${new Date().getFullYear()} Church Manager Pro. Tous droits réservés.<br>
                 <span style="color: #D1D5DB;">Cet email contient un lien sécurisé à usage unique.</span>
               </p>
             </div>

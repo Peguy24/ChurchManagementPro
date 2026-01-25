@@ -92,7 +92,7 @@ serve(async (req: Request): Promise<Response> => {
       .eq("setting_key", "church_name")
       .maybeSingle();
 
-    const churchName = churchSettings?.setting_value || "ÉgliseApp";
+    const churchName = churchSettings?.setting_value || "Church Manager Pro";
 
     // Send email to all admins
     const emailResponse = await resend.emails.send({

@@ -234,7 +234,7 @@ const drawCard = async (
   pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
   const footerName = customization?.churchNameOnCard 
     ? "Membre Actif" 
-    : (customization?.churchName || "ÉgliseApp");
+    : (customization?.churchName || "Church Manager Pro");
   pdf.text(footerName, x + CARD_WIDTH - 3, y + CARD_HEIGHT - 6, { align: "right" });
 
   pdf.setFontSize(4);

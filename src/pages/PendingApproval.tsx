@@ -57,7 +57,7 @@ export default function PendingApproval() {
 
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground">
         <Church className="h-5 w-5" />
-        <span className="text-sm">ÉgliseApp</span>
+        <span className="text-sm">Church Manager Pro</span>
       </div>
     </div>
   );

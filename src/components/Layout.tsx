@@ -314,7 +314,7 @@ export default function Layout({ children }: LayoutProps) {
   );
 
   // Branding for super admin vs church users
-  const brandingName = isSuperAdmin ? "Church Management" : whiteLabelSettings.app_name;
+  const brandingName = isSuperAdmin ? "Church Manager Pro" : whiteLabelSettings.app_name;
   const brandingSubtitle = isSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
   const brandingLogo = isSuperAdmin ? null : whiteLabelSettings.logo_url;
 
