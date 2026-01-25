@@ -53,14 +53,16 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<Record<string, AppRole>>({});
 
-  // Fetch all users with their roles
+  // Fetch only platform-level users (those WITHOUT a tenant_id)
+  // Tenant users are managed in TenantUserManagement
   const { data: users, isLoading } = useQuery({
-    queryKey: ["users-with-roles"],
+    queryKey: ["platform-users-with-roles"],
     queryFn: async () => {
-      // Get all profiles
+      // Get profiles WITHOUT tenant_id (platform users only)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, created_at");
+        .select("id, first_name, last_name, created_at, tenant_id")
+        .is("tenant_id", null);
 
       if (profilesError) throw profilesError;
 
@@ -71,7 +73,7 @@ export default function UserManagement() {
 
       if (rolesError) throw rolesError;
 
-      // Get user emails from auth (we'll use a workaround through the profiles)
+      // Filter to only platform users (no tenant association)
       const usersWithRoles: UserWithRoles[] = profiles.map((profile) => {
         const userRoles = allRoles
           .filter((r) => r.user_id === profile.id)
@@ -79,7 +81,7 @@ export default function UserManagement() {
 
         return {
           id: profile.id,
-          email: "", // Will be populated if we can get it
+          email: "",
           first_name: profile.first_name,
           last_name: profile.last_name,
           created_at: profile.created_at || "",
@@ -198,8 +200,8 @@ export default function UserManagement() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Utilisateurs</h1>
-          <p className="text-muted-foreground">Gérez les accès, les rôles et les permissions</p>
+          <h1 className="text-3xl font-bold text-foreground">Gestion des Super Administrateurs</h1>
+          <p className="text-muted-foreground">Gérez les accès des administrateurs de la plateforme (les utilisateurs des églises sont gérés dans chaque tenant)</p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
