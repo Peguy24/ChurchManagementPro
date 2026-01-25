@@ -1818,6 +1818,51 @@ export type Database = {
           },
         ]
       }
+      platform_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission: string
+          role: Database["public"]["Enums"]["platform_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission: string
+          role: Database["public"]["Enums"]["platform_role"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission?: string
+          role?: Database["public"]["Enums"]["platform_role"]
+        }
+        Relationships: []
+      }
+      platform_user_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["platform_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2370,6 +2415,18 @@ export type Database = {
     Functions: {
       get_user_branch_id: { Args: { user_uuid: string }; Returns: string }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      has_any_platform_role: { Args: { _user_id: string }; Returns: boolean }
+      has_platform_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
+      has_platform_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["platform_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2385,6 +2442,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
       tenant_has_admin: { Args: { _tenant_id: string }; Returns: boolean }
     }
@@ -2404,6 +2462,12 @@ export type Database = {
         | "select"
         | "checkbox"
       entity_type: "member" | "branch" | "ministry" | "event" | "donation"
+      platform_role:
+        | "super_admin"
+        | "finance_admin"
+        | "moderator"
+        | "support"
+        | "sales"
       subscription_plan: "basic" | "standard" | "premium" | "enterprise"
       tenant_status: "active" | "suspended" | "trial" | "cancelled"
       transaction_status: "pending" | "approved" | "rejected"
@@ -2552,6 +2616,13 @@ export const Constants = {
         "checkbox",
       ],
       entity_type: ["member", "branch", "ministry", "event", "donation"],
+      platform_role: [
+        "super_admin",
+        "finance_admin",
+        "moderator",
+        "support",
+        "sales",
+      ],
       subscription_plan: ["basic", "standard", "premium", "enterprise"],
       tenant_status: ["active", "suspended", "trial", "cancelled"],
       transaction_status: ["pending", "approved", "rejected"],
