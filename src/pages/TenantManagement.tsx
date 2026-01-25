@@ -13,7 +13,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar, History } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar, History, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { differenceInDays, isPast } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { addDays, addMonths, addYears } from "date-fns";
@@ -469,6 +471,19 @@ export default function TenantManagement() {
   const activeCount = tenants?.filter((t) => t.subscription?.status === "active").length || 0;
   const trialCount = tenants?.filter((t) => t.subscription?.status === "trial").length || 0;
 
+  // Calculate expiring trials (within 7 days)
+  const expiringTrials = tenants?.filter((t) => {
+    if (t.subscription?.status !== "trial" || !t.subscription?.trial_ends_at) return false;
+    const trialEnd = new Date(t.subscription.trial_ends_at);
+    const daysLeft = differenceInDays(trialEnd, new Date());
+    return daysLeft >= 0 && daysLeft <= 7;
+  }) || [];
+
+  const expiredTrials = tenants?.filter((t) => {
+    if (t.subscription?.status !== "trial" || !t.subscription?.trial_ends_at) return false;
+    return isPast(new Date(t.subscription.trial_ends_at));
+  }) || [];
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -722,6 +737,77 @@ export default function TenantManagement() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Expiring Trials Alert */}
+        {(expiringTrials.length > 0 || expiredTrials.length > 0) && (
+          <div className="space-y-3">
+            {expiredTrials.length > 0 && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Essais expirés ({expiredTrials.length})</AlertTitle>
+                <AlertDescription>
+                  <div className="mt-2 space-y-1">
+                    {expiredTrials.map((tenant) => (
+                      <div key={tenant.id} className="flex items-center justify-between">
+                        <span className="font-medium">{tenant.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">
+                            Expiré le {format(new Date(tenant.subscription!.trial_ends_at!), "dd MMM yyyy", { locale: fr })}
+                          </span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="h-7"
+                            onClick={() => openExtendTrialDialog(tenant)}
+                          >
+                            <Clock className="h-3 w-3 mr-1" />
+                            Prolonger
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {expiringTrials.length > 0 && (
+              <Alert className="border-orange-500/50 bg-orange-50 dark:bg-orange-950/20 text-orange-800 dark:text-orange-200 [&>svg]:text-orange-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Essais expirant bientôt ({expiringTrials.length})</AlertTitle>
+                <AlertDescription>
+                  <div className="mt-2 space-y-1">
+                    {expiringTrials.map((tenant) => {
+                      const daysLeft = differenceInDays(new Date(tenant.subscription!.trial_ends_at!), new Date());
+                      return (
+                        <div key={tenant.id} className="flex items-center justify-between">
+                          <span className="font-medium">{tenant.name}</span>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="border-orange-500 text-orange-600 dark:text-orange-400">
+                              {daysLeft === 0 ? "Expire aujourd'hui" : `${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant${daysLeft > 1 ? 's' : ''}`}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              ({format(new Date(tenant.subscription!.trial_ends_at!), "dd MMM", { locale: fr })})
+                            </span>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="h-7"
+                              onClick={() => openExtendTrialDialog(tenant)}
+                            >
+                              <Clock className="h-3 w-3 mr-1" />
+                              Prolonger
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
 
         {/* Tabs for Tenants and Requests */}
         <Tabs defaultValue="tenants" className="space-y-4">
