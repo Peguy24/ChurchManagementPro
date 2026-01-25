@@ -101,6 +101,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/settings/tenants": "tenants",
   "/inventory": "inventory",
   "/finance/salaries": "finances",
+  "/insights": "reports",
 };
 
 // Map nav groups to route groups
