@@ -1373,6 +1373,144 @@ export type Database = {
         }
         Relationships: []
       }
+      member_engagement_scores: {
+        Row: {
+          attendance_count_90d: number | null
+          attendance_score: number | null
+          calculated_at: string | null
+          created_at: string | null
+          giving_consistency: number | null
+          giving_score: number | null
+          growth_score: number | null
+          id: string
+          last_attendance_date: string | null
+          member_id: string
+          ministry_score: number | null
+          tenant_id: string
+          total_score: number | null
+          trend: string | null
+          trend_change: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          attendance_count_90d?: number | null
+          attendance_score?: number | null
+          calculated_at?: string | null
+          created_at?: string | null
+          giving_consistency?: number | null
+          giving_score?: number | null
+          growth_score?: number | null
+          id?: string
+          last_attendance_date?: string | null
+          member_id: string
+          ministry_score?: number | null
+          tenant_id: string
+          total_score?: number | null
+          trend?: string | null
+          trend_change?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          attendance_count_90d?: number | null
+          attendance_score?: number | null
+          calculated_at?: string | null
+          created_at?: string | null
+          giving_consistency?: number | null
+          giving_score?: number | null
+          growth_score?: number | null
+          id?: string
+          last_attendance_date?: string | null
+          member_id?: string
+          ministry_score?: number | null
+          tenant_id?: string
+          total_score?: number | null
+          trend?: string | null
+          trend_change?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_engagement_scores_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_engagement_scores_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_risk_predictions: {
+        Row: {
+          attendance_trend_slope: number | null
+          contributing_factors: Json | null
+          created_at: string | null
+          days_since_last_attendance: number | null
+          giving_trend_slope: number | null
+          id: string
+          member_id: string
+          model_version: string | null
+          predicted_at: string | null
+          predicted_inactive_date: string | null
+          risk_category: string | null
+          risk_probability: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          attendance_trend_slope?: number | null
+          contributing_factors?: Json | null
+          created_at?: string | null
+          days_since_last_attendance?: number | null
+          giving_trend_slope?: number | null
+          id?: string
+          member_id: string
+          model_version?: string | null
+          predicted_at?: string | null
+          predicted_inactive_date?: string | null
+          risk_category?: string | null
+          risk_probability?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          attendance_trend_slope?: number | null
+          contributing_factors?: Json | null
+          created_at?: string | null
+          days_since_last_attendance?: number | null
+          giving_trend_slope?: number | null
+          id?: string
+          member_id?: string
+          model_version?: string | null
+          predicted_at?: string | null
+          predicted_inactive_date?: string | null
+          risk_category?: string | null
+          risk_probability?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_risk_predictions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_risk_predictions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           academic_formation: string | null
@@ -1598,6 +1736,84 @@ export type Database = {
             columns: ["ministry_id"]
             isOneToOne: false
             referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pastoral_alerts: {
+        Row: {
+          action_suggested: string | null
+          alert_type: string
+          assigned_to: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          member_id: string
+          message: string | null
+          metadata: Json | null
+          priority: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          tenant_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_suggested?: string | null
+          alert_type: string
+          assigned_to?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          member_id: string
+          message?: string | null
+          metadata?: Json | null
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_suggested?: string | null
+          alert_type?: string
+          assigned_to?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          member_id?: string
+          message?: string | null
+          metadata?: Json | null
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pastoral_alerts_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pastoral_alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

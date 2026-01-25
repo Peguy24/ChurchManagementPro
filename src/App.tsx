@@ -49,6 +49,7 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import AdminInvitations from "./pages/AdminInvitations";
 import Subscription from "./pages/Subscription";
 import TenantDataViewer from "./pages/TenantDataViewer";
+import SmartInsights from "./pages/SmartInsights";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -94,6 +95,7 @@ const App = () => (
               <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
               <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
               <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
+              <Route path="/insights" element={<ProtectedRoute><SmartInsights /></ProtectedRoute>} />
               <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
               <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
               <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />

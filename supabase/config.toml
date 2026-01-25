@@ -35,3 +35,12 @@ verify_jwt = false
 
 [functions.get-invoices]
 verify_jwt = false
+
+[functions.calculate-engagement-scores]
+verify_jwt = false
+
+[functions.predict-churn-risk]
+verify_jwt = false
+
+[functions.generate-pastoral-alerts]
+verify_jwt = false
