@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Shield, Clock, CheckCircle, XCircle, Settings, UserPlus } from "lucide-react";
+import { Users, Shield, Clock, CheckCircle, XCircle, Settings, UserPlus, UserCog } from "lucide-react";
 import RolePermissionsManager from "@/components/RolePermissionsManager";
-import { SuperAdminInviteDialog } from "@/components/SuperAdminInviteDialog";
+import { PlatformInviteDialog } from "@/components/PlatformInviteDialog";
+import PlatformRolesManager from "@/components/PlatformRolesManager";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -212,7 +213,7 @@ export default function UserManagement() {
           </Button>
         </div>
 
-        <SuperAdminInviteDialog 
+        <PlatformInviteDialog 
           open={isInviteDialogOpen} 
           onOpenChange={setIsInviteDialogOpen} 
         />
@@ -223,9 +224,13 @@ export default function UserManagement() {
               <Users className="h-4 w-4" />
               Utilisateurs
             </TabsTrigger>
+            <TabsTrigger value="platform-roles" className="flex items-center gap-2">
+              <UserCog className="h-4 w-4" />
+              Rôles Plateforme
+            </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Permissions
+              Permissions Tenant
             </TabsTrigger>
           </TabsList>
 
@@ -414,6 +419,10 @@ export default function UserManagement() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="platform-roles">
+            <PlatformRolesManager />
           </TabsContent>
 
           <TabsContent value="permissions">

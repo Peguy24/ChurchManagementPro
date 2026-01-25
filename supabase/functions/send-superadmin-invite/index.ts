@@ -13,7 +13,45 @@ const corsHeaders = {
 interface SuperAdminInviteRequest {
   email: string;
   skipEmail?: boolean;
+  platformRole?: string; // New: support for granular platform roles
 }
+
+const PLATFORM_ROLE_LABELS: Record<string, string> = {
+  super_admin: "Super Administrateur",
+  finance_admin: "Admin Finance",
+  moderator: "Modérateur",
+  support: "Support Technique",
+  sales: "Commercial / Ventes",
+};
+
+const PLATFORM_ROLE_PERMISSIONS: Record<string, string[]> = {
+  super_admin: [
+    "Accès complet à toutes les fonctionnalités",
+    "Gestion de tous les tenants",
+    "Administration des autres Super Admins",
+    "Configuration globale de la plateforme",
+  ],
+  finance_admin: [
+    "Consulter les données financières globales",
+    "Voir les revenus et statistiques",
+    "Accéder aux rapports de facturation",
+  ],
+  moderator: [
+    "Modérer le contenu des tenants",
+    "Gérer les signalements",
+    "Suspendre des comptes si nécessaire",
+  ],
+  support: [
+    "Accéder aux tenants pour le support",
+    "Consulter les données utilisateurs",
+    "Résoudre les problèmes techniques",
+  ],
+  sales: [
+    "Gérer les prospects",
+    "Effectuer des démonstrations",
+    "Créer des essais gratuits",
+  ],
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -22,9 +60,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, skipEmail = false }: SuperAdminInviteRequest = await req.json();
+    const { email, skipEmail = false, platformRole = "super_admin" }: SuperAdminInviteRequest = await req.json();
 
-    console.log(`Creating Super Admin invitation for ${email}, skipEmail: ${skipEmail}`);
+    console.log(`Creating Platform invitation for ${email}, role: ${platformRole}, skipEmail: ${skipEmail}`);
 
     // Create Supabase client with service role
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -78,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Get the app URL from environment or request origin
     const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://lovable.dev";
-    const registrationLink = `${siteUrl}/auth?superadmin_invite=${token}`;
+    const registrationLink = `${siteUrl}/auth?superadmin_invite=${token}&role=${platformRole}`;
 
     // If skipEmail is true, return the link without sending email
     if (skipEmail) {
@@ -87,6 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         invitationLink: registrationLink,
         token: token,
+        platformRole: platformRole,
         message: "Invitation created successfully (email skipped)"
       }), {
         status: 200,
@@ -97,10 +136,14 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    const roleLabel = PLATFORM_ROLE_LABELS[platformRole] || "Administrateur";
+    const rolePermissions = PLATFORM_ROLE_PERMISSIONS[platformRole] || [];
+    const isSuperAdmin = platformRole === "super_admin";
+
     const emailResponse = await resend.emails.send({
       from: "Church Management <onboarding@resend.dev>",
       to: [email],
-      subject: "Invitation Super Administrateur - Plateforme Church Manager",
+      subject: `Invitation ${roleLabel} - Plateforme Church Manager`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -111,8 +154,8 @@ const handler = async (req: Request): Promise<Response> => {
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🛡️ Invitation Super Admin</h1>
-              <p style="color: #E9D5FF; margin: 10px 0 0 0; font-size: 16px;">Vous êtes invité à administrer la plateforme</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🛡️ Invitation ${roleLabel}</h1>
+              <p style="color: #E9D5FF; margin: 10px 0 0 0; font-size: 16px;">Vous êtes invité à rejoindre l'équipe plateforme</p>
             </div>
             
             <div style="padding: 40px 30px;">
@@ -121,29 +164,35 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
               
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Vous avez été sélectionné pour devenir <strong>Super Administrateur</strong> de la plateforme Church Manager Pro.
+                Vous avez été sélectionné pour le rôle de <strong>${roleLabel}</strong> sur la plateforme Church Manager Pro.
               </p>
 
+              ${isSuperAdmin ? `
               <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
                 <p style="color: #92400E; font-size: 14px; margin: 0;">
                   <strong>⚠️ Accès privilégié</strong><br>
                   Ce lien donne accès à toutes les fonctionnalités d'administration de la plateforme.
                 </p>
               </div>
+              ` : `
+              <div style="background-color: #DBEAFE; border-left: 4px solid #3B82F6; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+                <p style="color: #1E40AF; font-size: 14px; margin: 0;">
+                  <strong>ℹ️ Accès restreint</strong><br>
+                  Votre accès sera limité aux fonctionnalités de votre rôle.
+                </p>
+              </div>
+              `}
               
-              <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                En tant que Super Administrateur, vous aurez accès à:
+              <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                En tant que ${roleLabel}, vous aurez accès à:
               </p>
               <ul style="color: #374151; font-size: 14px; line-height: 1.8; margin: 0 0 30px 0;">
-                <li>Gestion de tous les tenants (églises)</li>
-                <li>Configuration globale de la plateforme</li>
-                <li>Gestion des abonnements et facturation</li>
-                <li>Administration des autres Super Admins</li>
+                ${rolePermissions.map(p => `<li>${p}</li>`).join('')}
               </ul>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${registrationLink}" style="display: inline-block; background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  ✨ Activer mon compte Super Admin
+                  ✨ Activer mon compte
                 </a>
               </div>
               
@@ -155,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
               <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
                 © ${new Date().getFullYear()} Church Manager Pro. Tous droits réservés.<br>
-                <span style="color: #D1D5DB;">Invitation Super Administrateur - Lien sécurisé à usage unique.</span>
+                <span style="color: #D1D5DB;">Invitation ${roleLabel} - Lien sécurisé à usage unique.</span>
               </p>
             </div>
           </div>
@@ -164,12 +213,13 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Super Admin invite email sent successfully:", emailResponse);
+    console.log("Platform invite email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
       data: emailResponse,
-      invitationLink: registrationLink 
+      invitationLink: registrationLink,
+      platformRole: platformRole
     }), {
       status: 200,
       headers: {

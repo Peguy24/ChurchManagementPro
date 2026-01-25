@@ -21,6 +21,7 @@ export default function Auth() {
   const tenantId = searchParams.get('tenant');
   const invitedRole = searchParams.get('role');
   const superAdminInviteToken = searchParams.get('superadmin_invite');
+  const platformRole = searchParams.get('role'); // For platform roles (super_admin, finance_admin, etc.)
   
   const [tenantInfo, setTenantInfo] = useState<{ name: string; slug: string } | null>(null);
   const [superAdminInvite, setSuperAdminInvite] = useState<{ email: string; valid: boolean } | null>(null);
@@ -197,10 +198,10 @@ export default function Auth() {
     } else {
       const userId = data?.user?.id;
       
-      // Handle Super Admin invitation
+      // Handle Super Admin / Platform invitation
       if (superAdminInviteToken && superAdminInvite?.valid && userId) {
         try {
-          // Assign admin role for platform
+          // Always assign legacy admin role for backward compatibility
           await supabase
             .from('user_roles')
             .delete()
@@ -214,21 +215,43 @@ export default function Auth() {
               role: 'admin',
             });
           
+          // If a specific platform role was provided, assign it
+          const validPlatformRoles = ['super_admin', 'finance_admin', 'moderator', 'support', 'sales'];
+          if (platformRole && validPlatformRoles.includes(platformRole)) {
+            await supabase
+              .from('platform_user_roles')
+              .insert({
+                user_id: userId,
+                role: platformRole as any,
+                created_by: null, // Will be set by the system
+              });
+          }
+          
           // Mark invitation as used
           await supabase
             .from('super_admin_invitations')
             .update({ used_at: new Date().toISOString() })
             .eq('token', superAdminInviteToken);
           
+          const roleLabels: Record<string, string> = {
+            super_admin: 'Super Administrateur',
+            finance_admin: 'Admin Finance',
+            moderator: 'Modérateur',
+            support: 'Support Technique',
+            sales: 'Commercial',
+          };
+          
+          const roleLabel = platformRole ? roleLabels[platformRole] || 'Administrateur' : 'Super Administrateur';
+          
           toast({
             title: 'Inscription réussie!',
-            description: 'Vous êtes maintenant Super Administrateur de la plateforme.',
+            description: `Vous êtes maintenant ${roleLabel} de la plateforme.`,
           });
           navigate('/');
           setIsLoading(false);
           return;
         } catch (assignError) {
-          console.error('Failed to assign super admin role:', assignError);
+          console.error('Failed to assign platform role:', assignError);
         }
       }
       
