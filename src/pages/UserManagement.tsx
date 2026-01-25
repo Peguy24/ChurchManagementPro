@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Shield, Clock, CheckCircle, XCircle, Settings, UserPlus, UserCog } from "lucide-react";
-import RolePermissionsManager from "@/components/RolePermissionsManager";
+import { Users, Shield, Clock, CheckCircle, XCircle, UserPlus, UserCog } from "lucide-react";
 import { PlatformInviteDialog } from "@/components/PlatformInviteDialog";
 import PlatformRolesManager from "@/components/PlatformRolesManager";
 import type { Database } from "@/integrations/supabase/types";
@@ -228,10 +227,6 @@ export default function UserManagement() {
               <UserCog className="h-4 w-4" />
               Rôles Plateforme
             </TabsTrigger>
-            <TabsTrigger value="permissions" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Permissions Tenant
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
@@ -423,10 +418,6 @@ export default function UserManagement() {
 
           <TabsContent value="platform-roles">
             <PlatformRolesManager />
-          </TabsContent>
-
-          <TabsContent value="permissions">
-            <RolePermissionsManager />
           </TabsContent>
         </Tabs>
       </div>
