@@ -391,142 +391,188 @@ export default function Auth() {
           </div>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Connexion</TabsTrigger>
-            <TabsTrigger value="signup">Inscription</TabsTrigger>
-          </TabsList>
+        {/* Only show signup tab if there's a valid invitation */}
+        {(superAdminInvite?.valid || tenantInfo) ? (
+          <Tabs defaultValue="signup" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Connexion</TabsTrigger>
+              <TabsTrigger value="signup">Inscription</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="login">
-            <Card>
-              <CardHeader>
-                <CardTitle>Connexion</CardTitle>
-                <CardDescription>
-                  Entrez vos informations pour vous connecter
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="nom@exemple.com"
-                      value={loginForm.email}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, email: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={loginForm.password}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, password: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Chargement...' : 'Se connecter'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <Card>
-              <CardHeader>
-                <CardTitle>Créer un Compte</CardTitle>
-                <CardDescription>
-                  Remplissez vos informations pour créer un nouveau compte
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+            <TabsContent value="login">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Connexion</CardTitle>
+                  <CardDescription>
+                    Entrez vos informations pour vous connecter
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-firstname">Prénom</Label>
+                      <Label htmlFor="login-email">Email</Label>
                       <Input
-                        id="signup-firstname"
-                        placeholder="Jean"
-                        value={signupForm.firstName}
+                        id="login-email"
+                        type="email"
+                        placeholder="nom@exemple.com"
+                        value={loginForm.email}
                         onChange={(e) =>
-                          setSignupForm({ ...signupForm, firstName: e.target.value })
+                          setLoginForm({ ...loginForm, email: e.target.value })
                         }
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-lastname">Nom</Label>
+                      <Label htmlFor="login-password">Mot de passe</Label>
                       <Input
-                        id="signup-lastname"
-                        placeholder="Pierre"
-                        value={signupForm.lastName}
+                        id="login-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginForm.password}
                         onChange={(e) =>
-                          setSignupForm({ ...signupForm, lastName: e.target.value })
+                          setLoginForm({ ...loginForm, password: e.target.value })
                         }
                         required
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="nom@exemple.com"
-                      value={signupForm.email}
-                      onChange={(e) =>
-                        setSignupForm({ ...signupForm, email: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Mot de passe</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signupForm.password}
-                      onChange={(e) =>
-                        setSignupForm({ ...signupForm, password: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
-                    <Input
-                      id="signup-confirm"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signupForm.confirmPassword}
-                      onChange={(e) =>
-                        setSignupForm({
-                          ...signupForm,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Chargement...' : 'Créer le Compte'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Chargement...' : 'Se connecter'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Créer un Compte</CardTitle>
+                  <CardDescription>
+                    Remplissez vos informations pour créer un nouveau compte
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-firstname">Prénom</Label>
+                        <Input
+                          id="signup-firstname"
+                          placeholder="Jean"
+                          value={signupForm.firstName}
+                          onChange={(e) =>
+                            setSignupForm({ ...signupForm, firstName: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-lastname">Nom</Label>
+                        <Input
+                          id="signup-lastname"
+                          placeholder="Pierre"
+                          value={signupForm.lastName}
+                          onChange={(e) =>
+                            setSignupForm({ ...signupForm, lastName: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="nom@exemple.com"
+                        value={signupForm.email}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, email: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Mot de passe</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={signupForm.password}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, password: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
+                      <Input
+                        id="signup-confirm"
+                        type="password"
+                        placeholder="••••••••"
+                        value={signupForm.confirmPassword}
+                        onChange={(e) =>
+                          setSignupForm({
+                            ...signupForm,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Chargement...' : 'Créer le Compte'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          /* Login only - no signup tab without invitation */
+          <Card>
+            <CardHeader>
+              <CardTitle>Connexion</CardTitle>
+              <CardDescription>
+                Entrez vos informations pour vous connecter
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="nom@exemple.com"
+                    value={loginForm.email}
+                    onChange={(e) =>
+                      setLoginForm({ ...loginForm, email: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Mot de passe</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={loginForm.password}
+                    onChange={(e) =>
+                      setLoginForm({ ...loginForm, password: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Chargement...' : 'Se connecter'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
