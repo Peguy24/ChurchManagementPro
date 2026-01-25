@@ -101,20 +101,20 @@ export default function SuperAdminDashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard Super Admin</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard Super Admin</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               Vue d'ensemble de toutes les églises sur la plateforme
             </p>
           </div>
-          <Button onClick={() => navigate("/settings/tenants")}>
+          <Button onClick={() => navigate("/settings/tenants")} className="w-full sm:w-auto">
             Gérer les églises
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Églises"
             value={stats?.tenantsCount || 0}
@@ -145,7 +145,7 @@ export default function SuperAdminDashboard() {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
