@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Shield, Clock, CheckCircle, XCircle, Settings } from "lucide-react";
+import { Users, Shield, Clock, CheckCircle, XCircle, Settings, UserPlus } from "lucide-react";
 import RolePermissionsManager from "@/components/RolePermissionsManager";
+import { SuperAdminInviteDialog } from "@/components/SuperAdminInviteDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -52,6 +53,7 @@ export default function UserManagement() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<Record<string, AppRole>>({});
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   // Fetch only platform-level users (those WITHOUT a tenant_id)
   // Tenant users are managed in TenantUserManagement
@@ -199,10 +201,21 @@ export default function UserManagement() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Super Administrateurs</h1>
-          <p className="text-muted-foreground">Gérez les accès des administrateurs de la plateforme (les utilisateurs des églises sont gérés dans chaque tenant)</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestion des Super Administrateurs</h1>
+            <p className="text-muted-foreground">Gérez les accès des administrateurs de la plateforme</p>
+          </div>
+          <Button onClick={() => setIsInviteDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Inviter un Super Admin
+          </Button>
         </div>
+
+        <SuperAdminInviteDialog 
+          open={isInviteDialogOpen} 
+          onOpenChange={setIsInviteDialogOpen} 
+        />
 
         <Tabs defaultValue="users" className="space-y-6">
           <TabsList>
