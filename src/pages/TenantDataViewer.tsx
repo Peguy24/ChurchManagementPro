@@ -10,10 +10,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useUserRole } from "@/hooks/useUserRole";
+import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
+import { toast } from "sonner";
 
 interface Tenant {
   id: string;
@@ -131,6 +134,56 @@ export default function TenantDataViewer() {
   });
 
   const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
+
+  const handleExportMembers = () => {
+    if (!members || members.length === 0) {
+      toast.error("Aucun membre à exporter");
+      return;
+    }
+    const columns = [
+      { key: "first_name", header: "Prénom" },
+      { key: "last_name", header: "Nom" },
+      { key: "email", header: "Email" },
+      { key: "phone", header: "Téléphone" },
+      { key: "member_type", header: "Type" },
+      { key: "status", header: "Statut" },
+      { key: "created_at", header: "Date inscription", formatter: (v: string) => formatDateForCsv(v) },
+    ];
+    exportToCsv(members, columns, `membres_${selectedTenant?.slug || "export"}_${new Date().toISOString().split('T')[0]}`);
+    toast.success("Export membres téléchargé");
+  };
+
+  const handleExportDonations = () => {
+    if (!donations || donations.length === 0) {
+      toast.error("Aucune donation à exporter");
+      return;
+    }
+    const columns = [
+      { key: "donation_date", header: "Date", formatter: (v: string) => formatDateForCsv(v) },
+      { key: "donation_type", header: "Type" },
+      { key: "amount", header: "Montant", formatter: (v: number) => formatCurrencyForCsv(v) },
+      { key: "payment_method", header: "Mode de paiement" },
+      { key: "notes", header: "Notes" },
+    ];
+    exportToCsv(donations, columns, `donations_${selectedTenant?.slug || "export"}_${new Date().toISOString().split('T')[0]}`);
+    toast.success("Export donations téléchargé");
+  };
+
+  const handleExportEvents = () => {
+    if (!events || events.length === 0) {
+      toast.error("Aucun événement à exporter");
+      return;
+    }
+    const columns = [
+      { key: "name", header: "Nom" },
+      { key: "event_date", header: "Date", formatter: (v: string) => formatDateForCsv(v) },
+      { key: "event_time", header: "Heure" },
+      { key: "location", header: "Lieu" },
+      { key: "status", header: "Statut" },
+    ];
+    exportToCsv(events, columns, `evenements_${selectedTenant?.slug || "export"}_${new Date().toISOString().split('T')[0]}`);
+    toast.success("Export événements téléchargé");
+  };
 
   if (roleLoading) {
     return (
@@ -270,6 +323,12 @@ export default function TenantDataViewer() {
 
                 {/* Members Tab */}
                 <TabsContent value="members">
+                  <div className="flex justify-end mb-3">
+                    <Button variant="outline" size="sm" onClick={handleExportMembers} disabled={!members || members.length === 0}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Exporter CSV
+                    </Button>
+                  </div>
                   {membersLoading ? (
                     <div className="space-y-2">
                       {[...Array(5)].map((_, i) => (
@@ -322,6 +381,12 @@ export default function TenantDataViewer() {
 
                 {/* Donations Tab */}
                 <TabsContent value="donations">
+                  <div className="flex justify-end mb-3">
+                    <Button variant="outline" size="sm" onClick={handleExportDonations} disabled={!donations || donations.length === 0}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Exporter CSV
+                    </Button>
+                  </div>
                   {donationsLoading ? (
                     <div className="space-y-2">
                       {[...Array(5)].map((_, i) => (
@@ -370,6 +435,12 @@ export default function TenantDataViewer() {
 
                 {/* Events Tab */}
                 <TabsContent value="events">
+                  <div className="flex justify-end mb-3">
+                    <Button variant="outline" size="sm" onClick={handleExportEvents} disabled={!events || events.length === 0}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Exporter CSV
+                    </Button>
+                  </div>
                   {eventsLoading ? (
                     <div className="space-y-2">
                       {[...Array(5)].map((_, i) => (

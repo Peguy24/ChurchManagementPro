@@ -2,12 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
-
+import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
+import { toast } from "sonner";
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
 
@@ -66,6 +67,66 @@ export default function SuperAdminDashboard() {
     },
   });
 
+  // Query for full tenants export
+  const { data: allTenants } = useQuery({
+    queryKey: ["all-tenants-for-export"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tenants")
+        .select(`
+          id,
+          name,
+          slug,
+          contact_email,
+          contact_phone,
+          address,
+          created_at,
+          tenant_subscriptions(plan, status, price_monthly, trial_ends_at)
+        `)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleExportTenants = () => {
+    if (!allTenants || allTenants.length === 0) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
+
+    const columns = [
+      { key: "name", header: "Nom" },
+      { key: "slug", header: "Slug" },
+      { key: "contact_email", header: "Email" },
+      { key: "contact_phone", header: "Téléphone" },
+      { key: "address", header: "Adresse" },
+      { 
+        key: "tenant_subscriptions", 
+        header: "Plan",
+        formatter: (subs: any[]) => subs?.[0]?.plan || "basic"
+      },
+      { 
+        key: "tenant_subscriptions", 
+        header: "Statut Abonnement",
+        formatter: (subs: any[]) => subs?.[0]?.status || "-"
+      },
+      { 
+        key: "tenant_subscriptions", 
+        header: "Prix Mensuel",
+        formatter: (subs: any[]) => formatCurrencyForCsv(subs?.[0]?.price_monthly)
+      },
+      { 
+        key: "created_at", 
+        header: "Date Création",
+        formatter: (val: string) => formatDateForCsv(val)
+      },
+    ];
+
+    exportToCsv(allTenants, columns, `eglises_${new Date().toISOString().split('T')[0]}`);
+    toast.success("Export CSV téléchargé");
+  };
+
   const StatCard = ({ 
     title, 
     value, 
@@ -109,9 +170,15 @@ export default function SuperAdminDashboard() {
               Vue d'ensemble de toutes les églises sur la plateforme
             </p>
           </div>
-          <Button onClick={() => navigate("/settings/tenants")} className="w-full sm:w-auto">
-            Gérer les églises
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={handleExportTenants} className="w-full sm:w-auto">
+              <Download className="mr-2 h-4 w-4" />
+              Exporter CSV
+            </Button>
+            <Button onClick={() => navigate("/settings/tenants")} className="w-full sm:w-auto">
+              Gérer les églises
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
