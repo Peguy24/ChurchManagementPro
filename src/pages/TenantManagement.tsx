@@ -486,15 +486,15 @@ export default function TenantManagement() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestion Multi-Tenant</h1>
-            <p className="text-muted-foreground">Gérez vos clients églises et leurs abonnements</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Gestion Multi-Tenant</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Gérez vos clients églises et leurs abonnements</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Nouveau Client
               </Button>
@@ -695,45 +695,45 @@ export default function TenantManagement() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium">Total Clients</CardTitle>
+              <Building2 className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{tenants?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">églises enregistrées</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-xl md:text-2xl font-bold">{tenants?.length || 0}</div>
+              <p className="text-xs text-muted-foreground hidden sm:block">églises enregistrées</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clients Actifs</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium">Clients Actifs</CardTitle>
+              <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeCount}</div>
-              <p className="text-xs text-muted-foreground">{trialCount} en période d'essai</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-xl md:text-2xl font-bold">{activeCount}</div>
+              <p className="text-xs text-muted-foreground hidden sm:block">{trialCount} en période d'essai</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenus Mensuels</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium">MRR</CardTitle>
+              <CreditCard className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue}</div>
-              <p className="text-xs text-muted-foreground">MRR (Monthly Recurring Revenue)</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-xl md:text-2xl font-bold">${totalRevenue}</div>
+              <p className="text-xs text-muted-foreground hidden sm:block">Revenus mensuels</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenus Annuels</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 md:pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium">ARR</CardTitle>
+              <BarChart3 className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue * 12}</div>
-              <p className="text-xs text-muted-foreground">ARR (Annual Recurring Revenue)</p>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <div className="text-xl md:text-2xl font-bold">${totalRevenue * 12}</div>
+              <p className="text-xs text-muted-foreground hidden sm:block">Revenus annuels</p>
             </CardContent>
           </Card>
         </div>
@@ -811,106 +811,108 @@ export default function TenantManagement() {
 
         {/* Tabs for Tenants and Requests */}
         <Tabs defaultValue="tenants" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="tenants">
-              <Building2 className="h-4 w-4 mr-2" />
-              Clients
+          <TabsList className="h-auto flex-wrap">
+            <TabsTrigger value="tenants" className="text-xs sm:text-sm py-2">
+              <Building2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Clients</span>
+              <span className="sm:hidden">Clients</span>
             </TabsTrigger>
-            <TabsTrigger value="requests">
-              <Inbox className="h-4 w-4 mr-2" />
-              Demandes
+            <TabsTrigger value="requests" className="text-xs sm:text-sm py-2">
+              <Inbox className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Demandes</span>
+              <span className="sm:hidden">Dem.</span>
             </TabsTrigger>
-            <TabsTrigger value="history">
-              <History className="h-4 w-4 mr-2" />
-              Historique
+            <TabsTrigger value="history" className="text-xs sm:text-sm py-2">
+              <History className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Historique</span>
+              <span className="sm:hidden">Hist.</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tenants">
             {/* Tenants Table */}
             <Card>
-              <CardHeader>
-                <CardTitle>Liste des Clients</CardTitle>
-                <CardDescription>Gérez vos églises clientes et leurs abonnements</CardDescription>
+              <CardHeader className="pb-3 md:pb-6">
+                <CardTitle className="text-lg md:text-xl">Liste des Clients</CardTitle>
+                <CardDescription className="text-sm">Gérez vos églises clientes et leurs abonnements</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6 pt-0 md:pt-0">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 ) : tenants && tenants.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Église</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Admin</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Prix/mois</TableHead>
-                        <TableHead>Créé le</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="whitespace-nowrap">Église</TableHead>
+                          <TableHead className="hidden lg:table-cell">Contact</TableHead>
+                          <TableHead className="hidden md:table-cell">Admin</TableHead>
+                          <TableHead className="whitespace-nowrap">Plan</TableHead>
+                          <TableHead className="whitespace-nowrap">Statut</TableHead>
+                          <TableHead className="hidden sm:table-cell">Prix</TableHead>
+                          <TableHead className="hidden lg:table-cell">Créé le</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
                     <TableBody>
                       {tenants.map((tenant) => (
                         <TableRow key={tenant.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{tenant.name}</p>
-                              <p className="text-sm text-muted-foreground">{tenant.slug}</p>
+                              <p className="font-medium text-sm">{tenant.name}</p>
+                              <p className="text-xs text-muted-foreground">{tenant.slug}</p>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden lg:table-cell">
                             <div>
                               <p className="text-sm">{tenant.contact_email}</p>
                               {tenant.contact_phone && (
-                                <p className="text-sm text-muted-foreground">{tenant.contact_phone}</p>
+                                <p className="text-xs text-muted-foreground">{tenant.contact_phone}</p>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             {tenant.hasAdmin ? (
-                              <Badge variant="default" className="gap-1">
+                              <Badge variant="default" className="gap-1 text-xs">
                                 <UserCheck className="h-3 w-3" />
-                                Configuré
+                                <span className="hidden lg:inline">Configuré</span>
                               </Badge>
                             ) : (
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="gap-1 text-amber-600 border-amber-300">
+                              <div className="flex items-center gap-1">
+                                <Badge variant="outline" className="gap-1 text-xs text-warning border-warning/50">
                                   <UserX className="h-3 w-3" />
-                                  Non configuré
                                 </Badge>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2"
+                                  className="h-6 px-1.5"
                                   onClick={() => openInviteDialog(tenant)}
                                 >
-                                  <Send className="h-3 w-3 mr-1" />
-                                  Inviter
+                                  <Send className="h-3 w-3" />
                                 </Button>
                               </div>
                             )}
                           </TableCell>
                           <TableCell>
                             {tenant.subscription ? (
-                              <Badge className={PLAN_CONFIG[tenant.subscription.plan]?.color}>
+                              <Badge className={PLAN_CONFIG[tenant.subscription.plan]?.color + " text-xs"}>
                                 {PLAN_CONFIG[tenant.subscription.plan]?.label}
                               </Badge>
                             ) : (
-                              <Badge variant="outline">Non configuré</Badge>
+                              <Badge variant="outline" className="text-xs">N/A</Badge>
                             )}
                           </TableCell>
                           <TableCell>
                             {tenant.subscription ? (
-                              <div className="flex flex-col gap-1">
-                                <Badge variant={STATUS_CONFIG[tenant.subscription.status]?.variant}>
+                              <div className="flex flex-col gap-0.5">
+                                <Badge variant={STATUS_CONFIG[tenant.subscription.status]?.variant} className="text-xs">
                                   {STATUS_CONFIG[tenant.subscription.status]?.label}
                                 </Badge>
                                 {tenant.subscription.status === "trial" && tenant.subscription.trial_ends_at && (
-                                  <span className="text-xs text-muted-foreground">
-                                    Fin: {format(new Date(tenant.subscription.trial_ends_at), "dd MMM yyyy", { locale: fr })}
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {format(new Date(tenant.subscription.trial_ends_at), "dd MMM", { locale: fr })}
                                   </span>
                                 )}
                               </div>
@@ -918,39 +920,40 @@ export default function TenantManagement() {
                               "-"
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             {tenant.subscription ? `$${tenant.subscription.price_monthly}` : "-"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden lg:table-cell whitespace-nowrap">
                             {format(new Date(tenant.created_at), "dd MMM yyyy", { locale: fr })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-0.5">
                               {tenant.subscription?.status === "trial" && (
                                 <Button 
                                   variant="ghost" 
-                                  size="sm"
-                                  className="h-8 px-2 text-primary hover:text-primary"
+                                  size="icon"
+                                  className="h-7 w-7 text-primary hover:text-primary"
                                   onClick={() => openExtendTrialDialog(tenant)}
+                                  title="Prolonger l'essai"
                                 >
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  Prolonger
+                                  <Clock className="h-3.5 w-3.5" />
                                 </Button>
                               )}
-                              <Button variant="ghost" size="icon" onClick={() => handleEdit(tenant)}>
-                                <Edit className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(tenant)} title="Modifier">
+                                <Edit className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="text-destructive hover:text-destructive"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                title="Supprimer"
                                 onClick={() => {
                                   if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
                                     deleteTenantMutation.mutate(tenant.id);
                                   }
                                 }}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </TableCell>
@@ -958,6 +961,7 @@ export default function TenantManagement() {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
