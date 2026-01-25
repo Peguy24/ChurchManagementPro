@@ -142,6 +142,7 @@ export default function PlatformRolesManager() {
   // Mutation to remove a platform role
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: PlatformRole }) => {
+      // Remove from platform_user_roles
       const { error } = await supabase
         .from("platform_user_roles")
         .delete()
@@ -149,9 +150,40 @@ export default function PlatformRolesManager() {
         .eq("role", role);
 
       if (error) throw error;
+
+      // If removing super_admin, also remove legacy admin role
+      if (role === "super_admin") {
+        await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", "admin");
+      }
+
+      // Check if user has any platform roles left
+      const { data: remainingRoles } = await supabase
+        .from("platform_user_roles")
+        .select("id")
+        .eq("user_id", userId);
+
+      // If no platform roles left, assign 'user' role in user_roles (pending state)
+      if (!remainingRoles || remainingRoles.length === 0) {
+        const { data: existingUserRole } = await supabase
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!existingUserRole) {
+          await supabase
+            .from("user_roles")
+            .insert({ user_id: userId, role: "user" });
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-users-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-users-with-roles"] });
       toast({
         title: "Succès",
         description: "Rôle plateforme retiré avec succès",
