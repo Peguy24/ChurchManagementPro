@@ -32,6 +32,26 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate CRON_SECRET for scheduled function security
+  const authHeader = req.headers.get("Authorization");
+  const expectedSecret = Deno.env.get("CRON_SECRET");
+  
+  if (!expectedSecret) {
+    console.error("CRON_SECRET not configured");
+    return new Response(
+      JSON.stringify({ error: "Server configuration error" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+  
+  if (authHeader !== `Bearer ${expectedSecret}`) {
+    console.error("Unauthorized access attempt to send-event-reminder");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+
   try {
     console.log("Starting event reminder check...");
 
