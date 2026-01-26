@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -331,12 +332,15 @@ function EmailTemplatesContent() {
                         <div 
                           className="prose prose-sm max-w-none bg-muted/50 p-4 rounded-lg"
                           dangerouslySetInnerHTML={{ 
-                            __html: (getCurrentValue(template, "body_html") as string)
-                              .replace(/\{\{member_name\}\}/g, "Jean Dupont")
-                              .replace(/\{\{age\}\}/g, "35")
-                              .replace(/\{\{service_type\}\}/g, "Dimanche")
-                              .replace(/\{\{service_date\}\}/g, "25 décembre 2024")
-                              .replace(/\{\{attendance_rate\}\}/g, "45%")
+                            __html: DOMPurify.sanitize(
+                              (getCurrentValue(template, "body_html") as string)
+                                .replace(/\{\{member_name\}\}/g, "Jean Dupont")
+                                .replace(/\{\{age\}\}/g, "35")
+                                .replace(/\{\{service_type\}\}/g, "Dimanche")
+                                .replace(/\{\{service_date\}\}/g, "25 décembre 2024")
+                                .replace(/\{\{attendance_rate\}\}/g, "45%"),
+                              { ALLOWED_TAGS: ['div', 'p', 'span', 'strong', 'em', 'br', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'a', 'img'], ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'class'] }
+                            )
                           }}
                         />
                       </CardContent>
