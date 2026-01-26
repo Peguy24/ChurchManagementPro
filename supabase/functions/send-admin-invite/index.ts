@@ -24,15 +24,60 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate JWT authentication - only super admins can invite tenant admins
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    console.error("Missing or invalid Authorization header");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized - Authentication required" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+
+  // Create Supabase client with service role
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Verify the user's token and check if they have admin privileges
+  const token = authHeader.replace("Bearer ", "");
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  
+  if (userError || !userData?.user) {
+    console.error("Invalid token:", userError);
+    return new Response(
+      JSON.stringify({ error: "Unauthorized - Invalid token" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+
+  // Check if user has platform admin role (super_admin or legacy admin)
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userData.user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  const { data: platformRoleData } = await supabase
+    .from("platform_user_roles")
+    .select("role")
+    .eq("user_id", userData.user.id)
+    .eq("role", "super_admin")
+    .maybeSingle();
+
+  if (!roleData && !platformRoleData) {
+    console.error("User does not have admin privileges:", userData.user.id);
+    return new Response(
+      JSON.stringify({ error: "Forbidden - Admin privileges required" }),
+      { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+
   try {
     const { email, tenantId, tenantName, tenantSlug, skipEmail = false }: AdminInviteRequest = await req.json();
 
     console.log(`Creating secure invitation for ${email} to become admin of ${tenantName} (${tenantId}), skipEmail: ${skipEmail}`);
-
-    // Create Supabase client with service role
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if invitation already exists for this email and tenant
     const { data: existingInvite } = await supabase
