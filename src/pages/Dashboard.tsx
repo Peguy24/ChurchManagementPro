@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, addDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SignedAvatar } from "@/components/SignedAvatar";
 import { useState, useMemo } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
@@ -510,12 +511,11 @@ export default function Dashboard() {
                       key={member.id}
                       className="flex items-center gap-3 rounded-lg bg-primary/5 p-3"
                     >
-                      <Avatar>
-                        <AvatarImage src={member.photo_url || undefined} />
-                        <AvatarFallback>
-                          {member.first_name[0]}{member.last_name[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <SignedAvatar
+                        storedUrl={member.photo_url}
+                        bucket="member-photos"
+                        fallbackText={`${member.first_name[0]}${member.last_name[0]}`}
+                      />
                       <div className="flex-1">
                         <p className="font-medium">
                           {member.first_name} {member.last_name}

@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getSignedUrl } from "@/hooks/useSignedUrl";
 
 interface InventoryItem {
   id: string;
@@ -374,12 +375,15 @@ export const generateInventoryReportPDF = async (
         pdf.setDrawColor(226, 232, 240);
         pdf.roundedRect(cardX, cardY, itemCardWidth, itemCardHeight, 2, 2, "FD");
 
-        // Load and add photo
+        // Load and add photo (using signed URL for private bucket)
         if (item.photo_url) {
           try {
-            const photoBase64 = await loadImageAsBase64(item.photo_url);
-            if (photoBase64) {
-              pdf.addImage(photoBase64, "JPEG", cardX + 3, cardY + 3, photoSize, photoSize);
+            const signedUrl = await getSignedUrl(item.photo_url, "inventory-photos");
+            if (signedUrl) {
+              const photoBase64 = await loadImageAsBase64(signedUrl);
+              if (photoBase64) {
+                pdf.addImage(photoBase64, "JPEG", cardX + 3, cardY + 3, photoSize, photoSize);
+              }
             }
           } catch (e) {
             console.error("Error loading photo:", e);

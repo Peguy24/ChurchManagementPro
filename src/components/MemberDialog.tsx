@@ -272,12 +272,8 @@ export default function MemberDialog({
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('member-photos')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      // Store the file path (signed URLs will be generated on display)
+      return filePath;
     } catch (error: any) {
       console.error('Error uploading photo:', error);
       toast({

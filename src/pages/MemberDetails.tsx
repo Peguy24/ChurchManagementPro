@@ -28,6 +28,7 @@ import {
 import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SignedAvatar } from "@/components/SignedAvatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -314,12 +315,13 @@ export default function MemberDetails() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-start gap-6">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={member.photo_url || undefined} />
-                <AvatarFallback className="text-2xl">
-                  {member.first_name[0]}{member.last_name[0]}
-                </AvatarFallback>
-              </Avatar>
+              <SignedAvatar
+                storedUrl={member.photo_url}
+                bucket="member-photos"
+                fallbackText={`${member.first_name[0]}${member.last_name[0]}`}
+                className="h-24 w-24"
+                fallbackClassName="text-2xl"
+              />
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-2xl font-bold">

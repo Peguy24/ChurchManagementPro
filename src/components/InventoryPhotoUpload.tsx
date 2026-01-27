@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Camera, Upload, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 interface InventoryPhotoUploadProps {
   currentPhotoUrl: string | null;
@@ -18,8 +19,14 @@ export default function InventoryPhotoUpload({
   itemId,
 }: InventoryPhotoUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Get signed URL for existing photo
+  const { signedUrl } = useSignedUrl(currentPhotoUrl, "inventory-photos");
+  
+  // Use local preview for newly uploaded images, signed URL for existing
+  const previewUrl = localPreviewUrl || signedUrl;
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,10 +47,10 @@ export default function InventoryPhotoUpload({
     setIsUploading(true);
 
     try {
-      // Create preview
+      // Create local preview for immediate display
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
+        setLocalPreviewUrl(e.target?.result as string);
       };
       reader.readAsDataURL(file);
 
@@ -64,17 +71,13 @@ export default function InventoryPhotoUpload({
         throw uploadError;
       }
 
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("inventory-photos")
-        .getPublicUrl(filePath);
-
-      onPhotoChange(publicUrlData.publicUrl);
+      // Store the file path (signed URLs will be generated on display)
+      onPhotoChange(filePath);
       toast.success("Photo téléchargée avec succès");
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast.error("Erreur lors du téléchargement de la photo");
-      setPreviewUrl(currentPhotoUrl);
+      setLocalPreviewUrl(null);
     } finally {
       setIsUploading(false);
     }
@@ -83,18 +86,14 @@ export default function InventoryPhotoUpload({
   const handleRemovePhoto = async () => {
     if (currentPhotoUrl) {
       try {
-        // Extract file path from URL
-        const urlParts = currentPhotoUrl.split("/inventory-photos/");
-        if (urlParts.length > 1) {
-          const filePath = urlParts[1];
-          await supabase.storage.from("inventory-photos").remove([filePath]);
-        }
+        // currentPhotoUrl stores just the file path now
+        await supabase.storage.from("inventory-photos").remove([currentPhotoUrl]);
       } catch (error) {
         console.error("Error removing photo:", error);
       }
     }
     
-    setPreviewUrl(null);
+    setLocalPreviewUrl(null);
     onPhotoChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
