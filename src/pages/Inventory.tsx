@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText } from "lucide-react";
+import { SignedImage } from "@/components/SignedImage";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
 import InventoryPhotoUpload from "@/components/InventoryPhotoUpload";
@@ -920,10 +921,16 @@ function InventoryContent() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {item.photo_url ? (
-                              <img
-                                src={item.photo_url}
+                              <SignedImage
+                                storedUrl={item.photo_url}
+                                bucket="inventory-photos"
                                 alt={item.name}
                                 className="w-10 h-10 rounded object-cover border"
+                                fallback={
+                                  <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                    <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
+                                  </div>
+                                }
                               />
                             ) : (
                               <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">

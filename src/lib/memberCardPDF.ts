@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getSignedUrl } from "@/hooks/useSignedUrl";
 
 interface MemberCardData {
   id: string;
@@ -142,9 +143,13 @@ const drawCard = async (
 
   if (member.photo_url) {
     try {
-      const photoBase64 = await loadImageAsBase64(member.photo_url);
-      if (photoBase64) {
-        pdf.addImage(photoBase64, "JPEG", photoX, photoY, photoSize, photoSize);
+      // Get signed URL for private storage bucket
+      const signedUrl = await getSignedUrl(member.photo_url, "member-photos");
+      if (signedUrl) {
+        const photoBase64 = await loadImageAsBase64(signedUrl);
+        if (photoBase64) {
+          pdf.addImage(photoBase64, "JPEG", photoX, photoY, photoSize, photoSize);
+        }
       }
     } catch (e) {
       console.error("Error loading photo:", e);

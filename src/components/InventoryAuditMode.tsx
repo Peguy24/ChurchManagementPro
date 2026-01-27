@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
 import { supabase } from "@/integrations/supabase/client";
+import { SignedImage } from "@/components/SignedImage";
 
 interface InventoryItem {
   id: string;
@@ -294,8 +295,9 @@ export default function InventoryAuditMode({ items, onAuditComplete }: Inventory
                   <CardContent className="pt-0 pb-2">
                     <div className="flex items-center gap-3">
                       {lastScannedItem.photo_url && (
-                        <img 
-                          src={lastScannedItem.photo_url} 
+                        <SignedImage 
+                          storedUrl={lastScannedItem.photo_url}
+                          bucket="inventory-photos"
                           alt={lastScannedItem.name}
                           className="w-10 h-10 rounded object-cover"
                         />
@@ -387,10 +389,16 @@ export default function InventoryAuditMode({ items, onAuditComplete }: Inventory
                             className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
                           >
                             {item.photo_url ? (
-                              <img 
-                                src={item.photo_url} 
+                              <SignedImage 
+                                storedUrl={item.photo_url}
+                                bucket="inventory-photos"
                                 alt={item.name}
                                 className="w-10 h-10 rounded object-cover"
+                                fallback={
+                                  <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                    <Package className="h-5 w-5 text-muted-foreground" />
+                                  </div>
+                                }
                               />
                             ) : (
                               <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">

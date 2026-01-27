@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash, FileDown } from "lucide-react";
+import { SignedImage } from "@/components/SignedImage";
 import {
   Dialog,
   DialogContent,
@@ -604,10 +605,16 @@ export default function MemberCards() {
                       />
                       <div className="relative h-24 w-24 rounded-xl overflow-hidden bg-muted shadow-xl">
                         {member.photo_url ? (
-                          <img
-                            src={member.photo_url}
+                          <SignedImage
+                            storedUrl={member.photo_url}
+                            bucket="member-photos"
                             alt={`${member.first_name} ${member.last_name}`}
                             className="h-full w-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
+                            fallback={
+                              <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                                <UserCircle className="h-14 w-14 text-muted-foreground" />
+                              </div>
+                            }
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
