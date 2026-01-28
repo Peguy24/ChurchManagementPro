@@ -389,78 +389,95 @@ const Commercial = () => {
                         placeholder="Rechercher votre église..."
                         value={churchSearch}
                         onChange={(e) => handleChurchSearch(e.target.value)}
-                        onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                         className="pl-11 h-12 text-lg border-2 focus:border-primary"
                       />
-                      {/* Search Results Dropdown */}
-                      {showSearchResults && searchResults.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 rounded-xl shadow-2xl z-50 overflow-hidden">
-                          {searchResults.map((church) => {
-                            const churchUrl = `${window.location.origin}/t/${church.slug}/auth`;
-                            return (
-                              <div
-                                key={church.id}
-                                className="p-4 hover:bg-muted/50 transition-colors border-b last:border-b-0"
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                                      <Church className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="font-semibold truncate">{church.name}</p>
-                                      <p className="text-xs text-muted-foreground truncate">{churchUrl}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-9 w-9 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(churchUrl);
-                                        toast({
-                                          title: "Lien copié!",
-                                          description: `Le lien de ${church.name} a été copié.`,
-                                        });
-                                      }}
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleChurchSelect(church.slug)}
-                                      className="bg-gradient-to-r from-primary to-primary-dark"
-                                    >
-                                      <ExternalLink className="w-4 h-4 mr-1" />
-                                      Ouvrir
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {showSearchResults && searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 rounded-xl shadow-2xl z-50 p-6 text-center">
-                          <Church className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                          <p className="text-muted-foreground">Aucune église trouvée</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Vérifiez l'orthographe ou contactez votre administrateur
-                          </p>
+                      {/* Loading indicator */}
+                      {isSearching && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
                       )}
                     </div>
-                    <Button 
-                      onClick={handleDirectSlugAccess} 
+                    <Button
                       size="lg"
+                      onClick={handleDirectSlugAccess}
                       className="h-12 bg-gradient-to-r from-primary to-primary-dark hover:opacity-90"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ArrowRight className="w-5 h-5" />
                     </Button>
                   </div>
+                  
+                  {/* Search Results Dropdown - Always visible when there are results */}
+                  {searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl z-[100] overflow-hidden">
+                      <div className="p-2 bg-muted/50 border-b">
+                        <p className="text-xs text-muted-foreground font-medium">
+                          {searchResults.length} église(s) trouvée(s)
+                        </p>
+                      </div>
+                      {searchResults.map((church) => {
+                        const churchUrl = `${window.location.origin}/t/${church.slug}/auth`;
+                        return (
+                          <div
+                            key={church.id}
+                            className="p-4 hover:bg-accent transition-colors border-b last:border-b-0 cursor-pointer"
+                            onClick={() => handleChurchSelect(church.slug)}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                                  <Church className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-semibold truncate">{church.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{church.slug}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-9 w-9 p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(churchUrl);
+                                    toast({
+                                      title: "Lien copié!",
+                                      description: `Le lien de ${church.name} a été copié.`,
+                                    });
+                                  }}
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleChurchSelect(church.slug);
+                                  }}
+                                  className="bg-gradient-to-r from-primary to-primary-dark"
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-1" />
+                                  Ouvrir
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  
+                  {/* No results message */}
+                  {searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl z-[100] p-6 text-center">
+                      <Church className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+                      <p className="text-muted-foreground">Aucune église trouvée</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Vérifiez l'orthographe ou contactez votre administrateur
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
