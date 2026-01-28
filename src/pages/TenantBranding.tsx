@@ -9,10 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Palette, Save, Loader2, Image, Type, Eye } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function TenantBranding() {
   const queryClient = useQueryClient();
   const { tenant, tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { t } = useLanguage();
   
   const [settings, setSettings] = useState({
     name: "",
@@ -48,11 +50,11 @@ export default function TenantBranding() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["current-tenant"] });
       queryClient.invalidateQueries({ queryKey: ["white-label-settings"] });
-      toast.success("Paramètres de marque enregistrés avec succès");
+      toast.success(t("tenant.settingsSaved"));
     },
     onError: (error) => {
       console.error("Error saving settings:", error);
-      toast.error("Erreur lors de l'enregistrement des paramètres");
+      toast.error(t("tenant.settingsError"));
     },
   });
 
@@ -75,9 +77,9 @@ export default function TenantBranding() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Personnalisation de Marque</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("tenant.brandingTitle")}</h2>
           <p className="text-muted-foreground">
-            Personnalisez l'apparence de votre espace avec votre logo, nom et couleur.
+            {t("tenant.brandingSubtitle")}
           </p>
         </div>
 
@@ -87,27 +89,27 @@ export default function TenantBranding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Type className="h-5 w-5" />
-                Identité de Votre Église
+                {t("tenant.churchIdentity")}
               </CardTitle>
               <CardDescription>
-                Définissez le nom et le logo qui apparaîtront dans toute l'application.
+                {t("tenant.churchIdentityDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nom de l'Église</Label>
+                <Label htmlFor="name">{t("tenant.churchNameLabel")}</Label>
                 <Input
                   id="name"
                   value={settings.name}
                   onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                  placeholder="Mon Église"
+                  placeholder={t("tenant.churchNameLabel")}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="logo_url" className="flex items-center gap-2">
                   <Image className="h-4 w-4" />
-                  URL du Logo
+                  {t("tenant.logoUrl")}
                 </Label>
                 <Input
                   id="logo_url"
@@ -116,7 +118,7 @@ export default function TenantBranding() {
                   placeholder="https://example.com/logo.png"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Utilisez une image carrée pour un meilleur rendu (minimum 128x128 pixels)
+                  {t("tenant.logoUrlHint")}
                 </p>
               </div>
             </CardContent>
@@ -127,15 +129,15 @@ export default function TenantBranding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Couleur Principale
+                {t("tenant.primaryColor")}
               </CardTitle>
               <CardDescription>
-                Choisissez la couleur qui représente votre église.
+                {t("tenant.primaryColorDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="primary_color">Couleur</Label>
+                <Label htmlFor="primary_color">{t("tenant.color")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="primary_color"
@@ -160,10 +162,10 @@ export default function TenantBranding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                Aperçu
+                {t("tenant.preview")}
               </CardTitle>
               <CardDescription>
-                Voici comment l'en-tête de l'application apparaîtra.
+                {t("tenant.previewDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -194,7 +196,7 @@ export default function TenantBranding() {
                       className="font-bold text-lg"
                       style={{ color: settings.primary_color }}
                     >
-                      {settings.name || "Nom de l'Église"}
+                      {settings.name || t("tenant.churchNameLabel")}
                     </h3>
                   </div>
                 </div>
@@ -204,7 +206,7 @@ export default function TenantBranding() {
                     className="px-4 py-2 rounded text-sm font-medium text-white"
                     style={{ backgroundColor: settings.primary_color }}
                   >
-                    Bouton Principal
+                    {t("tenant.primaryButton")}
                   </div>
                 </div>
               </div>
@@ -216,12 +218,12 @@ export default function TenantBranding() {
               {updateSettings.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
+                  {t("tenant.saving")}
                 </>
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Enregistrer les Paramètres
+                  {t("tenant.saveSettings")}
                 </>
               )}
             </Button>

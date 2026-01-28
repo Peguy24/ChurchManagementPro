@@ -15,6 +15,9 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import TenantRolePermissionsManager from '@/components/TenantRolePermissionsManager';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 
 interface TenantUser {
   id: string;
@@ -29,19 +32,11 @@ interface TenantUser {
   user_email: string;
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrateur',
-  pastor: 'Pasteur',
-  treasurer: 'Trésorier',
-  secretary: 'Secrétaire',
-  volunteer: 'Volontaire',
-  user: 'Utilisateur',
-};
-
 export default function TenantUserManagement() {
   const { user } = useAuth();
   const { tenantId, tenant } = useCurrentTenant();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<TenantUser | null>(null);
@@ -52,6 +47,17 @@ export default function TenantUserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [sendingInvite, setSendingInvite] = useState(false);
+
+  const dateLocale = language === 'fr' ? fr : language === 'ht' ? fr : enUS;
+
+  const ROLE_LABELS: Record<string, string> = {
+    admin: t('tenant.roleAdmin'),
+    pastor: t('tenant.rolePastor'),
+    treasurer: t('tenant.roleTreasurer'),
+    secretary: t('tenant.roleSecretary'),
+    volunteer: t('tenant.roleVolunteer'),
+    user: t('tenant.roleUser'),
+  };
 
   useEffect(() => {
     if (tenantId) {
@@ -81,7 +87,6 @@ export default function TenantUserManagement() {
             .eq('id', role.user_id)
             .single();
 
-          // Get user email from auth (we'll use the profile data we have)
           return {
             ...role,
             profile,
@@ -94,8 +99,8 @@ export default function TenantUserManagement() {
     } catch (err) {
       console.error('Error fetching tenant users:', err);
       toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les utilisateurs',
+        title: t('common.error'),
+        description: t('tenant.loadError'),
         variant: 'destructive',
       });
     } finally {
@@ -114,16 +119,16 @@ export default function TenantUserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Utilisateur approuvé',
-        description: "L'utilisateur peut maintenant accéder au système",
+        title: t('tenant.userApproved'),
+        description: t('tenant.userCanAccess'),
       });
       
       fetchTenantUsers();
     } catch (err) {
       console.error('Error approving user:', err);
       toast({
-        title: 'Erreur',
-        description: "Impossible d'approuver l'utilisateur",
+        title: t('common.error'),
+        description: t('tenant.approveError'),
         variant: 'destructive',
       });
     }
@@ -140,16 +145,16 @@ export default function TenantUserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Utilisateur rejeté',
-        description: "L'utilisateur a été supprimé",
+        title: t('tenant.userRejected'),
+        description: t('tenant.userRemoved'),
       });
       
       fetchTenantUsers();
     } catch (err) {
       console.error('Error rejecting user:', err);
       toast({
-        title: 'Erreur',
-        description: "Impossible de rejeter l'utilisateur",
+        title: t('common.error'),
+        description: t('tenant.rejectError'),
         variant: 'destructive',
       });
     }
@@ -167,8 +172,8 @@ export default function TenantUserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Rôle mis à jour',
-        description: `Le rôle a été changé en ${ROLE_LABELS[selectedRole]}`,
+        title: t('tenant.roleUpdated'),
+        description: `${t('tenant.roleChangedTo')} ${ROLE_LABELS[selectedRole]}`,
       });
       
       setEditingUser(null);
@@ -176,8 +181,8 @@ export default function TenantUserManagement() {
     } catch (err) {
       console.error('Error updating role:', err);
       toast({
-        title: 'Erreur',
-        description: 'Impossible de mettre à jour le rôle',
+        title: t('common.error'),
+        description: t('tenant.updateRoleError'),
         variant: 'destructive',
       });
     }
@@ -201,8 +206,8 @@ export default function TenantUserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Invitation envoyée',
-        description: `Une invitation a été envoyée à ${inviteEmail}`,
+        title: t('tenant.invitationSent'),
+        description: `${t('tenant.invitationSentTo')} ${inviteEmail}`,
       });
       
       setInviteDialogOpen(false);
@@ -211,8 +216,8 @@ export default function TenantUserManagement() {
     } catch (err) {
       console.error('Error sending invite:', err);
       toast({
-        title: 'Erreur',
-        description: "Impossible d'envoyer l'invitation",
+        title: t('common.error'),
+        description: t('tenant.inviteError'),
         variant: 'destructive',
       });
     } finally {
@@ -228,14 +233,14 @@ export default function TenantUserManagement() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Gestion des Utilisateurs</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('tenant.userManagementTitle')}</h1>
             <p className="text-muted-foreground">
-              Gérez les utilisateurs et les permissions de votre église
+              {t('tenant.userManagementSubtitle')}
             </p>
           </div>
           <Button onClick={() => setInviteDialogOpen(true)}>
             <Mail className="mr-2 h-4 w-4" />
-            Inviter un utilisateur
+            {t('tenant.inviteUser')}
           </Button>
         </div>
 
@@ -243,11 +248,11 @@ export default function TenantUserManagement() {
           <TabsList>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Utilisateurs
+              {t('tenant.usersTab')}
             </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Permissions
+              {t('tenant.permissionsTab')}
             </TabsTrigger>
           </TabsList>
 
@@ -257,20 +262,20 @@ export default function TenantUserManagement() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-orange-700">
                     <UserPlus className="h-5 w-5" />
-                    Demandes en attente ({pendingUsers.length})
+                    {t('tenant.pendingRequests')} ({pendingUsers.length})
                   </CardTitle>
                   <CardDescription>
-                    Ces utilisateurs attendent votre approbation pour accéder au système
+                    {t('tenant.pendingRequestsDesc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Rôle demandé</TableHead>
-                        <TableHead>Date d'inscription</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t('common.name')}</TableHead>
+                        <TableHead>{t('tenant.requestedRole')}</TableHead>
+                        <TableHead>{t('tenant.registrationDate')}</TableHead>
+                        <TableHead className="text-right">{t('common.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -283,7 +288,7 @@ export default function TenantUserManagement() {
                             <Badge variant="outline">{ROLE_LABELS[pendingUser.role]}</Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(pendingUser.created_at).toLocaleDateString('fr-FR')}
+                            {format(new Date(pendingUser.created_at), 'PP', { locale: dateLocale })}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
@@ -292,7 +297,7 @@ export default function TenantUserManagement() {
                                 onClick={() => handleApprove(pendingUser.user_id)}
                               >
                                 <Check className="h-4 w-4 mr-1" />
-                                Approuver
+                                {t('tenant.approve')}
                               </Button>
                               <Button
                                 size="sm"
@@ -300,7 +305,7 @@ export default function TenantUserManagement() {
                                 onClick={() => handleReject(pendingUser.user_id)}
                               >
                                 <X className="h-4 w-4 mr-1" />
-                                Rejeter
+                                {t('tenant.reject')}
                               </Button>
                             </div>
                           </TableCell>
@@ -316,29 +321,29 @@ export default function TenantUserManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Utilisateurs actifs ({approvedUsers.length})
+                  {t('tenant.activeUsers')} ({approvedUsers.length})
                 </CardTitle>
                 <CardDescription>
-                  Liste des utilisateurs approuvés de votre église
+                  {t('tenant.activeUsersDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="py-8 text-center text-muted-foreground">
-                    Chargement...
+                    {t('common.loading')}
                   </div>
                 ) : approvedUsers.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">
-                    Aucun utilisateur actif
+                    {t('tenant.noActiveUsers')}
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Rôle</TableHead>
-                        <TableHead>Date d'inscription</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t('common.name')}</TableHead>
+                        <TableHead>{t('tenant.role')}</TableHead>
+                        <TableHead>{t('tenant.registrationDate')}</TableHead>
+                        <TableHead className="text-right">{t('common.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -360,7 +365,7 @@ export default function TenantUserManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(approvedUser.created_at).toLocaleDateString('fr-FR')}
+                            {format(new Date(approvedUser.created_at), 'PP', { locale: dateLocale })}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -372,7 +377,7 @@ export default function TenantUserManagement() {
                               }}
                             >
                               <Shield className="h-4 w-4 mr-1" />
-                              Modifier le rôle
+                              {t('tenant.modifyRole')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -393,15 +398,15 @@ export default function TenantUserManagement() {
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modifier le rôle</DialogTitle>
+            <DialogTitle>{t('tenant.modifyRole')}</DialogTitle>
             <DialogDescription>
-              Changez le rôle de {editingUser?.profile?.first_name} {editingUser?.profile?.last_name}
+              {t('tenant.changeRoleFor')} {editingUser?.profile?.first_name} {editingUser?.profile?.last_name}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner un rôle" />
+                <SelectValue placeholder={t('tenant.selectRole')} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(ROLE_LABELS).map(([value, label]) => (
@@ -414,10 +419,10 @@ export default function TenantUserManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)}>
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleUpdateRole}>
-              Sauvegarder
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -429,28 +434,28 @@ export default function TenantUserManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Inviter un utilisateur
+              {t('tenant.inviteUser')}
             </DialogTitle>
             <DialogDescription>
-              Envoyez une invitation par email pour rejoindre {tenant?.name || 'votre église'}
+              {t('tenant.inviteUserDesc')} {tenant?.name || ''}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="invite-email">Adresse email</Label>
+              <Label htmlFor="invite-email">{t('tenant.emailAddress')}</Label>
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="email@exemple.com"
+                placeholder="email@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="invite-role">Rôle</Label>
+              <Label htmlFor="invite-role">{t('tenant.role')}</Label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
                 <SelectTrigger id="invite-role">
-                  <SelectValue placeholder="Sélectionner un rôle" />
+                  <SelectValue placeholder={t('tenant.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(ROLE_LABELS).map(([value, label]) => (
@@ -464,15 +469,15 @@ export default function TenantUserManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleSendInvite} disabled={!inviteEmail || sendingInvite}>
               {sendingInvite ? (
-                "Envoi..."
+                t('tenant.sending')
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Envoyer l'invitation
+                  {t('tenant.sendInvitation')}
                 </>
               )}
             </Button>
