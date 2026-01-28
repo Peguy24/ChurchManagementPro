@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
 
 interface ChurchSettings {
@@ -27,6 +28,7 @@ interface ChurchSettings {
 
 export default function ChurchSettings() {
   const queryClient = useQueryClient();
+  const { tenantId } = useCurrentTenant();
   const [settings, setSettings] = useState<ChurchSettings>({
     church_name: "",
     church_address: "",
@@ -43,11 +45,14 @@ export default function ChurchSettings() {
   });
 
   const { data: settingsData, isLoading } = useQuery({
-    queryKey: ["church-settings"],
+    queryKey: ["church-settings", tenantId],
     queryFn: async () => {
+      if (!tenantId) return {};
+      
       const { data, error } = await supabase
         .from("church_settings")
-        .select("setting_key, setting_value");
+        .select("setting_key, setting_value")
+        .eq("tenant_id", tenantId);
       
       if (error) throw error;
       
@@ -58,6 +63,7 @@ export default function ChurchSettings() {
       
       return settingsMap;
     },
+    enabled: !!tenantId,
   });
 
   useEffect(() => {
@@ -81,22 +87,34 @@ export default function ChurchSettings() {
 
   const updateSettings = useMutation({
     mutationFn: async (newSettings: ChurchSettings) => {
+      if (!tenantId) throw new Error("No tenant ID available");
+      
       const updates = Object.entries(newSettings).map(([key, value]) => ({
+        tenant_id: tenantId,
         setting_key: key,
         setting_value: value,
       }));
 
+      // Use upsert to insert or update settings
       for (const update of updates) {
         const { error } = await supabase
           .from("church_settings")
-          .update({ setting_value: update.setting_value })
-          .eq("setting_key", update.setting_key);
+          .upsert(
+            { 
+              tenant_id: update.tenant_id,
+              setting_key: update.setting_key, 
+              setting_value: update.setting_value 
+            },
+            { 
+              onConflict: 'tenant_id,setting_key'
+            }
+          );
         
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["church-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["church-settings", tenantId] });
       toast.success("Paramètres enregistrés avec succès");
     },
     onError: (error) => {
@@ -107,6 +125,10 @@ export default function ChurchSettings() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tenantId) {
+      toast.error("Aucune église sélectionnée");
+      return;
+    }
     updateSettings.mutate(settings);
   };
 

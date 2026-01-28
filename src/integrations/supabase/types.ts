@@ -505,6 +505,7 @@ export type Database = {
           id: string
           setting_key: string
           setting_value: string | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -512,6 +513,7 @@ export type Database = {
           id?: string
           setting_key: string
           setting_value?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -519,9 +521,18 @@ export type Database = {
           id?: string
           setting_key?: string
           setting_value?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "church_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_field_values: {
         Row: {
