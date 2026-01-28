@@ -69,7 +69,7 @@ interface NavGroup {
 const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGroup[] => {
   const groups: NavGroup[] = [
     {
-      label: "Membres",
+      label: t("layout.members"),
       icon: Users,
       items: [
         { to: "/members", icon: Users, label: t("nav.members") },
@@ -81,77 +81,77 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
-      label: "Finances",
+      label: t("layout.finances"),
       icon: DollarSign,
       items: [
         { to: "/donations", icon: DollarSign, label: t("nav.donations") },
-        { to: "/donations/categories", icon: FolderOpen, label: "Catégories Recettes" },
+        { to: "/donations/categories", icon: FolderOpen, label: t("layout.incomeCategories") },
         { to: "/finance/expenses", icon: Briefcase, label: t("nav.expenses") },
-        { to: "/finance/expenses/categories", icon: FolderOpen, label: "Catégories Dépenses" },
+        { to: "/finance/expenses/categories", icon: FolderOpen, label: t("layout.expenseCategories") },
         { to: "/finance/budgets", icon: BarChart3, label: t("nav.budgets") },
         { to: "/finance/bank", icon: Building2, label: t("nav.bankReconciliation") },
         { to: "/finance/funds", icon: PiggyBank, label: t("nav.specialFunds") },
         { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
-        { to: "/finance/salaries", icon: Users, label: "Salaires" },
+        { to: "/finance/salaries", icon: Users, label: t("layout.salaries") },
         { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
       ],
     },
     {
-      label: "Rapports",
+      label: t("layout.reports"),
       icon: PieChart,
       items: [
         { to: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
         { to: "/finance", icon: LayoutDashboard, label: t("nav.financialDashboard") },
         { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
         { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
-        { to: "/insights", icon: Sparkles, label: "Smart Insights" },
+        { to: "/insights", icon: Sparkles, label: t("layout.smartInsights") },
       ],
     },
     {
-      label: "Communication",
+      label: t("layout.communication"),
       icon: MessageSquare,
       items: [
-        { to: "/settings/email-templates", icon: Mail, label: "Modèles d'emails" },
+        { to: "/settings/email-templates", icon: Mail, label: t("layout.emailTemplates") },
       ],
     },
     {
-      label: "Planning",
+      label: t("layout.planning"),
       icon: Calendar,
       items: [
         { to: "/events", icon: Calendar, label: t("nav.events") },
       ],
     },
     {
-      label: "Paramètres",
+      label: t("layout.settings"),
       icon: Settings,
       items: [
-        { to: "/settings/church", icon: Church, label: "Infos Église" },
+        { to: "/settings/church", icon: Church, label: t("layout.churchInfo") },
         { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
       ],
     },
     {
-      label: "Inventaire",
+      label: t("layout.inventory"),
       icon: Package,
       items: [
-        { to: "/inventory", icon: Package, label: "Gestion Inventaire" },
+        { to: "/inventory", icon: Package, label: t("layout.inventoryManagement") },
       ],
     },
   ];
 
   // Add tenant user management and branding for tenant admins
   if (isTenantAdmin) {
-    const settingsGroup = groups.find(g => g.label === "Paramètres");
+    const settingsGroup = groups.find(g => g.label === t("layout.settings"));
     if (settingsGroup) {
       settingsGroup.items.push(
         {
           to: "/settings/tenant-users",
           icon: UserCog,
-          label: "Utilisateurs Église",
+          label: t("layout.churchUsers"),
         },
         {
           to: "/settings/branding",
           icon: Palette,
-          label: "Personnalisation",
+          label: t("layout.customization"),
         }
       );
     }
@@ -161,16 +161,16 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
 };
 
 // Navigation for super admins (platform-level)
-const getSuperAdminNavGroups = (): NavGroup[] => [
+const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
   {
-    label: "Administration",
+    label: t("layout.administration"),
     icon: ShieldAlert,
     items: [
-      { to: "/super-admin", icon: LayoutDashboard, label: "Dashboard" },
-      { to: "/super-admin/explore", icon: FolderOpen, label: "Explorer Données" },
-      { to: "/settings/tenants", icon: Building2, label: "Gestion Églises" },
-      { to: "/settings/invitations", icon: Mail, label: "Invitations Admin" },
-      { to: "/settings/users", icon: Users, label: "Gestion Utilisateurs" },
+      { to: "/super-admin", icon: LayoutDashboard, label: t("nav.dashboard") },
+      { to: "/super-admin/explore", icon: FolderOpen, label: t("layout.exploreData") },
+      { to: "/settings/tenants", icon: Building2, label: t("layout.churchManagement") },
+      { to: "/settings/invitations", icon: Mail, label: t("layout.adminInvitations") },
+      { to: "/settings/users", icon: Users, label: t("layout.userManagement") },
     ],
   },
 ];
@@ -191,7 +191,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Get appropriate navigation based on user type
   const allNavGroups = isSuperAdmin 
-    ? getSuperAdminNavGroups() 
+    ? getSuperAdminNavGroups(t) 
     : getChurchNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions (only for church users)
@@ -225,14 +225,14 @@ export default function Layout({ children }: LayoutProps) {
     const { error } = await signOut();
     if (error) {
       toast({
-        title: 'Erreur',
-        description: 'Problème de déconnexion',
+        title: t("common.error"),
+        description: t("layout.logoutError"),
         variant: 'destructive',
       });
     } else {
       toast({
         title: t("nav.logout"),
-        description: 'Vous êtes déconnecté avec succès',
+        description: t("layout.logoutSuccess"),
       });
     }
   };
@@ -254,7 +254,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               <GroupIcon className="h-5 w-5" />
               {group.label}
-              <span className="ml-auto text-xs">(Bientôt)</span>
+              <span className="ml-auto text-xs">({t("layout.comingSoon")})</span>
             </div>
           );
         }
