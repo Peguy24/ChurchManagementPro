@@ -60,7 +60,8 @@ interface NavItem {
 }
 
 interface NavGroup {
-  label: string;
+  key: string; // Internal key for permissions
+  label: string; // Translated display label
   icon: React.ComponentType<{ className?: string }>;
   items: NavItem[];
 }
@@ -69,6 +70,7 @@ interface NavGroup {
 const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean): NavGroup[] => {
   const groups: NavGroup[] = [
     {
+      key: "members",
       label: t("layout.members"),
       icon: Users,
       items: [
@@ -81,6 +83,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "finances",
       label: t("layout.finances"),
       icon: DollarSign,
       items: [
@@ -97,6 +100,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "reports",
       label: t("layout.reports"),
       icon: PieChart,
       items: [
@@ -108,6 +112,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "communication",
       label: t("layout.communication"),
       icon: MessageSquare,
       items: [
@@ -115,6 +120,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "planning",
       label: t("layout.planning"),
       icon: Calendar,
       items: [
@@ -122,6 +128,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "settings",
       label: t("layout.settings"),
       icon: Settings,
       items: [
@@ -130,6 +137,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       ],
     },
     {
+      key: "inventory",
       label: t("layout.inventory"),
       icon: Package,
       items: [
@@ -140,7 +148,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
 
   // Add tenant user management and branding for tenant admins
   if (isTenantAdmin) {
-    const settingsGroup = groups.find(g => g.label === t("layout.settings"));
+    const settingsGroup = groups.find(g => g.key === "settings");
     if (settingsGroup) {
       settingsGroup.items.push(
         {
@@ -163,6 +171,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
 // Navigation for super admins (platform-level)
 const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
   {
+    key: "administration",
     label: t("layout.administration"),
     icon: ShieldAlert,
     items: [
@@ -198,7 +207,7 @@ export default function Layout({ children }: LayoutProps) {
   const navGroups = isSuperAdmin 
     ? allNavGroups 
     : allNavGroups
-        .filter(group => canSeeNav(group.label))
+        .filter(group => canSeeNav(group.key))
         .map(group => ({
           ...group,
           items: group.items.filter(item => canSeeItem(item.to))
@@ -210,14 +219,14 @@ export default function Layout({ children }: LayoutProps) {
     const currentGroup = navGroups.find(group => 
       group.items.some(item => location.pathname === item.to)
     );
-    return currentGroup ? [currentGroup.label] : [];
+    return currentGroup ? [currentGroup.key] : [];
   });
 
-  const toggleGroup = (label: string) => {
+  const toggleGroup = (key: string) => {
     setOpenGroups(prev => 
-      prev.includes(label) 
-        ? prev.filter(g => g !== label)
-        : [...prev, label]
+      prev.includes(key) 
+        ? prev.filter(g => g !== key)
+        : [...prev, key]
     );
   };
 
@@ -242,14 +251,14 @@ export default function Layout({ children }: LayoutProps) {
     <nav className="space-y-1">
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
-        const isOpen = openGroups.includes(group.label);
+        const isOpen = openGroups.includes(group.key);
         const hasActiveItem = group.items.some(item => location.pathname === item.to);
         const hasItems = group.items.length > 0;
 
         if (!hasItems) {
           return (
             <div
-              key={group.label}
+              key={group.key}
               className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
             >
               <GroupIcon className="h-5 w-5" />
@@ -261,9 +270,9 @@ export default function Layout({ children }: LayoutProps) {
 
         return (
           <Collapsible
-            key={group.label}
+            key={group.key}
             open={isOpen}
-            onOpenChange={() => toggleGroup(group.label)}
+            onOpenChange={() => toggleGroup(group.key)}
           >
             <CollapsibleTrigger className="w-full">
               <div
