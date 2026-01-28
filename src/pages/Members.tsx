@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Download, Upload, Edit, BarChart, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
+import MemberImportDialog from "@/components/MemberImportDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
@@ -41,6 +42,7 @@ export default function Members() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   
@@ -94,7 +96,7 @@ export default function Members() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setImportDialogOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               {t("common.import")}
             </Button>
@@ -281,6 +283,11 @@ export default function Members() {
           currentCount={usage.membersCount}
           maxCount={limits.maxMembers}
           planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Essentiel"}
+        />
+        <MemberImportDialog
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+          onSuccess={refetch}
         />
     </Layout>
   );
