@@ -25,7 +25,7 @@ interface LanguageProviderProps {
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem("app-language");
-    return (saved as Language) || "fr";
+    return (saved as Language) || "en";
   });
 
   const setLanguage = (lang: Language) => {
