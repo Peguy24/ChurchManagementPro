@@ -9,10 +9,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
 import LogoUpload from "@/components/LogoUpload";
 
-interface ChurchSettings {
+interface ChurchSettingsData {
   church_name: string;
   church_address: string;
   church_phone: string;
@@ -30,7 +31,8 @@ interface ChurchSettings {
 export default function ChurchSettings() {
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
-  const [settings, setSettings] = useState<ChurchSettings>({
+  const { t } = useLanguage();
+  const [settings, setSettings] = useState<ChurchSettingsData>({
     church_name: "",
     church_address: "",
     church_phone: "",
@@ -87,7 +89,7 @@ export default function ChurchSettings() {
   }, [settingsData]);
 
   const updateSettings = useMutation({
-    mutationFn: async (newSettings: ChurchSettings) => {
+    mutationFn: async (newSettings: ChurchSettingsData) => {
       if (!tenantId) throw new Error("No tenant ID available");
       
       const updates = Object.entries(newSettings).map(([key, value]) => ({
@@ -96,7 +98,6 @@ export default function ChurchSettings() {
         setting_value: value,
       }));
 
-      // Use upsert to insert or update settings
       for (const update of updates) {
         const { error } = await supabase
           .from("church_settings")
@@ -116,18 +117,18 @@ export default function ChurchSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["church-settings", tenantId] });
-      toast.success("Paramètres enregistrés avec succès");
+      toast.success(t("churchSettings.saveSuccess"));
     },
     onError: (error) => {
       console.error("Error saving settings:", error);
-      toast.error("Erreur lors de l'enregistrement des paramètres");
+      toast.error(t("churchSettings.saveError"));
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) {
-      toast.error("Aucune église sélectionnée");
+      toast.error(t("churchSettings.noChurchSelected"));
       return;
     }
     updateSettings.mutate(settings);
@@ -147,9 +148,9 @@ export default function ChurchSettings() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Paramètres de l'Église</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("churchSettings.title")}</h2>
           <p className="text-muted-foreground">
-            Configurez les informations de votre église pour les relevés fiscaux et documents officiels.
+            {t("churchSettings.subtitle")}
           </p>
         </div>
 
@@ -159,33 +160,33 @@ export default function ChurchSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Identité de l'Église
+                {t("churchSettings.churchIdentity")}
               </CardTitle>
               <CardDescription>
-                Ces informations apparaîtront sur les relevés fiscaux et documents officiels.
+                {t("churchSettings.churchIdentityDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="church_name">Nom de l'Église *</Label>
+                  <Label htmlFor="church_name">{t("churchSettings.churchNameRequired")}</Label>
                   <Input
                     id="church_name"
                     value={settings.church_name}
                     onChange={(e) => setSettings({ ...settings, church_name: e.target.value })}
-                    placeholder="Église Évangélique de..."
+                    placeholder={t("churchSettings.churchNamePlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_tax_id" className="flex items-center gap-2">
                     <Hash className="h-4 w-4" />
-                    Numéro Fiscal (NIF)
+                    {t("churchSettings.taxId")}
                   </Label>
                   <Input
                     id="church_tax_id"
                     value={settings.church_tax_id}
                     onChange={(e) => setSettings({ ...settings, church_tax_id: e.target.value })}
-                    placeholder="NIF-XXXXXXXX"
+                    placeholder={t("churchSettings.taxIdPlaceholder")}
                   />
                 </div>
               </div>
@@ -193,13 +194,13 @@ export default function ChurchSettings() {
               <div className="space-y-2">
                 <Label htmlFor="church_address" className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  Adresse Complète
+                  {t("churchSettings.fullAddress")}
                 </Label>
                 <Textarea
                   id="church_address"
                   value={settings.church_address}
                   onChange={(e) => setSettings({ ...settings, church_address: e.target.value })}
-                  placeholder="Rue, Ville, Code Postal, Pays"
+                  placeholder={t("churchSettings.addressPlaceholder")}
                   rows={2}
                 />
               </div>
@@ -208,26 +209,26 @@ export default function ChurchSettings() {
                 <div className="space-y-2">
                   <Label htmlFor="church_phone" className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    Téléphone
+                    {t("churchSettings.phone")}
                   </Label>
                   <Input
                     id="church_phone"
                     value={settings.church_phone}
                     onChange={(e) => setSettings({ ...settings, church_phone: e.target.value })}
-                    placeholder="+509 XXXX-XXXX"
+                    placeholder={t("churchSettings.phonePlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    Email
+                    {t("churchSettings.email")}
                   </Label>
                   <Input
                     id="church_email"
                     type="email"
                     value={settings.church_email}
                     onChange={(e) => setSettings({ ...settings, church_email: e.target.value })}
-                    placeholder="contact@eglise.org"
+                    placeholder={t("churchSettings.emailPlaceholder")}
                   />
                 </div>
               </div>
@@ -245,20 +246,20 @@ export default function ChurchSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Relevés Fiscaux
+                {t("churchSettings.fiscalReceipts")}
               </CardTitle>
               <CardDescription>
-                Personnalisez le texte qui apparaît sur les relevés fiscaux.
+                {t("churchSettings.fiscalReceiptsDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fiscal_receipt_footer">Texte de pied de page du relevé fiscal</Label>
+                <Label htmlFor="fiscal_receipt_footer">{t("churchSettings.receiptFooter")}</Label>
                 <Textarea
                   id="fiscal_receipt_footer"
                   value={settings.fiscal_receipt_footer}
                   onChange={(e) => setSettings({ ...settings, fiscal_receipt_footer: e.target.value })}
-                  placeholder="Ce document est un reçu officiel pour fins fiscales..."
+                  placeholder={t("churchSettings.receiptFooterPlaceholder")}
                   rows={3}
                 />
               </div>
@@ -270,10 +271,10 @@ export default function ChurchSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Personnalisation des Cartes Membres
+                {t("churchSettings.memberCards")}
               </CardTitle>
               <CardDescription>
-                Personnalisez l'apparence des cartes de membres avec les couleurs et le logo de votre église.
+                {t("churchSettings.memberCardsDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -281,7 +282,7 @@ export default function ChurchSettings() {
                 <div className="space-y-2">
                   <Label htmlFor="card_primary_color" className="flex items-center gap-2">
                     <Palette className="h-4 w-4" />
-                    Couleur Principale
+                    {t("churchSettings.primaryColor")}
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -303,7 +304,7 @@ export default function ChurchSettings() {
                 <div className="space-y-2">
                   <Label htmlFor="card_secondary_color" className="flex items-center gap-2">
                     <Palette className="h-4 w-4" />
-                    Couleur Secondaire
+                    {t("churchSettings.secondaryColor")}
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -325,7 +326,7 @@ export default function ChurchSettings() {
                 <div className="space-y-2">
                   <Label htmlFor="card_text_color" className="flex items-center gap-2">
                     <Palette className="h-4 w-4" />
-                    Couleur du Texte (En-tête)
+                    {t("churchSettings.textColor")}
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -354,7 +355,7 @@ export default function ChurchSettings() {
                     onChange={(e) => setSettings({ ...settings, card_show_logo: e.target.checked ? "true" : "false" })}
                     className="h-4 w-4 rounded border-gray-300"
                   />
-                  <Label htmlFor="card_show_logo">Afficher le logo sur les cartes</Label>
+                  <Label htmlFor="card_show_logo">{t("churchSettings.showLogo")}</Label>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -365,13 +366,13 @@ export default function ChurchSettings() {
                     onChange={(e) => setSettings({ ...settings, card_church_name_on_card: e.target.checked ? "true" : "false" })}
                     className="h-4 w-4 rounded border-gray-300"
                   />
-                  <Label htmlFor="card_church_name_on_card">Afficher le nom de l'église</Label>
+                  <Label htmlFor="card_church_name_on_card">{t("churchSettings.showChurchName")}</Label>
                 </div>
               </div>
 
               {/* Card Preview */}
               <div className="space-y-2">
-                <Label>Aperçu de la carte</Label>
+                <Label>{t("churchSettings.cardPreview")}</Label>
                 <div 
                   className="relative w-full max-w-[340px] h-[200px] rounded-lg overflow-hidden border-2"
                   style={{ borderColor: settings.card_primary_color }}
@@ -393,8 +394,8 @@ export default function ChurchSettings() {
                       style={{ color: settings.card_text_color }}
                     >
                       {settings.card_church_name_on_card === "true" 
-                        ? (settings.church_name || "Nom de l'Église")
-                        : "CARTE DE MEMBRE"}
+                        ? (settings.church_name || t("churchSettings.churchName"))
+                        : t("churchSettings.memberCard")}
                     </span>
                     <span 
                       className="text-xs"
@@ -412,9 +413,9 @@ export default function ChurchSettings() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold" style={{ color: settings.card_primary_color }}>Jean DUPONT</p>
-                        <p className="text-xs text-muted-foreground">Membre</p>
-                        <p className="text-xs text-muted-foreground mt-1">Né: 01/01/1990</p>
-                        <p className="text-xs text-muted-foreground">Membre depuis: 15/03/2020</p>
+                        <p className="text-xs text-muted-foreground">{t("churchSettings.member")}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{t("churchSettings.born")}: 01/01/1990</p>
+                        <p className="text-xs text-muted-foreground">{t("churchSettings.memberSince")}: 15/03/2020</p>
                       </div>
                       <div className="w-14 h-14 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
                         QR
@@ -428,7 +429,7 @@ export default function ChurchSettings() {
                     style={{ backgroundColor: settings.card_secondary_color }}
                   >
                     <span className="text-xs font-medium" style={{ color: settings.card_text_color }}>
-                      {settings.card_church_name_on_card === "true" ? "Membre Actif" : (settings.church_name || "Nom de l'Église")}
+                      {settings.card_church_name_on_card === "true" ? t("churchSettings.activeMember") : (settings.church_name || t("churchSettings.churchName"))}
                     </span>
                   </div>
                 </div>
@@ -436,41 +437,17 @@ export default function ChurchSettings() {
             </CardContent>
           </Card>
 
-          {/* Preview Card */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle>Aperçu</CardTitle>
-              <CardDescription>
-                Voici comment les informations apparaîtront sur les relevés fiscaux.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-background rounded-lg p-6 border">
-                <div className="text-center space-y-1">
-                  <h3 className="text-xl font-bold">{settings.church_name || "Nom de l'église"}</h3>
-                  <p className="text-sm text-muted-foreground">{settings.church_address || "Adresse"}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Tél: {settings.church_phone || "Téléphone"} | Email: {settings.church_email || "Email"}
-                  </p>
-                  {settings.church_tax_id && (
-                    <p className="text-sm font-medium">N° Fiscal: {settings.church_tax_id}</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateSettings.isPending} size="lg">
+            <Button type="submit" disabled={updateSettings.isPending}>
               {updateSettings.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
+                  {t("churchSettings.saving")}
                 </>
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Enregistrer les paramètres
+                  {t("churchSettings.saveSettings")}
                 </>
               )}
             </Button>
