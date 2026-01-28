@@ -409,9 +409,9 @@ const Commercial = () => {
                   
                   {/* Search Results Dropdown - Always visible when there are results */}
                   {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl z-[100] overflow-hidden">
-                      <div className="p-2 bg-muted/50 border-b">
-                        <p className="text-xs text-muted-foreground font-medium">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-border rounded-xl shadow-2xl z-[100] overflow-hidden">
+                      <div className="p-2 bg-muted border-b border-border">
+                        <p className="text-sm text-foreground font-medium">
                           {searchResults.length} église(s) trouvée(s)
                         </p>
                       </div>
