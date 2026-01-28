@@ -368,7 +368,7 @@ const Commercial = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-secondary/5 to-transparent" />
         <div className="container mx-auto px-4 relative">
           <div className="max-w-2xl mx-auto">
-            <Card className="border-2 border-primary/20 shadow-xl shadow-primary/5 overflow-hidden">
+            <Card className="border-2 border-primary/20 shadow-xl shadow-primary/5 overflow-visible">
               <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 border-b">
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
