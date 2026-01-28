@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["super-admin-stats"],
@@ -91,40 +94,40 @@ export default function SuperAdminDashboard() {
 
   const handleExportTenants = () => {
     if (!allTenants || allTenants.length === 0) {
-      toast.error("Aucune donnée à exporter");
+      toast.error(t("superAdmin.noDataToExport"));
       return;
     }
 
     const columns = [
-      { key: "name", header: "Nom" },
-      { key: "slug", header: "Slug" },
-      { key: "contact_email", header: "Email" },
-      { key: "contact_phone", header: "Téléphone" },
-      { key: "address", header: "Adresse" },
+      { key: "name", header: t("superAdmin.churchName") },
+      { key: "slug", header: t("superAdmin.slug") },
+      { key: "contact_email", header: t("superAdmin.contactEmail") },
+      { key: "contact_phone", header: t("superAdmin.contactPhone") },
+      { key: "address", header: t("common.address") },
       { 
         key: "tenant_subscriptions", 
-        header: "Plan",
+        header: t("superAdmin.plan"),
         formatter: (subs: any[]) => subs?.[0]?.plan || "basic"
       },
       { 
         key: "tenant_subscriptions", 
-        header: "Statut Abonnement",
+        header: t("superAdmin.status"),
         formatter: (subs: any[]) => subs?.[0]?.status || "-"
       },
       { 
         key: "tenant_subscriptions", 
-        header: "Prix Mensuel",
+        header: t("superAdmin.monthlyRevenueShort"),
         formatter: (subs: any[]) => formatCurrencyForCsv(subs?.[0]?.price_monthly)
       },
       { 
         key: "created_at", 
-        header: "Date Création",
+        header: t("common.date"),
         formatter: (val: string) => formatDateForCsv(val)
       },
     ];
 
-    exportToCsv(allTenants, columns, `eglises_${new Date().toISOString().split('T')[0]}`);
-    toast.success("Export CSV téléchargé");
+    exportToCsv(allTenants, columns, `churches_${new Date().toISOString().split('T')[0]}`);
+    toast.success(t("superAdmin.csvExported"));
   };
 
   const StatCard = ({ 
@@ -160,54 +163,56 @@ export default function SuperAdminDashboard() {
     </Card>
   );
 
+  const dateLocale = language === "fr" ? "fr-FR" : language === "ht" ? "fr-HT" : "en-US";
+
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard Super Admin</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("superAdmin.dashboardTitle")}</h1>
             <p className="text-sm md:text-base text-muted-foreground">
-              Vue d'ensemble de toutes les églises sur la plateforme
+              {t("superAdmin.dashboardSubtitle")}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={handleExportTenants} className="w-full sm:w-auto">
               <Download className="mr-2 h-4 w-4" />
-              Exporter CSV
+              {t("superAdmin.exportCsv")}
             </Button>
             <Button onClick={() => navigate("/settings/tenants")} className="w-full sm:w-auto">
-              Gérer les églises
+              {t("superAdmin.manageChurches")}
             </Button>
           </div>
         </div>
 
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Total Églises"
+            title={t("superAdmin.totalChurches")}
             value={stats?.tenantsCount || 0}
             icon={Building2}
-            description="Églises enregistrées"
+            description={t("superAdmin.registeredChurches")}
             loading={isLoading}
           />
           <StatCard
-            title="Revenus Mensuels"
+            title={t("superAdmin.monthlyRevenue")}
             value={formatCurrency(stats?.totalRevenue || 0)}
             icon={DollarSign}
-            description="Revenus récurrents"
+            description={t("superAdmin.recurringRevenue")}
             loading={isLoading}
           />
           <StatCard
-            title="Utilisateurs Actifs"
+            title={t("superAdmin.activeUsers")}
             value={stats?.usersCount || 0}
             icon={Users}
-            description="Utilisateurs approuvés"
+            description={t("superAdmin.approvedUsers")}
             loading={isLoading}
           />
           <StatCard
-            title="Abonnements Actifs"
+            title={t("superAdmin.activeSubscriptions")}
             value={stats?.activeSubscriptions || 0}
             icon={TrendingUp}
-            description={`${stats?.trialSubscriptions || 0} en période d'essai`}
+            description={`${stats?.trialSubscriptions || 0} ${t("superAdmin.inTrial")}`}
             loading={isLoading}
           />
         </div>
@@ -217,7 +222,7 @@ export default function SuperAdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Églises Récentes
+                {t("superAdmin.recentChurches")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -229,7 +234,7 @@ export default function SuperAdminDashboard() {
                 </div>
               ) : stats?.recentTenants?.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
-                  Aucune église enregistrée
+                  {t("superAdmin.noChurchRegistered")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -255,7 +260,7 @@ export default function SuperAdminDashboard() {
                           {tenant.tenant_subscriptions?.[0]?.plan || "basic"}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(tenant.created_at).toLocaleDateString("fr-FR")}
+                          {new Date(tenant.created_at).toLocaleDateString(dateLocale)}
                         </p>
                       </div>
                     </div>
@@ -269,7 +274,7 @@ export default function SuperAdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-5 w-5" />
-                Actions Rapides
+                {t("superAdmin.quickActions")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -279,7 +284,7 @@ export default function SuperAdminDashboard() {
                 onClick={() => navigate("/settings/tenants")}
               >
                 <Building2 className="mr-2 h-4 w-4" />
-                Gérer les églises
+                {t("superAdmin.manageChurches")}
               </Button>
               <Button 
                 variant="outline" 
@@ -287,7 +292,7 @@ export default function SuperAdminDashboard() {
                 onClick={() => navigate("/super-admin/explore")}
               >
                 <Eye className="mr-2 h-4 w-4" />
-                Explorer les données d'une église
+                {t("superAdmin.exploreChurchData")}
               </Button>
               <Button 
                 variant="outline" 
@@ -295,7 +300,7 @@ export default function SuperAdminDashboard() {
                 onClick={() => navigate("/settings/users")}
               >
                 <Users className="mr-2 h-4 w-4" />
-                Gestion des utilisateurs
+                {t("superAdmin.userManagement")}
               </Button>
             </CardContent>
           </Card>
