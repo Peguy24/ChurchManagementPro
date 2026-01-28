@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
+import LogoUpload from "@/components/LogoUpload";
 
 interface ChurchSettings {
   church_name: string;
@@ -231,15 +232,11 @@ export default function ChurchSettings() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="church_logo_url">URL du Logo (optionnel)</Label>
-                <Input
-                  id="church_logo_url"
-                  value={settings.church_logo_url}
-                  onChange={(e) => setSettings({ ...settings, church_logo_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
+              <LogoUpload
+                tenantId={tenantId}
+                currentLogoUrl={settings.church_logo_url}
+                onLogoUploaded={(url) => setSettings({ ...settings, church_logo_url: url })}
+              />
             </CardContent>
           </Card>
 
