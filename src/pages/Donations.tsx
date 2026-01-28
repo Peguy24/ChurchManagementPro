@@ -56,12 +56,14 @@ export default function Donations() {
   const { hasFeature, loading: planLoading } = usePlanLimits();
 
   // Check for donations feature access
+  const { t } = useLanguage();
+
   if (!planLoading && !hasFeature("donations")) {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName="Gestion des Donations"
-          featureDescription="Gérez les dons, dîmes et offrandes avec génération de reçus fiscaux. Souscrivez pour accéder à cette fonctionnalité."
+          featureName={t("donations.title")}
+          featureDescription={t("donations.subtitle")}
           requiredPlan="essentiel"
           icon={<DollarSign className="w-8 h-8 text-muted-foreground" />}
         />
@@ -73,7 +75,7 @@ export default function Donations() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
       </Layout>
     );
@@ -99,15 +101,15 @@ function DonationsContent() {
     building: t("donations.building"),
     mission: t("donations.mission"),
     special: t("donations.special"),
-    activity: "Activité",
-    other: "Autre",
+    activity: t("donations.other"),
+    other: t("donations.other"),
   };
 
   const methodLabels: Record<string, string> = {
     cash: t("donations.cash"),
     check: t("donations.check"),
     transfer: t("donations.transfer"),
-    mobile_money: "Mobile Money",
+    mobile_money: t("donations.other"),
     card: t("donations.card"),
   };
 
@@ -179,9 +181,9 @@ function DonationsContent() {
   ];
 
   const getCreatorName = (createdBy: string | null) => {
-    if (!createdBy) return "Système";
+    if (!createdBy) return t("common.system");
     const profile = userProfiles?.find(p => p.id === createdBy);
-    return profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || "Utilisateur" : "Utilisateur";
+    return profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || t("common.user") : t("common.user");
   };
 
   const handleEdit = (donation: any) => {
@@ -379,12 +381,12 @@ function DonationsContent() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t("common.date")}</TableHead>
-                      <TableHead>Description</TableHead>
+                      <TableHead>{t("common.description")}</TableHead>
                       <TableHead>{t("donations.donationType")}</TableHead>
                       <TableHead>{t("donations.amount")}</TableHead>
-                      <TableHead>Compte</TableHead>
+                      <TableHead>{t("common.account")}</TableHead>
                       <TableHead>{t("donations.paymentMethod")}</TableHead>
-                      <TableHead>Créateur</TableHead>
+                      <TableHead>{t("common.creator")}</TableHead>
                       <TableHead className="text-right">{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -435,7 +437,7 @@ function DonationsContent() {
                               variant="ghost"
                               size="icon"
                               onClick={() => setViewDonation(donation)}
-                              title="Voir détails"
+                              title={t("common.viewDetails")}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -443,7 +445,7 @@ function DonationsContent() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEdit(donation)}
-                              title="Modifier"
+                              title={t("common.edit")}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -451,7 +453,7 @@ function DonationsContent() {
                               variant="ghost"
                               size="icon"
                               onClick={() => console.log("Generate receipt for:", donation)}
-                              title="Télécharger reçu"
+                              title={t("common.downloadReceipt")}
                             >
                               <FileText className="h-4 w-4" />
                             </Button>
@@ -471,65 +473,65 @@ function DonationsContent() {
       <Dialog open={!!viewDonation} onOpenChange={() => setViewDonation(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Détails de la Recette</DialogTitle>
+            <DialogTitle>{t("common.details")} - {t("donations.title")}</DialogTitle>
           </DialogHeader>
           {viewDonation && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Date</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("common.date")}</p>
                   <p>{format(new Date(viewDonation.donation_date), "dd MMMM yyyy", { locale: fr })}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Montant</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(Number(viewDonation.amount))}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("donations.amount")}</p>
+                  <p className="text-xl font-bold text-success">{formatCurrency(Number(viewDonation.amount))}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Type</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("common.type")}</p>
                   <Badge variant="outline" className={categoryColors[viewDonation.donation_type] || categoryColors.other}>
                     {categoryLabels[viewDonation.donation_type] || viewDonation.donation_type}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Mode de paiement</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("donations.paymentMethod")}</p>
                   <p>{methodLabels[viewDonation.payment_method] || viewDonation.payment_method}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Compte</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("common.account")}</p>
                   <p className="flex items-center gap-1">
                     {viewDonation.cash_register ? (
                       <><Wallet className="h-4 w-4" />{(viewDonation.cash_register as any).name}</>
                     ) : viewDonation.bank_account ? (
                       <><Building2 className="h-4 w-4" />{(viewDonation.bank_account as any).name}</>
                     ) : (
-                      "Non spécifié"
+                      t("common.notSpecified")
                     )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Donateur</p>
-                  <p>{viewDonation.member ? `${viewDonation.member.first_name} ${viewDonation.member.last_name}` : "Anonyme"}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("nav.members")}</p>
+                  <p>{viewDonation.member ? `${viewDonation.member.first_name} ${viewDonation.member.last_name}` : t("common.none")}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm font-medium text-muted-foreground">Description</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("common.description")}</p>
                   <p>{viewDonation.description || viewDonation.notes || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Branche</p>
-                  <p>{viewDonation.branch?.name || "Toutes"}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("nav.branches")}</p>
+                  <p>{viewDonation.branch?.name || t("common.all")}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Créé par</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("common.creator")}</p>
                   <p>{getCreatorName(viewDonation.created_by)}</p>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setViewDonation(null)}>
-                  Fermer
+                  {t("common.close")}
                 </Button>
                 <Button onClick={() => { handleEdit(viewDonation); setViewDonation(null); }}>
                   <Pencil className="h-4 w-4 mr-2" />
-                  Modifier
+                  {t("common.edit")}
                 </Button>
               </div>
             </div>

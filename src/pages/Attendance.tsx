@@ -71,14 +71,15 @@ interface ScannedMember {
 
 export default function Attendance() {
   const { hasFeature, loading: planLoading } = usePlanLimits();
+  const { t } = useLanguage();
 
   // Check for attendance feature access
   if (!planLoading && !hasFeature("attendance")) {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName="Suivi des Présences"
-          featureDescription="Gérez les présences avec scanner QR, statistiques et rapports détaillés. Souscrivez pour accéder à cette fonctionnalité."
+          featureName={t("attendance.title")}
+          featureDescription={t("attendance.subtitle")}
           requiredPlan="essentiel"
           icon={<Calendar className="w-8 h-8 text-muted-foreground" />}
         />
@@ -90,7 +91,7 @@ export default function Attendance() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
       </Layout>
     );

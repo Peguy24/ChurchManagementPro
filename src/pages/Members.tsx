@@ -96,18 +96,15 @@ export default function Members() {
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
               <Upload className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">{t("common.import")}</span>
-              <span className="sm:hidden">Import</span>
+              {t("common.import")}
             </Button>
             <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
               <Download className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">{t("common.export")}</span>
-              <span className="sm:hidden">Export</span>
+              {t("common.export")}
             </Button>
             <Button size="sm" className="flex-1 sm:flex-none" onClick={handleAddMember}>
               <Plus className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">{t("members.addMember")}</span>
-              <span className="sm:hidden">Ajouter</span>
+              {t("members.addMember")}
             </Button>
           </div>
         </div>
@@ -250,7 +247,7 @@ export default function Members() {
                       onClick={() => navigate(`/members/details?memberId=${member.id}`)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      Voir
+                      {t("members.viewDetails")}
                     </Button>
                     <Button
                       variant="outline"
@@ -262,7 +259,7 @@ export default function Members() {
                       }}
                     >
                       <Edit className="h-4 w-4 mr-1" />
-                      Modifier
+                      {t("common.edit")}
                     </Button>
                   </div>
                 </div>
