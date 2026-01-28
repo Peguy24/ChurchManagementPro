@@ -104,15 +104,16 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/insights": "reports",
 };
 
-// Map nav groups to route groups
+// Map nav groups to route groups (using internal keys, not translated labels)
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
-  "Membres": ["members", "attendance", "branches", "ministries"],
-  "Finances": ["finances"],
-  "Rapports": ["dashboard", "reports", "finances"],
-  "Communication": ["communication"],
-  "Planning": ["events"],
-  "Paramètres": ["settings", "users", "tenants"],
-  "Inventaire": ["inventory"],
+  "members": ["members", "attendance", "branches", "ministries"],
+  "finances": ["finances"],
+  "reports": ["dashboard", "reports", "finances"],
+  "communication": ["communication"],
+  "planning": ["events"],
+  "settings": ["settings", "users", "tenants"],
+  "inventory": ["inventory"],
+  "administration": ["dashboard", "tenants", "users"],
 };
 
 // Helper to check if a role has permission for a route group (using provided permissions)
