@@ -389,7 +389,7 @@ const Commercial = () => {
                         placeholder="Rechercher votre église..."
                         value={churchSearch}
                         onChange={(e) => handleChurchSearch(e.target.value)}
-                        className="pl-11 h-12 text-lg border-2 focus:border-primary"
+                        className="pl-11 h-12 text-lg border-2 focus:border-primary text-foreground bg-background"
                       />
                       {/* Loading indicator */}
                       {isSearching && (
