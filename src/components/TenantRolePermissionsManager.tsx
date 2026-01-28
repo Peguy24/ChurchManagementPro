@@ -7,19 +7,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Save } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Database } from "@/integrations/supabase/types";
-import { ROUTE_GROUP_LABELS, type RouteGroup } from "@/lib/permissions";
+import type { RouteGroup } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
-
-const ROLE_LABELS: Record<AppRole, string> = {
-  admin: "Administrateur",
-  pastor: "Pasteur",
-  treasurer: "Trésorier",
-  secretary: "Secrétaire",
-  volunteer: "Bénévole",
-  user: "En attente",
-};
 
 const EDITABLE_ROLES: AppRole[] = ["pastor", "treasurer", "secretary", "volunteer"];
 const ALL_PERMISSION_GROUPS: RouteGroup[] = [
@@ -45,8 +37,34 @@ export default function TenantRolePermissionsManager() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
+  const { t } = useLanguage();
   const [localPermissions, setLocalPermissions] = useState<Record<AppRole, RouteGroup[]>>({} as Record<AppRole, RouteGroup[]>);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const ROLE_LABELS: Record<AppRole, string> = {
+    admin: t("rolePermissions.roleAdmin"),
+    pastor: t("rolePermissions.rolePastor"),
+    treasurer: t("rolePermissions.roleTreasurer"),
+    secretary: t("rolePermissions.roleSecretary"),
+    volunteer: t("rolePermissions.roleVolunteer"),
+    user: t("rolePermissions.roleUser"),
+  };
+
+  const GROUP_LABELS: Record<RouteGroup, string> = {
+    dashboard: t("rolePermissions.groupDashboard"),
+    members: t("rolePermissions.groupMembers"),
+    attendance: t("rolePermissions.groupAttendance"),
+    ministries: t("rolePermissions.groupMinistries"),
+    branches: t("rolePermissions.groupBranches"),
+    finances: t("rolePermissions.groupFinances"),
+    events: t("rolePermissions.groupEvents"),
+    reports: t("rolePermissions.groupReports"),
+    communication: t("rolePermissions.groupCommunication"),
+    settings: t("rolePermissions.groupSettings"),
+    inventory: t("rolePermissions.groupInventory"),
+    users: t("rolePermissions.groupUsers"),
+    tenants: t("rolePermissions.groupTenants"),
+  };
 
   // Fetch current permissions from database for this tenant
   const { data: dbPermissions, isLoading } = useQuery({
@@ -144,15 +162,15 @@ export default function TenantRolePermissionsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenant-role-permissions", tenantId] });
       toast({
-        title: "Succès",
-        description: "Permissions mises à jour avec succès",
+        title: t("common.save"),
+        description: t("rolePermissions.saveSuccess"),
       });
       setHasChanges(false);
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder les permissions",
+        title: t("common.error"),
+        description: t("rolePermissions.saveError"),
         variant: "destructive",
       });
       console.error("Error saving permissions:", error);
@@ -176,7 +194,7 @@ export default function TenantRolePermissionsManager() {
   };
 
   if (isLoading) {
-    return <div className="text-muted-foreground">Chargement des permissions...</div>;
+    return <div className="text-muted-foreground">{t("rolePermissions.loadingPermissions")}</div>;
   }
 
   return (
@@ -184,10 +202,10 @@ export default function TenantRolePermissionsManager() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
-          Permissions par Rôle
+          {t("rolePermissions.title")}
         </CardTitle>
         <CardDescription>
-          Personnalisez les accès pour chaque rôle dans votre église. L'administrateur a toujours accès complet.
+          {t("rolePermissions.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -196,7 +214,7 @@ export default function TenantRolePermissionsManager() {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-3 px-2 font-medium text-muted-foreground">
-                  Fonctionnalité
+                  {t("rolePermissions.feature")}
                 </th>
                 {EDITABLE_ROLES.map((role) => (
                   <th key={role} className="text-center py-3 px-2 font-medium text-muted-foreground">
@@ -209,7 +227,7 @@ export default function TenantRolePermissionsManager() {
               {ALL_PERMISSION_GROUPS.map((group) => (
                 <tr key={group} className="border-b hover:bg-muted/50">
                   <td className="py-3 px-2 font-medium">
-                    {ROUTE_GROUP_LABELS[group]}
+                    {GROUP_LABELS[group]}
                   </td>
                   {EDITABLE_ROLES.map((role) => (
                     <td key={`${role}-${group}`} className="text-center py-3 px-2">
@@ -228,14 +246,14 @@ export default function TenantRolePermissionsManager() {
 
         <div className="mt-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Note: Le tableau de bord est toujours accessible à tous les utilisateurs approuvés.
+            {t("rolePermissions.dashboardAlwaysAccessible")}
           </p>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={!hasChanges || saveMutation.isPending}
           >
             <Save className="h-4 w-4 mr-2" />
-            {saveMutation.isPending ? "Enregistrement..." : "Enregistrer"}
+            {saveMutation.isPending ? t("rolePermissions.saving") : t("rolePermissions.save")}
           </Button>
         </div>
       </CardContent>
