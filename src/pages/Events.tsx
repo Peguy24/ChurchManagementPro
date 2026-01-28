@@ -14,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Clock, MapPin, Plus, Users, Loader2 } from "lucide-react";
 import { format, isSameDay, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import EventDialog from "@/components/EventDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Helper to parse date string without timezone issues
 const parseEventDate = (dateStr: string): Date => {
@@ -38,25 +39,29 @@ interface Event {
   created_at: string;
 }
 
-const statusColors: Record<string, string> = {
+const getStatusColors = () => ({
   confirmed: "bg-success/10 text-success border-success/20",
   planned: "bg-info/10 text-info border-info/20",
   cancelled: "bg-destructive/10 text-destructive border-destructive/20",
   completed: "bg-muted text-muted-foreground border-muted",
-};
-
-const statusLabels: Record<string, string> = {
-  confirmed: "Confirmé",
-  planned: "Planifié",
-  cancelled: "Annulé",
-  completed: "Terminé",
-};
+});
 
 export default function Events() {
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  
+  const statusColors = getStatusColors();
+  const statusLabels: Record<string, string> = {
+    confirmed: t("events.confirmed"),
+    planned: t("events.planned"),
+    cancelled: t("events.cancelled"),
+    completed: t("events.completed"),
+  };
+  
+  const dateLocale = language === "fr" ? fr : language === "ht" ? fr : enUS;
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events"],
@@ -112,16 +117,15 @@ export default function Events() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Gestion des Événements
+              {t("events.title")}
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Planifiez et gérez les événements de votre église
+              {t("events.subtitle")}
             </p>
           </div>
           <Button size="sm" onClick={() => setDialogOpen(true)} className="self-start sm:self-auto">
             <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Créer Événement</span>
-            <span className="sm:hidden">Créer</span>
+            {t("events.addEvent")}
           </Button>
         </div>
 
@@ -135,15 +139,15 @@ export default function Events() {
               {/* Calendar */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Calendrier</CardTitle>
-                  <CardDescription>Choisissez une date pour voir les événements</CardDescription>
+                  <CardTitle>{t("events.calendar")}</CardTitle>
+                  <CardDescription>{t("events.selectDate")}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    locale={fr}
+                    locale={dateLocale}
                     className="pointer-events-auto"
                     modifiers={{
                       hasEvent: eventDates,
@@ -163,17 +167,17 @@ export default function Events() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    Événements du{" "}
-                    {selectedDate ? format(selectedDate, "PPP", { locale: fr }) : "..."}
+                    {t("events.eventsOn")}{" "}
+                    {selectedDate ? format(selectedDate, "PPP", { locale: dateLocale }) : "..."}
                   </CardTitle>
                   <CardDescription>
-                    {eventsOnSelectedDate.length} événement(s)
+                    {eventsOnSelectedDate.length} {t("events.eventsCount")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {eventsOnSelectedDate.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      Aucun événement à cette date
+                      {t("events.noEventsOnDate")}
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -241,7 +245,7 @@ export default function Events() {
               <CardContent>
                 {upcomingEvents.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Aucun événement à venir. Cliquez sur "Créer Événement" pour en ajouter un.
+                    {t("events.noUpcoming")}
                   </div>
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -257,7 +261,7 @@ export default function Events() {
                             <div>
                               <CardTitle className="text-base">{event.name}</CardTitle>
                               <CardDescription className="mt-1 text-sm">
-                                {format(parseEventDate(event.event_date), "PPP", { locale: fr })}
+                                {format(parseEventDate(event.event_date), "PPP", { locale: dateLocale })}
                               </CardDescription>
                             </div>
                             <Badge
@@ -285,7 +289,7 @@ export default function Events() {
                           {event.expected_attendees > 0 && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Users className="h-4 w-4" />
-                              {event.expected_attendees} participants
+                              {event.expected_attendees} {t("events.participants")}
                             </div>
                           )}
                         </CardContent>
