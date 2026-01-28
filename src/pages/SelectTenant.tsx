@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Church, Search, Building2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Tenant {
   id: string;
@@ -17,6 +18,7 @@ interface Tenant {
 
 export default function SelectTenant() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -55,7 +57,7 @@ export default function SelectTenant() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chargement des églises...</p>
+          <p className="mt-4 text-muted-foreground">{t('tenant.loadingChurches')}</p>
         </div>
       </div>
     );
@@ -67,10 +69,10 @@ export default function SelectTenant() {
         <div className="mb-8 text-center pt-8">
           <Church className="mx-auto h-16 w-16 text-primary mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Système de Gestion d'Église
+            {t('tenant.selectTenantTitle')}
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Sélectionnez votre église pour accéder à son espace de gestion
+            {t('tenant.selectTenantSubtitle')}
           </p>
         </div>
 
@@ -78,7 +80,7 @@ export default function SelectTenant() {
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher une église..."
+              placeholder={t('tenant.searchChurch')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -90,11 +92,11 @@ export default function SelectTenant() {
           <Card className="text-center py-12">
             <CardContent>
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucune église trouvée</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('tenant.noChurchFound')}</h3>
               <p className="text-muted-foreground">
                 {search 
-                  ? "Aucune église ne correspond à votre recherche"
-                  : "Aucune église n'est encore enregistrée dans le système"
+                  ? t('tenant.noSearchMatch')
+                  : t('tenant.noChurchRegistered')
                 }
               </p>
             </CardContent>
@@ -140,7 +142,7 @@ export default function SelectTenant() {
                     size="sm" 
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                   >
-                    Accéder
+                    {t('tenant.access')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </CardContent>
@@ -151,10 +153,10 @@ export default function SelectTenant() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            Vous êtes administrateur système?
+            {t('tenant.systemAdmin')}
           </p>
           <Button variant="outline" onClick={() => navigate('/auth')}>
-            Accès Administration
+            {t('tenant.adminAccess')}
           </Button>
         </div>
       </div>
