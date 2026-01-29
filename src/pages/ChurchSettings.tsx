@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle } from "lucide-react";
 import LogoUpload from "@/components/LogoUpload";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -29,15 +32,38 @@ interface ChurchSettingsData {
   card_church_name_on_card: string;
 }
 
+interface Tenant {
+  id: string;
+  name: string;
+}
+
 export default function ChurchSettings() {
   const queryClient = useQueryClient();
   const { tenantId: profileTenantId } = useCurrentTenant();
   const { tenant: contextTenant } = useTenant();
   const { t } = useLanguage();
+  const { isAdmin: isSuperAdmin } = useUserRole();
   
-  // Use tenant from context (URL-based) as fallback for super admins
-  const tenantId = profileTenantId || contextTenant?.id || null;
+  // For super admins without a profile tenant, allow selecting a tenant
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   
+  // Use tenant from: 1) profile, 2) context (URL), 3) selected (for super admin)
+  const tenantId = profileTenantId || contextTenant?.id || selectedTenantId;
+  
+  // Fetch all tenants for super admin selector
+  const { data: tenants } = useQuery({
+    queryKey: ["all-tenants-for-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tenants")
+        .select("id, name")
+        .order("name");
+      if (error) throw error;
+      return data as Tenant[];
+    },
+    enabled: isSuperAdmin && !profileTenantId && !contextTenant?.id,
+  });
+
   const [settings, setSettings] = useState<ChurchSettingsData>({
     church_name: "",
     church_address: "",
@@ -150,6 +176,9 @@ export default function ChurchSettings() {
     );
   }
 
+  // Check if super admin needs to select a tenant
+  const needsTenantSelection = isSuperAdmin && !profileTenantId && !contextTenant?.id;
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -159,6 +188,37 @@ export default function ChurchSettings() {
             {t("churchSettings.subtitle")}
           </p>
         </div>
+
+        {/* Tenant selector for super admins */}
+        {needsTenantSelection && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex flex-col gap-3">
+              <span>{t("churchSettings.selectTenantPrompt") || "Please select a church to configure its settings:"}</span>
+              <Select value={selectedTenantId || ""} onValueChange={setSelectedTenantId}>
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder={t("churchSettings.selectTenantPlaceholder") || "Select a church..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants?.map((tenant) => (
+                    <SelectItem key={tenant.id} value={tenant.id}>
+                      {tenant.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!tenantId && !needsTenantSelection && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {t("churchSettings.noChurchSelected") || "No church selected. Please select or join a church first."}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Church Identity */}

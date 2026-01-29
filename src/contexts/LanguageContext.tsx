@@ -685,6 +685,8 @@ const translations = {
       saveSuccess: "Paramètres enregistrés avec succès",
       saveError: "Erreur lors de l'enregistrement des paramètres",
       noChurchSelected: "Aucune église sélectionnée",
+      selectTenantPrompt: "Veuillez sélectionner une église pour configurer ses paramètres:",
+      selectTenantPlaceholder: "Sélectionner une église...",
     },
     rolePermissions: {
       title: "Permissions par Rôle",
@@ -1592,6 +1594,8 @@ const translations = {
       saveSuccess: "Settings saved successfully",
       saveError: "Error saving settings",
       noChurchSelected: "No church selected",
+      selectTenantPrompt: "Please select a church to configure its settings:",
+      selectTenantPlaceholder: "Select a church...",
     },
     rolePermissions: {
       title: "Role Permissions",
@@ -2499,6 +2503,8 @@ const translations = {
       saveSuccess: "Paramèt anrejistre avèk siksè",
       saveError: "Erè pandan anrejistreman paramèt yo",
       noChurchSelected: "Pa gen legliz chwazi",
+      selectTenantPrompt: "Tanpri chwazi yon legliz pou konfigire paramèt li yo:",
+      selectTenantPlaceholder: "Chwazi yon legliz...",
     },
     rolePermissions: {
       title: "Pèmisyon pa Wòl",
