@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Palette, Save, Loader2, Image, Type, Eye } from "lucide-react";
+import { Palette, Save, Loader2, Type, Eye } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import LogoUpload from "@/components/LogoUpload";
 
 export default function TenantBranding() {
   const queryClient = useQueryClient();
@@ -106,21 +107,11 @@ export default function TenantBranding() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="logo_url" className="flex items-center gap-2">
-                  <Image className="h-4 w-4" />
-                  {t("tenant.logoUrl")}
-                </Label>
-                <Input
-                  id="logo_url"
-                  value={settings.logo_url}
-                  onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("tenant.logoUrlHint")}
-                </p>
-              </div>
+              <LogoUpload
+                tenantId={tenantId}
+                currentLogoUrl={settings.logo_url}
+                onLogoUploaded={(url) => setSettings({ ...settings, logo_url: url })}
+              />
             </CardContent>
           </Card>
 
