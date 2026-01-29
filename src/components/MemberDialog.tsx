@@ -26,6 +26,7 @@ import QRCode from "qrcode";
 import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X, Crop } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PhotoCropper from "./PhotoCropper";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface MemberDialogProps {
   open: boolean;
@@ -42,6 +43,7 @@ export default function MemberDialog({
 }: MemberDialogProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
   const [loading, setLoading] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -402,6 +404,7 @@ export default function MemberDialog({
           spouse_name: formData.spouseName || null,
           number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : null,
           children_names: formData.childrenNames || null,
+          tenant_id: tenantId,
         };
 
         const { data, error } = await supabase
