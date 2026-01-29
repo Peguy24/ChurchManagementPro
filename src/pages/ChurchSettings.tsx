@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard } from "lucide-react";
 import LogoUpload from "@/components/LogoUpload";
@@ -30,8 +31,13 @@ interface ChurchSettingsData {
 
 export default function ChurchSettings() {
   const queryClient = useQueryClient();
-  const { tenantId } = useCurrentTenant();
+  const { tenantId: profileTenantId } = useCurrentTenant();
+  const { tenant: contextTenant } = useTenant();
   const { t } = useLanguage();
+  
+  // Use tenant from context (URL-based) as fallback for super admins
+  const tenantId = profileTenantId || contextTenant?.id || null;
+  
   const [settings, setSettings] = useState<ChurchSettingsData>({
     church_name: "",
     church_address: "",
