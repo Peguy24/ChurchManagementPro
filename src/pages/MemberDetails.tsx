@@ -228,10 +228,44 @@ export default function MemberDetails() {
         {Icon && <Icon className="h-4 w-4 text-muted-foreground mt-0.5" />}
         <div className="flex-1">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-sm">{value}</p>
+          <p className="text-sm whitespace-pre-line">{value}</p>
         </div>
       </div>
     );
+  };
+
+  // Helper function to format address from JSON
+  const formatAddress = (addressData: string | null): string | null => {
+    if (!addressData) return null;
+    
+    try {
+      const address = typeof addressData === 'string' ? JSON.parse(addressData) : addressData;
+      
+      const parts: string[] = [];
+      
+      // Build address line 1: number + street + apartment
+      const line1Parts: string[] = [];
+      if (address.number) line1Parts.push(address.number);
+      if (address.street) line1Parts.push(address.street);
+      if (address.apartment) line1Parts.push(`Apt ${address.apartment}`);
+      if (line1Parts.length > 0) parts.push(line1Parts.join(' '));
+      
+      // Build address line 2: city, state zipCode
+      const line2Parts: string[] = [];
+      if (address.city) line2Parts.push(address.city);
+      if (address.state) line2Parts.push(address.state);
+      if (address.zipCode) line2Parts.push(address.zipCode);
+      if (line2Parts.length > 0) parts.push(line2Parts.join(', '));
+      
+      // Add country if present
+      if (address.country) parts.push(address.country);
+      
+      const formattedAddress = parts.join('\n');
+      return formattedAddress || null;
+    } catch (e) {
+      // If parsing fails, return the original string
+      return addressData;
+    }
   };
 
   if (loading) {
@@ -365,7 +399,7 @@ export default function MemberDetails() {
               <InfoRow label="Email" value={member.email} icon={Mail} />
               <InfoRow label="Téléphone" value={member.phone} icon={Phone} />
               <InfoRow label="Téléphone d'urgence" value={member.emergency_phone} icon={Phone} />
-              <InfoRow label="Adresse" value={member.address} icon={MapPin} />
+              <InfoRow label="Adresse" value={formatAddress(member.address)} icon={MapPin} />
               <InfoRow 
                 label="Date de naissance" 
                 value={member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString('fr-FR') : null} 
