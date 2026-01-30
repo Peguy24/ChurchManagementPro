@@ -72,6 +72,9 @@ export default function MemberDialog({
     status: "active",
     branchId: "",
     photoUrl: "",
+    // Formation
+    academicFormation: "",
+    professionalFormation: "",
     // Spiritual Information
     baptismStatus: "",
     baptismDate: "",
@@ -154,6 +157,8 @@ export default function MemberDialog({
         state: address.state || "",
         zipCode: address.zipCode || "",
         country: address.country || "",
+        academicFormation: member.academic_formation || "",
+        professionalFormation: member.professional_formation || "",
         maritalStatus: member.marital_status || "",
         conversionDate: member.conversion_date || "",
         baptismDate: member.baptism_date || "",
@@ -198,6 +203,8 @@ export default function MemberDialog({
         state: "",
         zipCode: "",
         country: "",
+        academicFormation: "",
+        professionalFormation: "",
         maritalStatus: "",
         conversionDate: "",
         baptismDate: "",
@@ -361,6 +368,8 @@ export default function MemberDialog({
           join_date: formData.joinDate || null,
           address: JSON.stringify(addressData),
           photo_url: photoUrl || null,
+          academic_formation: formData.academicFormation || null,
+          professional_formation: formData.professionalFormation || null,
           marital_status: formData.maritalStatus || null,
           conversion_date: formData.conversionDate || null,
           baptism_date: formData.baptismDate || null,
@@ -394,6 +403,8 @@ export default function MemberDialog({
           branch_id: formData.branchId || null,
           join_date: formData.joinDate || null,
           address: JSON.stringify(addressData),
+          academic_formation: formData.academicFormation || null,
+          professional_formation: formData.professionalFormation || null,
           marital_status: formData.maritalStatus || null,
           conversion_date: formData.conversionDate || null,
           baptism_date: formData.baptismDate || null,
@@ -804,6 +815,35 @@ export default function MemberDialog({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Formation Section */}
+              <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
+                <Label className="text-base font-semibold">Formation</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="academicFormation">Formation académique</Label>
+                    <Input
+                      id="academicFormation"
+                      value={formData.academicFormation}
+                      onChange={(e) =>
+                        setFormData({ ...formData, academicFormation: e.target.value })
+                      }
+                      placeholder="Ex: Licence en informatique, Bac+3..."
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="professionalFormation">Formation professionnelle</Label>
+                    <Input
+                      id="professionalFormation"
+                      value={formData.professionalFormation}
+                      onChange={(e) =>
+                        setFormData({ ...formData, professionalFormation: e.target.value })
+                      }
+                      placeholder="Ex: Comptable, Ingénieur..."
+                    />
+                  </div>
+                </div>
               </div>
             </TabsContent>
 
