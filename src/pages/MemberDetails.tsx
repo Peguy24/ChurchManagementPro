@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History } from "lucide-react";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
@@ -38,6 +38,7 @@ import MemberAttendanceStats from "@/components/MemberAttendanceStats";
 import MemberDonationStats from "@/components/MemberDonationStats";
 import MemberDocuments from "@/components/MemberDocuments";
 import MemberTimeline from "@/components/MemberTimeline";
+import QRCode from "qrcode";
 
 interface MemberSimple {
   id: string;
@@ -57,6 +58,7 @@ interface Member {
   role: string | null;
   status: string | null;
   member_type: string | null;
+  member_number: string | null;
   groups: string[] | null;
   marital_status: string | null;
   marriage_date: string | null;
@@ -70,6 +72,8 @@ interface Member {
   baptism_date: string | null;
   conversion_date: string | null;
   christian_experience: string | null;
+  origin_church: string | null;
+  join_date: string | null;
   photo_url: string | null;
   qr_code: string | null;
   created_at: string;
@@ -96,6 +100,7 @@ export default function MemberDetails() {
   const [ministryRole, setMinistryRole] = useState("member");
   const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
   const [addingMinistry, setAddingMinistry] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadAllMembers();
@@ -106,6 +111,33 @@ export default function MemberDetails() {
       loadMemberDetails(memberId);
     }
   }, [memberId]);
+
+  // Generate QR code image from text
+  useEffect(() => {
+    const generateQrCode = async () => {
+      if (member?.qr_code || member?.member_number) {
+        try {
+          const qrContent = member.qr_code || `MEMBER-${member.id}`;
+          const dataUrl = await QRCode.toDataURL(qrContent, {
+            width: 200,
+            margin: 2,
+            color: {
+              dark: '#000000',
+              light: '#ffffff',
+            },
+          });
+          setQrCodeDataUrl(dataUrl);
+        } catch (error) {
+          console.error("Erreur lors de la génération du QR code:", error);
+          setQrCodeDataUrl(null);
+        }
+      } else {
+        setQrCodeDataUrl(null);
+      }
+    };
+    
+    generateQrCode();
+  }, [member]);
 
   const loadAllMembers = async () => {
     try {
@@ -486,21 +518,42 @@ export default function MemberDetails() {
           </Card>
         </div>
 
-        {/* QR Code Section */}
-        {member.qr_code && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Code QR du Membre</CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <img 
-                src={member.qr_code} 
-                alt="QR Code" 
-                className="w-48 h-48"
-              />
-            </CardContent>
-          </Card>
-        )}
+        {/* QR Code Section - Always show if we have member data */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              Code QR du Membre
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-4">
+              {qrCodeDataUrl ? (
+                <img 
+                  src={qrCodeDataUrl} 
+                  alt="QR Code" 
+                  className="w-48 h-48 border rounded-lg p-2 bg-white"
+                />
+              ) : (
+                <div className="w-48 h-48 border rounded-lg flex items-center justify-center bg-muted">
+                  <p className="text-sm text-muted-foreground text-center px-4">
+                    QR Code non disponible
+                  </p>
+                </div>
+              )}
+              {member.qr_code && (
+                <p className="text-sm text-muted-foreground font-mono">
+                  {member.qr_code}
+                </p>
+              )}
+              {member.member_number && (
+                <Badge variant="outline" className="font-mono">
+                  {member.member_number}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs for different sections */}
         {memberId && (
