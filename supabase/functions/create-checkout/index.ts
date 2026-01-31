@@ -12,11 +12,11 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs for each plan
+// Price IDs for each plan - synced with useSubscription.tsx
 const PRICE_IDS = {
-  essentiel: "price_1SsxJlF3VvKmdn5GBdTPhZQm",
-  professionnel: "price_1SsxKRF3VvKmdn5G041kZCSL",
-  entreprise: "price_1SsxL4F3VvKmdn5GFwoKmXpm",
+  essentiel: "price_1SsxZvF3VvKmdn5Gokml3EOt",
+  professionnel: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
+  entreprise: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
 };
 
 serve(async (req) => {
