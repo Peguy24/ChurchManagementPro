@@ -27,7 +27,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { PlanLimitDialog } from "@/components/PlanLimitDialog";
-
+import { exportToCsv, CsvColumn, formatDateForCsv } from "@/lib/csvExport";
+import { useToast } from "@/hooks/use-toast";
 const statusColors: Record<string, string> = {
   Actif: "bg-success/10 text-success border-success/20",
   Inactif: "bg-muted text-muted-foreground border-border",
@@ -39,6 +40,7 @@ const statusColors: Record<string, string> = {
 
 export default function Members() {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,6 +49,77 @@ export default function Members() {
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   
   const { canAddMember, usage, limits, plan } = usePlanLimits();
+
+  // Format address for export
+  const formatAddressForExport = (addressData: string | null): string => {
+    if (!addressData) return "";
+    try {
+      const address = typeof addressData === 'string' ? JSON.parse(addressData) : addressData;
+      if (typeof address === 'object' && address !== null) {
+        const parts = [
+          address.street,
+          address.number,
+          address.apartment,
+          address.city,
+          address.state,
+          address.zipCode,
+          address.country
+        ].filter(Boolean);
+        return parts.join(", ");
+      }
+      return addressData;
+    } catch {
+      return addressData;
+    }
+  };
+
+  // Export members to CSV
+  const handleExportMembers = () => {
+    if (filteredMembers.length === 0) {
+      toast({
+        title: t("common.error"),
+        description: "Aucun membre à exporter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const columns: CsvColumn<any>[] = [
+      { key: "member_number", header: "Numéro de membre" },
+      { key: "last_name", header: "Nom" },
+      { key: "first_name", header: "Prénom" },
+      { key: "gender", header: "Genre", formatter: (v) => v === "M" ? "Masculin" : v === "F" ? "Féminin" : "" },
+      { key: "date_of_birth", header: "Date de naissance", formatter: (v) => formatDateForCsv(v) },
+      { key: "email", header: "Email" },
+      { key: "phone", header: "Téléphone" },
+      { key: "emergency_phone", header: "Téléphone d'urgence" },
+      { key: "address", header: "Adresse", formatter: (v) => formatAddressForExport(v) },
+      { key: "marital_status", header: "Statut matrimonial" },
+      { key: "spouse_name", header: "Nom du conjoint" },
+      { key: "number_of_children", header: "Nombre d'enfants" },
+      { key: "children_names", header: "Noms des enfants" },
+      { key: "academic_formation", header: "Formation académique" },
+      { key: "professional_formation", header: "Formation professionnelle" },
+      { key: "baptism_status", header: "Statut de baptême" },
+      { key: "baptism_date", header: "Date de baptême", formatter: (v) => formatDateForCsv(v) },
+      { key: "conversion_date", header: "Date de conversion", formatter: (v) => formatDateForCsv(v) },
+      { key: "origin_church", header: "Église d'origine" },
+      { key: "christian_experience", header: "Expérience chrétienne" },
+      { key: "groups", header: "Groupes", formatter: (v) => Array.isArray(v) ? v.join(", ") : "" },
+      { key: "role", header: "Rôle" },
+      { key: "status", header: "Statut" },
+      { key: "join_date", header: "Date d'adhésion", formatter: (v) => formatDateForCsv(v) },
+      { key: "created_at", header: "Date de création", formatter: (v) => formatDateForCsv(v) },
+    ];
+
+    const filename = `membres_export_${new Date().toISOString().split('T')[0]}`;
+    exportToCsv(filteredMembers, columns, filename);
+
+    toast({
+      title: t("common.success"),
+      description: `${filteredMembers.length} membres exportés avec succès`,
+    });
+  };
 
   const handleAddMember = () => {
     if (!canAddMember()) {
@@ -100,7 +173,7 @@ export default function Members() {
               <Upload className="mr-2 h-4 w-4" />
               {t("common.import")}
             </Button>
-            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={handleExportMembers}>
               <Download className="mr-2 h-4 w-4" />
               {t("common.export")}
             </Button>
