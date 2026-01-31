@@ -65,7 +65,7 @@ export function FeatureLockedCard({
             </Button>
             <Button 
               variant="ghost" 
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/")}
               className="w-full text-sm sm:text-base"
             >
               Retour au tableau de bord
