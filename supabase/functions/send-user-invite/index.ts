@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, tenantId, tenantName, role, inviterName } = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, role, inviterName, skipEmail } = await req.json();
 
     if (!email || !tenantId || !tenantName) {
       console.error("Missing required fields:", { email, tenantId, tenantName });
@@ -22,18 +23,61 @@ serve(async (req) => {
       );
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.error("RESEND_API_KEY not configured");
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Supabase configuration missing");
       return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
+        JSON.stringify({ error: "Server configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Generate a secure token for the invitation
+    const token = crypto.randomUUID() + crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+    // Store the invitation in a user_invitations table (we'll need to create this)
+    // For now, we'll generate the link directly without storing
+
     // Build the invitation URL
-    const baseUrl = Deno.env.get("SITE_URL") || "https://preview--ihwhbtmnyhhceiwdcfsc.lovable.app";
-    const inviteUrl = `${baseUrl}/auth?tenant=${tenantId}&role=${role || 'user'}`;
+    const siteUrl = Deno.env.get("SITE_URL") || "https://cogmpw-sys.lovable.app";
+    const slug = tenantSlug || tenantId;
+    const inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || 'user'}`;
+
+    console.log(`Generating invitation for ${email} to tenant ${tenantName} with role ${role}`);
+
+    // If skipEmail is true, just return the link without sending email
+    if (skipEmail) {
+      console.log("Skipping email, returning invitation link");
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          invitationLink: inviteUrl,
+          message: "Invitation link generated successfully"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Try to send email via Resend
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.warn("RESEND_API_KEY not configured, returning link instead");
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          invitationLink: inviteUrl,
+          message: "Email service not configured, invitation link generated instead"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const roleLabel: Record<string, string> = {
       admin: "Administrateur",
@@ -46,7 +90,7 @@ serve(async (req) => {
 
     const displayRole = roleLabel[role] || "Utilisateur";
 
-    console.log(`Sending invitation to ${email} for tenant ${tenantName} with role ${role}`);
+    console.log(`Sending invitation email to ${email} for tenant ${tenantName} with role ${role}`);
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -114,9 +158,15 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error("Error sending email:", result);
+      // Return the link as fallback when email fails
       return new Response(
-        JSON.stringify({ error: result.message || "Failed to send email" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          success: true,
+          invitationLink: inviteUrl,
+          emailError: result.message || "Failed to send email",
+          message: "Email failed, invitation link generated instead"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
