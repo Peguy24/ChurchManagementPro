@@ -7,7 +7,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface AdminInviteRequest {
@@ -21,10 +21,10 @@ interface AdminInviteRequest {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
-  // Validate JWT authentication - only super admins can invite tenant admins
+  // Validate JWT authentication
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     console.error("Missing or invalid Authorization header");
@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  // Verify the user's token and check if they have admin privileges
+  // Verify the user's token
   const token = authHeader.replace("Bearer ", "");
   const { data: userData, error: userError } = await supabase.auth.getUser(token);
   
@@ -51,33 +51,52 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 
-  // Check if user has platform admin role (super_admin or legacy admin)
-  const { data: roleData } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userData.user.id)
-    .eq("role", "admin")
-    .maybeSingle();
-
-  const { data: platformRoleData } = await supabase
-    .from("platform_user_roles")
-    .select("role")
-    .eq("user_id", userData.user.id)
-    .eq("role", "super_admin")
-    .maybeSingle();
-
-  if (!roleData && !platformRoleData) {
-    console.error("User does not have admin privileges:", userData.user.id);
-    return new Response(
-      JSON.stringify({ error: "Forbidden - Admin privileges required" }),
-      { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  }
+  const userId = userData.user.id;
 
   try {
     const { email, tenantId, tenantName, tenantSlug, skipEmail = false }: AdminInviteRequest = await req.json();
 
-    console.log(`Creating secure invitation for ${email} to become admin of ${tenantName} (${tenantId}), skipEmail: ${skipEmail}`);
+    console.log(`Checking permissions for user ${userId} to invite admin for tenant ${tenantId}`);
+
+    // Check if user is a super admin (platform level)
+    const { data: superAdminRole } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const { data: platformSuperAdmin } = await supabase
+      .from("platform_user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "super_admin")
+      .maybeSingle();
+
+    const isSuperAdmin = !!superAdminRole || !!platformSuperAdmin;
+
+    // Check if user is a tenant admin for the specific tenant
+    const { data: tenantAdminRole } = await supabase
+      .from("tenant_user_roles")
+      .select("role, is_approved")
+      .eq("user_id", userId)
+      .eq("tenant_id", tenantId)
+      .eq("role", "admin")
+      .eq("is_approved", true)
+      .maybeSingle();
+
+    const isTenantAdmin = !!tenantAdminRole;
+
+    // User must be either a super admin OR a tenant admin for this specific tenant
+    if (!isSuperAdmin && !isTenantAdmin) {
+      console.error(`User ${userId} does not have permission to invite admins for tenant ${tenantId}`);
+      return new Response(
+        JSON.stringify({ error: "Forbidden - You must be an admin of this church to send invitations" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log(`User ${userId} authorized (superAdmin: ${isSuperAdmin}, tenantAdmin: ${isTenantAdmin}). Creating invitation for ${email} to tenant ${tenantName}`);
 
     // Check if invitation already exists for this email and tenant
     const { data: existingInvite } = await supabase
@@ -89,11 +108,11 @@ const handler = async (req: Request): Promise<Response> => {
       .gt("expires_at", new Date().toISOString())
       .single();
 
-    let token: string;
+    let inviteToken: string;
 
     if (existingInvite) {
       // Reuse existing valid invitation
-      token = existingInvite.token;
+      inviteToken = existingInvite.token;
       console.log("Reusing existing invitation token");
     } else {
       // Create new invitation with secure token
@@ -102,6 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
         .insert({
           tenant_id: tenantId,
           email: email,
+          created_by: userId,
         })
         .select("token")
         .single();
@@ -111,13 +131,13 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error("Failed to create invitation: " + insertError.message);
       }
 
-      token = newInvite.token;
+      inviteToken = newInvite.token;
       console.log("Created new invitation token");
     }
 
     // Get the app URL from environment or request origin
     const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://lovable.dev";
-    const registrationLink = `${siteUrl}/t/${tenantSlug}/auth?invite=${token}`;
+    const registrationLink = `${siteUrl}/t/${tenantSlug}/auth?invite=${inviteToken}`;
 
     // If skipEmail is true, return the link without sending email
     if (skipEmail) {
@@ -125,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ 
         success: true, 
         invitationLink: registrationLink,
-        token: token,
+        token: inviteToken,
         message: "Invitation created successfully (email skipped)"
       }), {
         status: 200,
