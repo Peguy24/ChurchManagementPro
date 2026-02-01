@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send } from 'lucide-react';
+import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
@@ -47,6 +47,9 @@ export default function TenantUserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [inviteMode, setInviteMode] = useState<'email' | 'link' | null>(null);
+  const [invitationLink, setInvitationLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const dateLocale = language === 'fr' ? fr : language === 'ht' ? fr : enUS;
 
@@ -188,42 +191,95 @@ export default function TenantUserManagement() {
     }
   }
 
-  async function handleSendInvite() {
+  const resetInviteState = () => {
+    setInviteEmail('');
+    setInviteRole('user');
+    setInvitationLink(null);
+    setCopied(false);
+    setInviteMode(null);
+    setSendingInvite(false);
+  };
+
+  const handleInviteDialogClose = (open: boolean) => {
+    if (!open) {
+      resetInviteState();
+    }
+    setInviteDialogOpen(open);
+  };
+
+  async function handleGenerateInvite(skipEmail: boolean) {
     if (!inviteEmail || !tenantId || !tenant) return;
 
     setSendingInvite(true);
+    setInviteMode(skipEmail ? 'link' : 'email');
+
     try {
       const { data, error } = await supabase.functions.invoke('send-user-invite', {
         body: {
           email: inviteEmail,
           tenantId: tenantId,
           tenantName: tenant.name,
+          tenantSlug: tenant.slug,
           role: inviteRole,
           inviterName: user?.email,
+          skipEmail,
         },
       });
 
       if (error) throw error;
 
-      toast({
-        title: t('tenant.invitationSent'),
-        description: `${t('tenant.invitationSentTo')} ${inviteEmail}`,
-      });
-      
-      setInviteDialogOpen(false);
-      setInviteEmail('');
-      setInviteRole('user');
+      if (skipEmail && data?.invitationLink) {
+        setInvitationLink(data.invitationLink);
+        toast({
+          title: t('tenant.linkGenerated') || "Lien généré",
+          description: t('tenant.linkGeneratedDesc') || "Le lien d'invitation a été généré avec succès",
+        });
+      } else if (!skipEmail) {
+        toast({
+          title: t('tenant.invitationSent'),
+          description: `${t('tenant.invitationSentTo')} ${inviteEmail}`,
+        });
+        handleInviteDialogClose(false);
+      }
     } catch (err) {
-      console.error('Error sending invite:', err);
-      toast({
-        title: t('common.error'),
-        description: t('tenant.inviteError'),
-        variant: 'destructive',
-      });
+      console.error('Error generating invite:', err);
+      if (!skipEmail) {
+        toast({
+          title: t('common.error'),
+          description: t('tenant.inviteErrorTryLink') || "Erreur d'envoi email. Essayez 'Générer le lien' à la place.",
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: t('common.error'),
+          description: t('tenant.inviteError'),
+          variant: 'destructive',
+        });
+      }
     } finally {
       setSendingInvite(false);
     }
   }
+
+  const copyInvitationLink = async () => {
+    if (!invitationLink) return;
+
+    try {
+      await navigator.clipboard.writeText(invitationLink);
+      setCopied(true);
+      toast({
+        title: t('tenant.linkCopied') || "Lien copié",
+        description: t('tenant.linkCopiedDesc') || "Le lien a été copié dans le presse-papiers",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: t('common.error'),
+        description: t('tenant.copyError') || "Impossible de copier le lien",
+        variant: 'destructive',
+      });
+    }
+  };
 
   const pendingUsers = users.filter(u => !u.is_approved);
   const approvedUsers = users.filter(u => u.is_approved);
@@ -429,8 +485,8 @@ export default function TenantUserManagement() {
       </Dialog>
 
       {/* Invite User Dialog */}
-      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-        <DialogContent>
+      <Dialog open={inviteDialogOpen} onOpenChange={handleInviteDialogClose}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
@@ -449,11 +505,12 @@ export default function TenantUserManagement() {
                 placeholder="email@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
+                disabled={!!invitationLink}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="invite-role">{t('tenant.role')}</Label>
-              <Select value={inviteRole} onValueChange={setInviteRole}>
+              <Select value={inviteRole} onValueChange={setInviteRole} disabled={!!invitationLink}>
                 <SelectTrigger id="invite-role">
                   <SelectValue placeholder={t('tenant.selectRole')} />
                 </SelectTrigger>
@@ -466,22 +523,89 @@ export default function TenantUserManagement() {
                 </SelectContent>
               </Select>
             </div>
+
+            {!invitationLink ? (
+              <>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1"
+                    onClick={() => handleGenerateInvite(false)}
+                    disabled={!inviteEmail || sendingInvite}
+                  >
+                    {sendingInvite && inviteMode === 'email' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    {t('tenant.sendByEmail') || 'Envoyer par email'}
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    variant="secondary"
+                    onClick={() => handleGenerateInvite(true)}
+                    disabled={!inviteEmail || sendingInvite}
+                  >
+                    {sendingInvite && inviteMode === 'link' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Link2 className="h-4 w-4 mr-2" />
+                    )}
+                    {t('tenant.generateLink') || 'Générer le lien'}
+                  </Button>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    <strong>{t('tenant.tip') || 'Conseil'} :</strong> {t('tenant.tipEmailFallback') || "Si l'envoi d'email échoue, utilisez \"Générer le lien\" pour obtenir un lien que vous pouvez partager via WhatsApp, SMS, etc."}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>{t('tenant.invitationLink') || "Lien d'invitation"}</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={invitationLink}
+                      readOnly
+                      className="text-xs font-mono"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={copyInvitationLink}
+                      className="flex-shrink-0"
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs text-amber-700 dark:text-amber-300">
+                    <p><strong>{t('tenant.secureLinkTitle') || 'Lien sécurisé et à usage unique'}</strong></p>
+                    <ul className="list-disc list-inside mt-1 space-y-0.5">
+                      <li>{t('tenant.linkValidity') || 'Valide pendant 7 jours'}</li>
+                      <li>{t('tenant.linkShareWarning') || 'Ne le partagez qu\'avec la personne concernée'}</li>
+                      <li>{t('tenant.linkShareOptions') || 'Peut être partagé via WhatsApp, SMS, etc.'}</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => handleInviteDialogClose(false)}>
+                    {t('common.close') || 'Fermer'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleSendInvite} disabled={!inviteEmail || sendingInvite}>
-              {sendingInvite ? (
-                t('tenant.sending')
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  {t('tenant.sendInvitation')}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Layout>
