@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar, History, AlertTriangle } from "lucide-react";
+import { Building2, Users, CreditCard, BarChart3, Plus, Edit, Trash2, Eye, Settings, UserCheck, UserX, Mail, Send, Inbox, Clock, Calendar, History, AlertTriangle, Power, PowerOff, Crown } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { differenceInDays, isPast } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -140,6 +140,9 @@ export default function TenantManagement() {
   const [extendCustomDate, setExtendCustomDate] = useState<Date | undefined>(undefined);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [selectedTenantForInvite, setSelectedTenantForInvite] = useState<TenantWithSubscription | null>(null);
+  const [planActivationDialogOpen, setPlanActivationDialogOpen] = useState(false);
+  const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
+  const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -411,6 +414,107 @@ export default function TenantManagement() {
         oldTrialEnd: selectedTenantForExtend.subscription?.trial_ends_at || null,
         duration: extendTrialDuration,
         customDate: extendCustomDate,
+      });
+    }
+  };
+
+  // Mutation to activate/deactivate a plan manually (without payment)
+  const activatePlanMutation = useMutation({
+    mutationFn: async ({ 
+      tenantId, 
+      tenantName, 
+      plan, 
+      activate,
+      oldStatus,
+      oldPlan,
+    }: { 
+      tenantId: string; 
+      tenantName: string;
+      plan: SubscriptionPlan;
+      activate: boolean;
+      oldStatus: TenantStatus | undefined;
+      oldPlan: SubscriptionPlan | undefined;
+    }) => {
+      const planConfig = PLAN_CONFIG[plan];
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const newStatus = activate ? "active" : "suspended";
+      
+      const { error } = await supabase
+        .from("tenant_subscriptions")
+        .update({
+          plan: plan,
+          status: newStatus,
+          price_monthly: planConfig.price,
+          max_members: planConfig.members,
+          max_branches: planConfig.branches,
+          max_users: planConfig.users,
+          max_storage_mb: planConfig.storage,
+          trial_ends_at: null, // Clear trial when manually activating
+        })
+        .eq("tenant_id", tenantId);
+
+      if (error) throw error;
+
+      // Log the audit entry
+      const { error: auditError } = await supabase
+        .from("subscription_audit_logs")
+        .insert({
+          tenant_id: tenantId,
+          user_id: user?.id,
+          user_email: user?.email,
+          action_type: activate ? "plan_activated" : "plan_deactivated",
+          old_values: { 
+            status: oldStatus,
+            plan: oldPlan,
+          },
+          new_values: { 
+            status: newStatus,
+            plan: plan,
+            manual_activation: true,
+          },
+          notes: activate 
+            ? `Plan ${PLAN_CONFIG[plan].label} activé manuellement pour ${tenantName} (sans paiement)`
+            : `Plan désactivé pour ${tenantName}`,
+        });
+
+      if (auditError) {
+        console.error("Failed to log audit:", auditError);
+      }
+
+      return { activate, plan };
+    },
+    onSuccess: ({ activate, plan }) => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
+      toast.success(
+        activate 
+          ? `Plan ${PLAN_CONFIG[plan].label} activé avec succès (sans paiement)`
+          : "Plan désactivé avec succès"
+      );
+      setPlanActivationDialogOpen(false);
+      setSelectedTenantForPlan(null);
+    },
+    onError: (error) => {
+      toast.error("Erreur: " + error.message);
+    },
+  });
+
+  const openPlanActivationDialog = (tenant: TenantWithSubscription) => {
+    setSelectedTenantForPlan(tenant);
+    setSelectedPlanForActivation(tenant.subscription?.plan || "standard");
+    setPlanActivationDialogOpen(true);
+  };
+
+  const handleActivatePlan = (activate: boolean) => {
+    if (selectedTenantForPlan) {
+      activatePlanMutation.mutate({
+        tenantId: selectedTenantForPlan.id,
+        tenantName: selectedTenantForPlan.name,
+        plan: selectedPlanForActivation,
+        activate,
+        oldStatus: selectedTenantForPlan.subscription?.status,
+        oldPlan: selectedTenantForPlan.subscription?.plan,
       });
     }
   };
@@ -928,6 +1032,16 @@ export default function TenantManagement() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-0.5">
+                              {/* Plan activation/deactivation button */}
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className={`h-7 w-7 ${tenant.subscription?.status === "active" ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}
+                                onClick={() => openPlanActivationDialog(tenant)}
+                                title={tenant.subscription?.status === "active" ? "Désactiver le plan" : "Activer un plan (sans paiement)"}
+                              >
+                                <Crown className="h-3.5 w-3.5" />
+                              </Button>
                               {tenant.subscription?.status === "trial" && (
                                 <Button 
                                   variant="ghost" 
@@ -1020,11 +1134,18 @@ export default function TenantManagement() {
                               <p className="font-medium">{log.tenant_name}</p>
                             </TableCell>
                             <TableCell>
-                              <Badge variant={log.action_type === "trial_extended" ? "secondary" : "outline"}>
+                              <Badge variant={
+                                log.action_type === "trial_extended" ? "secondary" : 
+                                log.action_type === "plan_activated" ? "default" :
+                                log.action_type === "plan_deactivated" ? "destructive" :
+                                "outline"
+                              }>
                                 {log.action_type === "trial_extended" && "Prolongation essai"}
                                 {log.action_type === "subscription_updated" && "Mise à jour abonnement"}
                                 {log.action_type === "tenant_created" && "Création tenant"}
-                                {!["trial_extended", "subscription_updated", "tenant_created"].includes(log.action_type) && log.action_type}
+                                {log.action_type === "plan_activated" && "Plan activé"}
+                                {log.action_type === "plan_deactivated" && "Plan désactivé"}
+                                {!["trial_extended", "subscription_updated", "tenant_created", "plan_activated", "plan_deactivated"].includes(log.action_type) && log.action_type}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -1158,6 +1279,125 @@ export default function TenantManagement() {
               >
                 {extendTrialMutation.isPending ? "Prolongation..." : "Prolonger l'essai"}
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Plan Activation Dialog */}
+        <Dialog open={planActivationDialogOpen} onOpenChange={setPlanActivationDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-amber-500" />
+                Gestion manuelle du plan
+              </DialogTitle>
+              <DialogDescription>
+                {selectedTenantForPlan && (
+                  <>
+                    Gérer le plan pour <strong>{selectedTenantForPlan.name}</strong>
+                    <span className="block mt-1 text-sm">
+                      Statut actuel: <Badge variant={STATUS_CONFIG[selectedTenantForPlan.subscription?.status || "trial"]?.variant}>
+                        {STATUS_CONFIG[selectedTenantForPlan.subscription?.status || "trial"]?.label}
+                      </Badge>
+                      {selectedTenantForPlan.subscription?.plan && (
+                        <> - Plan: <strong>{PLAN_CONFIG[selectedTenantForPlan.subscription.plan]?.label}</strong></>
+                      )}
+                    </span>
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Plan à activer</Label>
+                <Select 
+                  value={selectedPlanForActivation} 
+                  onValueChange={(v) => setSelectedPlanForActivation(v as SubscriptionPlan)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PLAN_CONFIG).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>
+                        {config.label} - ${config.price}/mois
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Card className="bg-muted/50">
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs">Membres</p>
+                      <p className="font-semibold">{PLAN_CONFIG[selectedPlanForActivation].members === -1 ? "∞" : PLAN_CONFIG[selectedPlanForActivation].members}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Succursales</p>
+                      <p className="font-semibold">{PLAN_CONFIG[selectedPlanForActivation].branches === -1 ? "∞" : PLAN_CONFIG[selectedPlanForActivation].branches}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Utilisateurs</p>
+                      <p className="font-semibold">{PLAN_CONFIG[selectedPlanForActivation].users === -1 ? "∞" : PLAN_CONFIG[selectedPlanForActivation].users}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Stockage</p>
+                      <p className="font-semibold">{PLAN_CONFIG[selectedPlanForActivation].storage === -1 ? "∞" : `${PLAN_CONFIG[selectedPlanForActivation].storage}MB`}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 [&>svg]:text-amber-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Action administrative</AlertTitle>
+                <AlertDescription>
+                  Cette action active ou désactive un plan sans paiement Stripe. L'action sera enregistrée dans l'historique d'audit.
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setPlanActivationDialogOpen(false)}
+              >
+                Annuler
+              </Button>
+              {selectedTenantForPlan?.subscription?.status === "active" ? (
+                <Button 
+                  variant="destructive"
+                  onClick={() => handleActivatePlan(false)}
+                  disabled={activatePlanMutation.isPending}
+                >
+                  {activatePlanMutation.isPending ? (
+                    "Désactivation..."
+                  ) : (
+                    <>
+                      <PowerOff className="h-4 w-4 mr-2" />
+                      Désactiver le plan
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => handleActivatePlan(true)}
+                  disabled={activatePlanMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {activatePlanMutation.isPending ? (
+                    "Activation..."
+                  ) : (
+                    <>
+                      <Power className="h-4 w-4 mr-2" />
+                      Activer le plan (sans paiement)
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
