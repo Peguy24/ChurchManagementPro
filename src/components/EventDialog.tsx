@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,7 @@ interface EventDialogProps {
 
 export default function EventDialog({ open, onOpenChange, event, onSuccess }: EventDialogProps) {
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
   const isEditing = !!event;
 
   const [formData, setFormData] = useState({
@@ -99,6 +101,9 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      if (!tenantId) {
+        throw new Error("Aucun tenant associé à cet utilisateur");
+      }
       const { error } = await supabase.from("events").insert({
         name: data.name,
         event_date: data.date,
@@ -108,6 +113,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         description: data.description || null,
         status: data.status,
         expected_attendees: data.expectedAttendees,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },
