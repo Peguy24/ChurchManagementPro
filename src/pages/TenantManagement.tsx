@@ -22,6 +22,7 @@ import { addDays, addMonths, addYears } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TenantRequestsManager } from "@/components/TenantRequestsManager";
 import { AdminInviteDialog } from "@/components/AdminInviteDialog";
+import { TenantAdminManager } from "@/components/TenantAdminManager";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -143,6 +144,8 @@ export default function TenantManagement() {
   const [planActivationDialogOpen, setPlanActivationDialogOpen] = useState(false);
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
+  const [adminManagerOpen, setAdminManagerOpen] = useState(false);
+  const [selectedTenantForAdmin, setSelectedTenantForAdmin] = useState<TenantWithSubscription | null>(null);
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -979,10 +982,21 @@ export default function TenantManagement() {
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {tenant.hasAdmin ? (
-                              <Badge variant="default" className="gap-1 text-xs">
-                                <UserCheck className="h-3 w-3" />
-                                <span className="hidden lg:inline">Configuré</span>
-                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-1 text-xs p-0 h-auto hover:bg-transparent"
+                                onClick={() => {
+                                  setSelectedTenantForAdmin(tenant);
+                                  setAdminManagerOpen(true);
+                                }}
+                              >
+                                <Badge variant="default" className="gap-1 text-xs cursor-pointer hover:opacity-80">
+                                  <UserCheck className="h-3 w-3" />
+                                  <span className="hidden lg:inline">Voir admins</span>
+                                  <span className="lg:hidden">Voir</span>
+                                </Badge>
+                              </Button>
                             ) : (
                               <div className="flex items-center gap-1">
                                 <Badge variant="outline" className="gap-1 text-xs text-warning border-warning/50">
@@ -1187,6 +1201,12 @@ export default function TenantManagement() {
           open={inviteDialogOpen}
           onOpenChange={setInviteDialogOpen}
           tenant={selectedTenantForInvite}
+        />
+
+        <TenantAdminManager
+          open={adminManagerOpen}
+          onOpenChange={setAdminManagerOpen}
+          tenant={selectedTenantForAdmin}
         />
 
         {/* Extend Trial Dialog */}
