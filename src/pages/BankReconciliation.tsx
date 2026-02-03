@@ -2,28 +2,37 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, CheckCircle, XCircle, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
+import { Plus, Building2, CheckCircle, XCircle, ArrowUpRight, ArrowDownRight, RefreshCw, FileText, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { generateBankReconciliationPDF, BankTransaction } from "@/lib/bankReconciliationPDF";
 
 export default function BankReconciliation() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenant } = useCurrentTenant();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>("");
+  
+  // PDF Export states
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportMonth, setExportMonth] = useState<number>(new Date().getMonth() + 1);
+  const [exportYear, setExportYear] = useState<number>(new Date().getFullYear());
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Fetch bank accounts
   const { data: accounts = [], isLoading: loadingAccounts } = useQuery({
@@ -178,6 +187,88 @@ export default function BankReconciliation() {
     createTransaction.mutate(transactionForm);
   };
 
+  // Handle PDF Export
+  const handleExportPDF = async () => {
+    if (!selectedAccountData) return;
+
+    setIsGeneratingPDF(true);
+
+    try {
+      // Fetch transactions for the selected month/year
+      const startDate = new Date(exportYear, exportMonth - 1, 1);
+      const endDate = new Date(exportYear, exportMonth, 0); // Last day of the month
+
+      const { data: monthTransactions, error } = await supabase
+        .from("bank_transactions")
+        .select("*")
+        .eq("bank_account_id", selectedAccount)
+        .gte("transaction_date", format(startDate, "yyyy-MM-dd"))
+        .lte("transaction_date", format(endDate, "yyyy-MM-dd"))
+        .order("transaction_date", { ascending: true });
+
+      if (error) throw error;
+
+      // Get tenant logo URL if available
+      let logoUrl: string | undefined;
+      if (tenant?.logo_url) {
+        const { data: signedData } = await supabase.storage
+          .from("tenant-logos")
+          .createSignedUrl(tenant.logo_url, 60);
+        logoUrl = signedData?.signedUrl;
+      }
+
+      // Generate PDF
+      await generateBankReconciliationPDF(
+        {
+          account: {
+            name: selectedAccountData.name,
+            account_number: selectedAccountData.account_number,
+            bank_name: selectedAccountData.bank_name,
+            current_balance: Number(selectedAccountData.current_balance),
+          },
+          churchInfo: {
+            name: tenant?.name || "Church Manager Pro",
+            logoUrl,
+          },
+          period: {
+            month: exportMonth,
+            year: exportYear,
+          },
+          transactions: (monthTransactions || []).map((tx): BankTransaction => ({
+            transaction_date: tx.transaction_date,
+            transaction_type: tx.transaction_type as "income" | "expense",
+            description: tx.description,
+            reference_number: tx.reference_number,
+            amount: Number(tx.amount),
+            is_reconciled: tx.is_reconciled || false,
+            reconciled_at: tx.reconciled_at,
+          })),
+        },
+        language
+      );
+
+      toast({
+        title: language === "fr" ? "Rapport généré" : "Report generated",
+        description: language === "fr" 
+          ? "Le rapport PDF a été téléchargé avec succès."
+          : "The PDF report has been downloaded successfully.",
+      });
+
+      setExportDialogOpen(false);
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: t("errors.serverError"),
+        description: language === "fr" 
+          ? "Une erreur est survenue lors de la génération du rapport."
+          : "An error occurred while generating the report.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   // Calculate statistics
   const selectedAccountData = accounts.find((a) => a.id === selectedAccount);
   const reconciledTransactions = transactions.filter((t) => t.is_reconciled);
@@ -329,6 +420,90 @@ export default function BankReconciliation() {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
+                {/* Export PDF Button */}
+                <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <FileText className="h-4 w-4 mr-2" />
+                      {t("common.export")} PDF
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {language === "fr" ? "Exporter le Rapport Mensuel" : "Export Monthly Report"}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {language === "fr" 
+                          ? "Sélectionnez le mois et l'année pour générer le rapport de rapprochement bancaire."
+                          : "Select the month and year to generate the bank reconciliation report."}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                      <div className="space-y-2">
+                        <Label>{language === "fr" ? "Mois" : "Month"}</Label>
+                        <Select
+                          value={exportMonth.toString()}
+                          onValueChange={(v) => setExportMonth(parseInt(v))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(language === "fr" 
+                              ? ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+                              : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                            ).map((month, index) => (
+                              <SelectItem key={index + 1} value={(index + 1).toString()}>
+                                {month}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{language === "fr" ? "Année" : "Year"}</Label>
+                        <Select
+                          value={exportYear.toString()}
+                          onValueChange={(v) => setExportYear(parseInt(v))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setExportDialogOpen(false)}>
+                        {t("common.cancel")}
+                      </Button>
+                      <Button 
+                        onClick={handleExportPDF}
+                        disabled={isGeneratingPDF}
+                      >
+                        {isGeneratingPDF ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            {language === "fr" ? "Génération..." : "Generating..."}
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="h-4 w-4 mr-2" />
+                            {language === "fr" ? "Générer PDF" : "Generate PDF"}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
                 <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm">
@@ -429,7 +604,7 @@ export default function BankReconciliation() {
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.pending")}</p>
-                  <p className="text-xl font-bold text-yellow-600">{unreconciledTransactions.length}</p>
+                  <p className="text-xl font-bold text-warning">{unreconciledTransactions.length}</p>
                 </div>
               </div>
 
