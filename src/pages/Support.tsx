@@ -4,11 +4,12 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MessageSquare, Clock } from "lucide-react";
+import { Plus, MessageSquare, Clock, Crown, Shield, Headphones } from "lucide-react";
 import { format } from "date-fns";
 import SupportDialog from "@/components/SupportDialog";
 
@@ -25,10 +26,74 @@ const priorityColors: Record<string, string> = {
   high: "bg-red-100 text-red-800",
 };
 
+function SupportTierBanner({ plan }: { plan: string | null }) {
+  if (plan === "entreprise") {
+    return (
+      <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardContent className="flex items-center gap-4 py-4">
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Headphones className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg">Support 24/7</h3>
+              <Badge className="bg-primary text-primary-foreground">Entreprise</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Vous bénéficiez du support prioritaire 24h/24, 7j/7. Vos tickets sont traités en priorité absolue.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (plan === "professionnel") {
+    return (
+      <Card className="border-2 border-secondary/30 bg-gradient-to-r from-secondary/5 to-secondary/10">
+        <CardContent className="flex items-center gap-4 py-4">
+          <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
+            <Shield className="h-6 w-6 text-secondary" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg">Support Prioritaire</h3>
+              <Badge variant="secondary">Professionnel</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Vos tickets sont traités en priorité. Temps de réponse accéléré garanti.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border border-muted">
+      <CardContent className="flex items-center gap-4 py-4">
+        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+          <MessageSquare className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-lg">Support Email</h3>
+            <Badge variant="outline">Essentiel</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Support par email standard. Passez au plan Professionnel pour un support prioritaire.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Support() {
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { plan } = useSubscription();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: tickets, isLoading, refetch } = useQuery({
@@ -85,6 +150,8 @@ export default function Support() {
             {t("layout.supportNewTicket")}
           </Button>
         </div>
+
+        <SupportTierBanner plan={plan} />
 
         {isLoading ? (
           <div className="text-muted-foreground">{t("common.loading")}...</div>
@@ -143,6 +210,7 @@ export default function Support() {
       <SupportDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        plan={plan}
         onSuccess={() => {
           refetch();
           toast({
