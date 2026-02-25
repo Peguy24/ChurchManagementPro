@@ -20,6 +20,7 @@ import heroImage from "@/assets/hero-abstract.png";
 const Commercial = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
   const [churchSearch, setChurchSearch] = useState("");
@@ -64,8 +65,8 @@ const Commercial = () => {
       navigate(`/t/${churchSearch.toLowerCase().replace(/\s+/g, '-')}/auth`);
     } else {
       toast({
-        title: "Entrez le nom de votre église",
-        description: "Veuillez saisir le nom ou l'identifiant de votre église.",
+        title: t("commercial.enterChurchName"),
+        description: t("commercial.enterChurchNameDesc"),
         variant: "destructive"
       });
     }
@@ -74,98 +75,96 @@ const Commercial = () => {
   const features = [
     {
       icon: Users,
-      title: "Gestion des Membres",
-      description: "Fichiers complets avec photos, QR codes et champs personnalisables",
+      title: t("commercial.feat_members"),
+      description: t("commercial.feat_membersDesc"),
       color: "from-blue-500 to-indigo-600"
     },
     {
       icon: QrCode,
-      title: "Suivi de Présence",
-      description: "Scanner QR/code-barres avec alertes automatiques",
+      title: t("commercial.feat_attendance"),
+      description: t("commercial.feat_attendanceDesc"),
       color: "from-violet-500 to-purple-600"
     },
     {
       icon: DollarSign,
-      title: "Gestion Financière",
-      description: "Donations, dépenses, budgets et rapports détaillés",
+      title: t("commercial.feat_finance"),
+      description: t("commercial.feat_financeDesc"),
       color: "from-emerald-500 to-teal-600"
     },
     {
       icon: Calendar,
-      title: "Événements",
-      description: "Planification avec rappels automatiques",
+      title: t("commercial.feat_events"),
+      description: t("commercial.feat_eventsDesc"),
       color: "from-orange-500 to-red-500"
     },
     {
       icon: Building2,
-      title: "Multi-Succursales",
-      description: "Gérez plusieurs sites facilement",
+      title: t("commercial.feat_branches"),
+      description: t("commercial.feat_branchesDesc"),
       color: "from-cyan-500 to-blue-600"
     },
     {
       icon: BarChart3,
-      title: "Rapports Avancés",
-      description: "Statistiques complètes et exports",
+      title: t("commercial.feat_reports"),
+      description: t("commercial.feat_reportsDesc"),
       color: "from-pink-500 to-rose-600"
     }
   ];
 
   const pricingPlans = [
     {
-      name: "Essentiel",
+      name: t("commercial.plan_essential"),
       price: "49",
-      period: "/mois",
-      description: "Pour les petites églises",
+      period: t("commercial.perMonth"),
+      description: t("commercial.plan_essentialDesc"),
       planKey: "basic",
       features: [
-        "Jusqu'à 200 membres",
-        "1 succursale",
-        "Gestion des présences",
-        "Donations de base",
-        "Support email"
+        t("commercial.feat_200members"),
+        t("commercial.feat_1branch"),
+        t("commercial.feat_attendanceMgmt"),
+        t("commercial.feat_basicDonations"),
+        t("commercial.feat_emailSupport"),
       ],
       popular: false
     },
     {
-      name: "Professionnel",
+      name: t("commercial.plan_professional"),
       price: "99",
-      period: "/mois",
-      description: "Pour les églises en croissance",
+      period: t("commercial.perMonth"),
+      description: t("commercial.plan_professionalDesc"),
       planKey: "standard",
       features: [
-        "Jusqu'à 1000 membres",
-        "3 succursales",
-        "Toutes les fonctionnalités",
-        "Rapports avancés",
-        "Emails automatiques",
-        "Support prioritaire"
+        t("commercial.feat_1000members"),
+        t("commercial.feat_3branches"),
+        t("commercial.feat_allFeatures"),
+        t("commercial.feat_advancedReports"),
+        t("commercial.feat_autoEmails"),
+        t("commercial.feat_prioritySupport"),
       ],
       popular: true
     },
     {
-      name: "Entreprise",
+      name: t("commercial.plan_enterprise"),
       price: "199",
-      period: "/mois",
-      description: "Pour les grandes organisations",
+      period: t("commercial.perMonth"),
+      description: t("commercial.plan_enterpriseDesc"),
       planKey: "premium",
       features: [
-        "Membres illimités",
-        "Succursales illimitées",
-        "API personnalisée",
-        "Formation incluse",
-        "Support 24/7",
-        "White-label disponible"
+        t("commercial.feat_unlimitedMembers"),
+        t("commercial.feat_unlimitedBranches"),
+        t("commercial.feat_customApi"),
+        t("commercial.feat_trainingIncluded"),
+        t("commercial.feat_support247"),
+        t("commercial.feat_whiteLabel"),
       ],
       popular: false
     }
   ];
 
   const handlePlanSelect = async (planKey: string) => {
-    // Check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-      // User is logged in, redirect to checkout
       try {
         const planMap: Record<string, string> = {
           'basic': 'essentiel',
@@ -188,13 +187,12 @@ const Commercial = () => {
       } catch (error) {
         console.error('Checkout error:', error);
         toast({
-          title: "Erreur",
-          description: "Impossible de créer la session de paiement.",
+          title: t("common.error"),
+          description: t("commercial.checkoutError"),
           variant: "destructive"
         });
       }
     } else {
-      // User not logged in, show request form
       setSelectedPlan(planKey);
       setRequestFormOpen(true);
     }
@@ -202,33 +200,33 @@ const Commercial = () => {
 
   const testimonials = [
     {
-      name: "Pasteur Jean-Pierre",
-      church: "Église de la Grâce",
-      text: "Ce système a révolutionné notre gestion. Nous économisons des heures chaque semaine.",
+      name: t("commercial.testimonial1Name"),
+      church: t("commercial.testimonial1Church"),
+      text: t("commercial.testimonial1Text"),
       rating: 5,
       avatar: "JP"
     },
     {
-      name: "Secrétaire Marie",
-      church: "Communauté Évangélique",
-      text: "Le suivi des présences par QR code est incroyable. Les membres adorent!",
+      name: t("commercial.testimonial2Name"),
+      church: t("commercial.testimonial2Church"),
+      text: t("commercial.testimonial2Text"),
       rating: 5,
       avatar: "SM"
     },
     {
-      name: "Trésorier Paul",
-      church: "Temple de Louange",
-      text: "Les rapports financiers nous ont permis de mieux gérer notre budget.",
+      name: t("commercial.testimonial3Name"),
+      church: t("commercial.testimonial3Church"),
+      text: t("commercial.testimonial3Text"),
       rating: 5,
-      avatar: "TP"
+      avatar: "PT"
     }
   ];
 
   const stats = [
-    { value: "500+", label: "Églises actives" },
-    { value: "50K+", label: "Membres gérés" },
-    { value: "99.9%", label: "Disponibilité" },
-    { value: "24/7", label: "Support" }
+    { value: "500+", label: t("commercial.stat_churches") },
+    { value: "50K+", label: t("commercial.stat_members") },
+    { value: "99.9%", label: t("commercial.stat_uptime") },
+    { value: "24/7", label: t("commercial.stat_support") }
   ];
 
   return (
@@ -245,18 +243,18 @@ const Commercial = () => {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Fonctionnalités</a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Tarifs</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Témoignages</a>
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
+            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_pricing")}</a>
+            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_testimonials")}</a>
           </div>
           <div className="flex items-center gap-3">
             <LanguageSelector />
             <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden sm:flex">
               <Shield className="w-4 h-4 mr-2" />
-              Admin
+              {t("commercial.admin")}
             </Button>
             <Button size="sm" onClick={() => setRequestFormOpen(true)} className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-opacity">
-              Commencer
+              {t("commercial.getStarted")}
             </Button>
           </div>
         </div>
@@ -264,7 +262,6 @@ const Commercial = () => {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
-        {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -273,26 +270,24 @@ const Commercial = () => {
 
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
             <div className="text-center lg:text-left animate-fade-in">
               <Badge className="mb-6 px-4 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
                 <Sparkles className="w-3 h-3 mr-2" />
-                Nouveau: Intelligence Artificielle intégrée
+                {t("commercial.heroBadge")}
               </Badge>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
                 <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Gérez votre église
+                  {t("commercial.heroTitle1")}
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-                  avec excellence
+                  {t("commercial.heroTitle2")}
                 </span>
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
-                La plateforme tout-en-un pour gérer vos membres, finances, événements et bien plus. 
-                Simple, puissant, et conçu pour les églises modernes.
+                {t("commercial.heroSubtitle")}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
@@ -301,7 +296,7 @@ const Commercial = () => {
                   onClick={() => setRequestFormOpen(true)} 
                   className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-all shadow-lg shadow-primary/25 group"
                 >
-                  Essai Gratuit de 14 Jours
+                  {t("commercial.trialButton")}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
@@ -311,11 +306,10 @@ const Commercial = () => {
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                  Voir la démo
+                  {t("commercial.demoButton")}
                 </Button>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/50">
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center lg:text-left">
@@ -326,7 +320,6 @@ const Commercial = () => {
               </div>
             </div>
 
-            {/* Right Content - Hero Image */}
             <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10">
                 <img 
@@ -337,15 +330,14 @@ const Commercial = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               </div>
               
-              {/* Floating Cards */}
               <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-xl border animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                     <Check className="w-5 h-5 text-green-500" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">+127 membres</p>
-                    <p className="text-xs text-muted-foreground">ce mois-ci</p>
+                    <p className="font-semibold text-sm">{t("commercial.floatingMembers")}</p>
+                    <p className="text-xs text-muted-foreground">{t("commercial.floatingMembersDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -356,8 +348,8 @@ const Commercial = () => {
                     <TrendingUp className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">+23% présence</p>
-                    <p className="text-xs text-muted-foreground">vs mois dernier</p>
+                    <p className="font-semibold text-sm">{t("commercial.floatingAttendance")}</p>
+                    <p className="text-xs text-muted-foreground">{t("commercial.floatingAttendanceDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -378,9 +370,9 @@ const Commercial = () => {
                     <LogIn className="w-6 h-6 text-white" />
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-center">Déjà membre d'une église?</h2>
+                <h2 className="text-2xl font-bold text-center">{t("commercial.churchFinder")}</h2>
                 <p className="text-muted-foreground text-center mt-2">
-                  Trouvez votre église et accédez à votre espace
+                  {t("commercial.churchFinderDesc")}
                 </p>
               </div>
               <CardContent className="p-6">
@@ -389,12 +381,11 @@ const Commercial = () => {
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <Input
-                        placeholder="Rechercher votre église..."
+                        placeholder={t("commercial.searchPlaceholder")}
                         value={churchSearch}
                         onChange={(e) => handleChurchSearch(e.target.value)}
                         className="pl-11 h-12 text-lg border-2 focus:border-primary text-foreground bg-background"
                       />
-                      {/* Loading indicator */}
                       {isSearching && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -410,12 +401,11 @@ const Commercial = () => {
                     </Button>
                   </div>
                   
-                  {/* Search Results Dropdown - Always visible when there are results */}
                   {searchResults.length > 0 && (
                     <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-border rounded-xl shadow-2xl z-[100] overflow-hidden">
                       <div className="p-2 bg-muted border-b border-border">
                         <p className="text-sm text-foreground font-medium">
-                          {searchResults.length} église(s) trouvée(s)
+                          {searchResults.length} {t("commercial.churchesFound")}
                         </p>
                       </div>
                       {searchResults.map((church) => {
@@ -445,8 +435,8 @@ const Commercial = () => {
                                     e.stopPropagation();
                                     navigator.clipboard.writeText(churchUrl);
                                     toast({
-                                      title: "Lien copié!",
-                                      description: `Le lien de ${church.name} a été copié.`,
+                                      title: t("commercial.linkCopied"),
+                                      description: t("commercial.linkCopiedDesc"),
                                     });
                                   }}
                                 >
@@ -461,7 +451,7 @@ const Commercial = () => {
                                   className="bg-gradient-to-r from-primary to-primary-dark"
                                 >
                                   <ExternalLink className="w-4 h-4 mr-1" />
-                                  Ouvrir
+                                  {t("commercial.open")}
                                 </Button>
                               </div>
                             </div>
@@ -471,13 +461,12 @@ const Commercial = () => {
                     </div>
                   )}
                   
-                  {/* No results message */}
                   {searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
                     <div className="absolute top-full left-0 right-0 mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl z-[100] p-6 text-center">
                       <Church className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-muted-foreground">Aucune église trouvée</p>
+                      <p className="text-muted-foreground">{t("commercial.noChurchFound")}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Vérifiez l'orthographe ou contactez votre administrateur
+                        {t("commercial.noChurchFoundDesc")}
                       </p>
                     </div>
                   )}
@@ -494,13 +483,13 @@ const Commercial = () => {
           <div className="text-center mb-16">
             <Badge className="mb-4 px-4 py-2 bg-secondary/10 text-secondary border-secondary/20">
               <Zap className="w-3 h-3 mr-2" />
-              Fonctionnalités puissantes
+              {t("commercial.featuresBadge")}
             </Badge>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Tout ce dont vous avez besoin
+              {t("commercial.featuresTitle")}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Une plateforme complète conçue spécifiquement pour les besoins des églises modernes
+              {t("commercial.featuresSubtitle")}
             </p>
           </div>
 
@@ -533,13 +522,13 @@ const Commercial = () => {
           <div className="text-center mb-16">
             <Badge className="mb-4 px-4 py-2 bg-primary/10 text-primary border-primary/20">
               <DollarSign className="w-3 h-3 mr-2" />
-              Tarifs transparents
+              {t("commercial.pricingBadge")}
             </Badge>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Choisissez votre plan
+              {t("commercial.pricingTitle")}
             </h2>
             <p className="text-xl text-muted-foreground">
-              Des tarifs adaptés à la taille de votre église
+              {t("commercial.pricingSubtitle")}
             </p>
           </div>
 
@@ -556,7 +545,7 @@ const Commercial = () => {
                 {plan.popular && (
                   <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-white text-center py-2 text-sm font-medium">
                     <Star className="w-4 h-4 inline mr-1" />
-                    Plus Populaire
+                    {t("commercial.mostPopular")}
                   </div>
                 )}
                 <CardHeader className={`text-center ${plan.popular ? 'pt-12' : 'pt-6'}`}>
@@ -588,7 +577,7 @@ const Commercial = () => {
                     size="lg"
                     onClick={() => handlePlanSelect(plan.planKey)}
                   >
-                    Choisir ce Plan
+                    {t("commercial.choosePlan")}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
@@ -604,10 +593,10 @@ const Commercial = () => {
           <div className="text-center mb-16">
             <Badge className="mb-4 px-4 py-2 bg-secondary/10 text-secondary border-secondary/20">
               <Heart className="w-3 h-3 mr-2" />
-              Témoignages
+              {t("commercial.testimonialsBadge")}
             </Badge>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Ce que disent nos clients
+              {t("commercial.testimonialsTitle")}
             </h2>
           </div>
 
@@ -653,10 +642,10 @@ const Commercial = () => {
               <Heart className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white">
-              Prêt à transformer votre église?
+              {t("commercial.ctaTitle")}
             </h2>
             <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-              Rejoignez des centaines d'églises qui font confiance à ChurchManager pour gérer leur communauté.
+              {t("commercial.ctaSubtitle")}
             </p>
             <Button 
               size="lg" 
@@ -664,7 +653,7 @@ const Commercial = () => {
               onClick={() => setRequestFormOpen(true)}
               className="text-lg px-8 py-6 h-auto shadow-xl hover:scale-105 transition-transform"
             >
-              Démarrer l'Essai Gratuit
+              {t("commercial.ctaButton")}
               <Sparkles className="w-5 h-5 ml-2" />
             </Button>
           </div>
@@ -682,17 +671,16 @@ const Commercial = () => {
               <span className="font-bold text-xl">ChurchManager Pro</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 ChurchManager Pro. Tous droits réservés.
+              {t("commercial.footer")}
             </p>
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>
               <Shield className="w-4 h-4" />
-              Super Admin
+              {t("commercial.superAdmin")}
             </Button>
           </div>
         </div>
       </footer>
 
-      {/* Church Request Form Dialog */}
       <ChurchRequestForm 
         open={requestFormOpen} 
         onOpenChange={setRequestFormOpen}
