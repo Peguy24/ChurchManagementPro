@@ -1,132 +1,136 @@
 
 
-# Plan: Rapport Mensuel de Rapprochement Bancaire (PDF)
+# Plan: Système de Support par Email et Tickets
 
 ## Vue d'ensemble
 
-Ajout d'une fonctionnalité permettant de générer un rapport PDF professionnel de rapprochement bancaire mensuel. Ce rapport fournira une vue consolidée des transactions bancaires pour un mois donné, avec le statut de réconciliation et les statistiques clés.
+Implémenter un système de support complet permettant aux tenants d'envoyer des demandes d'aide depuis leur tableau de bord. Les demandes sont stockées en base de données et envoyées par email aux super admins. Les super admins peuvent consulter et gérer tous les tickets depuis leur dashboard.
 
 ---
 
-## Fonctionnalités du Rapport PDF
-
-### Contenu du rapport
-- **En-tête**: Nom de l'église/tenant, logo, période du rapport
-- **Informations du compte**: Nom, numéro (masqué), banque, solde actuel
-- **Résumé statistique**:
-  - Total des revenus du mois
-  - Total des dépenses du mois
-  - Nombre de transactions rapprochées vs en attente
-  - Taux de réconciliation (%)
-- **Tableau détaillé des transactions**: Date, type, description, référence, montant, statut
-- **Section de signature**: Zone pour validation et signature de l'auditeur
-- **Pied de page**: Date de génération, numérotation des pages
-
-### Sélection de période
-- Sélecteur de mois et année
-- Filtrage des transactions pour la période sélectionnée
-
----
-
-## Implémentation Technique
-
-### 1. Nouveau fichier: `src/lib/bankReconciliationPDF.ts`
-
-Création d'une fonction de génération PDF avec:
-- Récupération des informations du tenant via `useCurrentTenant`
-- Formatage professionnel avec jsPDF et jspdf-autotable
-- Support du logo de l'église (chargé depuis le bucket tenant-logos)
-- Calculs des totaux et statistiques
-- Mise en forme des montants en USD
-- Tableau des transactions avec colonnes colorées selon le type
-- Code couleur pour les statuts (vert = rapproché, orange = en attente)
-
-### 2. Mise à jour: `src/pages/BankReconciliation.tsx`
-
-Ajouts à l'interface utilisateur:
-- Bouton "Exporter PDF" dans l'en-tête de la section transactions
-- Dialog de sélection de période (mois/année)
-- Indicateur de chargement pendant la génération
-- Import de la nouvelle fonction de génération PDF
-
-### 3. Structure du PDF
+## Architecture
 
 ```text
-┌─────────────────────────────────────────────────┐
-│  [Logo]  NOM DE L'ÉGLISE                        │
-│          Rapport de Rapprochement Bancaire      │
-│          Mois: Janvier 2026                     │
-├─────────────────────────────────────────────────┤
-│  COMPTE BANCAIRE                                │
-│  ─────────────────                              │
-│  Nom: Compte Principal                          │
-│  Banque: BNC | N°: ****1234                     │
-│  Solde actuel: $45,000.00                       │
-├─────────────────────────────────────────────────┤
-│  RÉSUMÉ DU MOIS                                 │
-│  ┌──────────┬──────────┬──────────┬──────────┐  │
-│  │ Revenus  │ Dépenses │ Rapproch.│ En att.  │  │
-│  │ $12,500  │ $8,200   │ 24 (80%) │ 6 (20%)  │  │
-│  └──────────┴──────────┴──────────┴──────────┘  │
-├─────────────────────────────────────────────────┤
-│  DÉTAIL DES TRANSACTIONS                        │
-│  ┌─────────┬──────┬──────────┬────────┬──────┐  │
-│  │ Date    │ Type │ Descript │ Montant│Statut│  │
-│  ├─────────┼──────┼──────────┼────────┼──────┤  │
-│  │ 02 Jan  │  ↑   │ Dîmes    │+$1,200 │  ✓   │  │
-│  │ 05 Jan  │  ↓   │ Loyer    │-$800   │  ✓   │  │
-│  │ ...     │      │          │        │      │  │
-│  └─────────┴──────┴──────────┴────────┴──────┘  │
-├─────────────────────────────────────────────────┤
-│  CERTIFICATION                                  │
-│  Je certifie que ce rapport reflète...          │
-│                                                 │
-│  Signature: _______________  Date: ___________  │
-└─────────────────────────────────────────────────┘
-│  Page 1/2 | Généré le 03/02/2026 à 14:30       │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────┐     ┌──────────────────────┐
+│  Tenant Dashboard       │     │  Super Admin Dashboard│
+│  ┌───────────────────┐  │     │  ┌────────────────┐   │
+│  │ Support Button (?) │──┼────▶│  │ Tickets List   │   │
+│  │ → Form Dialog     │  │     │  │ → Reply/Close  │   │
+│  │ → My Tickets List │  │     │  └────────────────┘   │
+│  └───────────────────┘  │     └──────────────────────┘
+└─────────────────────────┘
+         │
+         ▼
+┌─────────────────────────┐
+│  Edge Function           │
+│  send-support-email      │
+│  → Save to DB            │
+│  → Send via Resend       │
+└─────────────────────────┘
 ```
+
+---
+
+## Changements requis
+
+### 1. Migration DB: Table `support_tickets`
+
+Nouvelle table pour stocker les demandes de support :
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| id | uuid | PK |
+| tenant_id | uuid | Tenant demandeur |
+| user_id | uuid | Utilisateur qui a créé le ticket |
+| subject | text | Sujet du ticket |
+| message | text | Message détaillé |
+| priority | text | low / medium / high |
+| status | text | open / in_progress / resolved / closed |
+| category | text | general / billing / technical / feature_request |
+| admin_response | text | Réponse du super admin |
+| responded_by | uuid | Super admin qui a répondu |
+| responded_at | timestamptz | Date de réponse |
+| created_at | timestamptz | Date de création |
+| updated_at | timestamptz | Date de mise à jour |
+
+**RLS Policies:**
+- Tenant users can INSERT tickets for their own tenant
+- Tenant users can SELECT their own tenant's tickets
+- Super admins can SELECT all tickets
+- Super admins can UPDATE all tickets (respond/close)
+- Super admins can DELETE tickets
+
+### 2. Edge Function: `send-support-email`
+
+- Reçoit le ticket (subject, message, priority, category)
+- Vérifie le JWT et récupère les infos du tenant
+- Insère dans `support_tickets`
+- Envoie un email de notification aux super admins via Resend
+- Envoie un email de confirmation au demandeur
+
+### 3. Nouveau composant: `src/components/SupportDialog.tsx`
+
+- Bouton flottant ou accessible depuis le menu latéral
+- Dialog avec formulaire : sujet, catégorie (dropdown), priorité, message
+- Validation avec Zod
+- Affichage de la liste des tickets précédents avec statut
+
+### 4. Nouvelle page: `src/pages/Support.tsx`
+
+- Accessible depuis le menu latéral (icône MessageSquare déjà importée dans Layout)
+- Liste des tickets du tenant avec statut coloré
+- Possibilité de créer un nouveau ticket
+- Vue des réponses admin
+
+### 5. Section Super Admin: `src/pages/SupportManagement.tsx`
+
+- Liste de tous les tickets de tous les tenants
+- Filtrage par statut, priorité, tenant
+- Formulaire de réponse inline
+- Changement de statut (open → in_progress → resolved → closed)
+- Envoi d'email de réponse au demandeur
+
+### 6. Mise à jour: `src/components/Layout.tsx`
+
+- Ajout du lien "Support" dans le menu latéral pour les tenants
+- Ajout du lien "Gestion Support" dans le menu super admin
+
+### 7. Mise à jour: `src/App.tsx`
+
+- Route `/support` → page Support (tenant)
+- Route `/support-management` → page SupportManagement (super admin)
 
 ---
 
 ## Détails Techniques
 
-### Fichier `src/lib/bankReconciliationPDF.ts`
+### Structure du formulaire de support
 
 ```typescript
-interface BankReconciliationReportData {
-  account: {
-    name: string;
-    account_number: string | null;
-    bank_name: string | null;
-    current_balance: number;
-  };
-  churchInfo: {
-    name: string;
-    logoUrl?: string;
-  };
-  period: {
-    month: number;
-    year: number;
-  };
-  transactions: Array<{
-    transaction_date: string;
-    transaction_type: 'income' | 'expense';
-    description: string | null;
-    reference_number: string | null;
-    amount: number;
-    is_reconciled: boolean;
-    reconciled_at: string | null;
-  }>;
-}
+const supportSchema = z.object({
+  subject: z.string().min(5).max(200),
+  category: z.enum(['general', 'billing', 'technical', 'feature_request']),
+  priority: z.enum(['low', 'medium', 'high']),
+  message: z.string().min(20).max(2000),
+});
 ```
 
-### Modifications de `BankReconciliation.tsx`
+### Badges de statut
 
-- Ajout d'états pour la sélection de période et le dialog d'export
-- Requête de filtrage par mois/année
-- Bouton FileText avec icône PDF
-- Toast de confirmation après téléchargement
+| Statut | Couleur | Label |
+|--------|---------|-------|
+| open | Bleu | Ouvert |
+| in_progress | Orange | En cours |
+| resolved | Vert | Résolu |
+| closed | Gris | Fermé |
+
+### Edge Function Pattern
+
+Suit le même pattern que `send-admin-invite` :
+- CORS headers
+- JWT validation
+- Service role client pour l'insertion
+- Resend pour les emails
 
 ---
 
@@ -134,15 +138,22 @@ interface BankReconciliationReportData {
 
 | Fichier | Action |
 |---------|--------|
-| `src/lib/bankReconciliationPDF.ts` | Créer |
-| `src/pages/BankReconciliation.tsx` | Modifier |
+| Migration SQL (support_tickets) | Créer |
+| `supabase/functions/send-support-email/index.ts` | Créer |
+| `supabase/config.toml` | Mettre à jour (verify_jwt = false) |
+| `src/pages/Support.tsx` | Créer |
+| `src/pages/SupportManagement.tsx` | Créer |
+| `src/components/SupportDialog.tsx` | Créer |
+| `src/components/Layout.tsx` | Modifier |
+| `src/App.tsx` | Modifier |
 
 ---
 
-## Avantages
+## Sécurité
 
-- **Traçabilité**: Document officiel pour les audits financiers
-- **Professionnalisme**: Rapport avec branding de l'église
-- **Flexibilité**: Export pour n'importe quel mois passé
-- **Conformité**: Section de certification et signature
+- RLS stricte : les tenants ne voient que leurs propres tickets
+- JWT obligatoire pour l'edge function
+- Validation Zod côté client et serveur
+- Limites de longueur sur les champs texte
+- Seuls les super admins peuvent répondre/fermer les tickets
 
