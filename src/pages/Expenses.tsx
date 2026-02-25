@@ -16,9 +16,11 @@ import { Plus, FileText, Check, X, Clock, Download, Eye, Building2, Wallet } fro
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 export default function Expenses() {
   const { t, language } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -177,6 +179,7 @@ export default function Expenses() {
         created_by: userData?.user?.id || null,
         cash_register_id: data.accountType === "cash" && data.cash_register_id ? data.cash_register_id : null,
         bank_account_id: data.accountType === "bank" && data.bank_account_id ? data.bank_account_id : null,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },

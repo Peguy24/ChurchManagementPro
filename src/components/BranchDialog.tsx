@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface Branch {
   id: string;
@@ -40,6 +41,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
     status: "active",
   });
   const [loading, setLoading] = useState(false);
+  const { tenantId } = useCurrentTenant();
 
   const { data: members } = useQuery({
     queryKey: ["active-members"],
@@ -108,6 +110,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
         address: formData.address || null,
         phone: formData.phone || null,
         email: formData.email || null,
+        ...(branch ? {} : { tenant_id: tenantId }),
       };
 
       if (branch) {

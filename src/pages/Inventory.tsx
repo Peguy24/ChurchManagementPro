@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { formatCurrency } from "@/lib/currency";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface InventoryItem {
   id: string;
@@ -145,6 +146,7 @@ export default function Inventory() {
 }
 
 function InventoryContent() {
+  const { tenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("items");
   const [searchTerm, setSearchTerm] = useState("");
@@ -267,6 +269,7 @@ function InventoryContent() {
         min_quantity: parseInt(data.min_quantity) || 0,
         notes: data.notes || null,
         photo_url: data.photo_url,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },
