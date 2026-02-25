@@ -80,8 +80,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/dashboard?checkout=success`,
-      cancel_url: `${origin}/dashboard?checkout=cancelled`,
+      success_url: `${origin}/settings/subscription?checkout=success`,
+      cancel_url: `${origin}/settings/subscription?checkout=cancelled`,
       metadata: {
         user_id: user.id,
         plan: plan,
