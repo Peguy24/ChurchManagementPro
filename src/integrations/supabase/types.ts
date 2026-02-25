@@ -2033,6 +2033,7 @@ export type Database = {
           start_date: string | null
           status: string | null
           target_amount: number | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -2047,6 +2048,7 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           target_amount?: number | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -2061,6 +2063,7 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           target_amount?: number | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2069,6 +2072,13 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_funds_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
