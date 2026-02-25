@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
-import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 import * as XLSX from "xlsx";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
@@ -47,6 +47,7 @@ const conditionOptions = [
 ];
 
 export default function InventoryReportTab({ selectedBranch }: InventoryReportTabProps) {
+  const { formatAmount: formatCurrency } = useCurrency();
   const [reportType, setReportType] = useState("overview");
 
   const { data: items = [], isLoading: itemsLoading } = useQuery({

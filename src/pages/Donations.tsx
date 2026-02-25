@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const categoryColors: Record<string, string> = {
   tithe: "bg-primary/10 text-primary border-primary/20",
@@ -147,13 +148,7 @@ function DonationsContent() {
     },
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatAmount: formatCurrency } = useCurrency();
 
   const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
 

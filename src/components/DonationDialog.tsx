@@ -25,6 +25,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, Building2 } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface DonationDialogProps {
   open: boolean;
@@ -41,6 +42,7 @@ export default function DonationDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
+  const { currencyCode, currencySymbol } = useCurrency();
   const [formData, setFormData] = useState({
     memberId: "none",
     amount: "",
@@ -292,7 +294,7 @@ export default function DonationDialog({
 
           {/* Amount - Required */}
           <div className="space-y-2">
-            <Label htmlFor="amount">{t("donations.amount")} (HTG) *</Label>
+            <Label htmlFor="amount">{t("donations.amount")} ({currencyCode}) *</Label>
             <Input
               id="amount"
               type="number"
@@ -385,7 +387,7 @@ export default function DonationDialog({
                   <SelectItem value="none">Non spécifié</SelectItem>
                   {cashRegisters?.map((register) => (
                     <SelectItem key={register.id} value={register.id}>
-                      {register.name} (Solde: {Number(register.current_balance).toLocaleString()} HTG)
+                      {register.name} (Solde: {Number(register.current_balance).toLocaleString()} {currencyCode})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -405,7 +407,7 @@ export default function DonationDialog({
                   <SelectItem value="none">Non spécifié</SelectItem>
                   {bankAccounts?.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.name} - {account.bank_name} (Solde: {Number(account.current_balance).toLocaleString()} HTG)
+                      {account.name} - {account.bank_name} (Solde: {Number(account.current_balance).toLocaleString()} {currencyCode})
                     </SelectItem>
                   ))}
                 </SelectContent>

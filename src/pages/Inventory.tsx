@@ -25,7 +25,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface InventoryItem {
@@ -147,6 +147,7 @@ export default function Inventory() {
 
 function InventoryContent() {
   const { tenantId } = useCurrentTenant();
+  const { formatAmount: formatCurrency } = useCurrency();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("items");
   const [searchTerm, setSearchTerm] = useState("");

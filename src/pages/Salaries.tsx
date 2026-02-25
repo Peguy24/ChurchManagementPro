@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Plus, Users, History, Edit, Trash2, Banknote, Search } from "lucide-react";
@@ -70,6 +70,7 @@ interface SalaryPayment {
 
 export default function Salaries() {
   const { toast } = useToast();
+  const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
