@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-abstract.png";
@@ -248,6 +250,7 @@ const Commercial = () => {
             <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Témoignages</a>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSelector />
             <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden sm:flex">
               <Shield className="w-4 h-4 mr-2" />
               Admin
