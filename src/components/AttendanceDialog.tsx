@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface AttendanceDialogProps {
   open: boolean;
@@ -51,6 +52,7 @@ export default function AttendanceDialog({
   onSuccess,
 }: AttendanceDialogProps) {
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
   const [eventType, setEventType] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [events, setEvents] = useState<EventOption[]>([]);
@@ -179,6 +181,7 @@ export default function AttendanceDialog({
         marked_by: user?.id,
         scan_method: "manual",
         event_id: selectedEventId,
+        tenant_id: tenantId,
       }));
 
       const { error } = await supabase

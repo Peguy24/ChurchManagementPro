@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, Building2 } from "lucide-react";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface DonationDialogProps {
   open: boolean;
@@ -39,6 +40,7 @@ export default function DonationDialog({
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenantId } = useCurrentTenant();
   const [formData, setFormData] = useState({
     memberId: "none",
     amount: "",
@@ -167,6 +169,7 @@ export default function DonationDialog({
         cash_register_id: data.accountType === "cash" && data.cashRegisterId !== "none" ? data.cashRegisterId : null,
         bank_account_id: data.accountType === "bank" && data.bankAccountId !== "none" ? data.bankAccountId : null,
         created_by: user.user?.id,
+        tenant_id: tenantId,
       };
 
       if (editDonation) {

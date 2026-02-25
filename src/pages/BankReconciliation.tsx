@@ -23,7 +23,7 @@ export default function BankReconciliation() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { tenant } = useCurrentTenant();
+  const { tenant, tenantId } = useCurrentTenant();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>("");
@@ -107,6 +107,7 @@ export default function BankReconciliation() {
         bank_name: data.bank_name || null,
         branch_id: data.branch_id || null,
         current_balance: parseFloat(data.current_balance) || 0,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },

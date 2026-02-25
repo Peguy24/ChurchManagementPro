@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface TodayEvent {
   id: string;
@@ -104,6 +105,7 @@ function AttendanceContent() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
@@ -367,6 +369,7 @@ function AttendanceContent() {
           event_type: eventType,
           event_id: eventIdToUse,
           scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
+          tenant_id: tenantId,
         });
 
       if (insertError) throw insertError;

@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface MinistryDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export default function MinistryDialog({
   onSuccess,
 }: MinistryDialogProps) {
   const [loading, setLoading] = useState(false);
+  const { tenantId } = useCurrentTenant();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -119,6 +121,7 @@ export default function MinistryDialog({
             leader_id: formData.leader_id || null,
             branch_id: formData.branch_id || null,
             status: formData.status,
+            tenant_id: tenantId,
           },
         ]);
 
