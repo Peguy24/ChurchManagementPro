@@ -56,7 +56,7 @@ serve(async (req) => {
     const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
     logStep("Plan selected", { plan, priceId });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -64,6 +64,41 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer found", { customerId });
+
+      // Check for existing active subscription
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+
+      if (existingSubs.data.length > 0) {
+        const currentProductId = existingSubs.data[0].items.data[0].price.product as string;
+        const currentPriceId = existingSubs.data[0].items.data[0].price.id;
+        logStep("User already has active subscription", { currentPriceId, currentProductId });
+
+        if (currentPriceId === priceId) {
+          throw new Error("Vous êtes déjà abonné à ce plan.");
+        }
+
+        // Different plan: update the existing subscription instead of creating a new one
+        const subscriptionId = existingSubs.data[0].id;
+        const subscriptionItemId = existingSubs.data[0].items.data[0].id;
+        
+        await stripe.subscriptions.update(subscriptionId, {
+          items: [
+            { id: subscriptionItemId, price: priceId },
+          ],
+          proration_behavior: "create_prorations",
+        });
+
+        logStep("Subscription updated to new plan", { subscriptionId, newPriceId: priceId });
+
+        return new Response(JSON.stringify({ updated: true, message: "Votre abonnement a été mis à jour." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
     } else {
       logStep("No existing customer, will create new one");
     }
