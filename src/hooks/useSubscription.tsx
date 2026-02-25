@@ -99,6 +99,15 @@ export function useSubscription() {
 
       if (error) throw error;
 
+      if (data?.updated) {
+        toast({
+          title: "Abonnement mis à jour",
+          description: data.message || "Votre abonnement a été mis à jour avec succès.",
+        });
+        await checkSubscription();
+        return;
+      }
+
       if (data?.url) {
         window.open(data.url, '_blank');
       }
