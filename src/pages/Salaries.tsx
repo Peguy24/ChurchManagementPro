@@ -38,6 +38,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Plus, Users, History, Edit, Trash2, Banknote, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface Employee {
   id: string;
@@ -70,6 +71,7 @@ interface SalaryPayment {
 export default function Salaries() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { tenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
@@ -161,7 +163,7 @@ export default function Salaries() {
       } else {
         const { error } = await supabase
           .from("employees")
-          .insert([{ ...data, created_by: user?.id }]);
+          .insert([{ ...data, created_by: user?.id, tenant_id: tenantId }]);
         if (error) throw error;
       }
     },
