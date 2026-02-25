@@ -102,6 +102,8 @@ export default function Salaries() {
     payment_method: "bank_transfer",
     reference_number: "",
     notes: "",
+    bank_account_id: "",
+    cash_register_id: "",
   });
 
   // Fetch employees
@@ -141,6 +143,44 @@ export default function Salaries() {
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch cash registers for payment
+  const { data: cashRegisters = [] } = useQuery({
+    queryKey: ["cash-registers-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cash_registers")
+        .select("id, name, current_balance")
+        .eq("is_active", true);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch or auto-create "Salaires" expense category
+  const { data: salaryCategory } = useQuery({
+    queryKey: ["expense-category-salaires", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+      // Try to find existing
+      const { data: existing } = await supabase
+        .from("expense_categories")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("name", "Salaires")
+        .maybeSingle();
+      if (existing) return existing;
+      // Auto-create
+      const { data: created, error } = await supabase
+        .from("expense_categories")
+        .insert({ name: "Salaires", description: "Paiements de salaires du personnel", tenant_id: tenantId })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return created;
+    },
+    enabled: !!tenantId,
   });
 
   // Create/Update employee mutation
@@ -187,19 +227,102 @@ export default function Salaries() {
     },
   });
 
-  // Create payment mutation
+  // Create payment mutation - synchronized with expenses and balances
   const paymentMutation = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase
+      const amount = parseFloat(data.amount);
+      const employee = employees.find(e => e.id === data.employee_id);
+      const employeeName = employee ? `${employee.first_name} ${employee.last_name}` : "Employé";
+      const periodLabel = `${format(new Date(data.period_start), "dd/MM/yyyy")} - ${format(new Date(data.period_end), "dd/MM/yyyy")}`;
+      const expenseDescription = `Salaire - ${employeeName} - ${periodLabel}`;
+
+      // 1. Insert salary payment
+      const { error: salaryError } = await supabase
         .from("salary_payments")
-        .insert({ ...data, created_by: user?.id, tenant_id: tenantId });
-      if (error) throw error;
+        .insert({
+          employee_id: data.employee_id,
+          amount,
+          payment_date: data.payment_date,
+          period_start: data.period_start,
+          period_end: data.period_end,
+          payment_method: data.payment_method,
+          reference_number: data.reference_number || null,
+          notes: data.notes || null,
+          bank_account_id: data.bank_account_id || null,
+          cash_register_id: data.cash_register_id || null,
+          created_by: user?.id,
+          tenant_id: tenantId,
+        });
+      if (salaryError) throw salaryError;
+
+      // 2. Insert corresponding expense
+      const { error: expenseError } = await supabase
+        .from("expenses")
+        .insert({
+          description: expenseDescription,
+          amount,
+          expense_date: data.payment_date,
+          category_id: salaryCategory?.id || null,
+          payment_method: data.payment_method === "bank_transfer" ? "bank_transfer" : data.payment_method,
+          bank_account_id: data.bank_account_id || null,
+          cash_register_id: data.cash_register_id || null,
+          status: "approved",
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+          created_by: user?.id,
+          tenant_id: tenantId,
+          notes: `Paiement automatique - ${data.notes || ""}`.trim(),
+        });
+      if (expenseError) throw expenseError;
+
+      // 3. Deduct from payment source and record transaction
+      if (data.cash_register_id) {
+        const register = cashRegisters.find(r => r.id === data.cash_register_id);
+        if (register) {
+          await supabase
+            .from("cash_registers")
+            .update({ current_balance: Number(register.current_balance) - amount })
+            .eq("id", data.cash_register_id);
+        }
+        await supabase.from("cash_transactions").insert({
+          cash_register_id: data.cash_register_id,
+          transaction_type: "expense",
+          amount: -Math.abs(amount),
+          description: expenseDescription,
+          reference_number: data.reference_number || null,
+          transaction_date: data.payment_date,
+          tenant_id: tenantId,
+        });
+      } else if (data.bank_account_id) {
+        const account = bankAccounts.find(a => a.id === data.bank_account_id);
+        if (account) {
+          await supabase
+            .from("bank_accounts")
+            .update({ current_balance: Number(account.current_balance) - amount })
+            .eq("id", data.bank_account_id);
+        }
+        await supabase.from("bank_transactions").insert({
+          bank_account_id: data.bank_account_id,
+          transaction_type: "expense",
+          amount,
+          description: expenseDescription,
+          reference_number: data.reference_number || null,
+          transaction_date: data.payment_date,
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["salary_payments"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-registers-active"] });
+      queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["bank_accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["bank-transactions"] });
       toast({
         title: "Paiement enregistré",
-        description: "Le salaire a été payé avec succès.",
+        description: "Le salaire a été payé et synchronisé avec les dépenses.",
       });
       setPaymentDialogOpen(false);
       resetPaymentForm();
@@ -207,7 +330,7 @@ export default function Salaries() {
     onError: (error) => {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue.",
+        description: "Une erreur est survenue lors du paiement.",
         variant: "destructive",
       });
       console.error(error);
@@ -261,6 +384,8 @@ export default function Salaries() {
       payment_method: "bank_transfer",
       reference_number: "",
       notes: "",
+      bank_account_id: "",
+      cash_register_id: "",
     });
     setSelectedPayment(null);
   };
@@ -294,6 +419,8 @@ export default function Salaries() {
       payment_method: "bank_transfer",
       reference_number: "",
       notes: "",
+      bank_account_id: "",
+      cash_register_id: "",
     });
     setPaymentDialogOpen(true);
   };
@@ -316,13 +443,15 @@ export default function Salaries() {
     e.preventDefault();
     paymentMutation.mutate({
       employee_id: paymentForm.employee_id,
-      amount: parseFloat(paymentForm.amount) || 0,
+      amount: paymentForm.amount,
       payment_date: paymentForm.payment_date,
       period_start: paymentForm.period_start,
       period_end: paymentForm.period_end,
       payment_method: paymentForm.payment_method,
       reference_number: paymentForm.reference_number || null,
       notes: paymentForm.notes || null,
+      bank_account_id: paymentForm.bank_account_id || null,
+      cash_register_id: paymentForm.cash_register_id || null,
     });
   };
 
@@ -782,7 +911,7 @@ export default function Salaries() {
                 <Select
                   value={paymentForm.payment_method}
                   onValueChange={(value) =>
-                    setPaymentForm({ ...paymentForm, payment_method: value })
+                    setPaymentForm({ ...paymentForm, payment_method: value, bank_account_id: "", cash_register_id: "" })
                   }
                 >
                   <SelectTrigger>
@@ -795,6 +924,47 @@ export default function Salaries() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* Source account selection */}
+              {(paymentForm.payment_method === "bank_transfer" || paymentForm.payment_method === "check") && (
+                <div className="space-y-2">
+                  <Label>Compte bancaire source *</Label>
+                  <Select
+                    value={paymentForm.bank_account_id}
+                    onValueChange={(value) => setPaymentForm({ ...paymentForm, bank_account_id: value, cash_register_id: "" })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un compte" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bankAccounts.map((account: any) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} ({formatCurrency(Number(account.current_balance))})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {paymentForm.payment_method === "cash" && (
+                <div className="space-y-2">
+                  <Label>Caisse source *</Label>
+                  <Select
+                    value={paymentForm.cash_register_id}
+                    onValueChange={(value) => setPaymentForm({ ...paymentForm, cash_register_id: value, bank_account_id: "" })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une caisse" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cashRegisters.map((register: any) => (
+                        <SelectItem key={register.id} value={register.id}>
+                          {register.name} ({formatCurrency(Number(register.current_balance))})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="reference_number">Référence</Label>
                 <Input
