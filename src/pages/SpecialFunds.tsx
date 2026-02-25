@@ -17,9 +17,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, PiggyBank, ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const SpecialFunds = () => {
   const { t, language } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [fundDialogOpen, setFundDialogOpen] = useState(false);
@@ -84,6 +86,7 @@ const SpecialFunds = () => {
         start_date: fundForm.start_date || null,
         end_date: fundForm.end_date || null,
         branch_id: fundForm.branch_id && fundForm.branch_id !== "none" ? fundForm.branch_id : null,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },
