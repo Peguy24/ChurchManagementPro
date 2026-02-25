@@ -2147,6 +2147,62 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          admin_response: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          priority: string
+          responded_at: string | null
+          responded_by: string | null
+          status: string
+          subject: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_response?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          priority?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          subject: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_response?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          priority?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          subject?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_requests: {
         Row: {
           address: string | null
