@@ -110,6 +110,7 @@ const SpecialFunds = () => {
         amount: transactionForm.transaction_type === "expense" ? -Math.abs(amount) : Math.abs(amount),
         description: transactionForm.description || null,
         transaction_date: transactionForm.transaction_date,
+        tenant_id: tenantId,
       });
       if (error) throw error;
 

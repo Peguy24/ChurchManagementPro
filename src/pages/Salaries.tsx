@@ -191,7 +191,7 @@ export default function Salaries() {
     mutationFn: async (data: any) => {
       const { error } = await supabase
         .from("salary_payments")
-        .insert({ ...data, created_by: user?.id });
+        .insert({ ...data, created_by: user?.id, tenant_id: tenantId });
       if (error) throw error;
     },
     onSuccess: () => {

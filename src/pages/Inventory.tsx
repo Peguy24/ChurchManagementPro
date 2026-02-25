@@ -340,6 +340,7 @@ function InventoryContent() {
         next_maintenance_date: data.next_maintenance_date || null,
         status: data.status,
         notes: data.notes || null,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },

@@ -243,6 +243,7 @@ export default function Expenses() {
               description: expense.description,
               transaction_date: expense.expense_date,
               linked_expense_id: id,
+              tenant_id: tenantId,
             });
           }
         }

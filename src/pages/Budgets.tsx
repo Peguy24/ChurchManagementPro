@@ -16,11 +16,13 @@ import { Plus, TrendingUp, TrendingDown, Target, AlertTriangle } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 export default function Budgets() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenantId } = useCurrentTenant();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -117,6 +119,7 @@ export default function Budgets() {
         branch_id: data.branch_id || null,
         planned_amount: parseFloat(data.planned_amount),
         notes: data.notes || null,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },

@@ -199,6 +199,7 @@ export default function DonationDialog({
               amount: amount,
               description: data.description || `Recette: ${data.donationType}`,
               transaction_date: data.donationDate,
+              tenant_id: tenantId,
             });
           }
         }

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 type AccountType = "cash_register" | "bank_account";
 
@@ -20,6 +21,7 @@ interface TransferDialogProps {
 const TransferDialog = ({ trigger }: TransferDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenantId } = useCurrentTenant();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     sourceType: "cash_register" as AccountType,
@@ -89,6 +91,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
           description: fullDescription,
           reference_number: referenceNumber,
           transaction_date: form.transfer_date,
+          tenant_id: tenantId,
         });
         if (error) throw error;
 
@@ -130,6 +133,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
           description: fullDescription,
           reference_number: referenceNumber,
           transaction_date: form.transfer_date,
+          tenant_id: tenantId,
         });
         if (error) throw error;
 
