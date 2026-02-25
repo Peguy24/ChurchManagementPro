@@ -16,9 +16,11 @@ import { Plus, Wallet, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from "luci
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import TransferDialog from "@/components/TransferDialog";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const CashRegister = () => {
   const { t, language } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
@@ -80,6 +82,7 @@ const CashRegister = () => {
         name: registerForm.name,
         branch_id: registerForm.branch_id && registerForm.branch_id !== "none" ? registerForm.branch_id : null,
         current_balance: registerForm.current_balance ? Number(registerForm.current_balance) : 0,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },
