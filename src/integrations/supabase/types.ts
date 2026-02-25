@@ -332,6 +332,7 @@ export type Database = {
           notes: string | null
           planned_amount: number
           status: string | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -345,6 +346,7 @@ export type Database = {
           notes?: string | null
           planned_amount?: number
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -358,6 +360,7 @@ export type Database = {
           notes?: string | null
           planned_amount?: number
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -373,6 +376,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -446,6 +456,7 @@ export type Database = {
           linked_donation_id: string | null
           linked_expense_id: string | null
           reference_number: string | null
+          tenant_id: string | null
           transaction_date: string
           transaction_type: string
         }
@@ -459,6 +470,7 @@ export type Database = {
           linked_donation_id?: string | null
           linked_expense_id?: string | null
           reference_number?: string | null
+          tenant_id?: string | null
           transaction_date?: string
           transaction_type: string
         }
@@ -472,6 +484,7 @@ export type Database = {
           linked_donation_id?: string | null
           linked_expense_id?: string | null
           reference_number?: string | null
+          tenant_id?: string | null
           transaction_date?: string
           transaction_type?: string
         }
@@ -495,6 +508,13 @@ export type Database = {
             columns: ["linked_expense_id"]
             isOneToOne: false
             referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -894,6 +914,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           parent_category_id: string | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -903,6 +924,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           parent_category_id?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -912,6 +934,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           parent_category_id?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -920,6 +943,13 @@ export type Database = {
             columns: ["parent_category_id"]
             isOneToOne: false
             referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -1077,6 +1107,7 @@ export type Database = {
           fund_id: string
           id: string
           reference_number: string | null
+          tenant_id: string | null
           transaction_date: string
           transaction_type: string
         }
@@ -1088,6 +1119,7 @@ export type Database = {
           fund_id: string
           id?: string
           reference_number?: string | null
+          tenant_id?: string | null
           transaction_date?: string
           transaction_type: string
         }
@@ -1099,6 +1131,7 @@ export type Database = {
           fund_id?: string
           id?: string
           reference_number?: string | null
+          tenant_id?: string | null
           transaction_date?: string
           transaction_type?: string
         }
@@ -1108,6 +1141,13 @@ export type Database = {
             columns: ["fund_id"]
             isOneToOne: false
             referencedRelation: "special_funds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -1121,6 +1161,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1131,6 +1172,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1141,9 +1183,18 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "income_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory_items: {
         Row: {
@@ -1246,6 +1297,7 @@ export type Database = {
           notes: string | null
           performed_by: string | null
           status: string | null
+          tenant_id: string | null
           vendor: string | null
         }
         Insert: {
@@ -1261,6 +1313,7 @@ export type Database = {
           notes?: string | null
           performed_by?: string | null
           status?: string | null
+          tenant_id?: string | null
           vendor?: string | null
         }
         Update: {
@@ -1276,6 +1329,7 @@ export type Database = {
           notes?: string | null
           performed_by?: string | null
           status?: string | null
+          tenant_id?: string | null
           vendor?: string | null
         }
         Relationships: [
@@ -1284,6 +1338,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_maintenance_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -1963,6 +2024,7 @@ export type Database = {
           period_start: string
           reference_number: string | null
           status: string | null
+          tenant_id: string | null
         }
         Insert: {
           amount: number
@@ -1979,6 +2041,7 @@ export type Database = {
           period_start: string
           reference_number?: string | null
           status?: string | null
+          tenant_id?: string | null
         }
         Update: {
           amount?: number
@@ -1995,6 +2058,7 @@ export type Database = {
           period_start?: string
           reference_number?: string | null
           status?: string | null
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -2016,6 +2080,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
