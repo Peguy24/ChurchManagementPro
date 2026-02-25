@@ -11,7 +11,7 @@ import {
 import { useSubscription, PLAN_DETAILS, PlanKey } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import Layout from "@/components/Layout";
 import { useToast } from "@/hooks/use-toast";
 
@@ -78,14 +78,14 @@ export default function Subscription() {
         return (
           <Badge className="bg-primary/10 text-primary border-primary/20">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Payée
+            Paid
           </Badge>
         );
       case 'open':
         return (
           <Badge variant="outline" className="border-warning/50 text-warning">
             <Clock className="w-3 h-3 mr-1" />
-            En attente
+            Pending
           </Badge>
         );
       case 'void':
@@ -93,7 +93,7 @@ export default function Subscription() {
         return (
           <Badge variant="outline" className="border-destructive/50 text-destructive">
             <XCircle className="w-3 h-3 mr-1" />
-            Annulée
+            Cancelled
           </Badge>
         );
       default:
@@ -121,9 +121,9 @@ export default function Subscription() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Abonnement</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Subscription</h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Gérez votre abonnement et consultez votre historique de paiements
+              Manage your subscription and view your payment history
             </p>
           </div>
           <Button 
@@ -132,13 +132,12 @@ export default function Subscription() {
             onClick={() => {
               refreshSubscription();
               fetchInvoices();
-              toast({ title: "Actualisation en cours..." });
+              toast({ title: "Refreshing..." });
             }}
             className="self-start sm:self-auto"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Actualiser</span>
-            <span className="sm:hidden">Refresh</span>
+            Refresh
           </Button>
         </div>
 
@@ -148,11 +147,11 @@ export default function Subscription() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
-                <CardTitle>Votre Abonnement Actuel</CardTitle>
+                <CardTitle>Your Current Subscription</CardTitle>
               </div>
               {subscribed && (
                 <Badge className="bg-primary/10 text-primary border-primary/20">
-                  Actif
+                  Active
                 </Badge>
               )}
             </div>
@@ -164,14 +163,14 @@ export default function Subscription() {
                   <div>
                     <p className="text-2xl sm:text-3xl font-bold">{currentPlan.name}</p>
                     <p className="text-muted-foreground">
-                      ${currentPlan.price}/mois
+                      ${currentPlan.price}/month
                     </p>
                   </div>
                   <div className="sm:text-right">
-                    <p className="text-sm text-muted-foreground">Prochain renouvellement</p>
+                    <p className="text-sm text-muted-foreground">Next renewal</p>
                     <p className="font-medium text-base sm:text-lg">
                       {subscriptionEnd 
-                        ? format(new Date(subscriptionEnd), "d MMMM yyyy", { locale: fr })
+                        ? format(new Date(subscriptionEnd), "MMMM d, yyyy", { locale: enUS })
                         : "—"
                       }
                     </p>
@@ -188,15 +187,15 @@ export default function Subscription() {
                   ) : (
                     <Settings className="h-4 w-4 mr-2" />
                   )}
-                  Gérer l'abonnement (changer de plan, annuler, méthode de paiement)
+                  Manage subscription (change plan, cancel, payment method)
                 </Button>
               </div>
             ) : (
               <div className="text-center py-6">
                 <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">Aucun abonnement actif</p>
+                <p className="text-lg font-medium mb-2">No active subscription</p>
                 <p className="text-muted-foreground mb-4">
-                  Choisissez un plan ci-dessous pour débloquer toutes les fonctionnalités
+                  Choose a plan below to unlock all features
                 </p>
               </div>
             )}
@@ -206,7 +205,7 @@ export default function Subscription() {
         {/* Plans Comparison */}
         <div>
           <h2 className="text-xl font-semibold mb-4">
-            {subscribed ? "Changer de Plan" : "Choisir un Plan"}
+            {subscribed ? "Change Plan" : "Choose a Plan"}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {(Object.entries(PLAN_DETAILS) as [PlanKey, typeof PLAN_DETAILS[PlanKey]][]).map(([key, details]) => {
@@ -226,19 +225,19 @@ export default function Subscription() {
                 >
                   {isProfessional && !isCurrentPlan && (
                     <div className="absolute top-0 right-0 bg-secondary text-secondary-foreground text-xs px-3 py-1 rounded-bl-lg font-medium">
-                      Populaire
+                      Popular
                     </div>
                   )}
                   {isCurrentPlan && (
                     <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-bl-lg font-medium">
-                      Votre plan
+                      Your Plan
                     </div>
                   )}
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{details.name}</CardTitle>
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl font-bold">${details.price}</span>
-                      <span className="text-muted-foreground">/mois</span>
+                      <span className="text-muted-foreground">/month</span>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -247,19 +246,19 @@ export default function Subscription() {
                         <>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Jusqu'à 200 membres
+                            Up to 200 members
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            1 succursale
+                            1 branch
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Gestion des présences
+                            Attendance management
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Support email
+                            Email support
                           </li>
                         </>
                       )}
@@ -267,23 +266,23 @@ export default function Subscription() {
                         <>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Jusqu'à 1000 membres
+                            Up to 1,000 members
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            3 succursales
+                            3 branches
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Toutes les fonctionnalités
+                            All features included
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Rapports avancés
+                            Advanced reports
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Support prioritaire
+                            Priority support
                           </li>
                         </>
                       )}
@@ -291,23 +290,23 @@ export default function Subscription() {
                         <>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Membres illimités
+                            Unlimited members
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Succursales illimitées
+                            Unlimited branches
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            API personnalisée
+                            Custom API
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Formation incluse
+                            Training included
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            Support 24/7
+                            24/7 support
                           </li>
                         </>
                       )}
@@ -315,7 +314,7 @@ export default function Subscription() {
                     
                     {isCurrentPlan ? (
                       <Button disabled className="w-full" variant="outline">
-                        Plan actuel
+                        Current Plan
                       </Button>
                     ) : subscribed ? (
                       <Button 
@@ -328,7 +327,7 @@ export default function Subscription() {
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <>
-                            Changer
+                            Switch
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </>
                         )}
@@ -345,7 +344,7 @@ export default function Subscription() {
                         ) : (
                           <>
                             <CreditCard className="h-4 w-4 mr-2" />
-                            S'abonner
+                            Subscribe
                           </>
                         )}
                       </Button>
@@ -362,10 +361,10 @@ export default function Subscription() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>Historique des Paiements</CardTitle>
+              <CardTitle>Payment History</CardTitle>
             </div>
             <CardDescription>
-              Consultez vos factures et téléchargez vos reçus
+              View your invoices and download receipts
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -376,7 +375,7 @@ export default function Subscription() {
             ) : invoices.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Aucune facture pour le moment</p>
+                <p>No invoices yet</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -391,12 +390,12 @@ export default function Subscription() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium truncate">
-                          {invoice.number || `Facture ${invoice.id.slice(-8)}`}
+                          {invoice.number || `Invoice ${invoice.id.slice(-8)}`}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
-                            {format(new Date(invoice.created), "d MMM yyyy", { locale: fr })}
+                            {format(new Date(invoice.created), "MMM d, yyyy", { locale: enUS })}
                           </span>
                         </div>
                       </div>
