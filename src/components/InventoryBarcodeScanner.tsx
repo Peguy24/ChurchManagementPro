@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Camera, X, Package, AlertTriangle, CheckCircle2, ScanBarcode } from "lucide-react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
 
 interface InventoryItem {
@@ -62,6 +62,7 @@ export default function InventoryBarcodeScanner({
   onItemFound, 
   onItemNotFound 
 }: InventoryBarcodeScannerProps) {
+  const { formatAmount: formatCurrency } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [lastScannedItem, setLastScannedItem] = useState<InventoryItem | null>(null);

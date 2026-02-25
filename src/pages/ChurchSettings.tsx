@@ -13,7 +13,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle } from "lucide-react";
+import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle, Coins } from "lucide-react";
+import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -30,6 +31,7 @@ interface ChurchSettingsData {
   card_text_color: string;
   card_show_logo: string;
   card_church_name_on_card: string;
+  currency_code: string;
 }
 
 interface Tenant {
@@ -77,6 +79,7 @@ export default function ChurchSettings() {
     card_text_color: "#FFFFFF",
     card_show_logo: "true",
     card_church_name_on_card: "true",
+    currency_code: "USD",
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -116,6 +119,7 @@ export default function ChurchSettings() {
         card_text_color: settingsData.card_text_color || "#FFFFFF",
         card_show_logo: settingsData.card_show_logo || "true",
         card_church_name_on_card: settingsData.card_church_name_on_card || "true",
+        currency_code: settingsData.currency_code || "USD",
       });
     }
   }, [settingsData]);
@@ -149,6 +153,7 @@ export default function ChurchSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["church-settings", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["church-currency", tenantId] });
       toast.success(t("churchSettings.saveSuccess"));
     },
     onError: (error) => {
@@ -328,6 +333,39 @@ export default function ChurchSettings() {
                   placeholder={t("churchSettings.receiptFooterPlaceholder")}
                   rows={3}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Currency Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Coins className="h-5 w-5" />
+                Devise monétaire
+              </CardTitle>
+              <CardDescription>
+                Choisissez la devise utilisée pour toutes les transactions financières de votre église.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="currency_code">Devise *</Label>
+                <Select
+                  value={settings.currency_code}
+                  onValueChange={(value) => setSettings({ ...settings, currency_code: value })}
+                >
+                  <SelectTrigger className="w-full max-w-xs">
+                    <SelectValue placeholder="Sélectionner une devise" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    {SUPPORTED_CURRENCIES.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.symbol} — {currency.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
