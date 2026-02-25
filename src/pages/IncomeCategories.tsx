@@ -16,6 +16,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Pencil, Trash2, FolderOpen, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +50,7 @@ export default function IncomeCategories() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenantId } = useCurrentTenant();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<CategoryForm>(initialForm);
@@ -105,6 +107,7 @@ export default function IncomeCategories() {
         description: data.description.trim() || null,
         is_active: data.is_active,
         display_order: data.display_order,
+        tenant_id: tenantId,
       });
       if (error) throw error;
     },

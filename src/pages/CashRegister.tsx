@@ -109,6 +109,7 @@ const CashRegister = () => {
         description: transactionForm.description || null,
         transaction_date: transactionForm.transaction_date,
         reference_number: transactionForm.reference_number || null,
+        tenant_id: tenantId,
       });
       if (error) throw error;
 
