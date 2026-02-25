@@ -144,6 +144,14 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/inventory", icon: Package, label: t("layout.inventoryManagement") },
       ],
     },
+    {
+      key: "support",
+      label: t("layout.support"),
+      icon: MessageSquare,
+      items: [
+        { to: "/support", icon: MessageSquare, label: t("layout.support") },
+      ],
+    },
   ];
 
   // Add tenant user management and branding for tenant admins
@@ -180,6 +188,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
       { to: "/settings/tenants", icon: Building2, label: t("layout.churchManagement") },
       { to: "/settings/invitations", icon: Mail, label: t("layout.adminInvitations") },
       { to: "/settings/users", icon: Users, label: t("layout.userManagement") },
+      { to: "/support-management", icon: MessageSquare, label: t("layout.supportManagement") },
     ],
   },
 ];
