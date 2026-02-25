@@ -1,47 +1,32 @@
 
 
-## Problem Diagnosis
+## Plan: Insert Sample Donation Records
 
-The expenses query returns **empty results** because all existing expenses in the database have `tenant_id = NULL`, while your account belongs to a specific tenant (`637bff83-...`). The security policy filters expenses by tenant, so NULL-tenant expenses are invisible to you.
+I will insert a set of diverse donation records into the database using your tenant ID (`637bff83-cacf-4199-9e8d-c68192a0edcb`), using existing members, branches, and cash registers.
 
-This is the same `tenant_id` issue that affected other modules. Two things need to happen:
+### Records to Insert (10 donations)
 
----
-
-## Plan
-
-### 1. Database Migration: Update existing expenses with your tenant_id
-- Update all existing expenses that have `tenant_id = NULL` to assign them to your tenant
-- This will make the historical data visible again
-
-### 2. Same fix for related tables missing tenant_id
-Several financial tables still use the old global `has_role()` policies instead of tenant-aware `has_tenant_role()` policies, which means they won't work for tenant users:
-
-**Tables with old-style RLS (no tenant awareness):**
-- `cash_transactions` — uses `has_role()` instead of `has_tenant_role()`
-- `fund_transactions` — uses `has_role()` instead of `has_tenant_role()`
-- `budgets` — uses `has_role()` instead of `has_tenant_role()`
-- `salary_payments` — uses `has_role()` instead of `has_tenant_role()`
-- `expense_categories` — uses `has_role()` instead of `has_tenant_role()`
-- `income_categories` — uses `has_role()` instead of `has_tenant_role()`
-- `inventory_maintenance` — uses `has_role()` instead of `has_tenant_role()`
-
-These tables need `tenant_id` columns added (where missing) and their RLS policies updated to use `has_tenant_role()` so they work properly for tenant users.
-
-### 3. Backfill tenant_id on other financial tables
-Tables that already have `tenant_id` columns but have NULL values in existing rows:
-- `expenses` — backfill existing NULL rows
-- `donations` — backfill existing NULL rows
-- `bank_accounts` — backfill existing NULL rows
-- `employees` — backfill existing NULL rows
+| Date | Member | Type | Amount (HTG) | Method | Description |
+|------|--------|------|-------------|--------|-------------|
+| 2026-02-25 | Jean Baptiste | tithe | 5,000 | cash | Dîme février 2026 |
+| 2026-02-23 | Marie Joseph | offering | 2,500 | cash | Offrande culte dominical |
+| 2026-02-20 | Esther Abraham | tithe | 8,000 | transfer | Dîme février 2026 |
+| 2026-02-18 | Samuel Lazare | special | 15,000 | check | Don spécial construction |
+| 2026-02-16 | Elisabeth Thomas | offering | 3,000 | mobile_money | Offrande mercredi soir |
+| 2026-02-14 | Anonymous | offering | 1,500 | cash | Offrande anonyme |
+| 2026-02-10 | Anne Michel | tithe | 6,000 | transfer | Dîme février 2026 |
+| 2026-02-08 | rubens Etienne fils | special | 10,000 | cash | Don missions |
+| 2026-02-05 | Laborde Freude | offering | 4,000 | card | Offrande culte dominical |
+| 2026-02-01 | Rosena Thera | tithe | 7,500 | cash | Dîme février 2026 |
 
 ### Technical Details
+- All records use `tenant_id = '637bff83-cacf-4199-9e8d-c68192a0edcb'`
+- Cash payments linked to the "Petite Caisse" cash register
+- Records distributed across branches (Église Centrale, Pétion-Ville, Carrefour)
+- Mix of donation types: tithe, offering, special
+- Mix of payment methods: cash, check, transfer, mobile_money, card
+- One anonymous donation (no member_id)
 
-**Migration SQL will:**
-1. Add `tenant_id` column to tables that don't have it (`cash_transactions`, `fund_transactions`, `budgets`, `salary_payments`, `expense_categories`, `income_categories`, `inventory_maintenance`)
-2. Backfill all NULL `tenant_id` values across all financial tables to the user's tenant
-3. Drop old `has_role()`-based RLS policies and create new `has_tenant_role()`-based policies for each affected table
-4. Add foreign key references to the `tenants` table
-
-**No frontend code changes needed** — the Expenses page already includes `tenant_id` in inserts and the approve/reject buttons already exist in the code. The issue is purely that data is invisible due to RLS filtering.
+### Implementation
+Single database data insertion — no code changes needed.
 
