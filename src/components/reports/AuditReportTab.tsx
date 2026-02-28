@@ -277,7 +277,7 @@ export default function AuditReportTab() {
           />
         </div>
         <Select value={entityFilter} onValueChange={setEntityFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Type d'entité" />
           </SelectTrigger>
           <SelectContent>
@@ -290,7 +290,7 @@ export default function AuditReportTab() {
           </SelectContent>
         </Select>
         <Select value={actionFilter} onValueChange={setActionFilter}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-full sm:w-[150px]">
             <SelectValue placeholder="Action" />
           </SelectTrigger>
           <SelectContent>
@@ -311,7 +311,7 @@ export default function AuditReportTab() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Actions</CardTitle>
@@ -412,7 +412,8 @@ export default function AuditReportTab() {
           {isLoading ? (
             <p className="text-center py-8">Chargement...</p>
           ) : filteredLogs.length > 0 ? (
-            <Table>
+          <div className="overflow-x-auto">
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date/Heure</TableHead>
@@ -440,6 +441,7 @@ export default function AuditReportTab() {
                 ))}
               </TableBody>
             </Table>
+          </div>
           ) : (
             <p className="text-center py-8 text-muted-foreground">Aucun enregistrement d'audit</p>
           )}

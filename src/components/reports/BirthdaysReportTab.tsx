@@ -204,7 +204,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Anniversaires ce mois</CardTitle>
@@ -266,6 +266,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
               {upcomingEvents.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">Aucun événement dans les 30 prochains jours</p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -273,7 +274,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                       <TableHead>Membre</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Années</TableHead>
-                      <TableHead>Contact</TableHead>
+                      <TableHead className="hidden sm:table-cell">Contact</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -301,7 +302,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                         <TableCell>
                           <span className="font-semibold">{event.years}</span> ans
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="text-sm">
                             {event.member.phone && <div>{event.member.phone}</div>}
                             {event.member.email && (
@@ -315,6 +316,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -367,6 +369,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                   Aucun événement en {months[parseInt(selectedMonth)]}
                 </p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -374,7 +377,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                       <TableHead>Membre</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Années</TableHead>
-                      <TableHead>Contact</TableHead>
+                      <TableHead className="hidden sm:table-cell">Contact</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -399,7 +402,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                         <TableCell>
                           <span className="font-semibold">{event.years}</span> ans
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="text-sm">
                             {event.member.phone && <div>{event.member.phone}</div>}
                             {event.member.email && (
@@ -413,6 +416,7 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
