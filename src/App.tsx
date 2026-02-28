@@ -50,6 +50,7 @@ import AdminInvitations from "./pages/AdminInvitations";
 import Subscription from "./pages/Subscription";
 import TenantDataViewer from "./pages/TenantDataViewer";
 import SmartInsights from "./pages/SmartInsights";
+import SystemGuide from "./pages/SystemGuide";
 import Support from "./pages/Support";
 import SupportManagement from "./pages/SupportManagement";
 import NotFound from "./pages/NotFound";
@@ -110,6 +111,7 @@ const App = () => (
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireAdmin><TenantDataViewer /></ProtectedRoute>} />
+              <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/support-management" element={<ProtectedRoute requireAdmin><SupportManagement /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
