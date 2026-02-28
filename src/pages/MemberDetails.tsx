@@ -38,6 +38,7 @@ import MemberAttendanceStats from "@/components/MemberAttendanceStats";
 import MemberDonationStats from "@/components/MemberDonationStats";
 import MemberDocuments from "@/components/MemberDocuments";
 import MemberTimeline from "@/components/MemberTimeline";
+import { useLanguage } from "@/contexts/LanguageContext";
 import QRCode from "qrcode";
 
 interface MemberSimple {
@@ -89,6 +90,7 @@ const statusColors: Record<string, string> = {
 export default function MemberDetails() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const memberId = searchParams.get("id") || searchParams.get("memberId");
 
   const [member, setMember] = useState<Member | null>(null);
@@ -101,6 +103,8 @@ export default function MemberDetails() {
   const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
   const [addingMinistry, setAddingMinistry] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+
+  const locale = language === 'en' ? 'en-US' : language === 'ht' ? 'fr-FR' : 'fr-FR';
 
   useEffect(() => {
     loadAllMembers();
@@ -128,7 +132,7 @@ export default function MemberDetails() {
           });
           setQrCodeDataUrl(dataUrl);
         } catch (error) {
-          console.error("Erreur lors de la génération du QR code:", error);
+          console.error("Error generating QR code:", error);
           setQrCodeDataUrl(null);
         }
       } else {
@@ -149,7 +153,7 @@ export default function MemberDetails() {
       if (error) throw error;
       setAllMembers(data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des membres:", error);
+      console.error("Error loading members:", error);
     }
   };
 
@@ -179,24 +183,22 @@ export default function MemberDetails() {
       if (ministriesError) throw ministriesError;
       setMemberMinistries(ministriesData || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des détails:", error);
+      console.error("Error loading details:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleMemberChange = (newMemberId: string) => {
-    navigate(`/members/details?memberId=${newMemberId}`);
+    navigate(`/members/details?id=${newMemberId}`);
   };
 
   const loadAvailableMinistries = async () => {
     if (!memberId) return [];
     
     try {
-      // Get current ministry IDs
       const currentMinistryIds = memberMinistries.map(mm => mm.ministry.id);
       
-      // Get all active ministries not already joined
       let query = supabase
         .from("ministries")
         .select("id, name")
@@ -211,7 +213,7 @@ export default function MemberDetails() {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error("Erreur lors du chargement des ministères:", error);
+      console.error("Error loading ministries:", error);
       return [];
     }
   };
@@ -238,16 +240,15 @@ export default function MemberDetails() {
 
       if (error) throw error;
       
-      toast.success("Membre ajouté au ministère");
+      toast.success(t("memberDetails.memberAddedToMinistry"));
       setAddMinistryDialog(false);
       setSelectedMinistryId("");
       setMinistryRole("member");
       setJoinedDate(new Date().toISOString().split('T')[0]);
       
-      // Reload member ministries
       loadMemberDetails(memberId);
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout");
+      toast.error(error.message || t("common.error"));
     } finally {
       setAddingMinistry(false);
     }
@@ -266,7 +267,6 @@ export default function MemberDetails() {
     );
   };
 
-  // Helper function to format address from JSON
   const formatAddress = (addressData: string | null): string | null => {
     if (!addressData) return null;
     
@@ -275,27 +275,23 @@ export default function MemberDetails() {
       
       const parts: string[] = [];
       
-      // Build address line 1: number + street + apartment
       const line1Parts: string[] = [];
       if (address.number) line1Parts.push(address.number);
       if (address.street) line1Parts.push(address.street);
       if (address.apartment) line1Parts.push(`Apt ${address.apartment}`);
       if (line1Parts.length > 0) parts.push(line1Parts.join(' '));
       
-      // Build address line 2: city, state zipCode
       const line2Parts: string[] = [];
       if (address.city) line2Parts.push(address.city);
       if (address.state) line2Parts.push(address.state);
       if (address.zipCode) line2Parts.push(address.zipCode);
       if (line2Parts.length > 0) parts.push(line2Parts.join(', '));
       
-      // Add country if present
       if (address.country) parts.push(address.country);
       
       const formattedAddress = parts.join('\n');
       return formattedAddress || null;
     } catch (e) {
-      // If parsing fails, return the original string
       return addressData;
     }
   };
@@ -304,7 +300,7 @@ export default function MemberDetails() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{t("memberDetails.loading")}</p>
         </div>
       </Layout>
     );
@@ -316,19 +312,19 @@ export default function MemberDetails() {
         <div className="space-y-6">
           <Button variant="ghost" onClick={() => navigate("/members")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            {t("memberDetails.back")}
           </Button>
           <Card>
             <CardHeader>
-              <CardTitle>Aucun membre sélectionné</CardTitle>
+              <CardTitle>{t("memberDetails.noMemberSelected")}</CardTitle>
               <CardDescription>
-                Veuillez sélectionner un membre pour voir ses informations
+                {t("memberDetails.selectMemberDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Select onValueChange={handleMemberChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un membre" />
+                  <SelectValue placeholder={t("memberDetails.selectMember")} />
                 </SelectTrigger>
                 <SelectContent>
                   {allMembers.map((m) => (
@@ -353,11 +349,11 @@ export default function MemberDetails() {
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/members")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
+              {t("memberDetails.back")}
             </Button>
             <div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Détails du Membre
+                {t("memberDetails.title")}
               </h2>
             </div>
           </div>
@@ -419,92 +415,92 @@ export default function MemberDetails() {
         </Card>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Informations Générales */}
+          {/* General Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Informations Générales
+                {t("memberDetails.generalInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <InfoRow label="Email" value={member.email} icon={Mail} />
-              <InfoRow label="Téléphone" value={member.phone} icon={Phone} />
-              <InfoRow label="Téléphone d'urgence" value={member.emergency_phone} icon={Phone} />
-              <InfoRow label="Adresse" value={formatAddress(member.address)} icon={MapPin} />
+              <InfoRow label={t("memberDetails.email")} value={member.email} icon={Mail} />
+              <InfoRow label={t("memberDetails.phone")} value={member.phone} icon={Phone} />
+              <InfoRow label={t("memberDetails.emergencyPhone")} value={member.emergency_phone} icon={Phone} />
+              <InfoRow label={t("memberDetails.address")} value={formatAddress(member.address)} icon={MapPin} />
               <InfoRow 
-                label="Date de naissance" 
-                value={member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString('fr-FR') : null} 
+                label={t("memberDetails.dateOfBirth")} 
+                value={member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString(locale) : null} 
                 icon={Calendar} 
               />
-              <InfoRow label="Statut civil" value={member.civic_status} />
+              <InfoRow label={t("memberDetails.civilStatus")} value={member.civic_status} />
             </CardContent>
           </Card>
 
-          {/* Informations Familiales */}
+          {/* Family Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5" />
-                Informations Familiales
+                {t("memberDetails.familyInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <InfoRow label="Statut marital" value={member.marital_status} />
-              <InfoRow label="Nom du conjoint" value={member.spouse_name} />
+              <InfoRow label={t("memberDetails.maritalStatus")} value={member.marital_status} />
+              <InfoRow label={t("memberDetails.spouseName")} value={member.spouse_name} />
               <InfoRow 
-                label="Date de mariage" 
-                value={member.marriage_date ? new Date(member.marriage_date).toLocaleDateString('fr-FR') : null} 
+                label={t("memberDetails.marriageDate")} 
+                value={member.marriage_date ? new Date(member.marriage_date).toLocaleDateString(locale) : null} 
               />
               <InfoRow 
-                label="Nombre d'enfants" 
+                label={t("memberDetails.numberOfChildren")} 
                 value={member.number_of_children?.toString()} 
               />
-              <InfoRow label="Noms des enfants" value={member.children_names} />
+              <InfoRow label={t("memberDetails.childrenNames")} value={member.children_names} />
             </CardContent>
           </Card>
 
-          {/* Informations Spirituelles */}
+          {/* Spiritual Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Book className="h-5 w-5" />
-                Informations Spirituelles
+                {t("memberDetails.spiritualInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <InfoRow label="Statut de baptême" value={member.baptism_status} />
+              <InfoRow label={t("memberDetails.baptismStatus")} value={member.baptism_status} />
               <InfoRow 
-                label="Date de baptême" 
-                value={member.baptism_date ? new Date(member.baptism_date).toLocaleDateString('fr-FR') : null} 
+                label={t("memberDetails.baptismDate")} 
+                value={member.baptism_date ? new Date(member.baptism_date).toLocaleDateString(locale) : null} 
               />
               <InfoRow 
-                label="Date de conversion" 
-                value={member.conversion_date ? new Date(member.conversion_date).toLocaleDateString('fr-FR') : null} 
+                label={t("memberDetails.conversionDate")} 
+                value={member.conversion_date ? new Date(member.conversion_date).toLocaleDateString(locale) : null} 
               />
               {member.christian_experience && (
                 <div className="py-2">
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Expérience chrétienne</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{t("memberDetails.christianExperience")}</p>
                   <p className="text-sm whitespace-pre-wrap">{member.christian_experience}</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Formation & Groupes */}
+          {/* Education & Groups */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Formation & Groupes
+                {t("memberDetails.formationGroups")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <InfoRow label="Formation académique" value={member.academic_formation} />
-              <InfoRow label="Formation professionnelle" value={member.professional_formation} />
+              <InfoRow label={t("memberDetails.academicFormation")} value={member.academic_formation} />
+              <InfoRow label={t("memberDetails.professionalFormation")} value={member.professional_formation} />
               {member.groups && member.groups.length > 0 && (
                 <div className="py-2">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Groupes</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{t("memberDetails.groups")}</p>
                   <div className="flex flex-wrap gap-2">
                     {member.groups.map((group, index) => (
                       <Badge key={index} variant="secondary">
@@ -518,12 +514,12 @@ export default function MemberDetails() {
           </Card>
         </div>
 
-        {/* QR Code Section - Always show if we have member data */}
+        {/* QR Code Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              Code QR du Membre
+              {t("memberDetails.qrCode")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -537,7 +533,7 @@ export default function MemberDetails() {
               ) : (
                 <div className="w-48 h-48 border rounded-lg flex items-center justify-center bg-muted">
                   <p className="text-sm text-muted-foreground text-center px-4">
-                    QR Code non disponible
+                    {t("memberDetails.qrCodeUnavailable")}
                   </p>
                 </div>
               )}
@@ -561,19 +557,19 @@ export default function MemberDetails() {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="timeline" className="flex items-center gap-2">
                 <History className="h-4 w-4" />
-                Historique
+                {t("memberDetails.timeline")}
               </TabsTrigger>
               <TabsTrigger value="attendance" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Présences
+                {t("memberDetails.attendanceTab")}
               </TabsTrigger>
               <TabsTrigger value="donations" className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
-                Cotisations
+                {t("memberDetails.donationsTab")}
               </TabsTrigger>
               <TabsTrigger value="documents" className="flex items-center gap-2">
                 <Book className="h-4 w-4" />
-                Documents
+                {t("memberDetails.documentsTab")}
               </TabsTrigger>
             </TabsList>
 
@@ -602,12 +598,12 @@ export default function MemberDetails() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5" />
-                  Ministères
+                  {t("memberDetails.ministries")}
                 </CardTitle>
                 <CardDescription>
                   {memberMinistries.length > 0
-                    ? `Membre de ${memberMinistries.length} ministère(s)`
-                    : "N'appartient à aucun ministère"}
+                    ? t("memberDetails.memberOfMinistries").replace("{count}", String(memberMinistries.length))
+                    : t("memberDetails.noMinistryMembership")}
                 </CardDescription>
               </div>
               <Button
@@ -615,7 +611,7 @@ export default function MemberDetails() {
                 onClick={() => setAddMinistryDialog(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Ajouter à un ministère
+                {t("memberDetails.addToMinistry")}
               </Button>
             </div>
           </CardHeader>
@@ -641,15 +637,15 @@ export default function MemberDetails() {
                                 : "bg-muted text-muted-foreground border-border"
                             }
                           >
-                            {mm.ministry.status === "active" ? "Actif" : "Inactif"}
+                            {mm.ministry.status === "active" ? t("memberDetails.active") : t("memberDetails.inactive")}
                           </Badge>
                         </div>
                         <div className="flex gap-3 text-xs text-muted-foreground mt-1">
-                          <span>Rôle: <span className="font-medium">{mm.role}</span></span>
+                          <span>{t("memberDetails.roleLabel")}: <span className="font-medium">{mm.role}</span></span>
                           <span>•</span>
                           <span>
-                            Adhésion: {mm.joined_date
-                              ? new Date(mm.joined_date).toLocaleDateString("fr-FR")
+                            {t("memberDetails.membershipLabel")}: {mm.joined_date
+                              ? new Date(mm.joined_date).toLocaleDateString(locale)
                               : "-"}
                           </span>
                         </div>
@@ -662,7 +658,7 @@ export default function MemberDetails() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Briefcase className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                <p>Ce membre n'appartient à aucun ministère</p>
+                <p>{t("memberDetails.noMinistryMessage")}</p>
               </div>
             )}
           </CardContent>
@@ -672,8 +668,8 @@ export default function MemberDetails() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>Créé le: {new Date(member.created_at).toLocaleString('fr-FR')}</p>
-              <p>Modifié le: {new Date(member.updated_at).toLocaleString('fr-FR')}</p>
+              <p>{t("memberDetails.createdAt")}: {new Date(member.created_at).toLocaleString(locale)}</p>
+              <p>{t("memberDetails.updatedAt")}: {new Date(member.updated_at).toLocaleString(locale)}</p>
             </div>
           </CardContent>
         </Card>
@@ -683,17 +679,17 @@ export default function MemberDetails() {
       <Dialog open={addMinistryDialog} onOpenChange={setAddMinistryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajouter à un Ministère</DialogTitle>
+            <DialogTitle>{t("memberDetails.addToMinistryTitle")}</DialogTitle>
             <DialogDescription>
-              Sélectionnez un ministère pour ajouter ce membre
+              {t("memberDetails.addToMinistryDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Ministère</Label>
+              <Label>{t("memberDetails.ministry")}</Label>
               <Select value={selectedMinistryId} onValueChange={setSelectedMinistryId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un ministère" />
+                  <SelectValue placeholder={t("memberDetails.selectMinistry")} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableMinistries.map((ministry: any) => (
@@ -706,21 +702,21 @@ export default function MemberDetails() {
             </div>
 
             <div className="grid gap-2">
-              <Label>Rôle</Label>
+              <Label>{t("memberDetails.role")}</Label>
               <Select value={ministryRole} onValueChange={setMinistryRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Membre</SelectItem>
-                  <SelectItem value="coordinator">Coordinateur</SelectItem>
-                  <SelectItem value="assistant">Assistant</SelectItem>
+                  <SelectItem value="member">{t("memberDetails.memberRole")}</SelectItem>
+                  <SelectItem value="coordinator">{t("memberDetails.coordinatorRole")}</SelectItem>
+                  <SelectItem value="assistant">{t("memberDetails.assistantRole")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label>Date d'adhésion</Label>
+              <Label>{t("memberDetails.joinDate")}</Label>
               <Input
                 type="date"
                 value={joinedDate}
@@ -733,13 +729,13 @@ export default function MemberDetails() {
               variant="outline"
               onClick={() => setAddMinistryDialog(false)}
             >
-              Annuler
+              {t("memberDetails.cancel")}
             </Button>
             <Button
               onClick={handleAddToMinistry}
               disabled={!selectedMinistryId || addingMinistry}
             >
-              {addingMinistry ? "Chargement..." : "Ajouter"}
+              {addingMinistry ? t("memberDetails.adding") : t("memberDetails.add")}
             </Button>
           </div>
         </DialogContent>
