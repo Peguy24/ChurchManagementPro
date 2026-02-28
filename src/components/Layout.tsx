@@ -134,6 +134,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       items: [
         { to: "/settings/church", icon: Church, label: t("layout.churchInfo") },
         { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
+        { to: "/system-guide", icon: FileText, label: t("layout.systemGuide") },
       ],
     },
     {
