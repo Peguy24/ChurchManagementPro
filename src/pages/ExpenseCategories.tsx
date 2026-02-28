@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Pencil, Trash2, FolderOpen, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import {
   AlertDialog,
@@ -52,6 +52,8 @@ export default function ExpenseCategories() {
   const [form, setForm] = useState<CategoryForm>(initialForm);
   const [showInactive, setShowInactive] = useState(false);
 
+  const dateLocale = language === "fr" ? fr : enUS;
+
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ["expense-categories-all", showInactive],
     queryFn: async () => {
@@ -70,7 +72,6 @@ export default function ExpenseCategories() {
     },
   });
 
-  // Check for duplicate names
   const checkDuplicate = (name: string, excludeId?: string) => {
     const normalizedName = name.toLowerCase().trim();
     return categories.some(
@@ -83,7 +84,7 @@ export default function ExpenseCategories() {
   const createCategory = useMutation({
     mutationFn: async (data: CategoryForm) => {
       if (checkDuplicate(data.name)) {
-        throw new Error("Une catégorie avec ce nom existe déjà");
+        throw new Error(t("nav.expenseCategoryDuplicate"));
       }
 
       const { error } = await supabase.from("expense_categories").insert({
@@ -99,12 +100,12 @@ export default function ExpenseCategories() {
       queryClient.invalidateQueries({ queryKey: ["expense-categories-all"] });
       setDialogOpen(false);
       setForm(initialForm);
-      toast({ title: "Succès", description: "Catégorie créée avec succès" });
+      toast({ title: t("common.success"), description: t("nav.newCategory") });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Erreur", 
-        description: error.message || "Impossible de créer la catégorie", 
+        title: t("common.error"), 
+        description: error.message, 
         variant: "destructive" 
       });
     },
@@ -112,10 +113,10 @@ export default function ExpenseCategories() {
 
   const updateCategory = useMutation({
     mutationFn: async (data: CategoryForm) => {
-      if (!data.id) throw new Error("ID manquant");
+      if (!data.id) throw new Error("ID missing");
       
       if (checkDuplicate(data.name, data.id)) {
-        throw new Error("Une catégorie avec ce nom existe déjà");
+        throw new Error(t("nav.expenseCategoryDuplicate"));
       }
 
       const { error } = await supabase
@@ -134,12 +135,12 @@ export default function ExpenseCategories() {
       setDialogOpen(false);
       setForm(initialForm);
       setEditMode(false);
-      toast({ title: "Succès", description: "Catégorie mise à jour" });
+      toast({ title: t("common.success"), description: t("nav.editCategory") });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Erreur", 
-        description: error.message || "Impossible de modifier la catégorie", 
+        title: t("common.error"), 
+        description: error.message, 
         variant: "destructive" 
       });
     },
@@ -147,14 +148,13 @@ export default function ExpenseCategories() {
 
   const deleteCategory = useMutation({
     mutationFn: async (id: string) => {
-      // Check if category is used in expenses
       const { count } = await supabase
         .from("expenses")
         .select("*", { count: "exact", head: true })
         .eq("category_id", id);
 
       if (count && count > 0) {
-        throw new Error(`Cette catégorie est utilisée dans ${count} dépense(s). Désactivez-la plutôt.`);
+        throw new Error(t("nav.expenseCategoryUsed"));
       }
 
       const { error } = await supabase
@@ -166,12 +166,12 @@ export default function ExpenseCategories() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
       queryClient.invalidateQueries({ queryKey: ["expense-categories-all"] });
-      toast({ title: "Succès", description: "Catégorie supprimée" });
+      toast({ title: t("common.success"), description: t("common.delete") });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Erreur", 
-        description: error.message || "Impossible de supprimer la catégorie", 
+        title: t("common.error"), 
+        description: error.message, 
         variant: "destructive" 
       });
     },
@@ -191,7 +191,7 @@ export default function ExpenseCategories() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast({ title: "Erreur", description: "Le nom est requis", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("nav.categoryName"), variant: "destructive" });
       return;
     }
 
@@ -214,51 +214,48 @@ export default function ExpenseCategories() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Catégories de Dépenses</h1>
-            <p className="text-muted-foreground">Gérez les catégories pour classifier les dépenses</p>
+            <h1 className="text-3xl font-bold text-foreground">{t("nav.expenseCategoriesTitle")}</h1>
+            <p className="text-muted-foreground">{t("nav.expenseCategoriesDesc")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={handleOpenDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                Nouvelle Catégorie
+                {t("nav.newCategory")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editMode ? "Modifier la Catégorie" : "Nouvelle Catégorie"}
+                  {editMode ? t("nav.editCategory") : t("nav.newCategory")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Nom *</Label>
+                  <Label>{t("nav.categoryName")} *</Label>
                   <Input
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Ex: Électricité, Transport..."
                   />
                   {form.name && checkDuplicate(form.name, form.id) && (
                     <p className="text-xs text-destructive flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      Une catégorie avec ce nom existe déjà
+                      {t("nav.expenseCategoryDuplicate")}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
+                  <Label>{t("nav.categoryDescription")}</Label>
                   <Textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Description optionnelle..."
                     rows={2}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label>Catégorie active</Label>
+                  <Label>{t("nav.categoryActive")}</Label>
                   <Switch
                     checked={form.is_active}
                     onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
@@ -274,14 +271,13 @@ export default function ExpenseCategories() {
                     updateCategory.isPending
                   }
                 >
-                  {editMode ? "Mettre à jour" : "Créer"}
+                  {editMode ? t("common.save") : t("common.create")}
                 </Button>
               </form>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Stats */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
@@ -293,7 +289,7 @@ export default function ExpenseCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Actives</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.actives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">{activeCount}</p>
@@ -301,7 +297,7 @@ export default function ExpenseCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Inactives</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.inactives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-muted-foreground">{inactiveCount}</p>
@@ -309,7 +305,6 @@ export default function ExpenseCategories() {
           </Card>
         </div>
 
-        {/* Filter */}
         <div className="flex items-center gap-2">
           <Switch
             id="show-inactive"
@@ -317,32 +312,31 @@ export default function ExpenseCategories() {
             onCheckedChange={setShowInactive}
           />
           <Label htmlFor="show-inactive" className="text-sm cursor-pointer">
-            Afficher les catégories inactives
+            {t("nav.showInactive")}
           </Label>
         </div>
 
-        {/* Table */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderOpen className="h-5 w-5" />
-              Liste des Catégories
+              {t("nav.categoryList")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center text-muted-foreground py-8">Chargement...</p>
+              <p className="text-center text-muted-foreground py-8">{t("common.loading")}</p>
             ) : categories.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Aucune catégorie</p>
+              <p className="text-center text-muted-foreground py-8">{t("common.noData")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Créée le</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("nav.categoryName")}</TableHead>
+                    <TableHead>{t("nav.categoryDescription")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead>{t("nav.createdAt")}</TableHead>
+                    <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -354,11 +348,11 @@ export default function ExpenseCategories() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={category.is_active ? "default" : "secondary"}>
-                          {category.is_active ? "Active" : "Inactive"}
+                          {category.is_active ? t("nav.active") : t("nav.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {format(new Date(category.created_at), "dd/MM/yyyy", { locale: fr })}
+                        {format(new Date(category.created_at), "dd/MM/yyyy", { locale: dateLocale })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -377,19 +371,18 @@ export default function ExpenseCategories() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Supprimer cette catégorie ?</AlertDialogTitle>
+                                <AlertDialogTitle>{t("nav.deleteCategory")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Cette action est irréversible. Si la catégorie est utilisée dans des dépenses, 
-                                  vous ne pourrez pas la supprimer.
+                                  {t("nav.deleteCategoryExpDesc")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteCategory.mutate(category.id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  Supprimer
+                                  {t("common.delete")}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
