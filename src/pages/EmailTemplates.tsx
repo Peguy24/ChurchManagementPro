@@ -34,52 +34,48 @@ interface EmailTemplate {
   updated_at: string;
 }
 
-const templateInfo: Record<TemplateType, { 
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  variables: { name: string; description: string }[];
-}> = {
-  birthday: {
-    icon: Gift,
-    title: "Anniversaire",
-    description: "Email envoyé automatiquement le jour de l'anniversaire des membres",
-    variables: [
-      { name: "{{member_name}}", description: "Nom complet du membre" },
-      { name: "{{age}}", description: "Âge du membre" },
-    ],
-  },
-  event_reminder: {
-    icon: Bell,
-    title: "Rappel d'événement",
-    description: "Email envoyé la veille des cultes (dimanche et mercredi)",
-    variables: [
-      { name: "{{member_name}}", description: "Nom complet du membre" },
-      { name: "{{service_type}}", description: "Type de culte (Dimanche/Mercredi)" },
-      { name: "{{service_date}}", description: "Date du culte" },
-    ],
-  },
-  attendance_alert: {
-    icon: UserCheck,
-    title: "Alerte de présence",
-    description: "Email envoyé aux membres dont la présence a diminué",
-    variables: [
-      { name: "{{member_name}}", description: "Nom complet du membre" },
-      { name: "{{attendance_rate}}", description: "Taux de présence actuel" },
-    ],
-  },
+const templateIcons: Record<TemplateType, React.ComponentType<{ className?: string }>> = {
+  birthday: Gift,
+  event_reminder: Bell,
+  attendance_alert: UserCheck,
+};
+
+const templateVariableKeys: Record<TemplateType, string[]> = {
+  birthday: ["{{member_name}}", "{{age}}"],
+  event_reminder: ["{{member_name}}", "{{service_type}}", "{{service_date}}"],
+  attendance_alert: ["{{member_name}}", "{{attendance_rate}}"],
+};
+
+const variableTranslationMap: Record<string, string> = {
+  "{{member_name}}": "varMemberName",
+  "{{age}}": "varAge",
+  "{{service_type}}": "varServiceType",
+  "{{service_date}}": "varServiceDate",
+  "{{attendance_rate}}": "varAttendanceRate",
+};
+
+const templateTitleKeys: Record<TemplateType, string> = {
+  birthday: "birthday",
+  event_reminder: "eventReminder",
+  attendance_alert: "attendanceAlert",
+};
+
+const templateDescKeys: Record<TemplateType, string> = {
+  birthday: "birthdayDesc",
+  event_reminder: "eventReminderDesc",
+  attendance_alert: "attendanceAlertDesc",
 };
 
 export default function EmailTemplates() {
+  const { t } = useLanguage();
   const { hasFeature, loading: planLoading } = usePlanLimits();
 
-  // Check for email notifications feature access
   if (!planLoading && !hasFeature("emailNotifications")) {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName="Notifications Email"
-          featureDescription="Personnalisez et envoyez des emails automatiques pour les anniversaires, rappels d'événements et alertes de présence."
+          featureName={t("emailTemplatesPage.featureName")}
+          featureDescription={t("emailTemplatesPage.featureDescription")}
           requiredPlan="professionnel"
           icon={<Mail className="w-8 h-8 text-muted-foreground" />}
         />
@@ -91,7 +87,7 @@ export default function EmailTemplates() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
       </Layout>
     );
@@ -129,28 +125,24 @@ function EmailTemplatesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["email-templates"] });
-      toast.success("Modèle mis à jour avec succès");
+      toast.success(t("emailTemplatesPage.updateSuccess"));
       setEditedTemplates({});
     },
     onError: (error) => {
-      toast.error("Erreur lors de la mise à jour: " + error.message);
+      toast.error(t("emailTemplatesPage.updateError") + ": " + error.message);
     },
   });
 
   const handleChange = (id: string, field: keyof EmailTemplate, value: string | boolean) => {
     setEditedTemplates(prev => ({
       ...prev,
-      [id]: {
-        ...prev[id],
-        [field]: value,
-      },
+      [id]: { ...prev[id], [field]: value },
     }));
   };
 
   const handleSave = (template: EmailTemplate) => {
     const updates = editedTemplates[template.id];
     if (!updates) return;
-    
     updateMutation.mutate({ id: template.id, updates });
   };
 
@@ -179,10 +171,8 @@ function EmailTemplatesContent() {
     return (
       <Layout>
         <Alert variant="destructive">
-          <AlertTitle>Erreur</AlertTitle>
-          <AlertDescription>
-            Impossible de charger les modèles d'emails. Vérifiez que vous avez les permissions nécessaires.
-          </AlertDescription>
+          <AlertTitle>{t("emailTemplatesPage.errorTitle")}</AlertTitle>
+          <AlertDescription>{t("emailTemplatesPage.loadError")}</AlertDescription>
         </Alert>
       </Layout>
     );
@@ -195,10 +185,10 @@ function EmailTemplatesContent() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Mail className="h-8 w-8" />
-              Modèles d'emails
+              {t("emailTemplatesPage.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Personnalisez les emails automatiques envoyés aux membres
+              {t("emailTemplatesPage.subtitle")}
             </p>
           </div>
         </div>
@@ -206,20 +196,20 @@ function EmailTemplatesContent() {
         <Tabs defaultValue="birthday" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
             {(["birthday", "event_reminder", "attendance_alert"] as TemplateType[]).map((type) => {
-              const info = templateInfo[type];
-              const Icon = info.icon;
+              const Icon = templateIcons[type];
               return (
                 <TabsTrigger key={type} value={type} className="flex items-center gap-2">
                   <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{info.title}</span>
+                  <span className="hidden sm:inline">{t(`emailTemplatesPage.${templateTitleKeys[type]}`)}</span>
                 </TabsTrigger>
               );
             })}
           </TabsList>
 
           {templates?.map((template) => {
-            const info = templateInfo[template.template_type as TemplateType];
-            if (!info) return null;
+            const type = template.template_type as TemplateType;
+            const Icon = templateIcons[type];
+            if (!Icon) return null;
             
             return (
               <TabsContent key={template.id} value={template.template_type}>
@@ -230,14 +220,14 @@ function EmailTemplatesContent() {
                         <div className="flex items-center justify-between">
                           <div>
                             <CardTitle className="flex items-center gap-2">
-                              <info.icon className="h-5 w-5" />
-                              {info.title}
+                              <Icon className="h-5 w-5" />
+                              {t(`emailTemplatesPage.${templateTitleKeys[type]}`)}
                             </CardTitle>
-                            <CardDescription>{info.description}</CardDescription>
+                            <CardDescription>{t(`emailTemplatesPage.${templateDescKeys[type]}`)}</CardDescription>
                           </div>
                           <div className="flex items-center gap-2">
                             <Label htmlFor={`active-${template.id}`} className="text-sm">
-                              Actif
+                              {t("emailTemplatesPage.active")}
                             </Label>
                             <Switch
                               id={`active-${template.id}`}
@@ -249,22 +239,22 @@ function EmailTemplatesContent() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor={`subject-${template.id}`}>Sujet de l'email</Label>
+                          <Label htmlFor={`subject-${template.id}`}>{t("emailTemplatesPage.subject")}</Label>
                           <Input
                             id={`subject-${template.id}`}
                             value={getCurrentValue(template, "subject") as string}
                             onChange={(e) => handleChange(template.id, "subject", e.target.value)}
-                            placeholder="Sujet de l'email..."
+                            placeholder={t("emailTemplatesPage.subjectPlaceholder")}
                           />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor={`body-${template.id}`}>Contenu HTML</Label>
+                          <Label htmlFor={`body-${template.id}`}>{t("emailTemplatesPage.htmlContent")}</Label>
                           <Textarea
                             id={`body-${template.id}`}
                             value={getCurrentValue(template, "body_html") as string}
                             onChange={(e) => handleChange(template.id, "body_html", e.target.value)}
-                            placeholder="Contenu de l'email en HTML..."
+                            placeholder={t("emailTemplatesPage.htmlContentPlaceholder")}
                             className="min-h-[300px] font-mono text-sm"
                           />
                         </div>
@@ -280,14 +270,14 @@ function EmailTemplatesContent() {
                                   return next;
                                 })}
                               >
-                                Annuler
+                                {t("emailTemplatesPage.cancel")}
                               </Button>
                               <Button
                                 onClick={() => handleSave(template)}
                                 disabled={updateMutation.isPending}
                               >
                                 <Save className="h-4 w-4 mr-2" />
-                                Enregistrer
+                                {t("emailTemplatesPage.save")}
                               </Button>
                             </>
                           )}
@@ -301,20 +291,20 @@ function EmailTemplatesContent() {
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <Info className="h-4 w-4" />
-                          Variables disponibles
+                          {t("emailTemplatesPage.availableVariables")}
                         </CardTitle>
                         <CardDescription>
-                          Utilisez ces variables dans votre modèle
+                          {t("emailTemplatesPage.variablesDescription")}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        {info.variables.map((variable) => (
-                          <div key={variable.name} className="space-y-1">
+                        {templateVariableKeys[type]?.map((varName) => (
+                          <div key={varName} className="space-y-1">
                             <Badge variant="secondary" className="font-mono text-xs">
-                              {variable.name}
+                              {varName}
                             </Badge>
                             <p className="text-sm text-muted-foreground">
-                              {variable.description}
+                              {t(`emailTemplatesPage.${variableTranslationMap[varName]}`)}
                             </p>
                           </div>
                         ))}
@@ -323,9 +313,9 @@ function EmailTemplatesContent() {
 
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg">Aperçu</CardTitle>
+                        <CardTitle className="text-lg">{t("emailTemplatesPage.preview")}</CardTitle>
                         <CardDescription>
-                          Prévisualisation du contenu
+                          {t("emailTemplatesPage.previewDescription")}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
