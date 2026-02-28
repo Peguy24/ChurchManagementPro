@@ -84,7 +84,7 @@ export default function ExpenseCategories() {
   const createCategory = useMutation({
     mutationFn: async (data: CategoryForm) => {
       if (checkDuplicate(data.name)) {
-        throw new Error(t("nav.expenseCategoryDuplicate"));
+        throw new Error(t("layout.expenseCategoryDuplicate"));
       }
 
       const { error } = await supabase.from("expense_categories").insert({
@@ -100,7 +100,7 @@ export default function ExpenseCategories() {
       queryClient.invalidateQueries({ queryKey: ["expense-categories-all"] });
       setDialogOpen(false);
       setForm(initialForm);
-      toast({ title: t("common.success"), description: t("nav.newCategory") });
+      toast({ title: t("common.success"), description: t("layout.newCategory") });
     },
     onError: (error: any) => {
       toast({ 
@@ -116,7 +116,7 @@ export default function ExpenseCategories() {
       if (!data.id) throw new Error("ID missing");
       
       if (checkDuplicate(data.name, data.id)) {
-        throw new Error(t("nav.expenseCategoryDuplicate"));
+        throw new Error(t("layout.expenseCategoryDuplicate"));
       }
 
       const { error } = await supabase
@@ -135,7 +135,7 @@ export default function ExpenseCategories() {
       setDialogOpen(false);
       setForm(initialForm);
       setEditMode(false);
-      toast({ title: t("common.success"), description: t("nav.editCategory") });
+      toast({ title: t("common.success"), description: t("layout.editCategory") });
     },
     onError: (error: any) => {
       toast({ 
@@ -154,7 +154,7 @@ export default function ExpenseCategories() {
         .eq("category_id", id);
 
       if (count && count > 0) {
-        throw new Error(t("nav.expenseCategoryUsed"));
+        throw new Error(t("layout.expenseCategoryUsed"));
       }
 
       const { error } = await supabase
@@ -191,7 +191,7 @@ export default function ExpenseCategories() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast({ title: t("common.error"), description: t("nav.categoryName"), variant: "destructive" });
+      toast({ title: t("common.error"), description: t("layout.categoryName"), variant: "destructive" });
       return;
     }
 
@@ -216,25 +216,25 @@ export default function ExpenseCategories() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("nav.expenseCategoriesTitle")}</h1>
-            <p className="text-muted-foreground">{t("nav.expenseCategoriesDesc")}</p>
+            <h1 className="text-3xl font-bold text-foreground">{t("layout.expenseCategoriesTitle")}</h1>
+            <p className="text-muted-foreground">{t("layout.expenseCategoriesDesc")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={handleOpenDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                {t("nav.newCategory")}
+                {t("layout.newCategory")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editMode ? t("nav.editCategory") : t("nav.newCategory")}
+                  {editMode ? t("layout.editCategory") : t("layout.newCategory")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryName")} *</Label>
+                  <Label>{t("layout.categoryName")} *</Label>
                   <Input
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -242,12 +242,12 @@ export default function ExpenseCategories() {
                   {form.name && checkDuplicate(form.name, form.id) && (
                     <p className="text-xs text-destructive flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      {t("nav.expenseCategoryDuplicate")}
+                      {t("layout.expenseCategoryDuplicate")}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryDescription")}</Label>
+                  <Label>{t("layout.categoryDescription")}</Label>
                   <Textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -255,7 +255,7 @@ export default function ExpenseCategories() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label>{t("nav.categoryActive")}</Label>
+                  <Label>{t("layout.categoryActive")}</Label>
                   <Switch
                     checked={form.is_active}
                     onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
@@ -289,7 +289,7 @@ export default function ExpenseCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.actives")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("layout.actives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">{activeCount}</p>
@@ -297,7 +297,7 @@ export default function ExpenseCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.inactives")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("layout.inactives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-muted-foreground">{inactiveCount}</p>
@@ -312,7 +312,7 @@ export default function ExpenseCategories() {
             onCheckedChange={setShowInactive}
           />
           <Label htmlFor="show-inactive" className="text-sm cursor-pointer">
-            {t("nav.showInactive")}
+            {t("layout.showInactive")}
           </Label>
         </div>
 
@@ -320,7 +320,7 @@ export default function ExpenseCategories() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderOpen className="h-5 w-5" />
-              {t("nav.categoryList")}
+              {t("layout.categoryList")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -332,10 +332,10 @@ export default function ExpenseCategories() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("nav.categoryName")}</TableHead>
-                    <TableHead>{t("nav.categoryDescription")}</TableHead>
+                    <TableHead>{t("layout.categoryName")}</TableHead>
+                    <TableHead>{t("layout.categoryDescription")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>{t("nav.createdAt")}</TableHead>
+                    <TableHead>{t("layout.createdAt")}</TableHead>
                     <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -348,7 +348,7 @@ export default function ExpenseCategories() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={category.is_active ? "default" : "secondary"}>
-                          {category.is_active ? t("nav.active") : t("nav.inactive")}
+                          {category.is_active ? t("layout.active") : t("layout.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -371,9 +371,9 @@ export default function ExpenseCategories() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>{t("nav.deleteCategory")}</AlertDialogTitle>
+                                <AlertDialogTitle>{t("layout.deleteCategory")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  {t("nav.deleteCategoryExpDesc")}
+                                  {t("layout.deleteCategoryExpDesc")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
