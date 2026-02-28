@@ -74,7 +74,6 @@ const GroupComparisonDashboard = () => {
       const stats: GroupStats[] = [];
 
       for (const group of selectedGroups) {
-        // Get members in this group
         const { data: members, error: membersError } = await supabase
           .from('members')
           .select('id')
@@ -86,16 +85,10 @@ const GroupComparisonDashboard = () => {
         const memberIds = members?.map(m => m.id) || [];
 
         if (memberIds.length === 0) {
-          stats.push({
-            group,
-            monthlyData: [],
-            overallRate: 0,
-            trend: 0
-          });
+          stats.push({ group, monthlyData: [], overallRate: 0, trend: 0 });
           continue;
         }
 
-        // Get attendance records
         const { data: attendance, error: attendanceError } = await supabase
           .from('attendance_records')
           .select('event_date, member_id')
@@ -105,7 +98,6 @@ const GroupComparisonDashboard = () => {
 
         if (attendanceError) throw attendanceError;
 
-        // Process monthly data
         const monthlyMap = new Map<string, { present: Set<string>; total: number }>();
         
         attendance?.forEach(record => {
@@ -137,17 +129,11 @@ const GroupComparisonDashboard = () => {
           ? monthlyData[monthlyData.length - 1].rate - monthlyData[0].rate
           : 0;
 
-        stats.push({
-          group,
-          monthlyData,
-          overallRate,
-          trend
-        });
+        stats.push({ group, monthlyData, overallRate, trend });
       }
 
       setGroupStats(stats);
 
-      // Prepare comparison data for charts
       const allMonths = new Set<string>();
       stats.forEach(s => s.monthlyData.forEach(m => allMonths.add(m.month)));
       
@@ -187,7 +173,7 @@ const GroupComparisonDashboard = () => {
   if (loading && selectedGroups.length === 0) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Chargement...</p>
@@ -199,19 +185,20 @@ const GroupComparisonDashboard = () => {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/attendance')}>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/attendance')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Comparaison des Groupes</h1>
-              <p className="text-muted-foreground">Analysez les tendances de présence entre différents groupes</p>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Comparaison des Groupes</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">Analysez les tendances de présence entre différents groupes</p>
             </div>
           </div>
           <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -224,12 +211,12 @@ const GroupComparisonDashboard = () => {
 
         {/* Group Selection */}
         <Card>
-          <CardHeader>
-            <CardTitle>Sélectionner les groupes à comparer</CardTitle>
-            <CardDescription>Choisissez jusqu'à 6 groupes pour la comparaison</CardDescription>
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-base sm:text-lg">Sélectionner les groupes à comparer</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Choisissez jusqu'à 6 groupes pour la comparaison</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {availableGroups.map((group) => (
                 <div key={group} className="flex items-center space-x-2">
                   <Checkbox
@@ -240,7 +227,7 @@ const GroupComparisonDashboard = () => {
                   />
                   <label
                     htmlFor={group}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate"
                   >
                     {group}
                   </label>
@@ -252,8 +239,8 @@ const GroupComparisonDashboard = () => {
 
         {selectedGroups.length === 0 && (
           <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">Sélectionnez au moins un groupe pour voir les statistiques</p>
+            <CardContent className="p-8 sm:p-12 text-center">
+              <p className="text-sm sm:text-base text-muted-foreground">Sélectionnez au moins un groupe pour voir les statistiques</p>
             </CardContent>
           </Card>
         )}
@@ -261,23 +248,23 @@ const GroupComparisonDashboard = () => {
         {selectedGroups.length > 0 && (
           <>
             {/* Overview Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {groupStats.map((stat, index) => (
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+              {groupStats.map((stat) => (
                 <Card key={stat.group}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">{stat.group}</CardTitle>
+                  <CardHeader className="pb-1 sm:pb-2">
+                    <CardTitle className="text-xs sm:text-sm font-medium truncate">{stat.group}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">{stat.overallRate.toFixed(1)}%</div>
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="text-lg sm:text-2xl font-bold">{stat.overallRate.toFixed(1)}%</div>
+                      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                         {getTrendIcon(stat.trend)}
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">
                           {stat.trend > 0 ? '+' : ''}{stat.trend.toFixed(1)}%
                         </span>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Taux de présence moyen</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Taux de présence moyen</p>
                   </CardContent>
                 </Card>
               ))}
@@ -285,49 +272,53 @@ const GroupComparisonDashboard = () => {
 
             {/* Line Chart */}
             <Card>
-              <CardHeader>
-                <CardTitle>Évolution du taux de présence</CardTitle>
-                <CardDescription>Comparaison des tendances de présence au fil du temps</CardDescription>
+              <CardHeader className="pb-2 sm:pb-6">
+                <CardTitle className="text-base sm:text-lg">Évolution du taux de présence</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Comparaison des tendances au fil du temps</CardDescription>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={comparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" className="text-xs" />
-                    <YAxis className="text-xs" label={{ value: 'Taux (%)', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip />
-                    <Legend />
-                    {selectedGroups.map((group, index) => (
-                      <Line
-                        key={group}
-                        type="monotone"
-                        dataKey={group}
-                        stroke={colors[index % colors.length]}
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
+              <CardContent className="px-2 sm:px-6">
+                <div className="h-[250px] sm:h-[300px] lg:h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={comparisonData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} width={35} />
+                      <Tooltip contentStyle={{ fontSize: 12 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      {selectedGroups.map((group, index) => (
+                        <Line
+                          key={group}
+                          type="monotone"
+                          dataKey={group}
+                          stroke={colors[index % colors.length]}
+                          strokeWidth={2}
+                          dot={{ r: 3 }}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
 
             {/* Bar Chart */}
             <Card>
-              <CardHeader>
-                <CardTitle>Comparaison des taux moyens</CardTitle>
-                <CardDescription>Vue d'ensemble des performances par groupe</CardDescription>
+              <CardHeader className="pb-2 sm:pb-6">
+                <CardTitle className="text-base sm:text-lg">Comparaison des taux moyens</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Vue d'ensemble des performances par groupe</CardDescription>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={groupStats}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="group" className="text-xs" />
-                    <YAxis className="text-xs" label={{ value: 'Taux (%)', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip />
-                    <Bar dataKey="overallRate" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="px-2 sm:px-6">
+                <div className="h-[220px] sm:h-[260px] lg:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={groupStats}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="group" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} width={35} />
+                      <Tooltip contentStyle={{ fontSize: 12 }} />
+                      <Bar dataKey="overallRate" name="Taux moyen (%)" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           </>
