@@ -89,7 +89,7 @@ const statusColors: Record<string, string> = {
 export default function MemberDetails() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const memberId = searchParams.get("memberId");
+  const memberId = searchParams.get("id") || searchParams.get("memberId");
 
   const [member, setMember] = useState<Member | null>(null);
   const [allMembers, setAllMembers] = useState<MemberSimple[]>([]);
