@@ -146,24 +146,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate CRON_SECRET for scheduled function security
+  // Allow both CRON_SECRET (scheduled) and authenticated user (manual) access
   const authHeader = req.headers.get("Authorization");
   const expectedSecret = Deno.env.get("CRON_SECRET");
+  const isCronCall = expectedSecret && authHeader === `Bearer ${expectedSecret}`;
   
-  if (!expectedSecret) {
-    console.error("CRON_SECRET not configured");
-    return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  }
-  
-  if (authHeader !== `Bearer ${expectedSecret}`) {
-    console.error("Unauthorized access attempt to calculate-engagement-scores");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+  if (!isCronCall) {
+    // Check if the caller is an authenticated user
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader || '' } }
+    });
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Unauthorized access attempt to calculate-engagement-scores");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
   }
 
   try {
