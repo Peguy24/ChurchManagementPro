@@ -54,7 +54,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     queryFn: async () => {
       let query = supabase
         .from("members")
-        .select(`*, branch:branches(name)`)
+        .select(`*, branch:branches!members_branch_id_fkey(name)`)
         .order("created_at", { ascending: false });
 
       if (selectedBranch !== "all") {
