@@ -8,6 +8,7 @@ interface Event {
   name: string;
   description: string | null;
   event_date: string;
+  end_date: string | null;
   event_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -146,8 +147,11 @@ export function generateAnnualCalendarPDF(
           en: { planned: "Planned", confirmed: "Confirmed", cancelled: "Cancelled", completed: "Completed" },
           ht: { planned: "Planifye", confirmed: "Konfime", cancelled: "Anile", completed: "Fini" },
         };
+        const dateDisplay = e.end_date 
+          ? `${format(eventDate, "dd/MM", { locale })} → ${format(new Date(parseInt(e.end_date.split("-")[0]), parseInt(e.end_date.split("-")[1]) - 1, parseInt(e.end_date.split("-")[2])), "dd/MM", { locale })}`
+          : format(eventDate, "dd/MM", { locale });
         return [
-          format(eventDate, "dd/MM", { locale }),
+          dateDisplay,
           e.name,
           cat,
           time + endTime,

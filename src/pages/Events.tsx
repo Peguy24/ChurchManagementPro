@@ -36,6 +36,7 @@ interface Event {
   name: string;
   description: string | null;
   event_date: string;
+  end_date: string | null;
   event_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -349,8 +350,9 @@ export default function Events() {
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
                               <CardTitle className="text-base">{event.name}</CardTitle>
-                              <CardDescription className="text-sm">
+                            <CardDescription className="text-sm">
                                 {format(parseEventDate(event.event_date), "PPP", { locale: dateLocale })}
+                                {event.end_date && ` → ${format(parseEventDate(event.end_date), "PPP", { locale: dateLocale })}`}
                               </CardDescription>
                             </div>
                             <Badge

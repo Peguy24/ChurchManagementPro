@@ -41,6 +41,7 @@ interface Event {
   name: string;
   description: string | null;
   event_date: string;
+  end_date: string | null;
   event_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -68,6 +69,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const [formData, setFormData] = useState({
     name: "",
     date: "",
+    endDate: "",
     time: "",
     endTime: "",
     location: "",
@@ -82,6 +84,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
       setFormData({
         name: event.name,
         date: event.event_date,
+        endDate: event.end_date || "",
         time: event.event_time?.substring(0, 5) || "",
         endTime: event.end_time?.substring(0, 5) || "",
         location: event.location || "",
@@ -95,6 +98,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
       setFormData({
         name: "",
         date: today,
+        endDate: "",
         time: "",
         endTime: "",
         location: "",
@@ -112,6 +116,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
       const { error } = await supabase.from("events").insert({
         name: data.name,
         event_date: data.date,
+        end_date: data.endDate || null,
         event_time: data.time || null,
         end_time: data.endTime || null,
         location: data.location || null,
@@ -141,6 +146,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         .update({
           name: data.name,
           event_date: data.date,
+          end_date: data.endDate || null,
           event_time: data.time || null,
           end_time: data.endTime || null,
           location: data.location || null,
@@ -235,23 +241,27 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="date">{t("events.dateLabel")} *</Label>
+                <Label htmlFor="date">{t("events.startDate")} *</Label>
                 <Input id="date" type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="time">{t("events.startTime")}</Label>
-                <Input id="time" type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+                <Label htmlFor="endDate">{t("events.endDate")}</Label>
+                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} min={formData.date} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
+                <Label htmlFor="time">{t("events.startTime")}</Label>
+                <Input id="time" type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="endTime">{t("events.endTime")}</Label>
                 <Input id="endTime" type="time" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="expectedAttendees">{t("events.expectedAttendees")}</Label>
-                <Input id="expectedAttendees" type="number" min="0" value={formData.expectedAttendees} onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })} />
-              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="expectedAttendees">{t("events.expectedAttendees")}</Label>
+              <Input id="expectedAttendees" type="number" min="0" value={formData.expectedAttendees} onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">{t("events.locationLabel")}</Label>
