@@ -1,56 +1,41 @@
 
 
-## Analysis: Salary Payments Are NOT Synchronized with Expenses
+## Plan: Generate a System Presentation PDF
 
-Currently, when a salary payment is recorded in `Salaries.tsx` (line 191-215), the system only:
-1. Inserts a row into `salary_payments`
-2. Shows a success toast
+Create a new page `/system-guide` accessible from the settings menu that generates a professional PDF document describing all system functionalities for church leadership.
 
-It does **not**:
-- Create a corresponding record in the `expenses` table
-- Deduct the amount from the linked `bank_account` or `cash_register`
-- Record a `cash_transaction` or `bank_transaction`
-- Appear in the Financial Dashboard totals
+### Implementation
 
-This means salary costs are invisible to the expense tracking, budget monitoring, and financial dashboard.
+**1. Create `src/lib/systemGuidePDF.ts`**
+- Use `jspdf` (already installed) to generate a multi-page PDF
+- Include sections covering all modules:
+  - **Member Management**: Registration, profiles, custom fields, member cards with QR codes, photo management
+  - **Attendance**: Manual & QR scan check-in, alerts for absent members, group comparison reports
+  - **Financial Management**: Donations/tithes, expenses with approval workflow, budgets, bank accounts, cash registers, special funds, salary payments (synchronized with expenses & balances), bank reconciliation, audit trail
+  - **Events & Ministries**: Event planning, ministry management, statistics
+  - **Branches**: Multi-branch support
+  - **Reports & Dashboards**: Financial dashboard, attendance reports, member reports, birthday reports, inventory reports, CSV/PDF exports
+  - **Inventory**: Asset tracking, barcodes, maintenance, audit mode
+  - **Communication**: Email templates, absence alerts, birthday notifications
+  - **Smart Insights**: AI-powered analytics, engagement scores, churn risk predictions
+  - **Settings**: Church info, currency selection, custom fields, user roles & permissions, white-label branding
+  - **Subscription Plans**: Essential, Professional, Enterprise
+  - **Security**: Role-based access (Admin, Pastor, Treasurer, Secretary, Volunteer)
+- Professional formatting: cover page with logo placeholder, table of contents, section headers, icons described textually, color accents
 
----
+**2. Create `src/pages/SystemGuide.tsx`**
+- Simple page with a "Download PDF" button
+- Preview of sections included
+- Calls the PDF generation function
 
-## Plan: Synchronize Salary Payments with the Financial Ecosystem
+**3. Update `src/App.tsx`**
+- Add route `/system-guide`
 
-### 1. Database: Create an "expense_category" for salaries (if not exists)
-- Ensure an expense category named "Salaires" exists for the tenant so salary-related expenses are properly categorized.
-
-### 2. Update `paymentMutation` in `src/pages/Salaries.tsx`
-When a salary payment is created, the mutation will also:
-
-- **Insert an expense** in the `expenses` table with:
-  - `category_id` → "Salaires" category
-  - `amount` → salary amount
-  - `status` → `approved` (salaries are pre-approved)
-  - `payment_method` → from the salary payment form
-  - `bank_account_id` / `cash_register_id` → from the salary payment form
-  - `description` → "Salaire - [Employee Name] - [Period]"
-  - `tenant_id` → current tenant
-
-- **Deduct from the payment source**:
-  - If `cash_register_id` → update `cash_registers.current_balance` (subtract amount) and insert a `cash_transactions` record
-  - If `bank_account_id` → update `bank_accounts.current_balance` (subtract amount)
-
-### 3. Files to modify
-- **`src/pages/Salaries.tsx`**: Update `paymentMutation` to chain expense creation + balance deduction after salary_payments insert
-
-### 4. Impact
-After this change:
-- Salary payments will appear in the Expenses list
-- Salary costs will be reflected in the Financial Dashboard
-- Budget tracking will account for salary spending
-- Bank/cash register balances will be automatically updated
-- Full audit trail via financial_audit_logs triggers (already in place)
+**4. Update `src/components/Layout.tsx`**
+- Add link in Settings nav group
 
 ### Technical Details
-- The mutation will use a sequential flow: insert salary_payment → insert expense → update balance → insert cash_transaction (if cash)
-- All operations use the same `tenant_id` for RLS compliance
-- No database migration needed — all tables and columns already exist
-- The "Salaires" expense category will be fetched or auto-created at component mount
+- Uses `jspdf` already in dependencies
+- PDF will be ~8-12 pages, bilingual support (uses current language from LanguageContext)
+- No database changes needed
 
