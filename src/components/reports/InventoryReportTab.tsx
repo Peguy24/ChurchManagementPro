@@ -218,9 +218,9 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <Select value={reportType} onValueChange={setReportType}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Type de rapport" />
           </SelectTrigger>
           <SelectContent>
@@ -237,7 +237,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Articles</CardTitle>
@@ -416,6 +416,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
               <CardDescription>Dernières opérations</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -440,6 +441,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -459,6 +461,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
               {missingItems.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Aucun article manquant</p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -479,6 +482,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -495,6 +499,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
               {lowStockItems.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Aucun article en stock bas</p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -515,6 +520,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -531,6 +537,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
               {itemsNeedingAttention.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Aucun article à signaler</p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -555,6 +562,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -590,6 +598,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
               <CardTitle>Utilisations récentes</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -614,6 +623,7 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

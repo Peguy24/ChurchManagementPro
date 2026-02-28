@@ -272,7 +272,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       {/* Controls */}
       <div className="flex flex-wrap gap-2">
         <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <Calendar className="mr-2 h-4 w-4" />
             <SelectValue />
           </SelectTrigger>
@@ -293,7 +293,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Présences</CardTitle>
@@ -387,6 +387,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
             <CardDescription>Derniers événements avec présences</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -405,6 +406,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
 
@@ -414,6 +416,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
             <CardDescription>Membres les plus assidus</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -432,6 +435,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
