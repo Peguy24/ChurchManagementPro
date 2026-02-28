@@ -2,7 +2,6 @@ import jsPDF from "jspdf";
 
 interface Section {
   title: string;
-  icon: string;
   features: string[];
 }
 
@@ -11,19 +10,18 @@ const getSections = (lang: string): Section[] => {
   return [
     {
       title: isFr ? "1. Gestion des Membres" : "1. Member Management",
-      icon: "👥",
       features: isFr
         ? [
-            "Inscription et gestion complète des profils (informations personnelles, spirituelles, familiales)",
-            "Numéro de membre unique généré automatiquement",
-            "Cartes de membre avec QR Code intégré pour identification rapide",
+            "Inscription et gestion complete des profils (informations personnelles, spirituelles, familiales)",
+            "Numero de membre unique genere automatiquement",
+            "Cartes de membre avec QR Code integre pour identification rapide",
             "Gestion des photos de profil avec recadrage intelligent",
-            "Champs personnalisés configurables (texte, nombre, date, liste déroulante, case à cocher)",
+            "Champs personnalises configurables (texte, nombre, date, liste deroulante, case a cocher)",
             "Importation en masse depuis fichier CSV/Excel",
-            "Historique complet de chaque membre (présences, dons, événements)",
-            "Documents associés aux membres (certificats, diplômes, etc.)",
-            "Filtrage et recherche avancée par statut, branche, ministère",
-            "Exportation des données en CSV",
+            "Historique complet de chaque membre (presences, dons, evenements)",
+            "Documents associes aux membres (certificats, diplomes, etc.)",
+            "Filtrage et recherche avancee par statut, branche, ministere",
+            "Exportation des donnees en CSV",
           ]
         : [
             "Complete profile management (personal, spiritual, family information)",
@@ -39,19 +37,18 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "2. Gestion de la Présence" : "2. Attendance Management",
-      icon: "✅",
+      title: isFr ? "2. Gestion de la Presence" : "2. Attendance Management",
       features: isFr
         ? [
-            "Marquage manuel de la présence avec liste des membres",
-            "Scan de QR Code via caméra pour enregistrement rapide",
-            "Support de multiples types d'événements (culte, étude biblique, prière, etc.)",
+            "Marquage manuel de la presence avec liste des membres",
+            "Scan de QR Code via camera pour enregistrement rapide",
+            "Support de multiples types d'evenements (culte, etude biblique, priere, etc.)",
             "Alertes automatiques pour les membres absents (configurable : 2, 3, 4 semaines)",
-            "Notifications par email aux pasteurs pour les absences prolongées",
-            "Statistiques de présence par membre avec graphiques",
-            "Comparaison de groupes et tendances de présence",
-            "Rapports de présence exportables en PDF",
-            "Historique complet de toutes les présences enregistrées",
+            "Notifications par email aux pasteurs pour les absences prolongees",
+            "Statistiques de presence par membre avec graphiques",
+            "Comparaison de groupes et tendances de presence",
+            "Rapports de presence exportables en PDF",
+            "Historique complet de toutes les presences enregistrees",
           ]
         : [
             "Manual attendance marking with member list",
@@ -66,27 +63,26 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "3. Gestion Financière" : "3. Financial Management",
-      icon: "💰",
+      title: isFr ? "3. Gestion Financiere" : "3. Financial Management",
       features: isFr
         ? [
-            "Enregistrement des dons et dîmes avec catégorisation (offrande, dîme, don spécial, etc.)",
-            "Gestion des dépenses avec workflow d'approbation (en attente → approuvé → rejeté)",
-            "Synchronisation automatique : chaque dépense approuvée déduit le solde du compte bancaire ou de la caisse associée",
-            "Gestion des comptes bancaires avec suivi du solde en temps réel",
+            "Enregistrement des dons et dimes avec categorisation (offrande, dime, don special, etc.)",
+            "Gestion des depenses avec workflow d'approbation (en attente > approuve > rejete)",
+            "Synchronisation automatique : chaque depense approuvee deduit le solde du compte bancaire ou de la caisse associee",
+            "Gestion des comptes bancaires avec suivi du solde en temps reel",
             "Gestion des caisses (petite caisse) avec historique des transactions",
-            "Budgets annuels par catégorie avec suivi des dépenses vs planifié",
-            "Fonds spéciaux (construction, mission, aide sociale) avec objectifs et progression",
-            "Rapprochement bancaire : comparaison transactions système vs relevés bancaires",
-            "Paiement des salaires synchronisé avec les dépenses et les soldes",
-            "Catégories de revenus et de dépenses personnalisables",
-            "Piste d'audit complète de toutes les opérations financières",
-            "Reçus fiscaux générables en PDF pour les donateurs",
+            "Budgets annuels par categorie avec suivi des depenses vs planifie",
+            "Fonds speciaux (construction, mission, aide sociale) avec objectifs et progression",
+            "Rapprochement bancaire : comparaison transactions systeme vs releves bancaires",
+            "Paiement des salaires synchronise avec les depenses et les soldes",
+            "Categories de revenus et de depenses personnalisables",
+            "Piste d'audit complete de toutes les operations financieres",
+            "Recus fiscaux generables en PDF pour les donateurs",
             "Support multi-devises (XOF, USD, EUR, etc.)",
           ]
         : [
             "Donation and tithe recording with categorization (offering, tithe, special gift, etc.)",
-            "Expense management with approval workflow (pending → approved → rejected)",
+            "Expense management with approval workflow (pending > approved > rejected)",
             "Automatic synchronization: each approved expense deducts from associated bank account or cash register balance",
             "Bank account management with real-time balance tracking",
             "Cash register (petty cash) management with transaction history",
@@ -101,18 +97,17 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "4. Événements et Ministères" : "4. Events & Ministries",
-      icon: "📅",
+      title: isFr ? "4. Evenements et Ministeres" : "4. Events & Ministries",
       features: isFr
         ? [
-            "Planification d'événements avec date, heure, lieu et description",
+            "Planification d'evenements avec date, heure, lieu et description",
             "Estimation du nombre de participants attendus",
-            "Rappels automatiques par email avant les événements",
-            "Gestion des ministères (louange, jeunesse, enfants, intercession, etc.)",
-            "Affectation d'un responsable par ministère",
-            "Association des membres aux ministères",
-            "Statistiques de participation par ministère",
-            "Filtrage par branche pour les événements multi-sites",
+            "Rappels automatiques par email avant les evenements",
+            "Gestion des ministeres (louange, jeunesse, enfants, intercession, etc.)",
+            "Affectation d'un responsable par ministere",
+            "Association des membres aux ministeres",
+            "Statistiques de participation par ministere",
+            "Filtrage par branche pour les evenements multi-sites",
           ]
         : [
             "Event planning with date, time, location and description",
@@ -127,15 +122,14 @@ const getSections = (lang: string): Section[] => {
     },
     {
       title: isFr ? "5. Gestion Multi-Branches" : "5. Multi-Branch Management",
-      icon: "🏛️",
       features: isFr
         ? [
-            "Support de multiples branches/sites d'une même église",
-            "Hiérarchie de branches (branche principale et sous-branches)",
-            "Affectation des membres, événements et finances par branche",
-            "Responsable désigné par branche",
-            "Rapports consolidés ou filtrés par branche",
-            "Gestion des ressources partagées entre branches",
+            "Support de multiples branches/sites d'une meme eglise",
+            "Hierarchie de branches (branche principale et sous-branches)",
+            "Affectation des membres, evenements et finances par branche",
+            "Responsable designe par branche",
+            "Rapports consolides ou filtres par branche",
+            "Gestion des ressources partagees entre branches",
           ]
         : [
             "Support for multiple branches/sites of the same church",
@@ -148,17 +142,16 @@ const getSections = (lang: string): Section[] => {
     },
     {
       title: isFr ? "6. Rapports et Tableaux de Bord" : "6. Reports & Dashboards",
-      icon: "📊",
       features: isFr
         ? [
-            "Tableau de bord principal avec vue d'ensemble (membres, présences, finances)",
-            "Tableau de bord financier détaillé avec graphiques de revenus vs dépenses",
-            "Rapports financiers complets (par période, catégorie, membre)",
-            "Rapports de présence avec tendances et comparaisons",
+            "Tableau de bord principal avec vue d'ensemble (membres, presences, finances)",
+            "Tableau de bord financier detaille avec graphiques de revenus vs depenses",
+            "Rapports financiers complets (par periode, categorie, membre)",
+            "Rapports de presence avec tendances et comparaisons",
             "Rapport des anniversaires pour suivi pastoral",
             "Rapports d'inventaire avec valeur totale des actifs",
             "Exportation en PDF et CSV de tous les rapports",
-            "Comparaison de groupes (branches, ministères) avec graphiques",
+            "Comparaison de groupes (branches, ministeres) avec graphiques",
           ]
         : [
             "Main dashboard with overview (members, attendance, finances)",
@@ -173,15 +166,14 @@ const getSections = (lang: string): Section[] => {
     },
     {
       title: isFr ? "7. Gestion de l'Inventaire" : "7. Inventory Management",
-      icon: "📦",
       features: isFr
         ? [
-            "Suivi des biens et équipements de l'église (mobilier, instruments, équipements audio/vidéo)",
-            "Code-barres et numéros de série pour identification unique",
-            "Photos des articles avec upload intégré",
-            "Suivi de l'état et de la valeur des actifs",
+            "Suivi des biens et equipements de l'eglise (mobilier, instruments, equipements audio/video)",
+            "Code-barres et numeros de serie pour identification unique",
+            "Photos des articles avec upload integre",
+            "Suivi de l'etat et de la valeur des actifs",
             "Historique de maintenance avec planification des prochaines interventions",
-            "Mode audit pour vérification physique de l'inventaire",
+            "Mode audit pour verification physique de l'inventaire",
             "Alertes de stock minimum pour les consommables",
             "Rapport d'inventaire complet exportable en PDF",
           ]
@@ -197,15 +189,14 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "8. Communication" : "8. Communication",
-      icon: "📧",
+      title: "8. Communication",
       features: isFr
         ? [
-            "Modèles d'emails personnalisables (bienvenue, anniversaire, rappel d'événement)",
-            "Alertes automatiques d'absence envoyées aux responsables",
+            "Modeles d'emails personnalisables (bienvenue, anniversaire, rappel d'evenement)",
+            "Alertes automatiques d'absence envoyees aux responsables",
             "Notifications d'anniversaire pour le suivi pastoral",
             "Emails d'invitation pour les administrateurs",
-            "Notifications lors de l'approbation/rejet des dépenses",
+            "Notifications lors de l'approbation/rejet des depenses",
           ]
         : [
             "Customizable email templates (welcome, birthday, event reminder)",
@@ -217,14 +208,13 @@ const getSections = (lang: string): Section[] => {
     },
     {
       title: isFr ? "9. Analyses Intelligentes (IA)" : "9. Smart Insights (AI)",
-      icon: "🤖",
       features: isFr
         ? [
-            "Scores d'engagement calculés automatiquement pour chaque membre",
-            "Prédiction du risque de décrochage (churn) basée sur les tendances",
-            "Alertes pastorales générées par l'IA pour les membres à risque",
-            "Analyse des tendances de présence et de générosité",
-            "Recommandations d'actions pour améliorer l'engagement",
+            "Scores d'engagement calcules automatiquement pour chaque membre",
+            "Prediction du risque de decrochage (churn) basee sur les tendances",
+            "Alertes pastorales generees par l'IA pour les membres a risque",
+            "Analyse des tendances de presence et de generosite",
+            "Recommandations d'actions pour ameliorer l'engagement",
             "Tableau de bord des insights avec visualisations interactives",
           ]
         : [
@@ -237,14 +227,13 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "10. Paramètres et Configuration" : "10. Settings & Configuration",
-      icon: "⚙️",
+      title: isFr ? "10. Parametres et Configuration" : "10. Settings & Configuration",
       features: isFr
         ? [
-            "Informations de l'église (nom, adresse, logo, coordonnées)",
-            "Sélection de la devise (XOF, USD, EUR, GBP, etc.)",
-            "Champs personnalisés pour adapter le système à vos besoins",
-            "Gestion des utilisateurs avec rôles et permissions",
+            "Informations de l'eglise (nom, adresse, logo, coordonnees)",
+            "Selection de la devise (XOF, USD, EUR, GBP, etc.)",
+            "Champs personnalises pour adapter le systeme a vos besoins",
+            "Gestion des utilisateurs avec roles et permissions",
             "Personnalisation de la marque (logo, nom de l'application, couleurs)",
             "Plans d'abonnement : Essentiel, Professionnel, Entreprise",
           ]
@@ -258,17 +247,16 @@ const getSections = (lang: string): Section[] => {
           ],
     },
     {
-      title: isFr ? "11. Sécurité et Contrôle d'Accès" : "11. Security & Access Control",
-      icon: "🔒",
+      title: isFr ? "11. Securite et Controle d'Acces" : "11. Security & Access Control",
       features: isFr
         ? [
-            "Authentification sécurisée par email et mot de passe",
-            "Rôles prédéfinis : Administrateur, Pasteur, Trésorier, Secrétaire, Bénévole",
-            "Permissions granulaires par module (membres, finances, présences, etc.)",
-            "Isolation complète des données entre les églises (multi-tenant)",
+            "Authentification securisee par email et mot de passe",
+            "Roles predefinis : Administrateur, Pasteur, Tresorier, Secretaire, Benevole",
+            "Permissions granulaires par module (membres, finances, presences, etc.)",
+            "Isolation complete des donnees entre les eglises (multi-tenant)",
             "Piste d'audit pour tracer toutes les actions sensibles",
-            "Workflow d'approbation pour les dépenses et les nouveaux utilisateurs",
-            "Chiffrement des données en transit et au repos",
+            "Workflow d'approbation pour les depenses et les nouveaux utilisateurs",
+            "Chiffrement des donnees en transit et au repos",
           ]
         : [
             "Secure email and password authentication",
@@ -309,7 +297,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   const addFooter = (pageNum: number) => {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Church Manager Pro — ${isFr ? "Guide du Système" : "System Guide"}`, margin, pageHeight - 10);
+    doc.text(`Church Manager Pro -- ${isFr ? "Guide du Systeme" : "System Guide"}`, margin, pageHeight - 10);
     doc.text(`${pageNum}`, pageWidth - margin, pageHeight - 10, { align: "right" });
   };
 
@@ -329,7 +317,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setFontSize(18);
   doc.setFont("helvetica", "normal");
   doc.text(
-    isFr ? "Guide Complet du Système" : "Complete System Guide",
+    isFr ? "Guide Complet du Systeme" : "Complete System Guide",
     pageWidth / 2,
     pageHeight * 0.38,
     { align: "center" }
@@ -338,7 +326,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setFontSize(14);
   doc.text(
     isFr
-      ? "Plateforme de Gestion d'Église"
+      ? "Plateforme de Gestion d'Eglise"
       : "Church Management Platform",
     pageWidth / 2,
     pageHeight * 0.55,
@@ -348,8 +336,8 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setFontSize(11);
   doc.text(
     isFr
-      ? "Membres • Finances • Présences • Événements • Inventaire • Rapports • IA"
-      : "Members • Finances • Attendance • Events • Inventory • Reports • AI",
+      ? "Membres - Finances - Presences - Evenements - Inventaire - Rapports - IA"
+      : "Members - Finances - Attendance - Events - Inventory - Reports - AI",
     pageWidth / 2,
     pageHeight * 0.62,
     { align: "center" }
@@ -378,7 +366,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(30, 58, 138);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text(isFr ? "Table des Matières" : "Table of Contents", margin, y + 10);
+  doc.text(isFr ? "Table des Matieres" : "Table of Contents", margin, y + 10);
   y += 25;
 
   doc.setDrawColor(59, 130, 246);
@@ -393,7 +381,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(50, 50, 50);
 
   sections.forEach((section, idx) => {
-    doc.text(`${section.icon}  ${section.title}`, margin + 5, y);
+    doc.text(`${section.title}`, margin + 5, y);
     y += 8;
   });
 
@@ -402,7 +390,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(100, 100, 100);
   doc.text(
     isFr
-      ? "Ce document présente l'ensemble des fonctionnalités de la plateforme Church Manager Pro."
+      ? "Ce document presente l'ensemble des fonctionnalites de la plateforme Church Manager Pro."
       : "This document presents all features of the Church Manager Pro platform.",
     margin,
     y
@@ -422,7 +410,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text(`${section.icon}  ${section.title}`, margin + 5, y + 9);
+    doc.text(section.title, margin + 5, y + 9);
     y += 20;
 
     // Features
@@ -456,7 +444,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text(isFr ? "📋  Résumé" : "📋  Summary", margin + 5, y + 9);
+  doc.text(isFr ? "Resume" : "Summary", margin + 5, y + 9);
   y += 25;
 
   doc.setTextColor(50, 50, 50);
@@ -465,32 +453,32 @@ export function generateSystemGuidePDF(lang: string = "fr") {
 
   const summaryItems = isFr
     ? [
-        "✅ Gestion complète des membres avec QR Code et champs personnalisés",
-        "✅ Suivi de la présence avec scan et alertes automatiques",
-        "✅ Gestion financière intégrée avec synchronisation automatique des soldes",
-        "✅ Workflow d'approbation des dépenses et paiement des salaires",
-        "✅ Gestion multi-branches avec données isolées",
-        "✅ Rapports détaillés exportables en PDF et CSV",
-        "✅ Inventaire des biens avec maintenance et code-barres",
-        "✅ Communication automatisée (emails, alertes, notifications)",
-        "✅ Analyses intelligentes par IA (engagement, risque de décrochage)",
-        "✅ Sécurité renforcée avec rôles, permissions et audit",
-        "✅ Personnalisation de la marque (white-label)",
-        "✅ Support multi-devises et multilingue (Français/Anglais)",
+        "- Gestion complete des membres avec QR Code et champs personnalises",
+        "- Suivi de la presence avec scan et alertes automatiques",
+        "- Gestion financiere integree avec synchronisation automatique des soldes",
+        "- Workflow d'approbation des depenses et paiement des salaires",
+        "- Gestion multi-branches avec donnees isolees",
+        "- Rapports detailles exportables en PDF et CSV",
+        "- Inventaire des biens avec maintenance et code-barres",
+        "- Communication automatisee (emails, alertes, notifications)",
+        "- Analyses intelligentes par IA (engagement, risque de decrochage)",
+        "- Securite renforcee avec roles, permissions et audit",
+        "- Personnalisation de la marque (white-label)",
+        "- Support multi-devises et multilingue (Francais/Anglais)",
       ]
     : [
-        "✅ Complete member management with QR Code and custom fields",
-        "✅ Attendance tracking with scanning and automatic alerts",
-        "✅ Integrated financial management with automatic balance synchronization",
-        "✅ Expense approval workflow and salary payments",
-        "✅ Multi-branch management with isolated data",
-        "✅ Detailed reports exportable as PDF and CSV",
-        "✅ Asset inventory with maintenance and barcodes",
-        "✅ Automated communication (emails, alerts, notifications)",
-        "✅ AI-powered smart insights (engagement, churn risk)",
-        "✅ Enhanced security with roles, permissions and audit",
-        "✅ Brand customization (white-label)",
-        "✅ Multi-currency and multilingual support (French/English)",
+        "- Complete member management with QR Code and custom fields",
+        "- Attendance tracking with scanning and automatic alerts",
+        "- Integrated financial management with automatic balance synchronization",
+        "- Expense approval workflow and salary payments",
+        "- Multi-branch management with isolated data",
+        "- Detailed reports exportable as PDF and CSV",
+        "- Asset inventory with maintenance and barcodes",
+        "- Automated communication (emails, alerts, notifications)",
+        "- AI-powered smart insights (engagement, churn risk)",
+        "- Enhanced security with roles, permissions and audit",
+        "- Brand customization (white-label)",
+        "- Multi-currency and multilingual support (French/English)",
       ];
 
   summaryItems.forEach((item) => {
@@ -507,7 +495,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 58, 138);
   doc.text(
-    isFr ? "Church Manager Pro — Votre église, simplifiée." : "Church Manager Pro — Your church, simplified.",
+    isFr ? "Church Manager Pro -- Votre eglise, simplifiee." : "Church Manager Pro -- Your church, simplified.",
     pageWidth / 2,
     y + 12,
     { align: "center" }
