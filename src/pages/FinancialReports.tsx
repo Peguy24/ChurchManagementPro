@@ -79,7 +79,7 @@ function FinancialReportsContent() {
             </p>
           </div>
           <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Toutes les branches" />
             </SelectTrigger>
             <SelectContent>
@@ -95,7 +95,7 @@ function FinancialReportsContent() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="flex flex-wrap h-auto gap-1 w-full">
             <TabsTrigger value="financial" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               <span className="hidden sm:inline">Financier</span>

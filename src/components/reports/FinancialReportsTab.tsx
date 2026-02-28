@@ -359,9 +359,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
         <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <Calendar className="mr-2 h-4 w-4" />
             <SelectValue />
           </SelectTrigger>
@@ -384,18 +384,18 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
 
       {/* Sub-tabs for different financial reports */}
       <Tabs value={reportType} onValueChange={setReportType}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="monthly">Mensuel</TabsTrigger>
-          <TabsTrigger value="annual">Annuel</TabsTrigger>
-          <TabsTrigger value="revenueVsExpenses">Revenus vs Dépenses</TabsTrigger>
-          <TabsTrigger value="budgetVsActual">Budget vs Réel</TabsTrigger>
-          <TabsTrigger value="funds">Fonds</TabsTrigger>
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full">
+          <TabsTrigger value="monthly" className="text-xs sm:text-sm">Mensuel</TabsTrigger>
+          <TabsTrigger value="annual" className="text-xs sm:text-sm">Annuel</TabsTrigger>
+          <TabsTrigger value="revenueVsExpenses" className="text-xs sm:text-sm">Revenus vs Dépenses</TabsTrigger>
+          <TabsTrigger value="budgetVsActual" className="text-xs sm:text-sm">Budget vs Réel</TabsTrigger>
+          <TabsTrigger value="funds" className="text-xs sm:text-sm">Fonds</TabsTrigger>
         </TabsList>
 
         {/* Monthly Report */}
         <TabsContent value="monthly" className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Revenus</CardTitle>
@@ -475,7 +475,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               <CardDescription>Vue d'ensemble de l'année fiscale</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3 mb-6">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 <div className="text-center p-4 bg-success/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Revenus</p>
                   <p className="text-2xl font-bold text-success">${stats.totalRevenue.toFixed(2)}</p>
@@ -532,6 +532,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                 </ResponsiveContainer>
               </div>
 
+              <div className="overflow-x-auto">
               <Table className="mt-6">
                 <TableHeader>
                   <TableRow>
@@ -554,6 +555,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -573,7 +575,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       <BarChart data={budgetVsActualData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                         <XAxis type="number" tickFormatter={(value) => `$${value}`} />
-                        <YAxis type="category" dataKey="name" width={150} />
+                        <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
                         <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
                         <Legend />
                         <Bar dataKey="planned" name="Prévu" fill="hsl(var(--primary))" />
@@ -582,6 +584,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     </ResponsiveContainer>
                   </div>
 
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -608,6 +611,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </>
               ) : (
                 <p className="text-center text-muted-foreground py-8">Aucun budget créé pour {currentYear}</p>
@@ -640,6 +644,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     </ResponsiveContainer>
                   </div>
 
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -670,6 +675,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </>
               ) : (
                 <p className="text-center text-muted-foreground py-8">Aucun fonds spécial actif</p>
