@@ -12,15 +12,21 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Clock, MapPin, Plus, Users, Loader2 } from "lucide-react";
-import { format, isSameDay, parseISO } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Clock, MapPin, Plus, Users, Loader2, Download, CalendarDays, Tag } from "lucide-react";
+import { format, isSameDay } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import EventDialog from "@/components/EventDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { generateAnnualCalendarPDF } from "@/lib/annualCalendarPDF";
 
-// Helper to parse date string without timezone issues
 const parseEventDate = (dateStr: string): Date => {
-  // Parse as local date to avoid timezone offset issues
   const [year, month, day] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, day);
 };
@@ -36,8 +42,22 @@ interface Event {
   branch_id: string | null;
   status: string;
   expected_attendees: number;
+  event_category: string | null;
   created_at: string;
 }
+
+const categoryColorClasses: Record<string, string> = {
+  general: "bg-muted text-muted-foreground",
+  worship: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  fasting: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  conference: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  retreat: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+  celebration: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  prayer: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+  youth: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  community: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200",
+  holiday: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+};
 
 const getStatusColors = () => ({
   confirmed: "bg-success/10 text-success border-success/20",
@@ -52,7 +72,9 @@ export default function Events() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
   const statusColors = getStatusColors();
   const statusLabels: Record<string, string> = {
     confirmed: t("events.confirmed"),
@@ -60,7 +82,9 @@ export default function Events() {
     cancelled: t("events.cancelled"),
     completed: t("events.completed"),
   };
-  
+
+  const categoryKeys = ["general", "worship", "fasting", "conference", "retreat", "celebration", "prayer", "youth", "community", "holiday"];
+
   const dateLocale = language === "fr" ? fr : language === "ht" ? fr : enUS;
 
   const { data: events = [], isLoading } = useQuery({
@@ -76,19 +100,34 @@ export default function Events() {
     },
   });
 
+  // Filter by year and category
+  const filteredEvents = events.filter((event) => {
+    const eventYear = event.event_date.split("-")[0];
+    const yearMatch = selectedYear === "all" || eventYear === selectedYear;
+    const catMatch = selectedCategory === "all" || (event.event_category || "general") === selectedCategory;
+    return yearMatch && catMatch;
+  });
+
   const eventsOnSelectedDate = selectedDate
-    ? events.filter((event) => isSameDay(parseEventDate(event.event_date), selectedDate))
+    ? filteredEvents.filter((event) => isSameDay(parseEventDate(event.event_date), selectedDate))
     : [];
 
-  const eventDates = events.map((event) => parseEventDate(event.event_date));
+  const eventDates = filteredEvents.map((event) => parseEventDate(event.event_date));
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
-  const upcomingEvents = events.filter((event) => {
+
+  const upcomingEvents = filteredEvents.filter((event) => {
     const eventDate = parseEventDate(event.event_date);
     return eventDate >= today;
   });
+
+  // Get available years from events
+  const availableYears = [...new Set(events.map((e) => e.event_date.split("-")[0]))].sort().reverse();
+  const currentYear = new Date().getFullYear().toString();
+  if (!availableYears.includes(currentYear)) {
+    availableYears.unshift(currentYear);
+  }
 
   const handleEditEvent = (event: Event) => {
     setSelectedEvent(event);
@@ -97,9 +136,7 @@ export default function Events() {
 
   const handleCloseDialog = (open: boolean) => {
     setDialogOpen(open);
-    if (!open) {
-      setSelectedEvent(null);
-    }
+    if (!open) setSelectedEvent(null);
   };
 
   const handleSuccess = () => {
@@ -108,7 +145,16 @@ export default function Events() {
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
-    return time.substring(0, 5); // Format HH:MM
+    return time.substring(0, 5);
+  };
+
+  const handleDownloadPDF = () => {
+    const year = selectedYear === "all" ? new Date().getFullYear() : parseInt(selectedYear);
+    const yearEvents = events.filter((e) => {
+      const y = e.event_date.split("-")[0];
+      return selectedYear === "all" || y === selectedYear;
+    });
+    generateAnnualCalendarPDF(yearEvents, year, "", language);
   };
 
   return (
@@ -123,10 +169,48 @@ export default function Events() {
               {t("events.subtitle")}
             </p>
           </div>
-          <Button size="sm" onClick={() => setDialogOpen(true)} className="self-start sm:self-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            {t("events.addEvent")}
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+              <Download className="mr-2 h-4 w-4" />
+              {t("events.downloadCalendar")}
+            </Button>
+            <Button size="sm" onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("events.addEvent")}
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("events.allEvents")}</SelectItem>
+                {availableYears.map((year) => (
+                  <SelectItem key={year} value={year}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("events.allEvents")}</SelectItem>
+                {categoryKeys.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{t(`events.${cat}`)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {isLoading ? (
@@ -149,9 +233,7 @@ export default function Events() {
                     onSelect={setSelectedDate}
                     locale={dateLocale}
                     className="pointer-events-auto"
-                    modifiers={{
-                      hasEvent: eventDates,
-                    }}
+                    modifiers={{ hasEvent: eventDates }}
                     modifiersStyles={{
                       hasEvent: {
                         fontWeight: "bold",
@@ -187,7 +269,12 @@ export default function Events() {
                           className="p-4 border rounded-lg space-y-3 hover:bg-accent/50 transition-colors"
                         >
                           <div className="flex items-start justify-between">
-                            <h3 className="font-semibold text-lg">{event.name}</h3>
+                            <div className="space-y-1">
+                              <h3 className="font-semibold text-lg">{event.name}</h3>
+                              <Badge className={categoryColorClasses[event.event_category || "general"] || categoryColorClasses.general}>
+                                {t(`events.${event.event_category || "general"}`)}
+                              </Badge>
+                            </div>
                             <Badge
                               variant="outline"
                               className={statusColors[event.status] || statusColors.planned}
@@ -212,18 +299,18 @@ export default function Events() {
                             {event.expected_attendees > 0 && (
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4" />
-                                {event.expected_attendees} participants attendus
+                                {event.expected_attendees} {t("events.participantsExpected")}
                               </div>
                             )}
                           </div>
                           <div className="flex gap-2 pt-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                            <Button
+                              variant="outline"
+                              size="sm"
                               className="flex-1"
                               onClick={() => handleEditEvent(event)}
                             >
-                              Modifier
+                              {t("events.edit")}
                             </Button>
                           </div>
                         </div>
@@ -234,12 +321,14 @@ export default function Events() {
               </Card>
             </div>
 
-            {/* All Upcoming Events */}
+            {/* All Upcoming / Filtered Events */}
             <Card>
               <CardHeader>
-                <CardTitle>Tous les Événements à Venir</CardTitle>
+                <CardTitle>
+                  {selectedYear !== "all" ? `${t("events.annualPlanning")} ${selectedYear}` : t("events.allUpcoming")}
+                </CardTitle>
                 <CardDescription>
-                  {upcomingEvents.length} événement(s) programmé(s)
+                  {upcomingEvents.length} {t("events.eventsPlanned")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -250,17 +339,17 @@ export default function Events() {
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {upcomingEvents.map((event) => (
-                      <Card 
-                        key={event.id} 
+                      <Card
+                        key={event.id}
                         className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => handleEditEvent(event)}
                       >
                         <div className="h-2 bg-gradient-to-r from-primary to-secondary" />
-                        <CardHeader>
+                        <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="space-y-1">
                               <CardTitle className="text-base">{event.name}</CardTitle>
-                              <CardDescription className="mt-1 text-sm">
+                              <CardDescription className="text-sm">
                                 {format(parseEventDate(event.event_date), "PPP", { locale: dateLocale })}
                               </CardDescription>
                             </div>
@@ -273,6 +362,9 @@ export default function Events() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                          <Badge className={`text-xs ${categoryColorClasses[event.event_category || "general"] || categoryColorClasses.general}`}>
+                            {t(`events.${event.event_category || "general"}`)}
+                          </Badge>
                           {event.event_time && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="h-4 w-4" />
@@ -302,8 +394,8 @@ export default function Events() {
           </>
         )}
 
-        <EventDialog 
-          open={dialogOpen} 
+        <EventDialog
+          open={dialogOpen}
           onOpenChange={handleCloseDialog}
           event={selectedEvent}
           onSuccess={handleSuccess}

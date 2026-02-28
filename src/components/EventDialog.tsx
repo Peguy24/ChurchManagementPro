@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ interface Event {
   branch_id: string | null;
   status: string;
   expected_attendees: number;
+  event_category: string | null;
 }
 
 interface EventDialogProps {
@@ -55,8 +57,11 @@ interface EventDialogProps {
   onSuccess?: () => void;
 }
 
+const categoryKeys = ["general", "worship", "fasting", "conference", "retreat", "celebration", "prayer", "youth", "community", "holiday"];
+
 export default function EventDialog({ open, onOpenChange, event, onSuccess }: EventDialogProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { tenantId } = useCurrentTenant();
   const isEditing = !!event;
 
@@ -69,6 +74,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
     description: "",
     status: "planned",
     expectedAttendees: 0,
+    eventCategory: "general",
   });
 
   useEffect(() => {
@@ -82,9 +88,9 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         description: event.description || "",
         status: event.status,
         expectedAttendees: event.expected_attendees,
+        eventCategory: event.event_category || "general",
       });
     } else {
-      // Set default date to today
       const today = new Date().toISOString().split('T')[0];
       setFormData({
         name: "",
@@ -95,15 +101,14 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         description: "",
         status: "planned",
         expectedAttendees: 0,
+        eventCategory: "general",
       });
     }
   }, [event, open]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      if (!tenantId) {
-        throw new Error("Aucun tenant associé à cet utilisateur");
-      }
+      if (!tenantId) throw new Error(t("events.noTenant"));
       const { error } = await supabase.from("events").insert({
         name: data.name,
         event_date: data.date,
@@ -113,25 +118,18 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         description: data.description || null,
         status: data.status,
         expected_attendees: data.expectedAttendees,
+        event_category: data.eventCategory,
         tenant_id: tenantId,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Événement créé!",
-        description: `${formData.name} a été planifié pour le ${formData.date}.`,
-      });
+      toast({ title: t("events.eventCreated"), description: `${formData.name} ${t("events.eventCreatedDesc")} ${formData.date}.` });
       onSuccess?.();
       onOpenChange(false);
     },
-    onError: (error) => {
-      console.error("Error creating event:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer l'événement.",
-        variant: "destructive",
-      });
+    onError: () => {
+      toast({ title: t("common.error"), description: t("events.errorCreate"), variant: "destructive" });
     },
   });
 
@@ -149,62 +147,41 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
           description: data.description || null,
           status: data.status,
           expected_attendees: data.expectedAttendees,
+          event_category: data.eventCategory,
         })
         .eq("id", event.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Événement mis à jour!",
-        description: `${formData.name} a été modifié.`,
-      });
+      toast({ title: t("events.eventUpdated"), description: `${formData.name} ${t("events.eventUpdatedDesc")}` });
       onSuccess?.();
       onOpenChange(false);
     },
-    onError: (error) => {
-      console.error("Error updating event:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier l'événement.",
-        variant: "destructive",
-      });
+    onError: () => {
+      toast({ title: t("common.error"), description: t("events.errorUpdate"), variant: "destructive" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!event) return;
-      const { error } = await supabase
-        .from("events")
-        .delete()
-        .eq("id", event.id);
+      const { error } = await supabase.from("events").delete().eq("id", event.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Événement supprimé",
-        description: "L'événement a été supprimé avec succès.",
-      });
+      toast({ title: t("events.eventDeleted"), description: t("events.eventDeletedDesc") });
       onSuccess?.();
       onOpenChange(false);
     },
-    onError: (error) => {
-      console.error("Error deleting event:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'événement.",
-        variant: "destructive",
-      });
+    onError: () => {
+      toast({ title: t("common.error"), description: t("events.errorDelete"), variant: "destructive" });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing) {
-      updateMutation.mutate(formData);
-    } else {
-      createMutation.mutate(formData);
-    }
+    if (isEditing) updateMutation.mutate(formData);
+    else createMutation.mutate(formData);
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
@@ -213,168 +190,107 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Modifier l'Événement" : "Créer un Nouvel Événement"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing 
-              ? "Modifiez les détails de l'événement."
-              : "Planifiez un nouvel événement pour l'église."}
-          </DialogDescription>
+          <DialogTitle>{isEditing ? t("events.editEvent") : t("events.createEvent")}</DialogTitle>
+          <DialogDescription>{isEditing ? t("events.editEventDesc") : t("events.createEventDesc")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nom de l'Événement *</Label>
+              <Label htmlFor="name">{t("events.eventNameLabel")} *</Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Culte du Dimanche"
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="date">Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Statut</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                >
+                <Label htmlFor="category">{t("events.category")}</Label>
+                <Select value={formData.eventCategory} onValueChange={(v) => setFormData({ ...formData, eventCategory: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="planned">Planifié</SelectItem>
-                    <SelectItem value="confirmed">Confirmé</SelectItem>
-                    <SelectItem value="cancelled">Annulé</SelectItem>
-                    <SelectItem value="completed">Terminé</SelectItem>
+                    {categoryKeys.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{t(`events.${cat}`)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="status">{t("events.statusLabel")}</Label>
+                <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">{t("events.planned")}</SelectItem>
+                    <SelectItem value="confirmed">{t("events.confirmed")}</SelectItem>
+                    <SelectItem value="cancelled">{t("events.cancelled")}</SelectItem>
+                    <SelectItem value="completed">{t("events.completed")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="time">Heure de début</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, time: e.target.value })
-                  }
-                />
+                <Label htmlFor="date">{t("events.dateLabel")} *</Label>
+                <Input id="date" type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="endTime">Heure de fin</Label>
-                <Input
-                  id="endTime"
-                  type="time"
-                  value={formData.endTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endTime: e.target.value })
-                  }
-                />
+                <Label htmlFor="time">{t("events.startTime")}</Label>
+                <Input id="time" type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="location">Lieu</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  placeholder="Église Centrale"
-                />
+                <Label htmlFor="endTime">{t("events.endTime")}</Label>
+                <Input id="endTime" type="time" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="expectedAttendees">Participants attendus</Label>
-                <Input
-                  id="expectedAttendees"
-                  type="number"
-                  min="0"
-                  value={formData.expectedAttendees}
-                  onChange={(e) =>
-                    setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })
-                  }
-                />
+                <Label htmlFor="expectedAttendees">{t("events.expectedAttendees")}</Label>
+                <Input id="expectedAttendees" type="number" min="0" value={formData.expectedAttendees} onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })} />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Décrivez l'événement..."
-                rows={3}
-              />
+              <Label htmlFor="location">{t("events.locationLabel")}</Label>
+              <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">{t("events.descriptionLabel")}</Label>
+              <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
             </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             {isEditing && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    disabled={isLoading}
-                    className="w-full sm:w-auto sm:mr-auto"
-                  >
+                  <Button type="button" variant="destructive" disabled={isLoading} className="w-full sm:w-auto sm:mr-auto">
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Supprimer
+                    {t("events.deleteEvent")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer l'événement?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Cette action est irréversible. L'événement "{formData.name}" sera définitivement supprimé.
-                    </AlertDialogDescription>
+                    <AlertDialogTitle>{t("events.deleteConfirmTitle")}</AlertDialogTitle>
+                    <AlertDialogDescription>{t("events.deleteConfirmDesc")}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deleteMutation.mutate()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Supprimer
+                    <AlertDialogCancel>{t("events.cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      {t("events.deleteEvent")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Annuler
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              {t("events.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Enregistrer" : "Créer l'Événement"}
+              {isEditing ? t("events.save") : t("events.create")}
             </Button>
           </DialogFooter>
         </form>
