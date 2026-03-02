@@ -103,6 +103,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/finance/salaries": "finances",
   "/insights": "reports",
   "/support": "communication",
+  "/support-management": "tenants",
 };
 
 // Map nav groups to route groups (using internal keys, not translated labels)
