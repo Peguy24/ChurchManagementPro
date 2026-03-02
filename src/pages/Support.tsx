@@ -99,6 +99,19 @@ export default function Support() {
   const { hasFeature } = usePlanLimits();
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const { data: tickets, isLoading, refetch } = useQuery({
+    queryKey: ["support-tickets", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tenantId && subscribed,
+  });
+
   // Gate support access: users without any active subscription see locked card
   if (!planLoading && !subscribed) {
     return (
@@ -122,19 +135,6 @@ export default function Support() {
       </Layout>
     );
   }
-
-  const { data: tickets, isLoading, refetch } = useQuery({
-    queryKey: ["support-tickets", tenantId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_tickets")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!tenantId,
-  });
 
   const getStatusLabel = (status: string) => {
     const map: Record<string, string> = {
