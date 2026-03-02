@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, MessageSquare, Clock, Crown, Shield, Headphones } from "lucide-react";
 import { format } from "date-fns";
 import SupportDialog from "@/components/SupportDialog";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const statusColors: Record<string, string> = {
   open: "bg-blue-100 text-blue-800",
@@ -93,8 +95,33 @@ export default function Support() {
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { plan } = useSubscription();
+  const { plan, subscribed, loading: planLoading } = useSubscription();
+  const { hasFeature } = usePlanLimits();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Gate support access: users without any active subscription see locked card
+  if (!planLoading && !subscribed) {
+    return (
+      <Layout>
+        <FeatureLockedCard
+          featureName={t("layout.support")}
+          featureDescription="Accédez au support technique pour résoudre vos problèmes et obtenir de l'aide. Un abonnement actif est requis pour contacter notre équipe."
+          requiredPlan="essentiel"
+          icon={<MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />}
+        />
+      </Layout>
+    );
+  }
+
+  if (planLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">{t("common.loading")}...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   const { data: tickets, isLoading, refetch } = useQuery({
     queryKey: ["support-tickets", tenantId],
