@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText } from "lucide-react";
+import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText, ArrowLeft } from "lucide-react";
 import { SignedImage } from "@/components/SignedImage";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
@@ -24,10 +25,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
+// Interfaces
 interface InventoryItem {
   id: string;
   name: string;
@@ -78,53 +80,16 @@ interface UsageRecord {
   members?: { first_name: string; last_name: string };
 }
 
-const categories = [
-  { value: "general", label: "Général" },
-  { value: "audio_video", label: "Audio/Vidéo" },
-  { value: "furniture", label: "Mobilier" },
-  { value: "musical", label: "Instruments de musique" },
-  { value: "office", label: "Bureautique" },
-  { value: "kitchen", label: "Cuisine" },
-  { value: "cleaning", label: "Nettoyage" },
-  { value: "decoration", label: "Décoration" },
-  { value: "vehicle", label: "Véhicule" },
-  { value: "other", label: "Autre" },
-];
-
-const statusOptions = [
-  { value: "available", label: "Disponible", color: "bg-green-500" },
-  { value: "in_use", label: "En utilisation", color: "bg-blue-500" },
-  { value: "maintenance", label: "En maintenance", color: "bg-yellow-500" },
-  { value: "missing", label: "Manquant", color: "bg-red-500" },
-  { value: "disposed", label: "Retiré", color: "bg-gray-500" },
-];
-
-const conditionOptions = [
-  { value: "excellent", label: "Excellent" },
-  { value: "good", label: "Bon" },
-  { value: "fair", label: "Acceptable" },
-  { value: "poor", label: "Mauvais" },
-  { value: "damaged", label: "Endommagé" },
-];
-
-const maintenanceTypes = [
-  { value: "repair", label: "Réparation" },
-  { value: "inspection", label: "Inspection" },
-  { value: "cleaning", label: "Nettoyage" },
-  { value: "replacement", label: "Remplacement" },
-  { value: "upgrade", label: "Mise à niveau" },
-];
-
 export default function Inventory() {
   const { hasFeature, loading: planLoading } = usePlanLimits();
+  const { t } = useLanguage();
 
-  // Check for inventory feature access - must be before other hooks to avoid conditional hook calls
   if (!planLoading && !hasFeature("inventory")) {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName="Gestion d'Inventaire"
-          featureDescription="Gérez votre inventaire d'équipements, suivez la maintenance et générez des rapports détaillés."
+          featureName={t("inventory.featureName")}
+          featureDescription={t("inventory.featureDesc")}
           requiredPlan="professionnel"
           icon={<Package className="w-8 h-8 text-muted-foreground" />}
         />
@@ -136,7 +101,7 @@ export default function Inventory() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("inventory.loading")}</div>
         </div>
       </Layout>
     );
@@ -146,6 +111,8 @@ export default function Inventory() {
 }
 
 function InventoryContent() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const { tenantId } = useCurrentTenant();
   const { formatAmount: formatCurrency } = useCurrency();
   const queryClient = useQueryClient();
@@ -159,6 +126,43 @@ function InventoryContent() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+
+  const categoryKeys: Record<string, string> = {
+    general: "inventory.catGeneral",
+    audio_video: "inventory.catAudioVideo",
+    furniture: "inventory.catFurniture",
+    musical: "inventory.catMusical",
+    office: "inventory.catOffice",
+    kitchen: "inventory.catKitchen",
+    cleaning: "inventory.catCleaning",
+    decoration: "inventory.catDecoration",
+    vehicle: "inventory.catVehicle",
+    other: "inventory.catOther",
+  };
+
+  const statusKeys: Record<string, { key: string; color: string }> = {
+    available: { key: "inventory.statusAvailable", color: "bg-green-500" },
+    in_use: { key: "inventory.statusInUse", color: "bg-blue-500" },
+    maintenance: { key: "inventory.statusMaintenance", color: "bg-yellow-500" },
+    missing: { key: "inventory.statusMissing", color: "bg-red-500" },
+    disposed: { key: "inventory.statusDisposed", color: "bg-gray-500" },
+  };
+
+  const conditionKeys: Record<string, string> = {
+    excellent: "inventory.condExcellent",
+    good: "inventory.condGood",
+    fair: "inventory.condFair",
+    poor: "inventory.condPoor",
+    damaged: "inventory.condDamaged",
+  };
+
+  const maintenanceTypeKeys: Record<string, string> = {
+    repair: "inventory.maintRepair",
+    inspection: "inventory.maintInspection",
+    cleaning: "inventory.maintCleaning",
+    replacement: "inventory.maintReplacement",
+    upgrade: "inventory.maintUpgrade",
+  };
 
   // Form states
   const [itemForm, setItemForm] = useState({
@@ -276,11 +280,11 @@ function InventoryContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
-      toast.success("Article ajouté avec succès");
+      toast.success(t("inventory.itemAdded"));
       setIsItemDialogOpen(false);
       resetItemForm();
     },
-    onError: () => toast.error("Erreur lors de l'ajout"),
+    onError: () => toast.error(t("inventory.errorAdd")),
   });
 
   const updateItemMutation = useMutation({
@@ -308,12 +312,12 @@ function InventoryContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
-      toast.success("Article modifié avec succès");
+      toast.success(t("inventory.itemUpdated"));
       setIsItemDialogOpen(false);
       setEditingItem(null);
       resetItemForm();
     },
-    onError: () => toast.error("Erreur lors de la modification"),
+    onError: () => toast.error(t("inventory.errorUpdate")),
   });
 
   const deleteItemMutation = useMutation({
@@ -323,9 +327,9 @@ function InventoryContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
-      toast.success("Article supprimé");
+      toast.success(t("inventory.itemDeleted"));
     },
-    onError: () => toast.error("Erreur lors de la suppression"),
+    onError: () => toast.error(t("inventory.errorDelete")),
   });
 
   const createMaintenanceMutation = useMutation({
@@ -347,11 +351,11 @@ function InventoryContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-maintenance"] });
-      toast.success("Maintenance enregistrée");
+      toast.success(t("inventory.maintenanceRecorded"));
       setIsMaintenanceDialogOpen(false);
       resetMaintenanceForm();
     },
-    onError: () => toast.error("Erreur lors de l'enregistrement"),
+    onError: () => toast.error(t("inventory.errorRecord")),
   });
 
   const createUsageMutation = useMutation({
@@ -370,11 +374,11 @@ function InventoryContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-usage"] });
-      toast.success("Utilisation enregistrée");
+      toast.success(t("inventory.usageRecorded"));
       setIsUsageDialogOpen(false);
       resetUsageForm();
     },
-    onError: () => toast.error("Erreur lors de l'enregistrement"),
+    onError: () => toast.error(t("inventory.errorRecord")),
   });
 
   const resetItemForm = () => {
@@ -470,27 +474,32 @@ function InventoryContent() {
   const maintenanceCosts = maintenanceRecords.reduce((sum, m) => sum + (m.cost || 0), 0);
 
   const getStatusBadge = (status: string) => {
-    const option = statusOptions.find((o) => o.value === status);
+    const info = statusKeys[status];
     return (
       <Badge variant="outline" className="flex items-center gap-1">
-        <span className={`w-2 h-2 rounded-full ${option?.color || "bg-gray-500"}`} />
-        {option?.label || status}
+        <span className={`w-2 h-2 rounded-full ${info?.color || "bg-gray-500"}`} />
+        {info ? t(info.key) : status}
       </Badge>
     );
   };
 
   const getConditionLabel = (condition: string | null) => {
-    return conditionOptions.find((o) => o.value === condition)?.label || condition;
+    if (!condition) return condition;
+    return conditionKeys[condition] ? t(conditionKeys[condition]) : condition;
   };
 
   const getCategoryLabel = (category: string) => {
-    return categories.find((c) => c.value === category)?.label || category;
+    return categoryKeys[category] ? t(categoryKeys[category]) : category;
+  };
+
+  const getMaintenanceTypeLabel = (type: string) => {
+    return maintenanceTypeKeys[type] ? t(maintenanceTypeKeys[type]) : type;
   };
 
   if (itemsLoading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">Chargement...</div>
+        <div className="flex items-center justify-center h-64">{t("inventory.loading")}</div>
       </Layout>
     );
   }
@@ -500,9 +509,14 @@ function InventoryContent() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Inventaire</h2>
-            <p className="text-muted-foreground">Gestion du matériel de l'église</p>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">{t("inventory.title")}</h2>
+              <p className="text-muted-foreground">{t("inventory.subtitle")}</p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <InventoryBarcodeScanner 
@@ -523,20 +537,20 @@ function InventoryContent() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <History className="h-4 w-4 mr-2" />
-                  Utilisation
+                  {t("inventory.usage")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Enregistrer une utilisation</DialogTitle>
-                  <DialogDescription>Enregistrez l'utilisation d'un article</DialogDescription>
+                  <DialogTitle>{t("inventory.recordUsage")}</DialogTitle>
+                  <DialogDescription>{t("inventory.recordUsageDesc")}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label>Article *</Label>
+                    <Label>{t("inventory.colItem")} *</Label>
                     <Select value={usageForm.item_id} onValueChange={(v) => setUsageForm({ ...usageForm, item_id: v })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un article" />
+                        <SelectValue placeholder={t("inventory.selectItem")} />
                       </SelectTrigger>
                       <SelectContent>
                         {items.map((item) => (
@@ -546,10 +560,10 @@ function InventoryContent() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Utilisé par</Label>
+                    <Label>{t("inventory.usedBy")}</Label>
                     <Select value={usageForm.used_by} onValueChange={(v) => setUsageForm({ ...usageForm, used_by: v })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un membre" />
+                        <SelectValue placeholder={t("inventory.selectMember")} />
                       </SelectTrigger>
                       <SelectContent>
                         {members.map((m) => (
@@ -559,28 +573,28 @@ function InventoryContent() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Événement</Label>
+                    <Label>{t("inventory.event")}</Label>
                     <Input value={usageForm.event_name} onChange={(e) => setUsageForm({ ...usageForm, event_name: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Date début *</Label>
+                      <Label>{t("inventory.startDate")} *</Label>
                       <Input type="date" value={usageForm.start_date} onChange={(e) => setUsageForm({ ...usageForm, start_date: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Date fin</Label>
+                      <Label>{t("inventory.endDate")}</Label>
                       <Input type="date" value={usageForm.end_date} onChange={(e) => setUsageForm({ ...usageForm, end_date: e.target.value })} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Quantité</Label>
+                    <Label>{t("inventory.quantity")}</Label>
                     <Input type="number" value={usageForm.quantity_used} onChange={(e) => setUsageForm({ ...usageForm, quantity_used: e.target.value })} />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsUsageDialogOpen(false)}>Annuler</Button>
+                  <Button variant="outline" onClick={() => setIsUsageDialogOpen(false)}>{t("inventory.cancel")}</Button>
                   <Button onClick={() => createUsageMutation.mutate(usageForm)} disabled={!usageForm.item_id || !usageForm.start_date}>
-                    Enregistrer
+                    {t("inventory.save")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -590,20 +604,20 @@ function InventoryContent() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <Wrench className="h-4 w-4 mr-2" />
-                  Maintenance
+                  {t("inventory.maintenance")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Enregistrer une maintenance</DialogTitle>
-                  <DialogDescription>Enregistrez une opération de maintenance</DialogDescription>
+                  <DialogTitle>{t("inventory.recordMaintenance")}</DialogTitle>
+                  <DialogDescription>{t("inventory.recordMaintenanceDesc")}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
                   <div className="space-y-2">
-                    <Label>Article *</Label>
+                    <Label>{t("inventory.colItem")} *</Label>
                     <Select value={maintenanceForm.item_id} onValueChange={(v) => setMaintenanceForm({ ...maintenanceForm, item_id: v })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un article" />
+                        <SelectValue placeholder={t("inventory.selectItem")} />
                       </SelectTrigger>
                       <SelectContent>
                         {items.map((item) => (
@@ -613,49 +627,49 @@ function InventoryContent() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Type *</Label>
+                    <Label>{t("inventory.type")} *</Label>
                     <Select value={maintenanceForm.maintenance_type} onValueChange={(v) => setMaintenanceForm({ ...maintenanceForm, maintenance_type: v })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {maintenanceTypes.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        {Object.entries(maintenanceTypeKeys).map(([value, key]) => (
+                          <SelectItem key={value} value={value}>{t(key)}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Description *</Label>
+                    <Label>{t("inventory.description")} *</Label>
                     <Textarea value={maintenanceForm.description} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Coût</Label>
+                      <Label>{t("inventory.cost")}</Label>
                       <Input type="number" value={maintenanceForm.cost} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Date *</Label>
+                      <Label>{t("inventory.date")} *</Label>
                       <Input type="date" value={maintenanceForm.maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, maintenance_date: e.target.value })} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Effectué par</Label>
+                    <Label>{t("inventory.performedBy")}</Label>
                     <Input value={maintenanceForm.performed_by} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, performed_by: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Fournisseur</Label>
+                    <Label>{t("inventory.vendor")}</Label>
                     <Input value={maintenanceForm.vendor} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, vendor: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Prochaine maintenance</Label>
+                    <Label>{t("inventory.nextMaintenance")}</Label>
                     <Input type="date" value={maintenanceForm.next_maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, next_maintenance_date: e.target.value })} />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsMaintenanceDialogOpen(false)}>Annuler</Button>
+                  <Button variant="outline" onClick={() => setIsMaintenanceDialogOpen(false)}>{t("inventory.cancel")}</Button>
                   <Button onClick={() => createMaintenanceMutation.mutate(maintenanceForm)} disabled={!maintenanceForm.item_id || !maintenanceForm.description}>
-                    Enregistrer
+                    {t("inventory.save")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -671,85 +685,85 @@ function InventoryContent() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter
+                  {t("inventory.addItem")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>{editingItem ? "Modifier l'article" : "Ajouter un article"}</DialogTitle>
-                  <DialogDescription>Remplissez les informations de l'article</DialogDescription>
+                  <DialogTitle>{editingItem ? t("inventory.editItem") : t("inventory.addNewItem")}</DialogTitle>
+                  <DialogDescription>{t("inventory.fillItemInfo")}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Nom *</Label>
+                      <Label>{t("inventory.name")} *</Label>
                       <Input value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Catégorie *</Label>
+                      <Label>{t("inventory.category")} *</Label>
                       <Select value={itemForm.category} onValueChange={(v) => setItemForm({ ...itemForm, category: v })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                          {Object.entries(categoryKeys).map(([value, key]) => (
+                            <SelectItem key={value} value={value}>{t(key)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Description</Label>
+                    <Label>{t("inventory.description")}</Label>
                     <Textarea value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Numéro de série</Label>
+                      <Label>{t("inventory.serialNumber")}</Label>
                       <Input value={itemForm.serial_number} onChange={(e) => setItemForm({ ...itemForm, serial_number: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Emplacement</Label>
+                      <Label>{t("inventory.location")}</Label>
                       <Input value={itemForm.location} onChange={(e) => setItemForm({ ...itemForm, location: e.target.value })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>Date d'achat</Label>
+                      <Label>{t("inventory.purchaseDate")}</Label>
                       <Input type="date" value={itemForm.purchase_date} onChange={(e) => setItemForm({ ...itemForm, purchase_date: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Prix d'achat</Label>
+                      <Label>{t("inventory.purchasePrice")}</Label>
                       <Input type="number" value={itemForm.purchase_price} onChange={(e) => setItemForm({ ...itemForm, purchase_price: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Valeur actuelle</Label>
+                      <Label>{t("inventory.currentValue")}</Label>
                       <Input type="number" value={itemForm.current_value} onChange={(e) => setItemForm({ ...itemForm, current_value: e.target.value })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Statut</Label>
+                      <Label>{t("inventory.status")}</Label>
                       <Select value={itemForm.status} onValueChange={(v) => setItemForm({ ...itemForm, status: v })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {statusOptions.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          {Object.entries(statusKeys).map(([value, info]) => (
+                            <SelectItem key={value} value={value}>{t(info.key)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>État</Label>
+                      <Label>{t("inventory.condition")}</Label>
                       <Select value={itemForm.condition} onValueChange={(v) => setItemForm({ ...itemForm, condition: v })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {conditionOptions.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                          {Object.entries(conditionKeys).map(([value, key]) => (
+                            <SelectItem key={value} value={value}>{t(key)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -757,11 +771,11 @@ function InventoryContent() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Quantité</Label>
+                      <Label>{t("inventory.quantity")}</Label>
                       <Input type="number" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Stock minimum</Label>
+                      <Label>{t("inventory.minStock")}</Label>
                       <Input type="number" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: e.target.value })} />
                     </div>
                   </div>
@@ -771,7 +785,7 @@ function InventoryContent() {
                     itemId={editingItem?.id}
                   />
                   <div className="space-y-2">
-                    <Label>Notes</Label>
+                    <Label>{t("inventory.notes")}</Label>
                     <Textarea value={itemForm.notes} onChange={(e) => setItemForm({ ...itemForm, notes: e.target.value })} />
                   </div>
                 </div>
@@ -780,7 +794,7 @@ function InventoryContent() {
                     setIsItemDialogOpen(false);
                     setEditingItem(null);
                     resetItemForm();
-                  }}>Annuler</Button>
+                  }}>{t("inventory.cancel")}</Button>
                   <Button
                     onClick={() => {
                       if (editingItem) {
@@ -791,7 +805,7 @@ function InventoryContent() {
                     }}
                     disabled={!itemForm.name}
                   >
-                    {editingItem ? "Modifier" : "Ajouter"}
+                    {editingItem ? t("inventory.modify") : t("inventory.addItem")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -803,7 +817,7 @@ function InventoryContent() {
         <div className="grid gap-4 md:grid-cols-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total articles</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.totalItems")}</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -812,7 +826,7 @@ function InventoryContent() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Disponibles</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.available")}</CardTitle>
               <Package className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -821,7 +835,7 @@ function InventoryContent() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Manquants</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.missing")}</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
@@ -830,7 +844,7 @@ function InventoryContent() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Stock bas</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.lowStock")}</CardTitle>
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
@@ -839,7 +853,7 @@ function InventoryContent() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valeur totale</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.totalValue")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
@@ -847,7 +861,7 @@ function InventoryContent() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Coûts maintenance</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("inventory.maintenanceCosts")}</CardTitle>
               <Wrench className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -859,9 +873,9 @@ function InventoryContent() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="items">Articles</TabsTrigger>
-            <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-            <TabsTrigger value="usage">Utilisation</TabsTrigger>
+            <TabsTrigger value="items">{t("inventory.tabItems")}</TabsTrigger>
+            <TabsTrigger value="maintenance">{t("inventory.tabMaintenance")}</TabsTrigger>
+            <TabsTrigger value="usage">{t("inventory.tabUsage")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="items" className="mt-4">
@@ -869,14 +883,14 @@ function InventoryContent() {
               <CardHeader>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <CardTitle>Liste du matériel</CardTitle>
-                    <CardDescription>Tous les articles de l'inventaire</CardDescription>
+                    <CardTitle>{t("inventory.itemList")}</CardTitle>
+                    <CardDescription>{t("inventory.itemListDesc")}</CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Rechercher..."
+                        placeholder={t("inventory.searchPlaceholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-8 w-[200px]"
@@ -884,23 +898,23 @@ function InventoryContent() {
                     </div>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                       <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Statut" />
+                        <SelectValue placeholder={t("inventory.statusFilter")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Tous</SelectItem>
-                        {statusOptions.map((s) => (
-                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        <SelectItem value="all">{t("inventory.all")}</SelectItem>
+                        {Object.entries(statusKeys).map(([value, info]) => (
+                          <SelectItem key={value} value={value}>{t(info.key)}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <Select value={filterCategory} onValueChange={setFilterCategory}>
                       <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Catégorie" />
+                        <SelectValue placeholder={t("inventory.categoryFilter")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Toutes</SelectItem>
-                        {categories.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                        <SelectItem value="all">{t("inventory.allFeminine")}</SelectItem>
+                        {Object.entries(categoryKeys).map(([value, key]) => (
+                          <SelectItem key={value} value={value}>{t(key)}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -911,13 +925,13 @@ function InventoryContent() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Article</TableHead>
-                      <TableHead>Catégorie</TableHead>
-                      <TableHead>Quantité</TableHead>
-                      <TableHead>État</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Valeur</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("inventory.colItem")}</TableHead>
+                      <TableHead>{t("inventory.colCategory")}</TableHead>
+                      <TableHead>{t("inventory.colQuantity")}</TableHead>
+                      <TableHead>{t("inventory.colCondition")}</TableHead>
+                      <TableHead>{t("inventory.colStatus")}</TableHead>
+                      <TableHead>{t("inventory.colValue")}</TableHead>
+                      <TableHead className="text-right">{t("inventory.colActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -978,15 +992,15 @@ function InventoryContent() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Supprimer cet article ?</AlertDialogTitle>
+                                  <AlertDialogTitle>{t("inventory.deleteConfirm")}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Cette action est irréversible.
+                                    {t("inventory.deleteWarning")}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogCancel>{t("inventory.cancel")}</AlertDialogCancel>
                                   <AlertDialogAction onClick={() => deleteItemMutation.mutate(item.id)}>
-                                    Supprimer
+                                    {t("inventory.delete")}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -998,7 +1012,7 @@ function InventoryContent() {
                     {filteredItems.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                          Aucun article trouvé
+                          {t("inventory.noItemsFound")}
                         </TableCell>
                       </TableRow>
                     )}
@@ -1011,19 +1025,19 @@ function InventoryContent() {
           <TabsContent value="maintenance" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Historique de maintenance</CardTitle>
-                <CardDescription>Toutes les opérations de maintenance</CardDescription>
+                <CardTitle>{t("inventory.maintenanceHistory")}</CardTitle>
+                <CardDescription>{t("inventory.maintenanceHistoryDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Article</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Coût</TableHead>
-                      <TableHead>Effectué par</TableHead>
+                      <TableHead>{t("inventory.colDate")}</TableHead>
+                      <TableHead>{t("inventory.colItem")}</TableHead>
+                      <TableHead>{t("inventory.colType")}</TableHead>
+                      <TableHead>{t("inventory.colDescription")}</TableHead>
+                      <TableHead>{t("inventory.colCost")}</TableHead>
+                      <TableHead>{t("inventory.colPerformedBy")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1033,7 +1047,7 @@ function InventoryContent() {
                         <TableCell className="font-medium">{record.inventory_items?.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {maintenanceTypes.find((t) => t.value === record.maintenance_type)?.label}
+                            {getMaintenanceTypeLabel(record.maintenance_type)}
                           </Badge>
                         </TableCell>
                         <TableCell className="max-w-[200px] truncate">{record.description}</TableCell>
@@ -1044,7 +1058,7 @@ function InventoryContent() {
                     {maintenanceRecords.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                          Aucune maintenance enregistrée
+                          {t("inventory.noMaintenance")}
                         </TableCell>
                       </TableRow>
                     )}
@@ -1057,19 +1071,19 @@ function InventoryContent() {
           <TabsContent value="usage" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Historique d'utilisation</CardTitle>
-                <CardDescription>Suivi de l'utilisation du matériel</CardDescription>
+                <CardTitle>{t("inventory.usageHistory")}</CardTitle>
+                <CardDescription>{t("inventory.usageHistoryDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Article</TableHead>
-                      <TableHead>Utilisateur</TableHead>
-                      <TableHead>Événement</TableHead>
-                      <TableHead>Quantité</TableHead>
-                      <TableHead>Retourné</TableHead>
+                      <TableHead>{t("inventory.colDate")}</TableHead>
+                      <TableHead>{t("inventory.colItem")}</TableHead>
+                      <TableHead>{t("inventory.colUser")}</TableHead>
+                      <TableHead>{t("inventory.colEvent")}</TableHead>
+                      <TableHead>{t("inventory.colQuantity")}</TableHead>
+                      <TableHead>{t("inventory.colReturned")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1093,7 +1107,7 @@ function InventoryContent() {
                         <TableCell>{record.quantity_used}</TableCell>
                         <TableCell>
                           <Badge variant={record.returned ? "default" : "secondary"}>
-                            {record.returned ? "Oui" : "Non"}
+                            {record.returned ? t("inventory.yes") : t("inventory.no")}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -1101,7 +1115,7 @@ function InventoryContent() {
                     {usageRecords.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                          Aucune utilisation enregistrée
+                          {t("inventory.noUsage")}
                         </TableCell>
                       </TableRow>
                     )}
@@ -1116,11 +1130,10 @@ function InventoryContent() {
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Détails de l'article</DialogTitle>
+              <DialogTitle>{t("inventory.itemDetails")}</DialogTitle>
             </DialogHeader>
             {selectedItem && (
               <div className="grid gap-4 py-4">
-                {/* Photo */}
                 {selectedItem.photo_url && (
                   <div className="flex justify-center">
                     <img
@@ -1132,61 +1145,61 @@ function InventoryContent() {
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Nom</Label>
+                    <Label className="text-muted-foreground">{t("inventory.name")}</Label>
                     <p className="font-medium">{selectedItem.name}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Catégorie</Label>
+                    <Label className="text-muted-foreground">{t("inventory.category")}</Label>
                     <p>{getCategoryLabel(selectedItem.category)}</p>
                   </div>
                 </div>
                 {selectedItem.description && (
                   <div>
-                    <Label className="text-muted-foreground">Description</Label>
+                    <Label className="text-muted-foreground">{t("inventory.description")}</Label>
                     <p>{selectedItem.description}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Statut</Label>
+                    <Label className="text-muted-foreground">{t("inventory.status")}</Label>
                     <div className="mt-1">{getStatusBadge(selectedItem.status)}</div>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">État</Label>
+                    <Label className="text-muted-foreground">{t("inventory.condition")}</Label>
                     <p>{getConditionLabel(selectedItem.condition)}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Quantité</Label>
+                    <Label className="text-muted-foreground">{t("inventory.quantity")}</Label>
                     <p>{selectedItem.quantity}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Prix d'achat</Label>
+                    <Label className="text-muted-foreground">{t("inventory.purchasePrice")}</Label>
                     <p>{formatCurrency(selectedItem.purchase_price || 0)}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Valeur actuelle</Label>
+                    <Label className="text-muted-foreground">{t("inventory.currentValue")}</Label>
                     <p>{formatCurrency(selectedItem.current_value || 0)}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Date d'achat</Label>
+                    <Label className="text-muted-foreground">{t("inventory.purchaseDate")}</Label>
                     <p>{selectedItem.purchase_date ? format(new Date(selectedItem.purchase_date), "dd/MM/yyyy") : "-"}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Numéro de série</Label>
+                    <Label className="text-muted-foreground">{t("inventory.serialNumber")}</Label>
                     <p>{selectedItem.serial_number || "-"}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Emplacement</Label>
+                    <Label className="text-muted-foreground">{t("inventory.location")}</Label>
                     <p>{selectedItem.location || "-"}</p>
                   </div>
                 </div>
                 {selectedItem.notes && (
                   <div>
-                    <Label className="text-muted-foreground">Notes</Label>
+                    <Label className="text-muted-foreground">{t("inventory.notes")}</Label>
                     <p>{selectedItem.notes}</p>
                   </div>
                 )}
