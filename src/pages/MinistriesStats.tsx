@@ -19,6 +19,7 @@ import {
 import { ArrowLeft, Users, TrendingUp, Briefcase, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   BarChart,
   Bar,
@@ -52,21 +53,20 @@ interface MinistryStats {
   leader_name: string | null;
 }
 
-interface RoleDistribution {
-  role: string;
-  count: number;
-}
-
-interface MonthlyGrowth {
-  month: string;
-  new_members: number;
-}
+const getLocale = (lang: string) => {
+  switch (lang) {
+    case "en": return "en-US";
+    case "ht": return "fr-HT";
+    default: return "fr-FR";
+  }
+};
 
 export default function MinistriesStats() {
   const navigate = useNavigate();
-  const [period, setPeriod] = useState("6"); // 6 months by default
+  const { t, language } = useLanguage();
+  const [period, setPeriod] = useState("6");
+  const locale = getLocale(language);
 
-  // Fetch all ministries with member counts
   const { data: ministriesData = [], isLoading } = useQuery({
     queryKey: ["ministries-stats"],
     queryFn: async () => {
@@ -82,7 +82,6 @@ export default function MinistriesStats() {
 
       if (ministriesError) throw ministriesError;
 
-      // Get member counts for each ministry
       const stats: MinistryStats[] = await Promise.all(
         ministries.map(async (ministry) => {
           const { count } = await supabase
@@ -106,7 +105,6 @@ export default function MinistriesStats() {
     },
   });
 
-  // Fetch role distribution
   const { data: roleDistribution = [] } = useQuery({
     queryKey: ["role-distribution"],
     queryFn: async () => {
@@ -128,9 +126,8 @@ export default function MinistriesStats() {
     },
   });
 
-  // Fetch monthly growth
   const { data: monthlyGrowth = [] } = useQuery({
-    queryKey: ["ministry-growth", period],
+    queryKey: ["ministry-growth", period, locale],
     queryFn: async () => {
       const endDate = new Date();
       const startDate = new Date();
@@ -145,12 +142,11 @@ export default function MinistriesStats() {
 
       if (error) throw error;
 
-      // Group by month
       const monthCounts: { [key: string]: number } = {};
       const current = new Date(startDate);
 
       while (current <= endDate) {
-        const monthStr = current.toLocaleDateString("fr-FR", {
+        const monthStr = current.toLocaleDateString(locale, {
           month: "short",
           year: "numeric",
         });
@@ -160,7 +156,7 @@ export default function MinistriesStats() {
 
       data.forEach((item) => {
         const date = new Date(item.joined_date);
-        const monthStr = date.toLocaleDateString("fr-FR", {
+        const monthStr = date.toLocaleDateString(locale, {
           month: "short",
           year: "numeric",
         });
@@ -182,7 +178,6 @@ export default function MinistriesStats() {
     ? Math.round(totalMembers / ministriesData.length) 
     : 0;
 
-  // Top 5 ministries by member count
   const topMinistries = [...ministriesData]
     .sort((a, b) => b.member_count - a.member_count)
     .slice(0, 5);
@@ -191,7 +186,7 @@ export default function MinistriesStats() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{t("ministries.loading")}</p>
         </div>
       </Layout>
     );
@@ -205,14 +200,14 @@ export default function MinistriesStats() {
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/ministries")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
+              {t("ministries.back")}
             </Button>
             <div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Statistiques des Ministères
+                {t("ministries.statsTitle")}
               </h2>
               <p className="text-muted-foreground">
-                Analysez les performances et la croissance des ministères
+                {t("ministries.statsSubtitle")}
               </p>
             </div>
           </div>
@@ -221,9 +216,9 @@ export default function MinistriesStats() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="3">3 mois</SelectItem>
-              <SelectItem value="6">6 mois</SelectItem>
-              <SelectItem value="12">12 mois</SelectItem>
+              <SelectItem value="3">{t("ministries.months3")}</SelectItem>
+              <SelectItem value="6">{t("ministries.months6")}</SelectItem>
+              <SelectItem value="12">{t("ministries.months12")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -233,14 +228,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total des Ministères
+                {t("ministries.totalMinistries")}
               </CardTitle>
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{ministriesData.length}</div>
               <p className="text-xs text-muted-foreground">
-                {activeMinistries} actif(s)
+                {activeMinistries} {t("ministries.active").toLowerCase()}
               </p>
             </CardContent>
           </Card>
@@ -248,14 +243,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total des Membres
+                {t("ministries.totalMembers")}
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalMembers}</div>
               <p className="text-xs text-muted-foreground">
-                Dans tous les ministères
+                {t("ministries.inAllMinistries")}
               </p>
             </CardContent>
           </Card>
@@ -263,14 +258,14 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Moyenne par Ministère
+                {t("ministries.avgPerMinistry")}
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{avgMembersPerMinistry}</div>
               <p className="text-xs text-muted-foreground">
-                membres par ministère
+                {t("ministries.membersPerMinistry")}
               </p>
             </CardContent>
           </Card>
@@ -278,7 +273,7 @@ export default function MinistriesStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Nouveaux Membres
+                {t("ministries.newMembers")}
               </CardTitle>
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -287,7 +282,7 @@ export default function MinistriesStats() {
                 {monthlyGrowth.reduce((sum, m) => sum + m.new_members, 0)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Derniers {period} mois
+                {t("ministries.lastMonths").replace("{count}", period)}
               </p>
             </CardContent>
           </Card>
@@ -295,11 +290,10 @@ export default function MinistriesStats() {
 
         {/* Charts Row 1 */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Members per Ministry */}
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Ministères</CardTitle>
-              <CardDescription>Par nombre de membres</CardDescription>
+              <CardTitle>{t("ministries.top5Ministries")}</CardTitle>
+              <CardDescription>{t("ministries.byMemberCount")}</CardDescription>
             </CardHeader>
             <CardContent>
               {topMinistries.length > 0 ? (
@@ -326,22 +320,21 @@ export default function MinistriesStats() {
                         color: "hsl(var(--foreground))",
                       }}
                     />
-                    <Bar dataKey="member_count" name="Membres" fill="hsl(var(--primary))" />
+                    <Bar dataKey="member_count" name={t("ministries.members")} fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <p className="text-muted-foreground">{t("ministries.noDataAvailable")}</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Role Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Distribution des Rôles</CardTitle>
-              <CardDescription>Dans tous les ministères</CardDescription>
+              <CardTitle>{t("ministries.roleDistribution")}</CardTitle>
+              <CardDescription>{t("ministries.inAllMinistriesChart")}</CardDescription>
             </CardHeader>
             <CardContent>
               {roleDistribution.length > 0 ? (
@@ -372,7 +365,7 @@ export default function MinistriesStats() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <p className="text-muted-foreground">{t("ministries.noDataAvailable")}</p>
                 </div>
               )}
             </CardContent>
@@ -382,9 +375,9 @@ export default function MinistriesStats() {
         {/* Monthly Growth Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Croissance Mensuelle</CardTitle>
+            <CardTitle>{t("ministries.monthlyGrowth")}</CardTitle>
             <CardDescription>
-              Nouveaux membres rejoignant les ministères par mois
+              {t("ministries.monthlyGrowthDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -413,7 +406,7 @@ export default function MinistriesStats() {
                   <Line
                     type="monotone"
                     dataKey="new_members"
-                    name="Nouveaux Membres"
+                    name={t("ministries.newMembers")}
                     stroke="hsl(var(--success))"
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--success))", r: 4 }}
@@ -422,7 +415,7 @@ export default function MinistriesStats() {
               </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <p className="text-muted-foreground">{t("ministries.noDataAvailable")}</p>
                 </div>
             )}
           </CardContent>
@@ -431,8 +424,8 @@ export default function MinistriesStats() {
         {/* All Ministries Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Tous les Ministères</CardTitle>
-            <CardDescription>Détails complets</CardDescription>
+            <CardTitle>{t("ministries.allMinistries")}</CardTitle>
+            <CardDescription>{t("ministries.fullDetails")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -445,13 +438,13 @@ export default function MinistriesStats() {
                   <div className="flex-1">
                     <h4 className="font-semibold">{ministry.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Responsable: {ministry.leader_name || "Aucun"}
+                      {t("ministries.leader")}: {ministry.leader_name || t("ministries.none")}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-2xl font-bold">{ministry.member_count}</p>
-                      <p className="text-xs text-muted-foreground">membres</p>
+                      <p className="text-xs text-muted-foreground">{t("ministries.members").toLowerCase()}</p>
                     </div>
                     <div
                       className={`w-3 h-3 rounded-full ${
