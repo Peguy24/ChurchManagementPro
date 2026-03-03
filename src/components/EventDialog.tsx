@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,7 +35,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Users } from "lucide-react";
+import EventQRCode from "@/components/EventQRCode";
 
 interface Event {
   id: string;
@@ -64,6 +66,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const { toast } = useToast();
   const { t } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const navigate = useNavigate();
   const isEditing = !!event;
 
   const [formData, setFormData] = useState({
@@ -271,6 +274,24 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               <Label htmlFor="description">{t("events.descriptionLabel")}</Label>
               <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
             </div>
+            {/* QR Code & Registration Link for existing events */}
+            {isEditing && event && (
+              <div className="space-y-2">
+                <EventQRCode eventId={event.id} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate(`/events/registrations?eventId=${event.id}`);
+                  }}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  {t("eventRegistration.viewRegistrations")}
+                </Button>
+              </div>
+            )}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             {isEditing && (
