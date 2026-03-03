@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CustomFieldDialogProps {
   open: boolean;
@@ -17,12 +17,8 @@ interface CustomFieldDialogProps {
   onSuccess: () => void;
 }
 
-export function CustomFieldDialog({
-  open,
-  onOpenChange,
-  field,
-  onSuccess,
-}: CustomFieldDialogProps) {
+export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: CustomFieldDialogProps) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<{
     entity_type: "member" | "branch" | "ministry" | "event" | "donation";
     field_name: string;
@@ -95,18 +91,15 @@ export function CustomFieldDialog({
           .from("custom_fields")
           .update(dataToSave)
           .eq("id", field.id);
-
         if (error) throw error;
-        toast.success("Champ modifié avec succès");
+        toast.success(t("customFields.editSuccess"));
       } else {
         const { error } = await supabase
           .from("custom_fields")
           .insert([dataToSave]);
-
         if (error) throw error;
-        toast.success("Champ créé avec succès");
+        toast.success(t("customFields.createSuccess"));
       }
-
       onSuccess();
     } catch (error: any) {
       toast.error(error.message);
@@ -137,14 +130,14 @@ export function CustomFieldDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {field ? "Modifier le Champ" : "Ajouter un Nouveau Champ"}
+            {field ? t("customFields.dialogTitleEdit") : t("customFields.dialogTitleCreate")}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Type d'Entité</Label>
+              <Label>{t("customFields.entityType")}</Label>
               <Select
                 value={formData.entity_type}
                 onValueChange={(value) =>
@@ -156,17 +149,17 @@ export function CustomFieldDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Membre</SelectItem>
-                  <SelectItem value="branch">Branche</SelectItem>
-                  <SelectItem value="ministry">Ministère</SelectItem>
-                  <SelectItem value="event">Événement</SelectItem>
-                  <SelectItem value="donation">Don</SelectItem>
+                  <SelectItem value="member">{t("customFields.entityMember")}</SelectItem>
+                  <SelectItem value="branch">{t("customFields.entityBranch")}</SelectItem>
+                  <SelectItem value="ministry">{t("customFields.entityMinistry")}</SelectItem>
+                  <SelectItem value="event">{t("customFields.entityEvent")}</SelectItem>
+                  <SelectItem value="donation">{t("customFields.entityDonation")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label>Type de Champ</Label>
+              <Label>{t("customFields.fieldType")}</Label>
               <Select
                 value={formData.field_type}
                 onValueChange={(value) =>
@@ -177,55 +170,46 @@ export function CustomFieldDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">Texte</SelectItem>
-                  <SelectItem value="textarea">Texte Long</SelectItem>
-                  <SelectItem value="number">Nombre</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="select">Liste d'Options</SelectItem>
-                  <SelectItem value="checkbox">Case à Cocher</SelectItem>
+                  <SelectItem value="text">{t("customFields.typeText")}</SelectItem>
+                  <SelectItem value="textarea">{t("customFields.typeTextarea")}</SelectItem>
+                  <SelectItem value="number">{t("customFields.typeNumber")}</SelectItem>
+                  <SelectItem value="date">{t("customFields.typeDate")}</SelectItem>
+                  <SelectItem value="select">{t("customFields.typeSelect")}</SelectItem>
+                  <SelectItem value="checkbox">{t("customFields.typeCheckbox")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div>
-            <Label>Nom du Champ (Interne)</Label>
+            <Label>{t("customFields.fieldNameInternal")}</Label>
             <Input
               value={formData.field_name}
-              onChange={(e) =>
-                setFormData({ ...formData, field_name: e.target.value })
-              }
-              placeholder="ex: niveau_etude"
+              onChange={(e) => setFormData({ ...formData, field_name: e.target.value })}
+              placeholder={t("customFields.fieldNamePlaceholder")}
               required
               disabled={!!field}
             />
           </div>
 
           <div>
-            <Label>Libellé (Affichage)</Label>
+            <Label>{t("customFields.fieldLabelDisplay")}</Label>
             <Input
               value={formData.field_label}
-              onChange={(e) =>
-                setFormData({ ...formData, field_label: e.target.value })
-              }
-              placeholder="ex: Niveau d'Études"
+              onChange={(e) => setFormData({ ...formData, field_label: e.target.value })}
+              placeholder={t("customFields.fieldLabelPlaceholder")}
               required
             />
           </div>
 
           {formData.field_type === "select" && (
             <div>
-              <Label>Options</Label>
+              <Label>{t("customFields.options")}</Label>
               <div className="space-y-2">
                 {formData.field_options.map((option, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input value={option} disabled />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeOption(index)}
-                    >
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeOption(index)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -234,7 +218,7 @@ export function CustomFieldDialog({
                   <Input
                     value={newOption}
                     onChange={(e) => setNewOption(e.target.value)}
-                    placeholder="Nouvelle option"
+                    placeholder={t("customFields.newOption")}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -252,51 +236,40 @@ export function CustomFieldDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Ordre d'Affichage</Label>
+              <Label>{t("customFields.displayOrder")}</Label>
               <Input
                 type="number"
                 value={formData.display_order}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    display_order: parseInt(e.target.value) || 0,
-                  })
+                  setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })
                 }
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Obligatoire</Label>
+                <Label>{t("customFields.required")}</Label>
                 <Switch
                   checked={formData.is_required}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, is_required: checked })
-                  }
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_required: checked })}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label>Actif</Label>
+                <Label>{t("customFields.active")}</Label>
                 <Switch
                   checked={formData.is_active}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, is_active: checked })
-                  }
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
               </div>
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Annuler
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t("customFields.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {field ? "Modifier" : "Créer"}
+              {field ? t("customFields.edit") : t("customFields.create")}
             </Button>
           </div>
         </form>

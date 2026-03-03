@@ -4,15 +4,19 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, ArrowLeft } from "lucide-react";
 import { CustomFieldDialog } from "@/components/CustomFieldDialog";
 import { CustomFieldList } from "@/components/CustomFieldList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 export default function CustomFields() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
+  const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const { data: fields, refetch } = useQuery({
     queryKey: ["custom-fields"],
@@ -40,11 +44,11 @@ export default function CustomFields() {
       .eq("id", fieldId);
 
     if (error) {
-      toast.error("Erreur lors de la suppression du champ");
+      toast.error(t("customFields.deleteError"));
       return;
     }
 
-    toast.success("Champ supprimé avec succès");
+    toast.success(t("customFields.deleteSuccess"));
     refetch();
   };
 
@@ -65,77 +69,56 @@ export default function CustomFields() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <Settings className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Champs Personnalisés</h1>
+            <h1 className="text-3xl font-bold">{t("customFields.title")}</h1>
           </div>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Ajouter un Champ
+            {t("customFields.addField")}
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Gestion des Champs Personnalisés</CardTitle>
+            <CardTitle>{t("customFields.subtitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="member" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="member">
-                  Membres ({memberFields.length})
+                  {t("customFields.tabMembers")} ({memberFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="branch">
-                  Branches ({branchFields.length})
+                  {t("customFields.tabBranches")} ({branchFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="ministry">
-                  Ministères ({ministryFields.length})
+                  {t("customFields.tabMinistries")} ({ministryFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="event">
-                  Événements ({eventFields.length})
+                  {t("customFields.tabEvents")} ({eventFields.length})
                 </TabsTrigger>
                 <TabsTrigger value="donation">
-                  Dons ({donationFields.length})
+                  {t("customFields.tabDonations")} ({donationFields.length})
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="member">
-                <CustomFieldList
-                  fields={memberFields}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <CustomFieldList fields={memberFields} onEdit={handleEdit} onDelete={handleDelete} />
               </TabsContent>
-
               <TabsContent value="branch">
-                <CustomFieldList
-                  fields={branchFields}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <CustomFieldList fields={branchFields} onEdit={handleEdit} onDelete={handleDelete} />
               </TabsContent>
-
               <TabsContent value="ministry">
-                <CustomFieldList
-                  fields={ministryFields}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <CustomFieldList fields={ministryFields} onEdit={handleEdit} onDelete={handleDelete} />
               </TabsContent>
-
               <TabsContent value="event">
-                <CustomFieldList
-                  fields={eventFields}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <CustomFieldList fields={eventFields} onEdit={handleEdit} onDelete={handleDelete} />
               </TabsContent>
-
               <TabsContent value="donation">
-                <CustomFieldList
-                  fields={donationFields}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <CustomFieldList fields={donationFields} onEdit={handleEdit} onDelete={handleDelete} />
               </TabsContent>
             </Tabs>
           </CardContent>
