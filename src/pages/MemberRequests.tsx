@@ -29,7 +29,8 @@ export default function MemberRequests() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
-  const joinUrl = `${window.location.origin}/join/${tenantId}`;
+  const publishedOrigin = "https://cogmpw-sys.lovable.app";
+  const joinUrl = `${publishedOrigin}/join/${tenantId}`;
 
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
