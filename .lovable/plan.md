@@ -1,28 +1,18 @@
 
 
-## Plan: Add "IT Equipment" Category to Inventory
+## Plan: Translate Custom Fields Module (FR / EN / HT)
 
-### What to do
-Add a new inventory category `it_equipment` (IT Equipment / Équipement informatique / Ekipman Enfòmatik) across all files that define inventory categories. This covers laptops, printers, scanners, servers, etc.
+### Files to modify (4 files)
 
-### Files to modify (7 files)
+1. **`src/contexts/LanguageContext.tsx`** -- Add a `customFields` translation object with all keys needed across the 4 components, in French, English, and Haitian Creole. Keys include: title, subtitle, addField, tabs (members, branches, ministries, events, donations), table headers (label, fieldName, type, status, actions), field types (text, textarea, number, date, select, checkbox), statuses (required, active, inactive), empty state message, delete confirmation, toast messages, dialog titles, form labels (entityType, fieldType, fieldNameInternal, fieldLabel, options, newOption, displayOrder, required, active), entity options (member, branch, ministry, event, donation), cancel/create/edit buttons, and the renderer heading ("Custom Fields") + select placeholder.
 
-1. **`src/contexts/LanguageContext.tsx`** — Add `catITEquipment` translation key in all 3 languages:
-   - FR: "Équipement informatique"
-   - EN: "IT Equipment"
-   - HT: "Ekipman Enfòmatik"
+2. **`src/pages/CustomFields.tsx`** -- Import `useLanguage`, add back button with `useNavigate`, replace all hardcoded French strings with `t("customFields.xxx")` calls.
 
-2. **`src/pages/Inventory.tsx`** — Add `it_equipment: "inventory.catITEquipment"` to `categoryKeys`
+3. **`src/components/CustomFieldList.tsx`** -- Accept and use `useLanguage` hook. Replace hardcoded table headers, field type labels, status badges, empty state text, and delete confirmation with `t()` calls.
 
-3. **`src/lib/inventoryReportPDF.ts`** — Add `it_equipment: "Équipement informatique"` to categories map
+4. **`src/components/CustomFieldDialog.tsx`** -- Import `useLanguage`. Replace all hardcoded labels (dialog title, form labels, entity select items, field type select items, placeholders, buttons, toast messages) with `t()` calls.
 
-4. **`src/components/InventoryBarcodeScanner.tsx`** — Add to `categoryLabels`
+5. **`src/components/CustomFieldsRenderer.tsx`** -- Import `useLanguage`. Translate the "Champs Personnalisés" heading and "Sélectionner..." placeholder.
 
-5. **`src/components/InventoryAuditMode.tsx`** — Add to `categoryLabels`
-
-6. **`src/components/reports/InventoryReportTab.tsx`** — Add to categories array
-
-7. **`src/pages/Inventory.tsx`** — Add to any category `<Select>` dropdown options
-
-All changes are additive (one line per file). No database changes needed since `category` is a free-text column.
+### No database changes needed
 
