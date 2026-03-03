@@ -264,7 +264,66 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             </div>
             <div className="grid gap-2">
               <Label htmlFor="expectedAttendees">{t("events.expectedAttendees")}</Label>
-              <Input id="expectedAttendees" type="number" min="0" value={formData.expectedAttendees} onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })} />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => setFormData({ ...formData, expectedAttendees: Math.max(0, formData.expectedAttendees - 10) })}
+                >
+                  -10
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => setFormData({ ...formData, expectedAttendees: Math.max(0, formData.expectedAttendees - 1) })}
+                >
+                  -
+                </Button>
+                <Input
+                  id="expectedAttendees"
+                  type="number"
+                  min="0"
+                  value={formData.expectedAttendees}
+                  onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })}
+                  className="text-center"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => setFormData({ ...formData, expectedAttendees: formData.expectedAttendees + 1 })}
+                >
+                  +
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => setFormData({ ...formData, expectedAttendees: formData.expectedAttendees + 10 })}
+                >
+                  +10
+                </Button>
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {[50, 100, 200, 500, 1000].map((n) => (
+                  <Button
+                    key={n}
+                    type="button"
+                    variant={formData.expectedAttendees === n ? "default" : "secondary"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setFormData({ ...formData, expectedAttendees: n })}
+                  >
+                    {n}
+                  </Button>
+                ))}
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">{t("events.locationLabel")}</Label>
