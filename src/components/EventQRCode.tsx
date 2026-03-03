@@ -13,7 +13,8 @@ export default function EventQRCode({ eventId }: EventQRCodeProps) {
   const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copied, setCopied] = useState(false);
-  const registrationUrl = `${window.location.origin}/event/${eventId}/register`;
+  const publishedOrigin = "https://cogmpw-sys.lovable.app";
+  const registrationUrl = `${publishedOrigin}/event/${eventId}/register`;
 
   useEffect(() => {
     if (canvasRef.current) {
