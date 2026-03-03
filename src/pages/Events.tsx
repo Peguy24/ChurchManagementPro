@@ -160,7 +160,7 @@ export default function Events() {
 
   return (
     <Layout>
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -227,7 +227,7 @@ export default function Events() {
                   <CardTitle>{t("events.calendar")}</CardTitle>
                   <CardDescription>{t("events.selectDate")}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex justify-center">
+                <CardContent className="flex justify-center overflow-x-auto">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
