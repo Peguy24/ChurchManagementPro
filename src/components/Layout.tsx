@@ -32,6 +32,7 @@ import {
   Palette,
   UserCog,
   Sparkles,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -75,6 +76,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: Users,
       items: [
         { to: "/members", icon: Users, label: t("nav.members") },
+        { to: "/members/requests", icon: UserPlus, label: "Demandes d'adhésion" },
         { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
         { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
         { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },

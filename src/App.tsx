@@ -53,6 +53,8 @@ import SmartInsights from "./pages/SmartInsights";
 import SystemGuide from "./pages/SystemGuide";
 import Support from "./pages/Support";
 import SupportManagement from "./pages/SupportManagement";
+import JoinChurch from "./pages/JoinChurch";
+import MemberRequests from "./pages/MemberRequests";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -69,11 +71,13 @@ const App = () => (
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/join/:tenantId" element={<JoinChurch />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
+              <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
               <Route path="/members/cards" element={<ProtectedRoute><MemberCards /></ProtectedRoute>} />
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />

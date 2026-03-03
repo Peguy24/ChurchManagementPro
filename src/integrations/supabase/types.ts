@@ -1523,6 +1523,110 @@ export type Database = {
           },
         ]
       }
+      member_requests: {
+        Row: {
+          academic_formation: string | null
+          address: Json | null
+          baptism_date: string | null
+          baptism_status: string | null
+          children_names: string | null
+          christian_experience: string | null
+          conversion_date: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          emergency_phone: string | null
+          first_name: string
+          gender: string | null
+          id: string
+          last_name: string
+          marital_status: string | null
+          marriage_date: string | null
+          message: string | null
+          number_of_children: number | null
+          origin_church: string | null
+          phone: string | null
+          professional_formation: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          spouse_name: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_formation?: string | null
+          address?: Json | null
+          baptism_date?: string | null
+          baptism_status?: string | null
+          children_names?: string | null
+          christian_experience?: string | null
+          conversion_date?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_phone?: string | null
+          first_name: string
+          gender?: string | null
+          id?: string
+          last_name: string
+          marital_status?: string | null
+          marriage_date?: string | null
+          message?: string | null
+          number_of_children?: number | null
+          origin_church?: string | null
+          phone?: string | null
+          professional_formation?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          spouse_name?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_formation?: string | null
+          address?: Json | null
+          baptism_date?: string | null
+          baptism_status?: string | null
+          children_names?: string | null
+          christian_experience?: string | null
+          conversion_date?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_phone?: string | null
+          first_name?: string
+          gender?: string | null
+          id?: string
+          last_name?: string
+          marital_status?: string | null
+          marriage_date?: string | null
+          message?: string | null
+          number_of_children?: number | null
+          origin_church?: string | null
+          phone?: string | null
+          professional_formation?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          spouse_name?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_risk_predictions: {
         Row: {
           attendance_trend_slope: number | null
