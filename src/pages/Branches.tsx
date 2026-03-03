@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, MapPin, Phone, Mail, Users, Building2, Edit, Trash2, Network, ChevronDown, List, Briefcase } from "lucide-react";
+import { Plus, Search, MapPin, Phone, Mail, Users, Building2, Edit, Trash2, Network, ChevronDown, List, Briefcase, ArrowLeft } from "lucide-react";
 import { BranchDialog } from "@/components/BranchDialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { PlanLimitDialog } from "@/components/PlanLimitDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Branch {
   id: string;
@@ -45,7 +47,7 @@ interface Branch {
   children?: Branch[];
 }
 
-const BranchNode = ({ branch }: { branch: Branch }) => {
+const BranchNode = ({ branch, t }: { branch: Branch; t: (key: string) => string }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = branch.children && branch.children.length > 0;
 
@@ -66,7 +68,7 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
             </div>
             <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <Badge variant={branch.status === "active" ? "default" : "secondary"} className="text-xs">
-                {branch.status === "active" ? "Actif" : "Inactif"}
+                {branch.status === "active" ? t("branches.active") : t("branches.inactive")}
               </Badge>
               {hasChildren && (
                 <ChevronDown 
@@ -90,7 +92,7 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span>
-                Responsable: {branch.leader.first_name} {branch.leader.last_name}
+                {t("branches.leader")}: {branch.leader.first_name} {branch.leader.last_name}
               </span>
             </div>
           )}
@@ -99,12 +101,12 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{branch.member_count || 0}</span>
-              <span className="text-xs text-muted-foreground">membres</span>
+              <span className="text-xs text-muted-foreground">{t("branches.members").toLowerCase()}</span>
             </div>
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{branch.ministry_count || 0}</span>
-              <span className="text-xs text-muted-foreground">ministères</span>
+              <span className="text-xs text-muted-foreground">{t("branches.ministries").toLowerCase()}</span>
             </div>
           </div>
         </CardContent>
@@ -129,7 +131,7 @@ const BranchNode = ({ branch }: { branch: Branch }) => {
               <div key={child.id} className="relative">
                 <div className="absolute left-1/2 -translate-x-1/2 -top-0 w-0.5 h-8 bg-border" />
                 <div className="pt-8">
-                  <BranchNode branch={child} />
+                  <BranchNode branch={child} t={t} />
                 </div>
               </div>
             ))}
@@ -146,6 +148,8 @@ export default function Branches() {
   const [selectedBranch, setSelectedBranch] = useState<Branch | undefined>();
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const { canAddBranch, usage, limits, plan } = usePlanLimits();
 
@@ -279,12 +283,12 @@ export default function Branches() {
 
       if (error) throw error;
 
-      toast.success("Branche supprimée avec succès");
+      toast.success(t("branches.deleteSuccess"));
       refetch();
       hierarchyBranches.refetch();
     } catch (error) {
       console.error("Error deleting branch:", error);
-      toast.error("Erreur lors de la suppression de la branche");
+      toast.error(t("branches.deleteError"));
     } finally {
       setBranchToDelete(null);
     }
@@ -299,16 +303,21 @@ export default function Branches() {
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Branches</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Gérez les différentes branches et départements de votre église
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("branches.title")}</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              {t("branches.subtitle")}
+            </p>
+          </div>
         </div>
         <Button onClick={handleAddBranch} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">Nouvelle branche</span>
-          <span className="sm:hidden">Ajouter</span>
+          <span className="hidden sm:inline">{t("branches.newBranch")}</span>
+          <span className="sm:hidden">{t("branches.add")}</span>
         </Button>
       </div>
 
@@ -316,12 +325,12 @@ export default function Branches() {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="list" className="flex-1 sm:flex-none">
             <List className="h-4 w-4 mr-2" />
-            Liste
+            {t("branches.list")}
           </TabsTrigger>
           <TabsTrigger value="hierarchy" className="flex-1 sm:flex-none">
             <Network className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Organigramme</span>
-            <span className="sm:hidden">Orga</span>
+            <span className="hidden sm:inline">{t("branches.hierarchy")}</span>
+            <span className="sm:hidden">{t("branches.orgChart")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -330,7 +339,7 @@ export default function Branches() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Rechercher une branche..."
+                placeholder={t("branches.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -350,12 +359,12 @@ export default function Branches() {
                       </CardTitle>
                       {branch.parent_branch && (
                         <p className="text-sm text-muted-foreground mt-1">
-                          Sous-branche de: {branch.parent_branch.name}
+                          {t("branches.subBranchOf")}: {branch.parent_branch.name}
                         </p>
                       )}
                     </div>
                     <Badge variant={branch.status === "active" ? "default" : "secondary"}>
-                      {branch.status === "active" ? "Actif" : "Inactif"}
+                      {branch.status === "active" ? t("branches.active") : t("branches.inactive")}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -369,7 +378,7 @@ export default function Branches() {
                   {branch.leader && (
                     <div className="flex items-center gap-2 text-sm">
                       <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>Responsable: {branch.leader.first_name} {branch.leader.last_name}</span>
+                      <span>{t("branches.leader")}: {branch.leader.first_name} {branch.leader.last_name}</span>
                     </div>
                   )}
 
@@ -397,11 +406,11 @@ export default function Branches() {
                   <div className="flex gap-4 pt-2 border-t">
                     <div className="text-center">
                       <p className="text-2xl font-bold">{branch.member_count}</p>
-                      <p className="text-xs text-muted-foreground">Membres</p>
+                      <p className="text-xs text-muted-foreground">{t("branches.members")}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold">{branch.ministry_count}</p>
-                      <p className="text-xs text-muted-foreground">Ministères</p>
+                      <p className="text-xs text-muted-foreground">{t("branches.ministries")}</p>
                     </div>
                   </div>
 
@@ -413,7 +422,7 @@ export default function Branches() {
                       onClick={() => handleEdit(branch)}
                     >
                       <Edit className="h-4 w-4 mr-1" />
-                      Modifier
+                      {t("branches.edit")}
                     </Button>
                     <Button
                       variant="outline"
@@ -422,7 +431,7 @@ export default function Branches() {
                       onClick={() => setBranchToDelete(branch)}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Supprimer
+                      {t("branches.delete")}
                     </Button>
                   </div>
                 </CardContent>
@@ -434,16 +443,16 @@ export default function Branches() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">Aucune branche trouvée</p>
+                <p className="text-lg font-medium">{t("branches.noBranchFound")}</p>
                 <p className="text-sm text-muted-foreground mb-4">
                   {searchQuery
-                    ? "Essayez de modifier votre recherche"
-                    : "Commencez par créer votre première branche"}
+                    ? t("branches.modifySearch")
+                    : t("branches.createFirstBranch")}
                 </p>
                 {!searchQuery && (
                   <Button onClick={() => setIsDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Créer une branche
+                    {t("branches.createBranch")}
                   </Button>
                 )}
               </CardContent>
@@ -454,15 +463,15 @@ export default function Branches() {
         <TabsContent value="hierarchy" className="space-y-6">
           {hierarchyBranches.isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-muted-foreground">Chargement de l'organigramme...</div>
+              <div className="text-muted-foreground">{t("branches.loadingOrgChart")}</div>
             </div>
           ) : !hierarchyBranches.data || hierarchyBranches.data.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">Aucune branche trouvée</p>
+                <p className="text-lg font-medium">{t("branches.noBranchFound")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Créez votre première branche pour commencer
+                  {t("branches.createFirstBranchToStart")}
                 </p>
               </CardContent>
             </Card>
@@ -472,30 +481,30 @@ export default function Branches() {
                 <div className="inline-flex flex-col items-start gap-8 min-w-full">
                   {hierarchyBranches.data.map((branch) => (
                     <div key={branch.id} className="flex justify-center w-full">
-                      <BranchNode branch={branch} />
+                      <BranchNode branch={branch} t={t} />
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="p-4 bg-muted rounded-lg">
-                <h3 className="font-semibold mb-2">Légende</h3>
+                <h3 className="font-semibold mb-2">{t("branches.legend")}</h3>
                 <div className="flex flex-wrap gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-primary" />
-                    <span>Branche</span>
+                    <span>{t("branches.branch")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>Nombre de membres</span>
+                    <span>{t("branches.memberCount")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>Nombre de ministères</span>
+                    <span>{t("branches.ministryCount")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    <span>Cliquez pour réduire/agrandir</span>
+                    <span>{t("branches.clickToToggle")}</span>
                   </div>
                 </div>
               </div>
@@ -514,15 +523,14 @@ export default function Branches() {
       <AlertDialog open={!!branchToDelete} onOpenChange={() => setBranchToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t("branches.confirmDelete")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer la branche "{branchToDelete?.name}" ?
-              Cette action est irréversible.
+              {t("branches.confirmDeleteDesc").replace("{name}", branchToDelete?.name || "")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogCancel>{t("branches.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("branches.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
