@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Users, Trash2, BarChart3 } from "lucide-react";
+import { Plus, Search, Edit, Users, Trash2, BarChart3, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MinistryDialog from "@/components/MinistryDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const statusColors: Record<string, string> = {
   active: "bg-success/10 text-success border-success/20",
@@ -42,6 +43,7 @@ const statusColors: Record<string, string> = {
 
 export default function Ministries() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMinistry, setSelectedMinistry] = useState<any>();
@@ -84,11 +86,11 @@ export default function Ministries() {
 
       if (error) throw error;
       
-      toast.success("Ministère supprimé avec succès");
+      toast.success(t("ministries.deleteSuccess"));
       refetch();
       setDeleteDialog({ open: false, id: null });
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de la suppression");
+      toast.error(error.message || t("ministries.deleteError"));
     }
   };
 
@@ -96,11 +98,16 @@ export default function Ministries() {
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Ministères</h2>
-            <p className="text-muted-foreground">
-              Gérez tous les ministères de votre église
-            </p>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">{t("ministries.title")}</h2>
+              <p className="text-muted-foreground">
+                {t("ministries.subtitle")}
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button
@@ -109,7 +116,7 @@ export default function Ministries() {
               onClick={() => navigate("/ministries/stats")}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
-              Statistiques
+              {t("ministries.statistics")}
             </Button>
             <Button
               size="sm"
@@ -119,16 +126,16 @@ export default function Ministries() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter Ministère
+              {t("ministries.addMinistry")}
             </Button>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Liste des Ministères</CardTitle>
+            <CardTitle>{t("ministries.ministryList")}</CardTitle>
             <CardDescription>
-              Total: {ministries.length} ministères
+              {t("ministries.total")}: {ministries.length} {t("nav.ministries").toLowerCase()}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -136,7 +143,7 @@ export default function Ministries() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un ministère..."
+                  placeholder={t("ministries.searchPlaceholder")}
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,19 +155,19 @@ export default function Ministries() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Responsable</TableHead>
-                    <TableHead>Membres</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("ministries.name")}</TableHead>
+                    <TableHead>{t("ministries.description")}</TableHead>
+                    <TableHead>{t("ministries.leader")}</TableHead>
+                    <TableHead>{t("ministries.members")}</TableHead>
+                    <TableHead>{t("ministries.status")}</TableHead>
+                    <TableHead className="text-right">{t("ministries.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredMinistries.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Aucun ministère trouvé
+                        {t("ministries.noMinistryFound")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -188,7 +195,7 @@ export default function Ministries() {
                             variant="outline"
                             className={statusColors[ministry.status || "active"]}
                           >
-                            {ministry.status === "active" ? "Actif" : "Inactif"}
+                            {ministry.status === "active" ? t("ministries.active") : t("ministries.inactive")}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -197,7 +204,7 @@ export default function Ministries() {
                               variant="ghost"
                               size="sm"
                               onClick={() => navigate(`/ministries/details?ministryId=${ministry.id}`)}
-                              title="Gérer les membres"
+                              title={t("ministries.manageMembers")}
                             >
                               <Users className="h-4 w-4" />
                             </Button>
@@ -245,14 +252,14 @@ export default function Ministries() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le Ministère</AlertDialogTitle>
+            <AlertDialogTitle>{t("ministries.deleteMinistry")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce ministère ? Cette action est irréversible.
+              {t("ministries.deleteConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogCancel>{t("ministries.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("ministries.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
