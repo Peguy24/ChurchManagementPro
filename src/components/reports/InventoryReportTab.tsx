@@ -35,6 +35,7 @@ const categories = [
   { value: "cleaning", label: "Nettoyage" },
   { value: "decoration", label: "Décoration" },
   { value: "vehicle", label: "Véhicule" },
+  { value: "it_equipment", label: "Équipement informatique" },
   { value: "other", label: "Autre" },
 ];
 
