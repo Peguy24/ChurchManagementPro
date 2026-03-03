@@ -55,6 +55,8 @@ import Support from "./pages/Support";
 import SupportManagement from "./pages/SupportManagement";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
+import EventRegister from "./pages/EventRegister";
+import EventRegistrations from "./pages/EventRegistrations";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -72,6 +74,7 @@ const App = () => (
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/join/:tenantId" element={<JoinChurch />} />
+              <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
@@ -98,6 +101,7 @@ const App = () => (
               <Route path="/finance/salaries" element={<ProtectedRoute><Salaries /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+              <Route path="/events/registrations" element={<ProtectedRoute><EventRegistrations /></ProtectedRoute>} />
               <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
               <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
               <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
