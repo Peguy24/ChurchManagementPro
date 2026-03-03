@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Search, CheckCircle, XCircle, Eye, QrCode, Copy, Loader2, Clock, UserPlus, LogIn } from "lucide-react";
+import { Search, CheckCircle, XCircle, Eye, QrCode, Copy, Loader2, Clock, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,7 @@ import QRCodeLib from "qrcode";
 export default function MemberRequests() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { tenantId, tenant } = useCurrentTenant();
+  const { tenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -28,12 +28,9 @@ export default function MemberRequests() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const [loginQrCodeUrl, setLoginQrCodeUrl] = useState("");
-  const [loginQrDialogOpen, setLoginQrDialogOpen] = useState(false);
 
   const publishedOrigin = "https://cogmpw-sys.lovable.app";
   const joinUrl = `${publishedOrigin}/join/${tenantId}`;
-  const loginUrl = tenant?.slug ? `${publishedOrigin}/t/${tenant.slug}/auth` : "";
 
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -46,17 +43,6 @@ export default function MemberRequests() {
       const url = await QRCodeLib.toDataURL(joinUrl, { width: 400, margin: 2 });
       setQrCodeUrl(url);
       setQrDialogOpen(true);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const generateLoginQrCode = async () => {
-    if (!loginUrl) return;
-    try {
-      const url = await QRCodeLib.toDataURL(loginUrl, { width: 400, margin: 2 });
-      setLoginQrCodeUrl(url);
-      setLoginQrDialogOpen(true);
     } catch (err) {
       console.error(err);
     }
@@ -190,7 +176,7 @@ export default function MemberRequests() {
               {t("memberRequests.subtitle")}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => {
               navigator.clipboard.writeText(joinUrl);
               toast({ title: t("memberRequests.linkCopied") });
@@ -202,21 +188,6 @@ export default function MemberRequests() {
               <QrCode className="h-4 w-4 mr-2" />
               {t("memberRequests.qrCode")}
             </Button>
-            {loginUrl && (
-              <>
-                <Button variant="outline" size="sm" onClick={() => {
-                  navigator.clipboard.writeText(loginUrl);
-                  toast({ title: "Lien de connexion copié !" });
-                }}>
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Lien Connexion
-                </Button>
-                <Button variant="outline" size="sm" onClick={generateLoginQrCode}>
-                  <QrCode className="h-4 w-4 mr-2" />
-                  QR Connexion
-                </Button>
-              </>
-            )}
           </div>
         </div>
 
@@ -454,32 +425,6 @@ export default function MemberRequests() {
         </DialogContent>
       </Dialog>
 
-      {/* Login QR Code Dialog */}
-      <Dialog open={loginQrDialogOpen} onOpenChange={setLoginQrDialogOpen}>
-        <DialogContent className="max-w-sm text-center">
-          <DialogHeader>
-            <DialogTitle>QR Code de Connexion</DialogTitle>
-            <DialogDescription>Scannez ce QR code pour accéder à la page de connexion de votre église</DialogDescription>
-          </DialogHeader>
-          {loginQrCodeUrl && (
-            <div className="space-y-4">
-              <img src={loginQrCodeUrl} alt="QR Code Connexion" className="mx-auto rounded-lg" />
-              <p className="text-xs text-muted-foreground break-all">{loginUrl}</p>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => {
-                  navigator.clipboard.writeText(loginUrl);
-                  toast({ title: "Lien de connexion copié !" });
-                }}>
-                  <Copy className="h-4 w-4 mr-2" /> Copier le lien
-                </Button>
-                <Button variant="outline" className="flex-1" asChild>
-                  <a href={loginQrCodeUrl} download="qr-code-connexion.png">Télécharger</a>
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 }
