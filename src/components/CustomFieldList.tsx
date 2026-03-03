@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CustomFieldListProps {
   fields: any[];
@@ -16,20 +17,22 @@ interface CustomFieldListProps {
   onDelete: (fieldId: string) => void;
 }
 
-const fieldTypeLabels: Record<string, string> = {
-  text: "Texte",
-  textarea: "Texte long",
-  number: "Nombre",
-  date: "Date",
-  select: "Liste",
-  checkbox: "Case à cocher",
-};
-
 export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListProps) {
+  const { t } = useLanguage();
+
+  const fieldTypeKeys: Record<string, string> = {
+    text: "customFields.typeText",
+    textarea: "customFields.typeTextarea",
+    number: "customFields.typeNumber",
+    date: "customFields.typeDate",
+    select: "customFields.typeSelect",
+    checkbox: "customFields.typeCheckbox",
+  };
+
   if (fields.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        Aucun champ personnalisé pour le moment. Cliquez sur "Ajouter un champ" pour en créer un.
+        {t("customFields.emptyState")}
       </div>
     );
   }
@@ -38,11 +41,11 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Libellé</TableHead>
-          <TableHead>Nom du champ</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Statut</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>{t("customFields.fieldLabel")}</TableHead>
+          <TableHead>{t("customFields.fieldName")}</TableHead>
+          <TableHead>{t("customFields.fieldType")}</TableHead>
+          <TableHead>{t("customFields.status")}</TableHead>
+          <TableHead>{t("customFields.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -54,18 +57,18 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
             </TableCell>
             <TableCell>
               <Badge variant="outline">
-                {fieldTypeLabels[field.field_type]}
+                {t(fieldTypeKeys[field.field_type] || field.field_type)}
               </Badge>
             </TableCell>
             <TableCell>
               <div className="flex gap-2">
                 {field.is_required && (
-                  <Badge variant="secondary">Obligatoire</Badge>
+                  <Badge variant="secondary">{t("customFields.required")}</Badge>
                 )}
                 {field.is_active ? (
-                  <Badge className="bg-green-500">Actif</Badge>
+                  <Badge className="bg-green-500">{t("customFields.active")}</Badge>
                 ) : (
-                  <Badge variant="destructive">Inactif</Badge>
+                  <Badge variant="destructive">{t("customFields.inactive")}</Badge>
                 )}
               </div>
             </TableCell>
@@ -82,11 +85,7 @@ export function CustomFieldList({ fields, onEdit, onDelete }: CustomFieldListPro
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    if (
-                      confirm(
-                        "Voulez-vous supprimer ce champ ? Toutes les données associées seront perdues."
-                      )
-                    ) {
+                    if (confirm(t("customFields.deleteConfirm"))) {
                       onDelete(field.id);
                     }
                   }}
