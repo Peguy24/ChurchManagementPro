@@ -29,7 +29,7 @@ export default function MemberRequests() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
-  const publishedOrigin = "https://cogmpw-sys.lovable.app";
+  const publishedOrigin = "https://churchmanagementpro.com";
   const joinUrl = `${publishedOrigin}/join/${tenantId}`;
 
   const statusColors: Record<string, string> = {
