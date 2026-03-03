@@ -53,6 +53,7 @@ const categories: Record<string, string> = {
   cleaning: "Nettoyage",
   decoration: "Décoration",
   vehicle: "Véhicule",
+  it_equipment: "Équipement informatique",
   other: "Autre",
 };
 

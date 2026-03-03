@@ -137,6 +137,7 @@ function InventoryContent() {
     cleaning: "inventory.catCleaning",
     decoration: "inventory.catDecoration",
     vehicle: "inventory.catVehicle",
+    it_equipment: "inventory.catITEquipment",
     other: "inventory.catOther",
   };
 
