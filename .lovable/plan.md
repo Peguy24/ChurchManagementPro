@@ -1,18 +1,41 @@
 
 
-## Plan: Translate Custom Fields Module (FR / EN / HT)
+## Plan: Event Registration System with QR Codes
 
-### Files to modify (4 files)
+### What we're building
+Each event gets a unique public registration link and QR code. Anyone (no login needed) can scan/click the link to fill out a registration form. Admins see who registered for each event.
 
-1. **`src/contexts/LanguageContext.tsx`** -- Add a `customFields` translation object with all keys needed across the 4 components, in French, English, and Haitian Creole. Keys include: title, subtitle, addField, tabs (members, branches, ministries, events, donations), table headers (label, fieldName, type, status, actions), field types (text, textarea, number, date, select, checkbox), statuses (required, active, inactive), empty state message, delete confirmation, toast messages, dialog titles, form labels (entityType, fieldType, fieldNameInternal, fieldLabel, options, newOption, displayOrder, required, active), entity options (member, branch, ministry, event, donation), cancel/create/edit buttons, and the renderer heading ("Custom Fields") + select placeholder.
+### Database changes
 
-2. **`src/pages/CustomFields.tsx`** -- Import `useLanguage`, add back button with `useNavigate`, replace all hardcoded French strings with `t("customFields.xxx")` calls.
+**New table: `event_registrations`**
+- `id`, `event_id` (FK to events), `tenant_id`
+- `first_name`, `last_name`, `email`, `phone`
+- `status` (registered/checked_in/cancelled), `registered_at`
+- RLS: public INSERT (anyone can register), tenant staff can SELECT/UPDATE/DELETE
 
-3. **`src/components/CustomFieldList.tsx`** -- Accept and use `useLanguage` hook. Replace hardcoded table headers, field type labels, status badges, empty state text, and delete confirmation with `t()` calls.
+### Files to create (3 new files)
 
-4. **`src/components/CustomFieldDialog.tsx`** -- Import `useLanguage`. Replace all hardcoded labels (dialog title, form labels, entity select items, field type select items, placeholders, buttons, toast messages) with `t()` calls.
+1. **`src/pages/EventRegister.tsx`** -- Public registration form (similar to JoinChurch). Shows event name, date, location. Collects: first name, last name, email, phone. Success confirmation after submission.
 
-5. **`src/components/CustomFieldsRenderer.tsx`** -- Import `useLanguage`. Translate the "Champs Personnalisés" heading and "Sélectionner..." placeholder.
+2. **`src/pages/EventRegistrations.tsx`** -- Admin page to view/manage registrations for a specific event. Shows table of registrants with status badges. Export option.
 
-### No database changes needed
+3. **`src/components/EventQRCode.tsx`** -- Component that generates and displays a QR code + copyable link for a given event. Uses the existing `qrcode` library.
+
+### Files to modify (3 files)
+
+4. **`src/App.tsx`** -- Add routes:
+   - `/event/:eventId/register` (public, no auth)
+   - `/events/:eventId/registrations` (protected)
+
+5. **`src/components/EventDialog.tsx`** -- Add a "Registration Link" section showing the QR code and shareable link when editing an existing event.
+
+6. **`src/contexts/LanguageContext.tsx`** -- Add `eventRegistration` translation keys (FR/EN/HT) for form labels, success messages, admin labels.
+
+### Technical details
+
+- Registration URL format: `{origin}/event/{eventId}/register`
+- QR code generated client-side using the existing `qrcode` npm package
+- The public form fetches event + tenant info to display branding (logo, church name)
+- No authentication required to register (like JoinChurch pattern)
+- Admin view accessible from Events page via a "View Registrations" button per event
 
