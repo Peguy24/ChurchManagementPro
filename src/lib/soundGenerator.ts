@@ -68,6 +68,9 @@ export const playSuccessSound = (volume: number = 0.5): void => {
       oscillator.stop(now + 0.35);
     });
     
+    // Vibrate on success (short pulse)
+    vibrate(100);
+    
     // Add a quick "ding" effect
     const ding = ctx.createOscillator();
     const dingGain = ctx.createGain();
