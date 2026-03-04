@@ -389,6 +389,7 @@ function AttendanceContent() {
       }
 
       // Insert attendance record
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       const { error: insertError } = await supabase
         .from("attendance_records")
         .insert({
@@ -398,6 +399,7 @@ function AttendanceContent() {
           event_id: eventIdToUse,
           scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
+          marked_by: currentUser?.id || null,
         });
 
       if (insertError) {
@@ -443,11 +445,23 @@ function AttendanceContent() {
       }, ...prev].slice(0, 10));
 
       await loadAttendanceRecords();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error scanning QR code:", error);
+      
+      // Show specific error details for debugging
+      const errorDetail = error?.message || error?.details || error?.hint || JSON.stringify(error);
+      console.error("Detailed scan error:", errorDetail);
+      
+      setScanFeedbackStatus('error');
+      setScanFeedbackMessage(t("attendance.attendanceRecordError") || "Erreur d'enregistrement");
+      setTimeout(() => {
+        setScanFeedbackStatus(null);
+        setScanFeedbackMessage("");
+      }, 2000);
+      
       toast({
         title: t("attendance.error"),
-        description: t("attendance.attendanceRecordError"),
+        description: `${t("attendance.attendanceRecordError")} - ${errorDetail}`,
         variant: "destructive",
       });
     } finally {
