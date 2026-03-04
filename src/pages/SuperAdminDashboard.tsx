@@ -16,6 +16,7 @@ export default function SuperAdminDashboard() {
   const { t, language } = useLanguage();
 
   const planDisplayName: Record<string, string> = {
+    free: "Gratuit",
     basic: "Essentiel",
     standard: "Professionnel",
     premium: "Entreprise",
@@ -258,13 +259,16 @@ export default function SuperAdminDashboard() {
                       </div>
                       <div className="text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          tenant.tenant_subscriptions?.[0]?.status === "active"
+                          (Array.isArray(tenant.tenant_subscriptions) ? tenant.tenant_subscriptions?.[0]?.status : tenant.tenant_subscriptions?.status) === "active"
                             ? "bg-green-100 text-green-800"
-                            : tenant.tenant_subscriptions?.[0]?.status === "trial"
+                            : (Array.isArray(tenant.tenant_subscriptions) ? tenant.tenant_subscriptions?.[0]?.status : tenant.tenant_subscriptions?.status) === "trial"
                             ? "bg-blue-100 text-blue-800"
                             : "bg-gray-100 text-gray-800"
                         }`}>
-                          {planDisplayName[tenant.tenant_subscriptions?.[0]?.plan] || tenant.tenant_subscriptions?.[0]?.plan || "Aucun"}
+                          {(() => {
+                            const sub = Array.isArray(tenant.tenant_subscriptions) ? tenant.tenant_subscriptions?.[0] : tenant.tenant_subscriptions;
+                            return planDisplayName[sub?.plan] || sub?.plan || "Aucun";
+                          })()}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(tenant.created_at).toLocaleDateString(dateLocale)}
