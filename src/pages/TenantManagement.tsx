@@ -75,10 +75,10 @@ interface AuditLog {
 }
 
 const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
-  basic: { label: "Basique", color: "bg-slate-500", price: 49, members: 100, branches: 1, users: 3, storage: 500 },
-  standard: { label: "Standard", color: "bg-blue-500", price: 99, members: 500, branches: 3, users: 10, storage: 2000 },
-  premium: { label: "Premium", color: "bg-purple-500", price: 199, members: 2000, branches: 10, users: 25, storage: 10000 },
-  enterprise: { label: "Entreprise", color: "bg-amber-500", price: 499, members: -1, branches: -1, users: -1, storage: -1 },
+  basic: { label: "Essentiel", color: "bg-slate-500", price: 49, members: 200, branches: 1, users: 5, storage: 500 },
+  standard: { label: "Professionnel", color: "bg-blue-500", price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
+  premium: { label: "Entreprise", color: "bg-purple-500", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
+  enterprise: { label: "Entreprise+", color: "bg-amber-500", price: 499, members: -1, branches: -1, users: -1, storage: -1 },
 };
 
 const STATUS_CONFIG: Record<TenantStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
