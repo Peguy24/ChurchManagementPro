@@ -15,6 +15,13 @@ export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
 
+  const planDisplayName: Record<string, string> = {
+    basic: "Essentiel",
+    standard: "Professionnel",
+    premium: "Entreprise",
+    none: "Aucun",
+  };
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["super-admin-stats"],
     queryFn: async () => {
@@ -107,7 +114,7 @@ export default function SuperAdminDashboard() {
       { 
         key: "tenant_subscriptions", 
         header: t("superAdmin.plan"),
-        formatter: (subs: any[]) => subs?.[0]?.plan || "basic"
+        formatter: (subs: any[]) => planDisplayName[subs?.[0]?.plan] || subs?.[0]?.plan || "Aucun"
       },
       { 
         key: "tenant_subscriptions", 
@@ -257,7 +264,7 @@ export default function SuperAdminDashboard() {
                             ? "bg-blue-100 text-blue-800"
                             : "bg-gray-100 text-gray-800"
                         }`}>
-                          {tenant.tenant_subscriptions?.[0]?.plan || "basic"}
+                          {planDisplayName[tenant.tenant_subscriptions?.[0]?.plan] || tenant.tenant_subscriptions?.[0]?.plan || "Aucun"}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(tenant.created_at).toLocaleDateString(dateLocale)}
