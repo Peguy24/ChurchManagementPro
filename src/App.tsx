@@ -117,11 +117,11 @@ const App = () => (
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
               <Route path="/settings/branding" element={<ProtectedRoute><TenantBranding /></ProtectedRoute>} />
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-              <Route path="/super-admin" element={<ProtectedRoute requireAdmin><SuperAdminDashboard /></ProtectedRoute>} />
-              <Route path="/super-admin/explore" element={<ProtectedRoute requireAdmin><TenantDataViewer /></ProtectedRoute>} />
+              <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
+              <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-              <Route path="/support-management" element={<ProtectedRoute requireAdmin><SupportManagement /></ProtectedRoute>} />
+              <Route path="/support-management" element={<ProtectedRoute requireSuperAdmin><SupportManagement /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
