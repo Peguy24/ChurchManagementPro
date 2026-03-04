@@ -6,7 +6,18 @@ const getAudioContext = (): AudioContext => {
   if (!audioContext) {
     audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
+  // Resume if suspended (mobile browsers require user gesture)
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
   return audioContext;
+};
+
+// Vibrate the device if supported
+const vibrate = (pattern: number | number[]): void => {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
 };
 
 // Success sound frequencies - ascending musical notes (major scale feel)
@@ -57,6 +68,9 @@ export const playSuccessSound = (volume: number = 0.5): void => {
       oscillator.stop(now + 0.35);
     });
     
+    // Vibrate on success (short pulse)
+    vibrate(100);
+    
     // Add a quick "ding" effect
     const ding = ctx.createOscillator();
     const dingGain = ctx.createGain();
@@ -82,6 +96,9 @@ export const playErrorSound = (volume: number = 0.5): void => {
     const masterGain = ctx.createGain();
     masterGain.connect(ctx.destination);
     masterGain.gain.value = volume * 0.3;
+    
+    // Vibrate on error (two short pulses)
+    vibrate([100, 50, 100]);
     
     // Create buzzer-like error sound
     ERROR_FREQUENCIES.forEach((freq, i) => {
@@ -114,6 +131,9 @@ export const playMemberAnnounceSound = (memberIndex: number, volume: number = 0.
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
+    
+    // Vibrate on announce
+    vibrate(80);
     
     // Create ascending tone based on number of successful scans
     const baseFreq = 400 + (memberIndex * 50);
