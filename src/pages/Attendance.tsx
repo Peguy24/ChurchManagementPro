@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
 
 interface TodayEvent {
   id: string;
@@ -216,6 +216,30 @@ function AttendanceContent() {
 
     const scannedCode = qrCode.trim();
 
+    // Resolve tenant at scan-time to avoid RLS insert failures when tenant hook isn't ready yet
+    const effectiveTenantId = tenantId || (await (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      return getCurrentUserTenantId(user.id);
+    })());
+
+    if (!effectiveTenantId) {
+      setScanFeedbackStatus('error');
+      setScanFeedbackMessage(t("attendance.error") || "Error");
+      setTimeout(() => {
+        setScanFeedbackStatus(null);
+        setScanFeedbackMessage("");
+      }, 2000);
+
+      toast({
+        title: t("attendance.error"),
+        description: t("attendance.attendanceRecordError"),
+        variant: "destructive",
+      });
+      setQrCodeInput("");
+      return;
+    }
+
     try {
       // Find member by QR code OR member_number (for flexibility)
       let member = null;
@@ -225,6 +249,7 @@ function AttendanceContent() {
       const { data: memberByQr, error: qrError } = await supabase
         .from("members")
         .select("id, first_name, last_name, photo_url")
+        .eq("tenant_id", effectiveTenantId)
         .eq("qr_code", scannedCode)
         .eq("status", "active")
         .maybeSingle();
@@ -241,6 +266,7 @@ function AttendanceContent() {
         const { data: memberByNumber, error: numError } = await supabase
           .from("members")
           .select("id, first_name, last_name, photo_url")
+          .eq("tenant_id", effectiveTenantId)
           .eq("member_number", scannedCode)
           .eq("status", "active")
           .maybeSingle();
@@ -257,6 +283,7 @@ function AttendanceContent() {
         const { data: memberByPartial, error: partialError } = await supabase
           .from("members")
           .select("id, first_name, last_name, photo_url")
+          .eq("tenant_id", effectiveTenantId)
           .eq("status", "active")
           .or(`qr_code.ilike.%${scannedCode}%,member_number.ilike.%${scannedCode}%`)
           .limit(1)
@@ -310,6 +337,7 @@ function AttendanceContent() {
       let existingQuery = supabase
         .from("attendance_records")
         .select("id")
+        .eq("tenant_id", effectiveTenantId)
         .eq("member_id", member.id)
         .eq("event_date", today);
       
@@ -369,7 +397,7 @@ function AttendanceContent() {
           event_type: eventType,
           event_id: eventIdToUse,
           scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
-          tenant_id: tenantId,
+          tenant_id: effectiveTenantId,
         });
 
       if (insertError) {
