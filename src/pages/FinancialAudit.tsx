@@ -63,36 +63,14 @@ const FinancialAudit = () => {
       approve: "default",
       reject: "destructive",
     };
-    const labels: Record<string, string> = {
-      create: "Création",
-      update: "Modification",
-      delete: "Suppression",
-      approve: "Approbation",
-      reject: "Rejet",
-    };
-    return <Badge variant={variants[action] || "outline"}>{labels[action] || action}</Badge>;
+    return <Badge variant={variants[action] || "outline"}>{t(`financialAudit.action_${action}`)}</Badge>;
   };
 
   const getEntityLabel = (entity: string) => {
-    const labels: Record<string, string> = {
-      donations: "Donation",
-      expenses: "Dépense",
-      special_funds: "Fonds Spécial",
-      fund_transactions: "Transaction Fonds",
-      cash_transactions: "Transaction Caisse",
-      budgets: "Budget",
-      bank_transactions: "Transaction Bancaire",
-    };
-    return labels[entity] || entity;
+    return t(`financialAudit.entity_${entity}`);
   };
 
-  const formatValue = (value: any) => {
-    if (!value) return "-";
-    if (typeof value === "object") {
-      return JSON.stringify(value, null, 2);
-    }
-    return String(value);
-  };
+  const dateLocale = language === "fr" ? fr : undefined;
 
   return (
     <Layout>
@@ -102,7 +80,7 @@ const FinancialAudit = () => {
             <History className="h-8 w-8" />
             {t("finance.auditTrail")}
           </h1>
-          <p className="text-muted-foreground">Historique des modifications financières</p>
+          <p className="text-muted-foreground">{t("financialAudit.subtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -113,7 +91,7 @@ const FinancialAudit = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Rechercher..."
+                    placeholder={t("common.search") + "..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -122,30 +100,30 @@ const FinancialAudit = () => {
               </div>
               <Select value={entityFilter} onValueChange={setEntityFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Type d'entité" />
+                  <SelectValue placeholder={t("financialAudit.entityType")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes les entités</SelectItem>
-                  <SelectItem value="donations">Donations</SelectItem>
-                  <SelectItem value="expenses">Dépenses</SelectItem>
-                  <SelectItem value="special_funds">Fonds Spéciaux</SelectItem>
-                  <SelectItem value="fund_transactions">Transactions Fonds</SelectItem>
-                  <SelectItem value="cash_transactions">Transactions Caisse</SelectItem>
-                  <SelectItem value="budgets">Budgets</SelectItem>
-                  <SelectItem value="bank_transactions">Transactions Bancaires</SelectItem>
+                  <SelectItem value="all">{t("financialAudit.allEntities")}</SelectItem>
+                  <SelectItem value="donations">{t("financialAudit.entity_donations")}</SelectItem>
+                  <SelectItem value="expenses">{t("financialAudit.entity_expenses")}</SelectItem>
+                  <SelectItem value="special_funds">{t("financialAudit.entity_special_funds")}</SelectItem>
+                  <SelectItem value="fund_transactions">{t("financialAudit.entity_fund_transactions")}</SelectItem>
+                  <SelectItem value="cash_transactions">{t("financialAudit.entity_cash_transactions")}</SelectItem>
+                  <SelectItem value="budgets">{t("financialAudit.entity_budgets")}</SelectItem>
+                  <SelectItem value="bank_transactions">{t("financialAudit.entity_bank_transactions")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={actionFilter} onValueChange={setActionFilter}>
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Action" />
+                  <SelectValue placeholder={t("financialAudit.actionLabel")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes actions</SelectItem>
-                  <SelectItem value="create">Création</SelectItem>
-                  <SelectItem value="update">Modification</SelectItem>
-                  <SelectItem value="delete">Suppression</SelectItem>
-                  <SelectItem value="approve">Approbation</SelectItem>
-                  <SelectItem value="reject">Rejet</SelectItem>
+                  <SelectItem value="all">{t("financialAudit.allActions")}</SelectItem>
+                  <SelectItem value="create">{t("financialAudit.action_create")}</SelectItem>
+                  <SelectItem value="update">{t("financialAudit.action_update")}</SelectItem>
+                  <SelectItem value="delete">{t("financialAudit.action_delete")}</SelectItem>
+                  <SelectItem value="approve">{t("financialAudit.action_approve")}</SelectItem>
+                  <SelectItem value="reject">{t("financialAudit.action_reject")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -157,37 +135,37 @@ const FinancialAudit = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Journal d'Audit ({filteredLogs?.length || 0} entrées)
+              {t("financialAudit.auditLog")} ({filteredLogs?.length || 0} {t("financialAudit.entries")})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+              <p className="text-center py-8 text-muted-foreground">{t("common.loading")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date/Heure</TableHead>
-                    <TableHead>Utilisateur</TableHead>
-                    <TableHead>Entité</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Détails</TableHead>
+                    <TableHead>{t("financialAudit.dateTime")}</TableHead>
+                    <TableHead>{t("financialAudit.userLabel")}</TableHead>
+                    <TableHead>{t("financialAudit.entityType")}</TableHead>
+                    <TableHead>{t("financialAudit.actionLabel")}</TableHead>
+                    <TableHead>{t("common.details")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredLogs?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        Aucune entrée d'audit trouvée
+                        {t("financialAudit.noEntries")}
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredLogs?.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="whitespace-nowrap">
-                          {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: fr })}
+                          {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: dateLocale })}
                         </TableCell>
-                        <TableCell>{log.user_email || "Système"}</TableCell>
+                        <TableCell>{log.user_email || t("common.system")}</TableCell>
                         <TableCell>{getEntityLabel(log.entity_type)}</TableCell>
                         <TableCell>{getActionBadge(log.action)}</TableCell>
                         <TableCell>
@@ -195,36 +173,36 @@ const FinancialAudit = () => {
                             <DialogTrigger asChild>
                               <Button variant="ghost" size="sm" onClick={() => setSelectedLog(log)}>
                                 <Eye className="h-4 w-4 mr-1" />
-                                Voir
+                                {t("common.view")}
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl">
                               <DialogHeader>
-                                <DialogTitle>Détails de l'audit</DialogTitle>
+                                <DialogTitle>{t("financialAudit.auditDetails")}</DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div>
-                                    <p className="font-medium text-muted-foreground">Date</p>
-                                    <p>{format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", { locale: fr })}</p>
+                                    <p className="font-medium text-muted-foreground">{t("common.date")}</p>
+                                    <p>{format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", { locale: dateLocale })}</p>
                                   </div>
                                   <div>
-                                    <p className="font-medium text-muted-foreground">Utilisateur</p>
-                                    <p>{log.user_email || "Système"}</p>
+                                    <p className="font-medium text-muted-foreground">{t("financialAudit.userLabel")}</p>
+                                    <p>{log.user_email || t("common.system")}</p>
                                   </div>
                                   <div>
-                                    <p className="font-medium text-muted-foreground">Type d'entité</p>
+                                    <p className="font-medium text-muted-foreground">{t("financialAudit.entityType")}</p>
                                     <p>{getEntityLabel(log.entity_type)}</p>
                                   </div>
                                   <div>
-                                    <p className="font-medium text-muted-foreground">Action</p>
+                                    <p className="font-medium text-muted-foreground">{t("financialAudit.actionLabel")}</p>
                                     <p>{getActionBadge(log.action)}</p>
                                   </div>
                                 </div>
                                 
                                 {log.old_values && (
                                   <div>
-                                    <p className="font-medium text-muted-foreground mb-2">Anciennes valeurs</p>
+                                    <p className="font-medium text-muted-foreground mb-2">{t("financialAudit.oldValues")}</p>
                                     <ScrollArea className="h-[150px] rounded border p-2 bg-muted/50">
                                       <pre className="text-xs">{JSON.stringify(log.old_values, null, 2)}</pre>
                                     </ScrollArea>
@@ -233,7 +211,7 @@ const FinancialAudit = () => {
                                 
                                 {log.new_values && (
                                   <div>
-                                    <p className="font-medium text-muted-foreground mb-2">Nouvelles valeurs</p>
+                                    <p className="font-medium text-muted-foreground mb-2">{t("financialAudit.newValues")}</p>
                                     <ScrollArea className="h-[150px] rounded border p-2 bg-muted/50">
                                       <pre className="text-xs">{JSON.stringify(log.new_values, null, 2)}</pre>
                                     </ScrollArea>

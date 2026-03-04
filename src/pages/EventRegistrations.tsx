@@ -90,7 +90,7 @@ export default function EventRegistrations() {
 
   const exportCSV = () => {
     if (!registrations.length) return;
-    const headers = ["Prénom", "Nom", "Email", "Téléphone", "Statut", "Date"];
+    const headers = [t("eventRegistration.firstName"), t("eventRegistration.lastName"), t("eventRegistration.email"), t("eventRegistration.phone"), "Status", t("eventRegistration.date")];
     const rows = registrations.map((r: any) => [
       r.first_name,
       r.last_name,
@@ -157,7 +157,7 @@ export default function EventRegistrations() {
                   <TableHead>{t("eventRegistration.lastName")}</TableHead>
                   <TableHead>{t("eventRegistration.email")}</TableHead>
                   <TableHead>{t("eventRegistration.phone")}</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t("common.status")}</TableHead>
                   <TableHead>{t("eventRegistration.date")}</TableHead>
                 </TableRow>
               </TableHeader>
