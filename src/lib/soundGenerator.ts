@@ -132,6 +132,9 @@ export const playMemberAnnounceSound = (memberIndex: number, volume: number = 0.
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     
+    // Vibrate on announce
+    vibrate(80);
+    
     // Create ascending tone based on number of successful scans
     const baseFreq = 400 + (memberIndex * 50);
     const cappedFreq = Math.min(baseFreq, 1200);
