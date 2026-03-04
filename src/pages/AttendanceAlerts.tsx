@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, TrendingDown, User, Mail } from "lucide-react";
 import { toast } from "sonner";
+import Layout from "@/components/Layout";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AttendanceAlert {
   member_id: string;
@@ -22,6 +24,7 @@ export default function AttendanceAlerts() {
   const [loading, setLoading] = useState(true);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     loadAttendanceAlerts();
@@ -31,7 +34,6 @@ export default function AttendanceAlerts() {
     try {
       setLoading(true);
 
-      // Get attendance data for the last 2 months
       const twoMonthsAgo = new Date();
       twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
 
@@ -45,7 +47,6 @@ export default function AttendanceAlerts() {
 
       if (error) throw error;
 
-      // Calculate attendance rates for each member
       const memberStats = new Map<string, {
         name: string;
         currentMonth: number;
@@ -80,17 +81,14 @@ export default function AttendanceAlerts() {
         }
       });
 
-      // Identify members with declining attendance
       const alertsList: AttendanceAlert[] = [];
 
       memberStats.forEach((stats, memberId) => {
-        // Only alert if member had attendance in previous month
         if (stats.previousMonth > 0) {
           const currentRate = stats.currentMonth;
           const previousRate = stats.previousMonth;
           const decline = ((previousRate - currentRate) / previousRate) * 100;
 
-          // Alert if decline is more than 30% or no attendance in current month
           if (decline > 30 || (currentRate === 0 && previousRate > 0)) {
             const daysSinceLastAttendance = stats.lastAttendance
               ? Math.floor((Date.now() - new Date(stats.lastAttendance).getTime()) / (1000 * 60 * 60 * 24))
@@ -109,13 +107,11 @@ export default function AttendanceAlerts() {
         }
       });
 
-      // Sort by decline percentage
       alertsList.sort((a, b) => b.decline_percentage - a.decline_percentage);
-
       setAlerts(alertsList);
     } catch (error) {
       console.error("Error loading attendance alerts:", error);
-      toast.error("Erreur lors du chargement des alertes");
+      toast.error(t("attendanceAlerts.loadError"));
     } finally {
       setLoading(false);
     }
@@ -128,7 +124,7 @@ export default function AttendanceAlerts() {
   const sendAlertEmail = async (alert: AttendanceAlert) => {
     try {
       setSendingEmail(alert.member_id);
-      
+
       const { error } = await supabase.functions.invoke('send-absence-alert', {
         body: {
           member_id: alert.member_id,
@@ -140,10 +136,10 @@ export default function AttendanceAlerts() {
 
       if (error) throw error;
 
-      toast.success(`Email envoyé à ${alert.member_name}`);
+      toast.success(t("attendanceAlerts.emailSent").replace("{name}", alert.member_name));
     } catch (error: any) {
       console.error("Error sending alert email:", error);
-      toast.error("Erreur lors de l'envoi de l'email: " + error.message);
+      toast.error(t("attendanceAlerts.emailError") + ": " + error.message);
     } finally {
       setSendingEmail(null);
     }
@@ -151,105 +147,107 @@ export default function AttendanceAlerts() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Chargement des alertes...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Alertes de Présence</h1>
-          <p className="text-muted-foreground mt-2">
-            Membres avec un taux de présence en baisse
-          </p>
-        </div>
-        <Button onClick={loadAttendanceAlerts} variant="outline">
-          Actualiser
-        </Button>
-      </div>
-
-      {alerts.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">Aucune alerte</p>
-            <p className="text-muted-foreground text-sm">
-              Tous les membres maintiennent un bon taux de présence
+    <Layout>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">{t("attendanceAlerts.title")}</h1>
+            <p className="text-muted-foreground mt-2">
+              {t("attendanceAlerts.subtitle")}
             </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {alerts.map((alert) => {
-            const daysSinceLastAttendance = alert.last_attendance
-              ? Math.floor((Date.now() - new Date(alert.last_attendance).getTime()) / (1000 * 60 * 60 * 24))
-              : null;
+          </div>
+          <Button onClick={loadAttendanceAlerts} variant="outline">
+            {t("attendanceAlerts.refresh")}
+          </Button>
+        </div>
 
-            return (
-              <Card key={alert.member_id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
+        {alerts.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">{t("attendanceAlerts.noAlerts")}</p>
+              <p className="text-muted-foreground text-sm">
+                {t("attendanceAlerts.allMembersGood")}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {alerts.map((alert) => {
+              const daysSinceLastAttendance = alert.last_attendance
+                ? Math.floor((Date.now() - new Date(alert.last_attendance).getTime()) / (1000 * 60 * 60 * 24))
+                : null;
+
+              return (
+                <Card key={alert.member_id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{alert.member_name}</CardTitle>
+                          <CardDescription>
+                            {daysSinceLastAttendance !== null
+                              ? t("attendanceAlerts.lastAttendance").replace("{days}", String(daysSinceLastAttendance))
+                              : t("attendanceAlerts.noRecentAttendance")}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant={alert.decline_percentage > 50 ? "destructive" : "secondary"}>
+                        <TrendingDown className="h-3 w-3 mr-1" />
+                        {alert.decline_percentage.toFixed(0)}%
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t("attendanceAlerts.previousMonth")}</p>
+                        <p className="text-2xl font-bold">{alert.previous_rate}</p>
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{alert.member_name}</CardTitle>
-                        <CardDescription>
-                          {daysSinceLastAttendance !== null
-                            ? `Dernière présence: il y a ${daysSinceLastAttendance} jours`
-                            : "Aucune présence récente"}
-                        </CardDescription>
+                        <p className="text-sm text-muted-foreground">{t("attendanceAlerts.currentMonth")}</p>
+                        <p className="text-2xl font-bold">{alert.current_rate}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t("attendanceAlerts.decline")}</p>
+                        <p className="text-2xl font-bold text-destructive">
+                          -{alert.decline_percentage.toFixed(0)}%
+                        </p>
                       </div>
                     </div>
-                    <Badge variant={alert.decline_percentage > 50 ? "destructive" : "secondary"}>
-                      <TrendingDown className="h-3 w-3 mr-1" />
-                      {alert.decline_percentage.toFixed(0)}%
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Mois précédent</p>
-                      <p className="text-2xl font-bold">{alert.previous_rate}</p>
+                    <div className="flex gap-2">
+                      <Button onClick={() => viewMemberStats(alert.member_id)} className="flex-1">
+                        {t("attendanceAlerts.viewStats")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => sendAlertEmail(alert)}
+                        disabled={sendingEmail === alert.member_id}
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        {sendingEmail === alert.member_id ? t("attendanceAlerts.sending") : t("attendanceAlerts.sendEmail")}
+                      </Button>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Mois actuel</p>
-                      <p className="text-2xl font-bold">{alert.current_rate}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Baisse</p>
-                      <p className="text-2xl font-bold text-destructive">
-                        -{alert.decline_percentage.toFixed(0)}%
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={() => viewMemberStats(alert.member_id)} className="flex-1">
-                      Voir les statistiques
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => sendAlertEmail(alert)}
-                      disabled={sendingEmail === alert.member_id}
-                    >
-                      <Mail className="mr-2 h-4 w-4" />
-                      {sendingEmail === alert.member_id ? "Envoi..." : "Envoyer email"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 }
