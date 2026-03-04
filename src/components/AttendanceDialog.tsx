@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
 
 interface AttendanceDialogProps {
   open: boolean;
@@ -173,26 +173,67 @@ export default function AttendanceDialog({
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      const attendanceRecords = checkedMembers.map((memberId) => ({
+      const effectiveTenantId = tenantId || (user ? await getCurrentUserTenantId(user.id) : null);
+
+      if (!effectiveTenantId) {
+        throw new Error("Missing tenant id for attendance insert");
+      }
+
+      let existingQuery = supabase
+        .from("attendance_records")
+        .select("member_id")
+        .eq("tenant_id", effectiveTenantId)
+        .eq("event_date", date)
+        .in("member_id", checkedMembers);
+
+      if (selectedEventId) {
+        existingQuery = existingQuery.eq("event_id", selectedEventId);
+      } else {
+        existingQuery = existingQuery.is("event_id", null);
+      }
+
+      const { data: existingRows, error: existingError } = await existingQuery;
+      if (existingError) throw existingError;
+
+      const existingMemberIds = new Set((existingRows || []).map((row) => row.member_id));
+      const membersToInsert = checkedMembers.filter((memberId) => !existingMemberIds.has(memberId));
+
+      if (membersToInsert.length === 0) {
+        toast({
+          title: "Information",
+          description: "Ces membres sont déjà marqués présents pour cet événement.",
+        });
+        return;
+      }
+
+      const attendanceRecords = membersToInsert.map((memberId) => ({
         event_type: eventType || "Culte",
         event_date: date,
         member_id: memberId,
         marked_by: user?.id,
         scan_method: "manual",
         event_id: selectedEventId,
-        tenant_id: tenantId,
+        tenant_id: effectiveTenantId,
       }));
 
       const { error } = await supabase
         .from("attendance_records")
         .insert(attendanceRecords);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Information",
+            description: "Un ou plusieurs membres sont déjà marqués présents pour cet événement.",
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Présence enregistrée!",
-        description: `${checkedMembers.length} membre(s) marqué(s) présent(s) pour ${eventType}.`,
+        description: `${membersToInsert.length} membre(s) marqué(s) présent(s) pour ${eventType}.`,
       });
       
       setCheckedMembers([]);
