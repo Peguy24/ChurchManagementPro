@@ -32,24 +32,17 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate CRON_SECRET for scheduled function security
   const authHeader = req.headers.get("Authorization");
   const expectedSecret = Deno.env.get("CRON_SECRET");
   
   if (!expectedSecret) {
-    console.error("CRON_SECRET not configured");
-    return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: "Server configuration error" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
   
   if (authHeader !== `Bearer ${expectedSecret}`) {
-    console.error("Unauthorized access attempt to send-birthday-notification");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
 
   try {
@@ -60,125 +53,110 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get email template
-    const { data: template, error: templateError } = await supabaseClient
-      .from("email_templates")
-      .select("subject, body_html, is_active")
-      .eq("template_type", "birthday")
-      .maybeSingle();
+    // Get all active tenants
+    const { data: tenants, error: tenantsError } = await supabaseClient
+      .from("tenants")
+      .select("id, name")
+      .eq("is_active", true);
 
-    if (templateError) {
-      console.error("Error fetching template:", templateError);
+    if (tenantsError) {
+      console.error("Error fetching tenants:", tenantsError);
+      throw tenantsError;
     }
 
-    // Check if template is active
-    if (template && !template.is_active) {
-      console.log("Birthday email template is disabled");
-      return new Response(
-        JSON.stringify({ message: "Birthday notifications are disabled" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // Get today's date components for birthday matching
     const today = new Date();
     const month = today.getMonth() + 1;
     const day = today.getDate();
-
     console.log(`Checking birthdays for ${month}/${day}`);
 
-    // Query members with birthdays today
-    const { data: birthdayMembers, error: queryError } = await supabaseClient
-      .from("members")
-      .select("id, first_name, last_name, email, date_of_birth")
-      .eq("status", "active")
-      .not("email", "is", null)
-      .not("date_of_birth", "is", null);
+    const allResults: any[] = [];
 
-    if (queryError) {
-      console.error("Error querying members:", queryError);
-      throw queryError;
-    }
+    for (const tenant of tenants || []) {
+      console.log(`Processing tenant: ${tenant.name} (${tenant.id})`);
 
-    // Filter members with birthday today
-    const todaysBirthdays = birthdayMembers?.filter((member) => {
-      if (!member.date_of_birth) return false;
-      const dob = new Date(member.date_of_birth);
-      return dob.getMonth() + 1 === month && dob.getDate() === day;
-    }) || [];
+      // Get email template for this tenant (or global)
+      const { data: template } = await supabaseClient
+        .from("email_templates")
+        .select("subject, body_html, is_active")
+        .eq("template_type", "birthday")
+        .maybeSingle();
 
-    console.log(`Found ${todaysBirthdays.length} members with birthdays today`);
+      if (template && !template.is_active) {
+        console.log(`Birthday template disabled, skipping tenant ${tenant.name}`);
+        continue;
+      }
 
-    const results: any[] = [];
+      // Query members for this tenant
+      const { data: birthdayMembers, error: queryError } = await supabaseClient
+        .from("members")
+        .select("id, first_name, last_name, email, date_of_birth")
+        .eq("status", "active")
+        .eq("tenant_id", tenant.id)
+        .not("email", "is", null)
+        .not("date_of_birth", "is", null);
 
-    for (const member of todaysBirthdays) {
-      if (!member.email) continue;
+      if (queryError) {
+        console.error(`Error querying members for tenant ${tenant.id}:`, queryError);
+        continue;
+      }
 
-      const safeFirstName = escapeHtml(member.first_name);
-      const safeLastName = escapeHtml(member.last_name);
-      const memberName = `${safeFirstName} ${safeLastName}`;
+      const todaysBirthdays = birthdayMembers?.filter((member) => {
+        if (!member.date_of_birth) return false;
+        const dob = new Date(member.date_of_birth);
+        return dob.getMonth() + 1 === month && dob.getDate() === day;
+      }) || [];
 
-      // Calculate age
-      const dob = new Date(member.date_of_birth);
-      const age = today.getFullYear() - dob.getFullYear();
+      console.log(`Found ${todaysBirthdays.length} birthdays for tenant ${tenant.name}`);
 
-      // Prepare template variables
-      const variables = {
-        member_name: memberName,
-        age: age.toString(),
-      };
+      for (const member of todaysBirthdays) {
+        if (!member.email) continue;
 
-      // Use custom template or default
-      const emailSubject = template?.subject 
-        ? replaceTemplateVariables(template.subject, variables)
-        : `🎂 Joyeux Anniversaire ${memberName}!`;
-      
-      const emailBody = template?.body_html 
-        ? replaceTemplateVariables(template.body_html, variables)
-        : `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #4F46E5;">🎉 Joyeux Anniversaire ${memberName}! 🎉</h1>
-            <p>En ce jour spécial, toute la communauté de l'église vous souhaite un très joyeux ${age}ème anniversaire!</p>
-            <p>Que cette nouvelle année de vie soit remplie de bénédictions.</p>
-            <p>Avec amour,<br><strong>Votre église</strong></p>
-          </div>
-        `;
+        const safeFirstName = escapeHtml(member.first_name);
+        const safeLastName = escapeHtml(member.last_name);
+        const memberName = `${safeFirstName} ${safeLastName}`;
+        const dob = new Date(member.date_of_birth);
+        const age = today.getFullYear() - dob.getFullYear();
 
-      try {
-        const emailResponse = await resend.emails.send({
-          from: "Église <onboarding@resend.dev>",
-          to: [member.email],
-          subject: emailSubject,
-          html: emailBody,
-        });
+        const variables = { member_name: memberName, age: age.toString() };
 
-        console.log(`Birthday email sent to ${member.email}:`, emailResponse);
-        results.push({ member_id: member.id, success: true, email: member.email });
-      } catch (emailError: any) {
-        console.error(`Failed to send birthday email to ${member.email}:`, emailError);
-        results.push({ member_id: member.id, success: false, error: emailError.message });
+        const emailSubject = template?.subject 
+          ? replaceTemplateVariables(template.subject, variables)
+          : `🎂 Joyeux Anniversaire ${memberName}!`;
+        
+        const emailBody = template?.body_html 
+          ? replaceTemplateVariables(template.body_html, variables)
+          : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #4F46E5;">🎉 Joyeux Anniversaire ${memberName}! 🎉</h1>
+              <p>En ce jour spécial, toute la communauté de ${escapeHtml(tenant.name)} vous souhaite un très joyeux ${age}ème anniversaire!</p>
+              <p>Que cette nouvelle année de vie soit remplie de bénédictions.</p>
+              <p>Avec amour,<br><strong>${escapeHtml(tenant.name)}</strong></p>
+            </div>`;
+
+        try {
+          await resend.emails.send({
+            from: `${tenant.name} <onboarding@resend.dev>`,
+            to: [member.email],
+            subject: emailSubject,
+            html: emailBody,
+          });
+          allResults.push({ tenant: tenant.name, member_id: member.id, success: true });
+        } catch (emailError: any) {
+          console.error(`Failed to send birthday email to ${member.email}:`, emailError);
+          allResults.push({ tenant: tenant.name, member_id: member.id, success: false, error: emailError.message });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
 
     return new Response(
-      JSON.stringify({ 
-        message: `Processed ${todaysBirthdays.length} birthday notifications`,
-        results 
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ message: `Processed birthday notifications across ${tenants?.length || 0} tenants`, results: allResults }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in send-birthday-notification function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
 };
 

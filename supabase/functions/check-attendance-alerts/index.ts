@@ -11,12 +11,7 @@ const corsHeaders = {
 };
 
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 function replaceTemplateVariables(template: string, variables: Record<string, string>): string {
@@ -35,6 +30,7 @@ interface AttendanceAlert {
   previousMonthRate: number;
   declinePercentage: number;
   lastAttendance: string | null;
+  tenantName: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -42,24 +38,17 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate CRON_SECRET for scheduled function security
   const authHeader = req.headers.get("Authorization");
   const expectedSecret = Deno.env.get("CRON_SECRET");
   
   if (!expectedSecret) {
-    console.error("CRON_SECRET not configured");
-    return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: "Server configuration error" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
   
   if (authHeader !== `Bearer ${expectedSecret}`) {
-    console.error("Unauthorized access attempt to check-attendance-alerts");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
 
   try {
@@ -70,193 +59,130 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get email template
-    const { data: template, error: templateError } = await supabaseClient
+    // Get all active tenants
+    const { data: tenants, error: tenantsError } = await supabaseClient
+      .from("tenants")
+      .select("id, name")
+      .eq("is_active", true);
+
+    if (tenantsError) {
+      console.error("Error fetching tenants:", tenantsError);
+      throw tenantsError;
+    }
+
+    const { data: template } = await supabaseClient
       .from("email_templates")
       .select("subject, body_html, is_active")
       .eq("template_type", "attendance_alert")
       .maybeSingle();
 
-    if (templateError) {
-      console.error("Error fetching template:", templateError);
-    }
-
-    // Check if template is active
     if (template && !template.is_active) {
       console.log("Attendance alert email template is disabled");
-      return new Response(
-        JSON.stringify({ message: "Attendance alerts are disabled" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ message: "Attendance alerts are disabled" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    // Get date ranges for current and previous month
     const today = new Date();
     const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     const previousMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-
-    console.log(`Analyzing attendance from ${previousMonthStart.toISOString()} to ${today.toISOString()}`);
-
-    // Get all active members with email
-    const { data: members, error: membersError } = await supabaseClient
-      .from("members")
-      .select("id, first_name, last_name, email")
-      .eq("status", "active")
-      .not("email", "is", null);
-
-    if (membersError) {
-      console.error("Error querying members:", membersError);
-      throw membersError;
-    }
-
-    // Get attendance records for the past 2 months
-    const { data: attendanceRecords, error: attendanceError } = await supabaseClient
-      .from("attendance_records")
-      .select("member_id, event_date")
-      .gte("event_date", previousMonthStart.toISOString().split("T")[0])
-      .lte("event_date", today.toISOString().split("T")[0]);
-
-    if (attendanceError) {
-      console.error("Error querying attendance:", attendanceError);
-      throw attendanceError;
-    }
-
-    // Calculate expected services (assuming 4 Sundays + 4 Wednesdays per month = 8)
     const expectedServicesPerMonth = 8;
 
-    // Analyze attendance decline for each member
-    const alerts: AttendanceAlert[] = [];
+    let totalSuccess = 0;
+    let totalError = 0;
+    const allAlerts: any[] = [];
 
-    for (const member of members || []) {
-      const memberAttendance = attendanceRecords?.filter(
-        (record) => record.member_id === member.id
-      ) || [];
+    for (const tenant of tenants || []) {
+      console.log(`Processing attendance alerts for tenant: ${tenant.name}`);
 
-      // Count current month attendance
-      const currentMonthAttendance = memberAttendance.filter((record) => {
-        const recordDate = new Date(record.event_date);
-        return recordDate >= currentMonthStart;
-      }).length;
+      const { data: members } = await supabaseClient
+        .from("members")
+        .select("id, first_name, last_name, email")
+        .eq("status", "active")
+        .eq("tenant_id", tenant.id)
+        .not("email", "is", null);
 
-      // Count previous month attendance
-      const previousMonthAttendance = memberAttendance.filter((record) => {
-        const recordDate = new Date(record.event_date);
-        return recordDate >= previousMonthStart && recordDate <= previousMonthEnd;
-      }).length;
+      const { data: attendanceRecords } = await supabaseClient
+        .from("attendance_records")
+        .select("member_id, event_date")
+        .eq("tenant_id", tenant.id)
+        .gte("event_date", previousMonthStart.toISOString().split("T")[0])
+        .lte("event_date", today.toISOString().split("T")[0]);
 
-      // Calculate rates
-      const currentMonthRate = (currentMonthAttendance / expectedServicesPerMonth) * 100;
-      const previousMonthRate = (previousMonthAttendance / expectedServicesPerMonth) * 100;
+      const alerts: AttendanceAlert[] = [];
 
-      // Check for significant decline (>30% drop or no attendance this month but had attendance last month)
-      const declinePercentage = previousMonthRate > 0 
-        ? ((previousMonthRate - currentMonthRate) / previousMonthRate) * 100 
-        : 0;
+      for (const member of members || []) {
+        const memberAttendance = attendanceRecords?.filter(r => r.member_id === member.id) || [];
 
-      const hasSignificantDecline = declinePercentage > 30 || 
-        (previousMonthAttendance > 0 && currentMonthAttendance === 0);
+        const currentMonthAttendance = memberAttendance.filter(r => new Date(r.event_date) >= currentMonthStart).length;
+        const previousMonthAttendance = memberAttendance.filter(r => {
+          const d = new Date(r.event_date);
+          return d >= previousMonthStart && d <= previousMonthEnd;
+        }).length;
 
-      if (hasSignificantDecline && member.email) {
-        // Get last attendance date
-        const sortedAttendance = memberAttendance.sort(
-          (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
-        );
-        const lastAttendance = sortedAttendance[0]?.event_date || null;
+        const currentMonthRate = (currentMonthAttendance / expectedServicesPerMonth) * 100;
+        const previousMonthRate = (previousMonthAttendance / expectedServicesPerMonth) * 100;
+        const declinePercentage = previousMonthRate > 0 
+          ? ((previousMonthRate - currentMonthRate) / previousMonthRate) * 100 : 0;
 
-        alerts.push({
-          memberId: member.id,
-          memberName: `${member.first_name} ${member.last_name}`,
-          email: member.email,
-          currentMonthRate,
-          previousMonthRate,
-          declinePercentage,
-          lastAttendance,
-        });
+        const hasSignificantDecline = declinePercentage > 30 || 
+          (previousMonthAttendance > 0 && currentMonthAttendance === 0);
+
+        if (hasSignificantDecline && member.email) {
+          const sorted = memberAttendance.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+          alerts.push({
+            memberId: member.id,
+            memberName: `${member.first_name} ${member.last_name}`,
+            email: member.email,
+            currentMonthRate, previousMonthRate, declinePercentage,
+            lastAttendance: sorted[0]?.event_date || null,
+            tenantName: tenant.name,
+          });
+        }
+      }
+
+      for (const alert of alerts) {
+        const safeName = escapeHtml(alert.memberName);
+        const variables = { member_name: safeName, attendance_rate: `${alert.currentMonthRate.toFixed(0)}%` };
+
+        const emailSubject = template?.subject 
+          ? replaceTemplateVariables(template.subject, variables) : "💙 Nous pensons à vous";
+        const emailBody = template?.body_html 
+          ? replaceTemplateVariables(template.body_html, variables)
+          : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #4F46E5;">💙 Nous pensons à vous</h1>
+              <p>Bonjour ${safeName},</p>
+              <p>Nous avons remarqué que nous ne vous avons pas vu récemment et nous voulions vous faire savoir que vous nous manquez.</p>
+              <p>Avec amour,<br><strong>${escapeHtml(tenant.name)}</strong></p>
+            </div>`;
+
+        try {
+          await resend.emails.send({
+            from: `${tenant.name} <onboarding@resend.dev>`,
+            to: [alert.email],
+            subject: emailSubject,
+            html: emailBody,
+          });
+          totalSuccess++;
+          allAlerts.push({ tenant: tenant.name, name: alert.memberName, decline: alert.declinePercentage.toFixed(0) + '%' });
+        } catch (emailError: any) {
+          totalError++;
+          console.error(`Failed to send alert to ${alert.email}:`, emailError);
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
 
-    console.log(`Found ${alerts.length} members with declining attendance`);
-
-    const results: any[] = [];
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const alert of alerts) {
-      const safeMemberName = escapeHtml(alert.memberName);
-      const attendanceRate = `${alert.currentMonthRate.toFixed(0)}%`;
-
-      // Prepare template variables
-      const variables = {
-        member_name: safeMemberName,
-        attendance_rate: attendanceRate,
-      };
-
-      // Use custom template or default
-      const emailSubject = template?.subject 
-        ? replaceTemplateVariables(template.subject, variables)
-        : "💙 Nous pensons à vous";
-      
-      const emailBody = template?.body_html 
-        ? replaceTemplateVariables(template.body_html, variables)
-        : `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #4F46E5;">💙 Nous pensons à vous</h1>
-            <p style="font-size: 18px;">Bonjour ${safeMemberName},</p>
-            <p>Nous avons remarqué que nous ne vous avons pas vu récemment à l'église et nous voulions simplement vous faire savoir que vous nous manquez.</p>
-            <p>Votre présence nous manque! Si vous traversez une période difficile ou si vous avez besoin de soutien, n'hésitez pas à nous contacter.</p>
-            <p>Avec amour,<br><strong>Votre église</strong></p>
-          </div>
-        `;
-
-      try {
-        const emailResponse = await resend.emails.send({
-          from: "Église <onboarding@resend.dev>",
-          to: [alert.email],
-          subject: emailSubject,
-          html: emailBody,
-        });
-
-        successCount++;
-        console.log(`Absence alert sent to ${alert.email}`);
-        results.push({ member_id: alert.memberId, success: true });
-      } catch (emailError: any) {
-        errorCount++;
-        console.error(`Failed to send alert to ${alert.email}:`, emailError);
-        results.push({ member_id: alert.memberId, success: false, error: emailError.message });
-      }
-
-      // Add small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    console.log(`Attendance alerts sent: ${successCount} success, ${errorCount} failed`);
+    console.log(`Attendance alerts: ${totalSuccess} success, ${totalError} failed`);
 
     return new Response(
-      JSON.stringify({ 
-        message: `Processed ${alerts.length} attendance alerts`,
-        successCount,
-        errorCount,
-        alerts: alerts.map(a => ({ 
-          name: a.memberName, 
-          decline: a.declinePercentage.toFixed(0) + '%',
-          lastAttendance: a.lastAttendance 
-        }))
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ message: `Processed attendance alerts across ${tenants?.length || 0} tenants`, successCount: totalSuccess, errorCount: totalError, alerts: allAlerts }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in check-attendance-alerts function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
 };
 
