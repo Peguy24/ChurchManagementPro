@@ -2783,7 +2783,12 @@ export type Database = {
         | "moderator"
         | "support"
         | "sales"
-      subscription_plan: "basic" | "standard" | "premium" | "enterprise"
+      subscription_plan:
+        | "basic"
+        | "standard"
+        | "premium"
+        | "enterprise"
+        | "free"
       tenant_status: "active" | "suspended" | "trial" | "cancelled"
       transaction_status: "pending" | "approved" | "rejected"
       transaction_type: "income" | "expense"
@@ -2938,7 +2943,7 @@ export const Constants = {
         "support",
         "sales",
       ],
-      subscription_plan: ["basic", "standard", "premium", "enterprise"],
+      subscription_plan: ["basic", "standard", "premium", "enterprise", "free"],
       tenant_status: ["active", "suspended", "trial", "cancelled"],
       transaction_status: ["pending", "approved", "rejected"],
       transaction_type: ["income", "expense"],

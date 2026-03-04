@@ -26,7 +26,7 @@ import { TenantAdminManager } from "@/components/TenantAdminManager";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-type SubscriptionPlan = "basic" | "standard" | "premium" | "enterprise";
+type SubscriptionPlan = "free" | "basic" | "standard" | "premium" | "enterprise";
 type TenantStatus = "active" | "suspended" | "trial" | "cancelled";
 
 interface Tenant {
@@ -75,6 +75,7 @@ interface AuditLog {
 }
 
 const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
+  free: { label: "Gratuit", color: "bg-green-600", price: 0, members: 100, branches: 1, users: 3, storage: 200 },
   basic: { label: "Essentiel", color: "bg-slate-500", price: 49, members: 200, branches: 1, users: 5, storage: 500 },
   standard: { label: "Professionnel", color: "bg-blue-500", price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
   premium: { label: "Entreprise", color: "bg-purple-500", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
@@ -231,7 +232,7 @@ export default function TenantManagement() {
         .from("tenant_subscriptions")
         .insert({
           tenant_id: tenant.id,
-          plan: data.plan,
+          plan: data.plan as any,
           status: data.status,
           price_monthly: planConfig.price,
           max_members: planConfig.members,
@@ -305,7 +306,7 @@ export default function TenantManagement() {
       const { error: subError } = await supabase
         .from("tenant_subscriptions")
         .update({
-          plan: data.plan,
+          plan: data.plan as any,
           status: data.status,
           price_monthly: planConfig.price,
           max_members: planConfig.members,
@@ -446,7 +447,7 @@ export default function TenantManagement() {
       const { error } = await supabase
         .from("tenant_subscriptions")
         .update({
-          plan: plan,
+          plan: plan as any,
           status: newStatus,
           price_monthly: planConfig.price,
           max_members: planConfig.members,
@@ -668,7 +669,7 @@ export default function TenantManagement() {
                       <SelectContent>
                         {Object.entries(PLAN_CONFIG).map(([key, config]) => (
                           <SelectItem key={key} value={key}>
-                            {config.label} - ${config.price}/mois
+                            {config.label} {config.price > 0 ? `- $${config.price}/mois` : '- Gratuit'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1341,7 +1342,7 @@ export default function TenantManagement() {
                   <SelectContent>
                     {Object.entries(PLAN_CONFIG).map(([key, config]) => (
                       <SelectItem key={key} value={key}>
-                        {config.label} - ${config.price}/mois
+                        {config.label} {config.price > 0 ? `- $${config.price}/mois` : '- Gratuit'}
                       </SelectItem>
                     ))}
                   </SelectContent>

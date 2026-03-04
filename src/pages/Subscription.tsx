@@ -8,7 +8,7 @@ import {
   Download, ExternalLink, Calendar, Receipt, ArrowRight,
   CheckCircle2, Clock, XCircle, RefreshCw
 } from "lucide-react";
-import { useSubscription, PLAN_DETAILS, PlanKey } from "@/hooks/useSubscription";
+import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -208,7 +208,7 @@ export default function Subscription() {
             {subscribed ? "Change Plan" : "Choose a Plan"}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {(Object.entries(PLAN_DETAILS) as [PlanKey, typeof PLAN_DETAILS[PlanKey]][]).map(([key, details]) => {
+            {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => {
               const isCurrentPlan = plan === key;
               const isProfessional = key === 'professionnel';
               

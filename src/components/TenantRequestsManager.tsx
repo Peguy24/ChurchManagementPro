@@ -24,6 +24,7 @@ interface TenantRequest {
 }
 
 const PLAN_LABELS: Record<string, string> = {
+  free: "Gratuit",
   basic: "Essentiel",
   standard: "Professionnel",
   premium: "Entreprise",
@@ -71,8 +72,9 @@ export function TenantRequestsManager() {
 
       // Create subscription based on plan
       const planConfig: Record<string, { price: number; members: number; branches: number; users: number; storage: number }> = {
-        basic: { price: 49, members: 200, branches: 1, users: 3, storage: 500 },
-        standard: { price: 99, members: 1000, branches: 3, users: 10, storage: 2000 },
+        free: { price: 0, members: 100, branches: 1, users: 3, storage: 200 },
+        basic: { price: 49, members: 200, branches: 1, users: 5, storage: 500 },
+        standard: { price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
         premium: { price: 199, members: -1, branches: -1, users: -1, storage: -1 },
       };
 
