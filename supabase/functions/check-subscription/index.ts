@@ -19,6 +19,13 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "prod_TqeuZk0jVNwjEp": "entreprise",
 };
 
+// Map plan names to DB plan names for tenant_subscriptions sync
+const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number; branches: number; users: number; storage: number }> = {
+  "essentiel": { plan: "basic", price: 49, members: 200, branches: 1, users: 5, storage: 500 },
+  "professionnel": { plan: "standard", price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
+  "entreprise": { plan: "premium", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -94,6 +101,42 @@ serve(async (req) => {
         productId,
         plan,
       });
+
+      // Sync plan to tenant_subscriptions in database
+      if (plan) {
+        const dbPlan = PLAN_TO_DB[plan];
+        if (dbPlan) {
+          // Get user's tenant_id
+          const { data: profile } = await supabaseClient
+            .from("profiles")
+            .select("tenant_id")
+            .eq("id", user.id)
+            .single();
+
+          if (profile?.tenant_id) {
+            const { error: syncError } = await supabaseClient
+              .from("tenant_subscriptions")
+              .update({
+                plan: dbPlan.plan,
+                status: "active",
+                price_monthly: dbPlan.price,
+                max_members: dbPlan.members,
+                max_branches: dbPlan.branches,
+                max_users: dbPlan.users,
+                max_storage_mb: dbPlan.storage,
+                current_period_end: subscriptionEnd,
+                trial_ends_at: null,
+              })
+              .eq("tenant_id", profile.tenant_id);
+
+            if (syncError) {
+              logStep("Failed to sync plan to DB", { error: syncError.message });
+            } else {
+              logStep("Plan synced to tenant_subscriptions", { tenantId: profile.tenant_id, dbPlan: dbPlan.plan });
+            }
+          }
+        }
+      }
     } else {
       logStep("No active subscription found");
     }
