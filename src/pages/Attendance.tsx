@@ -372,7 +372,26 @@ function AttendanceContent() {
           tenant_id: tenantId,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        // Handle unique constraint violation (race condition fallback)
+        if (insertError.code === '23505') {
+          setScanFeedbackStatus('duplicate');
+          setScanFeedbackMessage(`${member.first_name} ${member.last_name} - ${t("attendance.alreadyMarked") || "Déjà présent"}`);
+          setTimeout(() => {
+            setScanFeedbackStatus(null);
+            setScanFeedbackMessage("");
+          }, 2000);
+          toast({
+            title: t("attendance.alreadyMarked"),
+            description: t("attendance.alreadyMarkedToday").replace("{name}", `${member.first_name} ${member.last_name}`),
+            variant: "destructive",
+          });
+          playSound("error");
+          setQrCodeInput("");
+          return;
+        }
+        throw insertError;
+      }
 
       // Success feedback
       setScanFeedbackStatus('success');
