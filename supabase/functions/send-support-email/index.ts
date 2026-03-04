@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Send notification email to platform (best effort)
       try {
         await resend.emails.send({
-          from: "Church Manager Pro <onboarding@resend.dev>",
+          from: "Church Manager Pro <noreply@churchmanagementpro.com>",
           to: ["support@churchmanager.pro"],
           subject: `[Support] ${priority.toUpperCase()} - ${subject}`,
           html: `
@@ -168,7 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
           const { data: requester } = await supabase.auth.admin.getUserById(updatedTicket.user_id);
           if (requester?.user?.email) {
             await resend.emails.send({
-              from: "Church Manager Pro <onboarding@resend.dev>",
+              from: "Church Manager Pro <noreply@churchmanagementpro.com>",
               to: [requester.user.email],
               subject: `Réponse à votre ticket: ${updatedTicket.subject}`,
               html: `

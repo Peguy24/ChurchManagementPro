@@ -157,7 +157,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Church Management <onboarding@resend.dev>",
+      from: "Church Management <noreply@churchmanagementpro.com>",
       to: [email],
       subject: `Invitation administrateur - ${tenantName}`,
       html: `

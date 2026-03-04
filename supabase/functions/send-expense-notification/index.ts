@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
     }).format(amount);
 
     const emailResponse = await resend.emails.send({
-      from: "Gestion Église <onboarding@resend.dev>",
+      from: "Gestion Église <noreply@churchmanagementpro.com>",
       to: [creatorEmail],
       subject: `Dépense ${statusText}: ${safeDescription.substring(0, 50)}${safeDescription.length > 50 ? '...' : ''}`,
       html: `

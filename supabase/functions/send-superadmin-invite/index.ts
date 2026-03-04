@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
     const isSuperAdmin = platformRole === "super_admin";
 
     const emailResponse = await resend.emails.send({
-      from: "Church Management <onboarding@resend.dev>",
+      from: "Church Management <noreply@churchmanagementpro.com>",
       to: [email],
       subject: `Invitation ${roleLabel} - Plateforme Church Manager`,
       html: `
