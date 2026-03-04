@@ -5,7 +5,7 @@ import { Clock, AlertTriangle, Sparkles, Loader2, CreditCard } from "lucide-reac
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
-import { useSubscription, PLAN_DETAILS, PlanKey } from "@/hooks/useSubscription";
+import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { differenceInDays, differenceInHours, isPast } from "date-fns";
 import { Progress } from "@/components/ui/progress";
 
@@ -89,7 +89,7 @@ export function TrialCountdownCard() {
             Votre période d'essai gratuite est terminée. Souscrivez maintenant pour continuer à utiliser toutes les fonctionnalités.
           </p>
           <div className="grid gap-2">
-            {(Object.entries(PLAN_DETAILS) as [PlanKey, typeof PLAN_DETAILS[PlanKey]][]).slice(0, 2).map(([key, details]) => (
+            {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).slice(0, 2).map(([key, details]) => (
               <Button 
                 key={key}
                 onClick={() => createCheckout(key)}

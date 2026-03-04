@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Settings, Loader2, Crown, Sparkles } from "lucide-react";
-import { useSubscription, PLAN_DETAILS, PlanKey } from "@/hooks/useSubscription";
+import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -93,7 +93,7 @@ export function SubscriptionCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {(Object.entries(PLAN_DETAILS) as [PlanKey, typeof PLAN_DETAILS[PlanKey]][]).map(([key, details]) => (
+        {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => (
           <div 
             key={key}
             className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"

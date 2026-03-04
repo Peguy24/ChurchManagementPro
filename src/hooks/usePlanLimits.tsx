@@ -5,6 +5,20 @@ import { useCurrentTenant } from "./useCurrentTenant";
 
 // Plan limits configuration
 export const PLAN_LIMITS = {
+  free: {
+    maxMembers: 100,
+    maxBranches: 1,
+    maxUsers: 3,
+    features: {
+      attendance: true,
+      donations: true,
+      advancedReports: false,
+      emailNotifications: false,
+      inventory: false,
+      api: false,
+      whiteLabel: false,
+    },
+  },
   essentiel: {
     maxMembers: 200,
     maxBranches: 1,
@@ -89,6 +103,21 @@ export function usePlanLimits() {
   const { plan, subscribed, loading: subscriptionLoading } = useSubscription();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
 
+  // Check DB subscription for plans not managed by Stripe (e.g., "free")
+  const { data: dbSubscription } = useQuery({
+    queryKey: ["db-subscription", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+      const { data } = await supabase
+        .from("tenant_subscriptions")
+        .select("plan, status")
+        .eq("tenant_id", tenantId)
+        .single();
+      return data;
+    },
+    enabled: !!tenantId && !tenantLoading,
+  });
+
   // Get current usage stats
   const { data: usage, isLoading: usageLoading } = useQuery({
     queryKey: ["usage-stats", tenantId],
@@ -127,10 +156,14 @@ export function usePlanLimits() {
     enabled: !!tenantId && !tenantLoading,
   });
 
+  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (free)
+  const isDbFreePlan = !subscribed && dbSubscription?.plan === "free" && dbSubscription?.status === "active";
+  const effectiveSubscribed = subscribed || isDbFreePlan;
+  const effectivePlan = subscribed ? (plan as PlanKey | null) : (isDbFreePlan ? "free" : null);
+
   // Get current plan limits - use "none" plan if not subscribed
-  const currentPlan = plan as PlanKey | null;
-  const limits: PlanLimits = subscribed && currentPlan && PLAN_LIMITS[currentPlan] 
-    ? PLAN_LIMITS[currentPlan] 
+  const limits: PlanLimits = effectiveSubscribed && effectivePlan && PLAN_LIMITS[effectivePlan] 
+    ? PLAN_LIMITS[effectivePlan] 
     : PLAN_LIMITS.none; // Default to "none" (locked) if no active subscription
 
   const loading = subscriptionLoading || tenantLoading || usageLoading;
@@ -186,7 +219,7 @@ export function usePlanLimits() {
   return {
     loading,
     subscribed,
-    plan: currentPlan,
+    plan: effectivePlan,
     limits,
     usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0 },
     
