@@ -1,41 +1,32 @@
 
 
-## Plan: Event Registration System with QR Codes
+## Current Situation
 
-### What we're building
-Each event gets a unique public registration link and QR code. Anyone (no login needed) can scan/click the link to fill out a registration form. Admins see who registered for each event.
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-### Database changes
+## What Needs to Be Done
 
-**New table: `event_registrations`**
-- `id`, `event_id` (FK to events), `tenant_id`
-- `first_name`, `last_name`, `email`, `phone`
-- `status` (registered/checked_in/cancelled), `registered_at`
-- RLS: public INSERT (anyone can register), tenant staff can SELECT/UPDATE/DELETE
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-### Files to create (3 new files)
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-1. **`src/pages/EventRegister.tsx`** -- Public registration form (similar to JoinChurch). Shows event name, date, location. Collects: first name, last name, email, phone. Success confirmation after submission.
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-2. **`src/pages/EventRegistrations.tsx`** -- Admin page to view/manage registrations for a specific event. Shows table of registrants with status badges. Export option.
-
-3. **`src/components/EventQRCode.tsx`** -- Component that generates and displays a QR code + copyable link for a given event. Uses the existing `qrcode` library.
-
-### Files to modify (3 files)
-
-4. **`src/App.tsx`** -- Add routes:
-   - `/event/:eventId/register` (public, no auth)
-   - `/events/:eventId/registrations` (protected)
-
-5. **`src/components/EventDialog.tsx`** -- Add a "Registration Link" section showing the QR code and shareable link when editing an existing event.
-
-6. **`src/contexts/LanguageContext.tsx`** -- Add `eventRegistration` translation keys (FR/EN/HT) for form labels, success messages, admin labels.
-
-### Technical details
-
-- Registration URL format: `{origin}/event/{eventId}/register`
-- QR code generated client-side using the existing `qrcode` npm package
-- The public form fetches event + tenant info to display branding (logo, church name)
-- No authentication required to register (like JoinChurch pattern)
-- Admin view accessible from Events page via a "View Registrations" button per event
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
