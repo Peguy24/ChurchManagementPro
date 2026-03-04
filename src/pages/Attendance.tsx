@@ -396,7 +396,7 @@ function AttendanceContent() {
           event_date: today,
           event_type: eventType,
           event_id: eventIdToUse,
-          scan_method: kioskCameraActive || cameraActive ? "camera" : "scanner_externe",
+          scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
         });
 
