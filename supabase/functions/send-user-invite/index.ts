@@ -147,7 +147,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "ChurchFlow <onboarding@resend.dev>",
+        from: "ChurchFlow <noreply@churchmanagementpro.com>",
         to: [email],
         subject: `Invitation à rejoindre ${tenantName}`,
         html: emailHtml,

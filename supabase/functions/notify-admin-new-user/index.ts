@@ -120,7 +120,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: `${churchName} <onboarding@resend.dev>`,
+      from: `${churchName} <noreply@churchmanagementpro.com>`,
       to: adminEmails,
       subject: `🆕 Nouvel utilisateur en attente d'approbation - ${firstName} ${lastName}`,
       html: `

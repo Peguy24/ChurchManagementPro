@@ -135,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
       : "aucune présence récente";
 
     const emailResponse = await resend.emails.send({
-      from: "Église <onboarding@resend.dev>",
+      from: "Église <noreply@churchmanagementpro.com>",
       to: [member.email],
       subject: "Nous remarquons votre absence",
       html: `

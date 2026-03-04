@@ -137,7 +137,7 @@ serve(async (req) => {
       try {
         const resend = new Resend(resendApiKey);
         await resend.emails.send({
-          from: "Church Manager Pro <onboarding@resend.dev>",
+          from: "Church Manager Pro <noreply@churchmanagementpro.com>",
           to: [contact_email],
           subject: `Bienvenue sur Church Manager Pro - ${church_name}`,
           html: `
