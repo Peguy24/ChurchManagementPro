@@ -7,7 +7,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export type ScanFeedbackStatus = 'success' | 'duplicate' | 'error' | null;
 
 interface CameraScannerProps {
-  onScan: (qrCode: string) => void;
+  onScan: (qrCode: string) => void | Promise<void>;
   isActive: boolean;
   onActiveChange: (active: boolean) => void;
   className?: string;
@@ -134,48 +134,52 @@ export default function CameraScanner({
     }
   }, [audioInitialized]);
 
-  const handleScan = useCallback((decodedText: string) => {
+  const handleScan = useCallback(async (decodedText: string) => {
     const now = Date.now();
     const trimmedCode = decodedText.trim();
-    
+
     // Prevent concurrent processing
     if (processingRef.current) {
       console.log("Camera scan blocked - already processing");
       return;
     }
-    
-    // Debounce: prevent same code being scanned within 5 seconds
-    if (trimmedCode === lastScannedRef.current && now - lastScanTimeRef.current < 5000) {
+
+    // Debounce: ignore same code for a longer window to avoid repeated auto-scans
+    if (trimmedCode === lastScannedRef.current && now - lastScanTimeRef.current < 15000) {
       console.log("Camera scan debounced:", trimmedCode);
       return;
     }
-    
+
     // Lock processing
     processingRef.current = true;
     setIsProcessing(true);
-    
+
     console.log("Camera scanned QR code:", trimmedCode);
     lastScannedRef.current = trimmedCode;
     lastScanTimeRef.current = now;
-    
+
     // Play immediate beep sound for camera scan
     playScanBeep(0.6);
-    
+
     // Show flash animation
     setShowFlash(true);
     setLastScannedCode(trimmedCode);
-    
-    // Call the callback using the ref to ensure we have the latest function
-    if (onScanRef.current) {
-      onScanRef.current(trimmedCode);
+
+    try {
+      // Await scan handler completion so we don't process same code while insert/check is ongoing
+      if (onScanRef.current) {
+        await Promise.resolve(onScanRef.current(trimmedCode));
+      }
+    } catch (error) {
+      console.error("Error in onScan handler:", error);
+    } finally {
+      // Keep short visual feedback before allowing next scan
+      setTimeout(() => {
+        setShowFlash(false);
+        processingRef.current = false;
+        setIsProcessing(false);
+      }, 1500);
     }
-    
-    // Release processing lock after animation and cooldown
-    setTimeout(() => {
-      setShowFlash(false);
-      processingRef.current = false;
-      setIsProcessing(false);
-    }, 1500); // 1.5 second cooldown before next scan is allowed
   }, []);
 
   const initializeScanner = useCallback((facing: "environment" | "user") => {
