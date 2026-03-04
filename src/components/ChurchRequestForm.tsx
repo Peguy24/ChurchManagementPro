@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Church, Send, Loader2 } from "lucide-react";
+import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 
 interface ChurchRequestFormProps {
   open: boolean;
@@ -15,8 +15,17 @@ interface ChurchRequestFormProps {
   selectedPlan?: string;
 }
 
+interface ProvisionResult {
+  success: boolean;
+  registrationLink: string;
+  emailSent: boolean;
+  message: string;
+  slug: string;
+}
+
 export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }: ChurchRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState<ProvisionResult | null>(null);
   const [formData, setFormData] = useState({
     church_name: "",
     contact_name: "",
@@ -37,9 +46,8 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("tenant_requests")
-        .insert({
+      const { data, error } = await supabase.functions.invoke('auto-provision-tenant', {
+        body: {
           church_name: formData.church_name,
           contact_name: formData.contact_name,
           contact_email: formData.contact_email,
@@ -47,39 +55,115 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
           address: formData.address || null,
           requested_plan: formData.requested_plan,
           message: formData.message || null,
-        });
+        },
+      });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      toast.success("Demande envoyée avec succès! Nous vous contacterons bientôt.");
-      setFormData({
-        church_name: "",
-        contact_name: "",
-        contact_email: "",
-        contact_phone: "",
-        address: "",
-        requested_plan: "basic",
-        message: "",
-      });
-      onOpenChange(false);
+      setResult(data as ProvisionResult);
+      
+      if (data.emailSent) {
+        toast.success("Votre église a été créée ! Vérifiez votre email pour activer votre compte.");
+      } else {
+        toast.success("Votre église a été créée ! Utilisez le lien fourni pour activer votre compte.");
+      }
     } catch (error: any) {
-      console.error("Error submitting request:", error);
-      toast.error("Erreur lors de l'envoi: " + error.message);
+      console.error("Error provisioning tenant:", error);
+      toast.error("Erreur lors de la création: " + (error.message || "Veuillez réessayer."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCopyLink = () => {
+    if (result?.registrationLink) {
+      navigator.clipboard.writeText(result.registrationLink);
+      toast.success("Lien copié !");
+    }
+  };
+
+  const handleClose = () => {
+    setResult(null);
+    setFormData({
+      church_name: "",
+      contact_name: "",
+      contact_email: "",
+      contact_phone: "",
+      address: "",
+      requested_plan: "basic",
+      message: "",
+    });
+    onOpenChange(false);
+  };
+
+  // Success screen
+  if (result) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-lg">
+          <div className="text-center space-y-6 py-4">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Église créée avec succès !</h2>
+              <p className="text-muted-foreground mt-2">
+                {result.emailSent 
+                  ? `Un email a été envoyé à ${formData.contact_email} avec les instructions pour créer votre compte administrateur.`
+                  : "Utilisez le lien ci-dessous pour créer votre compte administrateur."
+                }
+              </p>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">🔗 Lien d'activation</p>
+              <div className="flex gap-2">
+                <Input 
+                  value={result.registrationLink} 
+                  readOnly 
+                  className="text-xs bg-background"
+                />
+                <Button variant="outline" size="icon" onClick={handleCopyLink}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={() => window.open(result.registrationLink, '_blank')}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Ouvrir le lien d'activation
+              </Button>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                ⏰ Vous bénéficiez d'un <strong>essai gratuit de 14 jours</strong>. 
+                Ce lien est valide pendant 7 jours.
+              </p>
+            </div>
+
+            <Button variant="outline" onClick={handleClose} className="w-full">
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Church className="h-5 w-5 text-primary" />
-            Demande d'inscription
+            Essai gratuit de 14 jours
           </DialogTitle>
           <DialogDescription>
-            Remplissez ce formulaire pour demander l'inscription de votre église. Notre équipe vous contactera rapidement.
+            Créez votre espace église en quelques secondes. Aucune carte de crédit requise.
           </DialogDescription>
         </DialogHeader>
         
@@ -172,12 +256,12 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Envoi en cours...
+                Création en cours...
               </>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Envoyer la demande
+                Démarrer l'essai gratuit
               </>
             )}
           </Button>
