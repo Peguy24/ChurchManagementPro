@@ -132,7 +132,7 @@ export default function EventRegister() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 p-4">
+    <div className="min-h-screen bg-muted/30 p-4 overflow-y-auto">
       <div className="max-w-lg mx-auto space-y-6 py-8">
         {/* Language selector */}
         <div className="flex justify-end">
