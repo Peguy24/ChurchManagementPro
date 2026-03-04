@@ -8,11 +8,12 @@ import { Church } from 'lucide-react';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
+  requireSuperAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requireAdmin = false, requireSuperAdmin = false }: ProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isApproved, isAdmin, canAccess, loading: roleLoading } = useUserRole();
+  const { isApproved, isAdmin, isSuperAdmin, canAccess, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,21 +38,22 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   useEffect(() => {
     if (!loading && user && isApproved && requireAdmin && !isAdmin) {
-      // User is approved but not admin and trying to access admin page
       navigate('/');
     }
-  }, [user, loading, isApproved, isAdmin, requireAdmin, navigate]);
+    if (!loading && user && isApproved && requireSuperAdmin && !isSuperAdmin) {
+      navigate('/');
+    }
+  }, [user, loading, isApproved, isAdmin, isSuperAdmin, requireAdmin, requireSuperAdmin, navigate]);
 
   // Super admin redirection: if admin without tenant, redirect to super admin dashboard
   useEffect(() => {
-    if (!loading && user && isApproved && isAdmin && !tenantId && !hasRedirected) {
-      // Super admin without tenant - redirect to super admin dashboard if on root
+    if (!loading && user && isApproved && isSuperAdmin && !tenantId && !hasRedirected) {
       if (location.pathname === '/') {
         setHasRedirected(true);
         navigate('/super-admin');
       }
     }
-  }, [user, loading, isApproved, isAdmin, tenantId, hasRedirected, navigate, location.pathname]);
+  }, [user, loading, isApproved, isSuperAdmin, tenantId, hasRedirected, navigate, location.pathname]);
 
   useEffect(() => {
     if (!loading && user && isApproved && !requireAdmin) {
@@ -90,6 +92,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   // If admin is required, user must be admin
   if (requireAdmin && !isAdmin) {
+    return null;
+  }
+
+  // If super admin is required, user must be super admin
+  if (requireSuperAdmin && !isSuperAdmin) {
     return null;
   }
 

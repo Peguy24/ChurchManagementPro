@@ -9,7 +9,7 @@ import PendingApproval from './PendingApproval';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
-  const { isApproved, isAdmin, loading: roleLoading } = useUserRole();
+  const { isApproved, isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
 
   const loading = authLoading || roleLoading || tenantLoading;
@@ -36,8 +36,8 @@ export default function Home() {
     return <PendingApproval />;
   }
 
-  // Super admin (admin without tenant) → Show super admin dashboard
-  if (isAdmin && !tenantId) {
+  // Super admin (global admin without tenant) → Show super admin dashboard
+  if (isSuperAdmin && !tenantId) {
     return <SuperAdminDashboard />;
   }
 

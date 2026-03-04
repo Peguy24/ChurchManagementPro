@@ -22,6 +22,7 @@ export function useUserRole() {
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     async function fetchRolesAndPermissions() {
@@ -30,6 +31,7 @@ export function useUserRole() {
         setLoading(false);
         setIsApproved(false);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
         return;
       }
 
@@ -53,6 +55,7 @@ export function useUserRole() {
           setRoles(globalRoles);
           setIsApproved(true);
           setIsAdmin(true);
+          setIsSuperAdmin(true);
           setPermissions(DEFAULT_ROLE_PERMISSIONS);
           setLoading(false);
           return;
@@ -146,6 +149,7 @@ export function useUserRole() {
         setRoles([]);
         setIsApproved(false);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -186,6 +190,7 @@ export function useUserRole() {
     loading: authLoading || loading,
     isApproved,
     isAdmin,
+    isSuperAdmin,
     hasRole,
     hasAnyRole,
     canAccess,
