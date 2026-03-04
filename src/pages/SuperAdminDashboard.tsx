@@ -39,7 +39,7 @@ export default function SuperAdminDashboard() {
 
       if (subsError) throw subsError;
 
-      const totalRevenue = subscriptions?.reduce((sum, sub) => sum + (sub.price_monthly || 0), 0) || 0;
+      const totalRevenue = subscriptions?.filter(sub => sub.status === "active").reduce((sum, sub) => sum + (sub.price_monthly || 0), 0) || 0;
       const activeSubscriptions = subscriptions?.filter(sub => sub.status === "active").length || 0;
       const trialSubscriptions = subscriptions?.filter(sub => sub.status === "trial").length || 0;
 
