@@ -97,6 +97,9 @@ export const playErrorSound = (volume: number = 0.5): void => {
     masterGain.connect(ctx.destination);
     masterGain.gain.value = volume * 0.3;
     
+    // Vibrate on error (two short pulses)
+    vibrate([100, 50, 100]);
+    
     // Create buzzer-like error sound
     ERROR_FREQUENCIES.forEach((freq, i) => {
       const oscillator = ctx.createOscillator();
