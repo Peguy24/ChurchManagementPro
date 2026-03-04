@@ -197,7 +197,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? t("events.editEvent") : t("events.createEvent")}</DialogTitle>
           <DialogDescription>{isEditing ? t("events.editEventDesc") : t("events.createEventDesc")}</DialogDescription>
