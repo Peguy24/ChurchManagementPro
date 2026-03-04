@@ -6,7 +6,18 @@ const getAudioContext = (): AudioContext => {
   if (!audioContext) {
     audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
+  // Resume if suspended (mobile browsers require user gesture)
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
   return audioContext;
+};
+
+// Vibrate the device if supported
+const vibrate = (pattern: number | number[]): void => {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
 };
 
 // Success sound frequencies - ascending musical notes (major scale feel)
