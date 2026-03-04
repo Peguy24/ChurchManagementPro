@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -301,6 +302,7 @@ export default function Branches() {
   };
 
   return (
+    <Layout>
     <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-4">
@@ -544,5 +546,6 @@ export default function Branches() {
         planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Essentiel"}
       />
     </div>
+    </Layout>
   );
 }
