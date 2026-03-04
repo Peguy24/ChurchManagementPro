@@ -409,7 +409,7 @@ function AttendanceContent() {
         scanInputRef.current.focus();
       }
     }
-  }, [toast, t, playSound, kioskCameraActive, cameraActive, selectedEventId, todayEvents]);
+  }, [toast, t, playSound, kioskCameraActive, cameraActive, selectedEventId, todayEvents, tenantId]);
 
   const handleScanInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQrCodeInput(e.target.value);
