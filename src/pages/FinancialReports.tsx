@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -51,6 +52,7 @@ export default function FinancialReports() {
 }
 
 function FinancialReportsContent() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("financial");
   const [selectedBranch, setSelectedBranch] = useState("all");
 
@@ -73,17 +75,17 @@ function FinancialReportsContent() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Rapports</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("financialReports.title")}</h2>
             <p className="text-muted-foreground">
-              Analyse complète des données de votre église
+              {t("financialReports.subtitle")}
             </p>
           </div>
           <Select value={selectedBranch} onValueChange={setSelectedBranch}>
             <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Toutes les branches" />
+              <SelectValue placeholder={t("financialReports.allBranches")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes les branches</SelectItem>
+              <SelectItem value="all">{t("financialReports.allBranches")}</SelectItem>
               {branches.map((branch) => (
                 <SelectItem key={branch.id} value={branch.id}>
                   {branch.name}
@@ -98,31 +100,31 @@ function FinancialReportsContent() {
           <TabsList className="flex flex-wrap h-auto gap-1 w-full">
             <TabsTrigger value="financial" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline">Financier</span>
+              <span className="hidden sm:inline">{t("nav.financialDashboard").split(" ")[0]}</span>
             </TabsTrigger>
             <TabsTrigger value="members" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Membres</span>
+              <span className="hidden sm:inline">{t("nav.members")}</span>
             </TabsTrigger>
             <TabsTrigger value="birthdays" className="flex items-center gap-2">
               <Cake className="h-4 w-4" />
-              <span className="hidden sm:inline">Anniversaires</span>
+              <span className="hidden sm:inline">{t("dashboard.upcomingBirthdays").split(" ")[0]}</span>
             </TabsTrigger>
             <TabsTrigger value="inventory" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Inventaire</span>
+              <span className="hidden sm:inline">{t("layout.inventory")}</span>
             </TabsTrigger>
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Événements</span>
+              <span className="hidden sm:inline">{t("nav.events")}</span>
             </TabsTrigger>
             <TabsTrigger value="attendance" className="flex items-center gap-2">
               <CalendarCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Présences</span>
+              <span className="hidden sm:inline">{t("nav.attendance")}</span>
             </TabsTrigger>
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Audit</span>
+              <span className="hidden sm:inline">{t("nav.auditTrail").split(" ")[0]}</span>
             </TabsTrigger>
           </TabsList>
 

@@ -13,8 +13,7 @@ export default function EventQRCode({ eventId }: EventQRCodeProps) {
   const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copied, setCopied] = useState(false);
-  const publishedOrigin = "https://churchmanagementpro.com";
-  const registrationUrl = `${publishedOrigin}/event/${eventId}/register`;
+  const registrationUrl = `${window.location.origin}/event/${eventId}/register`;
 
   useEffect(() => {
     if (canvasRef.current) {
