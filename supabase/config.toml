@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.send-support-email]
 verify_jwt = false
+
+[functions.auto-provision-tenant]
+verify_jwt = false
