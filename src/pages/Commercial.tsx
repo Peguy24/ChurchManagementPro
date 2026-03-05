@@ -660,10 +660,7 @@ const Commercial = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Church className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl">ChurchManager Pro</span>
+              <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
             </div>
             <p className="text-sm text-muted-foreground">
               {t("commercial.footer")}
