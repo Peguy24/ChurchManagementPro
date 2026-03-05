@@ -234,6 +234,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log("Admin invite email sent successfully:", emailResponse);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse,
+      invitationLink: registrationLink 
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    });
   } catch (error: any) {
     console.error("Error in send-admin-invite function:", error);
     return new Response(
