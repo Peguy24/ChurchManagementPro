@@ -235,12 +235,7 @@ const Commercial = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <Church className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Church Manager Pro
-            </span>
+            <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
@@ -665,10 +660,7 @@ const Commercial = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Church className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl">ChurchManager Pro</span>
+              <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
             </div>
             <p className="text-sm text-muted-foreground">
               {t("commercial.footer")}
