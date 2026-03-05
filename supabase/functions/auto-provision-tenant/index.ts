@@ -136,7 +136,7 @@ serve(async (req) => {
     if (resendApiKey) {
       try {
         const resend = new Resend(resendApiKey);
-        await resend.emails.send({
+        const emailResponse = await resend.emails.send({
           from: "Church Manager Pro <noreply@churchmanagementpro.com>",
           to: [contact_email],
           subject: `Bienvenue sur Church Manager Pro - ${church_name}`,
@@ -206,8 +206,13 @@ serve(async (req) => {
             </html>
           `,
         });
+
+        if (emailResponse.error) {
+          throw new Error(`Resend error: ${emailResponse.error.message}`);
+        }
+
         emailSent = true;
-        logStep("Welcome email sent successfully");
+        logStep("Welcome email sent successfully", { messageId: emailResponse.data?.id });
       } catch (emailErr) {
         logStep("Failed to send email", { error: String(emailErr) });
       }
