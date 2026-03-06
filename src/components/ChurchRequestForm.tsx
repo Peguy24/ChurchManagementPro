@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChurchRequestFormProps {
   open: boolean;
@@ -24,6 +25,7 @@ interface ProvisionResult {
 }
 
 export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }: ChurchRequestFormProps) {
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ProvisionResult | null>(null);
   const [formData, setFormData] = useState({
@@ -40,7 +42,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
     e.preventDefault();
     
     if (!formData.church_name || !formData.contact_name || !formData.contact_email) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+      toast.error(t("churchForm.requiredFields"));
       return;
     }
 
@@ -64,13 +66,13 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       setResult(data as ProvisionResult);
       
       if (data.emailSent) {
-        toast.success("Votre église a été créée ! Vérifiez votre email pour activer votre compte.");
+        toast.success(t("churchForm.successWithEmail"));
       } else {
-        toast.success("Votre église a été créée ! Utilisez le lien fourni pour activer votre compte.");
+        toast.success(t("churchForm.successWithLink"));
       }
     } catch (error: any) {
       console.error("Error provisioning tenant:", error);
-      toast.error("Erreur lors de la création: " + (error.message || "Veuillez réessayer."));
+      toast.error(t("churchForm.errorCreating") + ": " + (error.message || ""));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +81,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
   const handleCopyLink = () => {
     if (result?.registrationLink) {
       navigator.clipboard.writeText(result.registrationLink);
-      toast.success("Lien copié !");
+      toast.success(t("churchForm.linkCopied"));
     }
   };
 
@@ -108,17 +110,17 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Église créée avec succès !</h2>
+              <h2 className="text-2xl font-bold text-foreground">{t("churchForm.successTitle")}</h2>
               <p className="text-muted-foreground mt-2">
                 {result.emailSent 
-                  ? `Un email a été envoyé à ${formData.contact_email} avec les instructions pour créer votre compte administrateur.`
-                  : "Utilisez le lien ci-dessous pour créer votre compte administrateur."
+                  ? t("churchForm.successEmailMsg")
+                  : t("churchForm.successLinkMsg")
                 }
               </p>
             </div>
 
             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-              <p className="text-sm font-medium text-foreground">🔗 Lien d'activation</p>
+              <p className="text-sm font-medium text-foreground">🔗 {t("churchForm.activationLink")}</p>
               <div className="flex gap-2">
                 <Input 
                   value={result.registrationLink} 
@@ -134,19 +136,18 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 onClick={() => window.open(result.registrationLink, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Ouvrir le lien d'activation
+                {t("churchForm.openActivationLink")}
               </Button>
             </div>
 
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                ⏰ Vous bénéficiez d'un <strong>essai gratuit de 14 jours</strong>. 
-                Ce lien est valide pendant 7 jours.
+                ⏰ {t("churchForm.trialInfo")}
               </p>
             </div>
 
             <Button variant="outline" onClick={handleClose} className="w-full">
-              Fermer
+              {t("churchForm.close")}
             </Button>
           </div>
         </DialogContent>
@@ -160,32 +161,32 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Church className="h-5 w-5 text-primary" />
-            Essai gratuit de 14 jours
+            {t("churchForm.dialogTitle")}
           </DialogTitle>
           <DialogDescription>
-            Créez votre espace église en quelques secondes. Aucune carte de crédit requise.
+            {t("churchForm.dialogDesc")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="church_name">Nom de l'église *</Label>
+              <Label htmlFor="church_name">{t("churchForm.churchName")} *</Label>
               <Input
                 id="church_name"
                 value={formData.church_name}
                 onChange={(e) => setFormData({ ...formData, church_name: e.target.value })}
-                placeholder="Ex: Église de la Grâce"
+                placeholder={t("churchForm.churchNamePlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_name">Votre nom *</Label>
+              <Label htmlFor="contact_name">{t("churchForm.yourName")} *</Label>
               <Input
                 id="contact_name"
                 value={formData.contact_name}
                 onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
-                placeholder="Ex: Jean Dupont"
+                placeholder={t("churchForm.yourNamePlaceholder")}
                 required
               />
             </div>
@@ -193,39 +194,39 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contact_email">Email *</Label>
+              <Label htmlFor="contact_email">{t("churchForm.email")} *</Label>
               <Input
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
                 onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                placeholder="contact@eglise.com"
+                placeholder={t("churchForm.emailPlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_phone">Téléphone</Label>
+              <Label htmlFor="contact_phone">{t("churchForm.phone")}</Label>
               <Input
                 id="contact_phone"
                 value={formData.contact_phone}
                 onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                placeholder="+1 234 567 890"
+                placeholder={t("churchForm.phonePlaceholder")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Adresse</Label>
+            <Label htmlFor="address">{t("churchForm.address")}</Label>
             <Input
               id="address"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Adresse de l'église"
+              placeholder={t("churchForm.addressPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="requested_plan">Plan souhaité</Label>
+            <Label htmlFor="requested_plan">{t("churchForm.desiredPlan")}</Label>
             <Select 
               value={formData.requested_plan} 
               onValueChange={(v) => setFormData({ ...formData, requested_plan: v })}
@@ -234,20 +235,20 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="basic">Essentiel - $49/mois</SelectItem>
-                <SelectItem value="standard">Professionnel - $99/mois</SelectItem>
-                <SelectItem value="premium">Entreprise - $199/mois</SelectItem>
+                <SelectItem value="basic">{t("churchForm.planEssential")}</SelectItem>
+                <SelectItem value="standard">{t("churchForm.planProfessional")}</SelectItem>
+                <SelectItem value="premium">{t("churchForm.planEnterprise")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="message">Message (optionnel)</Label>
+            <Label htmlFor="message">{t("churchForm.message")}</Label>
             <Textarea
               id="message"
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Dites-nous en plus sur votre église et vos besoins..."
+              placeholder={t("churchForm.messagePlaceholder")}
               rows={3}
             />
           </div>
@@ -256,12 +257,12 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Création en cours...
+                {t("churchForm.submitting")}
               </>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Démarrer l'essai gratuit
+                {t("churchForm.submitButton")}
               </>
             )}
           </Button>
