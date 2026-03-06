@@ -3,11 +3,13 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Building2, UserCheck, AlertTriangle, Crown, ArrowRight } from "lucide-react";
-import { usePlanLimits, PLAN_LIMITS } from "@/hooks/usePlanLimits";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function PlanUsageCard() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const {
     loading,
@@ -34,7 +36,7 @@ export function PlanUsageCard() {
 
   const planName = plan 
     ? plan.charAt(0).toUpperCase() + plan.slice(1)
-    : "Essentiel";
+    : "Essential";
 
   const memberPercent = getMemberUsagePercent();
   const branchPercent = getBranchUsagePercent();
@@ -49,7 +51,7 @@ export function PlanUsageCard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            <span className="font-semibold text-sm sm:text-base">Plan {planName}</span>
+            <span className="font-semibold text-sm sm:text-base">{t("sub.plan")} {planName}</span>
           </div>
           {plan !== "entreprise" && (
             <Button 
@@ -58,7 +60,7 @@ export function PlanUsageCard() {
               onClick={() => navigate("/settings/subscription")}
               className="self-start sm:self-auto"
             >
-              Améliorer
+              {t("sub.upgrade")}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           )}
@@ -69,18 +71,18 @@ export function PlanUsageCard() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span>Membres</span>
+              <span>{t("sub.members")}</span>
             </div>
             <div className="flex items-center gap-2">
               {atMemberLimit && (
                 <Badge variant="destructive" className="text-xs">
                   <AlertTriangle className="h-3 w-3 mr-1" />
-                  Limite atteinte
+                  {t("sub.limitReached")}
                 </Badge>
               )}
               {!atMemberLimit && isNearMemberLimit && (
                 <Badge variant="outline" className="text-xs border-warning text-warning">
-                  Presque plein
+                  {t("sub.almostFull")}
                 </Badge>
               )}
               <span className="font-medium">
@@ -101,18 +103,18 @@ export function PlanUsageCard() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span>Succursales</span>
+              <span>{t("sub.branches")}</span>
             </div>
             <div className="flex items-center gap-2">
               {atBranchLimit && (
                 <Badge variant="destructive" className="text-xs">
                   <AlertTriangle className="h-3 w-3 mr-1" />
-                  Limite atteinte
+                  {t("sub.limitReached")}
                 </Badge>
               )}
               {!atBranchLimit && isNearBranchLimit && (
                 <Badge variant="outline" className="text-xs border-warning text-warning">
-                  Presque plein
+                  {t("sub.almostFull")}
                 </Badge>
               )}
               <span className="font-medium">
@@ -133,7 +135,7 @@ export function PlanUsageCard() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-muted-foreground" />
-              <span>Utilisateurs</span>
+              <span>{t("sub.users")}</span>
             </div>
             <span className="font-medium">
               {usage.usersCount} / {limits.maxUsers === Infinity ? "∞" : limits.maxUsers}
@@ -144,14 +146,14 @@ export function PlanUsageCard() {
         {(atMemberLimit || atBranchLimit) && plan !== "entreprise" && (
           <div className="pt-2 border-t">
             <p className="text-sm text-muted-foreground mb-2">
-              Passez à un plan supérieur pour débloquer plus de capacité.
+              {t("sub.upgradeMsg")}
             </p>
             <Button 
               size="sm" 
               className="w-full"
               onClick={() => navigate("/settings/subscription")}
             >
-              Voir les plans
+              {t("sub.viewPlans")}
             </Button>
           </div>
         )}
