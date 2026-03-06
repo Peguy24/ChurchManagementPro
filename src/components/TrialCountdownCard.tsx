@@ -8,23 +8,22 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { differenceInDays, differenceInHours, isPast } from "date-fns";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function TrialCountdownCard() {
+  const { t } = useLanguage();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { subscribed, loading: subLoading, createCheckout, checkoutLoading } = useSubscription();
 
-  // Fetch trial info from tenant_subscriptions
   const { data: subscription, isLoading } = useQuery({
     queryKey: ["tenant-subscription-trial", tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
-      
       const { data, error } = await supabase
         .from("tenant_subscriptions")
         .select("status, trial_ends_at, plan")
         .eq("tenant_id", tenantId)
         .maybeSingle();
-      
       if (error) {
         console.error("Error fetching subscription:", error);
         return null;
@@ -36,7 +35,6 @@ export function TrialCountdownCard() {
 
   const loading = isLoading || tenantLoading || subLoading;
 
-  // Don't show if user has active subscription or no trial data
   if (loading) {
     return (
       <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -47,28 +45,17 @@ export function TrialCountdownCard() {
     );
   }
 
-  // If subscribed with a paid plan, don't show trial card
-  if (subscribed) {
-    return null;
-  }
-
-  // If no subscription record or not in trial, don't show
-  if (!subscription || subscription.status !== "trial" || !subscription.trial_ends_at) {
-    return null;
-  }
+  if (subscribed) return null;
+  if (!subscription || subscription.status !== "trial" || !subscription.trial_ends_at) return null;
 
   const trialEndDate = new Date(subscription.trial_ends_at);
   const now = new Date();
   const isExpired = isPast(trialEndDate);
   const daysLeft = differenceInDays(trialEndDate, now);
   const hoursLeft = differenceInHours(trialEndDate, now) % 24;
-  
-  // Calculate progress (14 days total)
   const totalTrialDays = 14;
   const daysPassed = totalTrialDays - daysLeft;
   const progressPercent = Math.min(100, Math.max(0, (daysPassed / totalTrialDays) * 100));
-
-  // Determine urgency level
   const isUrgent = daysLeft <= 3 && !isExpired;
   const isWarning = daysLeft <= 7 && daysLeft > 3;
 
@@ -79,15 +66,13 @@ export function TrialCountdownCard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              <CardTitle className="text-lg text-destructive">Essai Expiré</CardTitle>
+              <CardTitle className="text-lg text-destructive">{t("sub.trialExpired")}</CardTitle>
             </div>
-            <Badge variant="destructive">Expiré</Badge>
+            <Badge variant="destructive">{t("sub.expired")}</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Votre période d'essai gratuite est terminée. Souscrivez maintenant pour continuer à utiliser toutes les fonctionnalités.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("sub.trialExpiredMsg")}</p>
           <div className="grid gap-2">
             {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).slice(0, 2).map(([key, details]) => (
               <Button 
@@ -101,7 +86,7 @@ export function TrialCountdownCard() {
                   <CreditCard className="h-4 w-4" />
                   {details.name}
                 </span>
-                <span>${details.price}/mois</span>
+                <span>${details.price}{t("sub.perMonth")}</span>
               </Button>
             ))}
           </div>
@@ -122,7 +107,7 @@ export function TrialCountdownCard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Clock className={`h-5 w-5 ${isUrgent ? "text-destructive" : isWarning ? "text-orange-500" : "text-primary"}`} />
-            <CardTitle className="text-base sm:text-lg">Période d'Essai Gratuite</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("sub.freeTrial")}</CardTitle>
           </div>
           <Badge 
             variant="outline" 
@@ -134,33 +119,31 @@ export function TrialCountdownCard() {
                   : "border-primary text-primary"
             }`}
           >
-            {daysLeft} jour{daysLeft > 1 ? "s" : ""} restant{daysLeft > 1 ? "s" : ""}
+            {daysLeft} {t("sub.daysRemaining")}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Countdown display */}
         <div className="flex items-center justify-center gap-4 py-2">
           <div className="text-center">
             <p className={`text-3xl sm:text-4xl font-bold ${isUrgent ? "text-destructive" : isWarning ? "text-orange-600 dark:text-orange-400" : "text-primary"}`}>
               {daysLeft}
             </p>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Jours</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("sub.days")}</p>
           </div>
           <div className={`text-2xl font-bold ${isUrgent ? "text-destructive" : isWarning ? "text-orange-500" : "text-primary"}`}>:</div>
           <div className="text-center">
             <p className={`text-3xl sm:text-4xl font-bold ${isUrgent ? "text-destructive" : isWarning ? "text-orange-600 dark:text-orange-400" : "text-primary"}`}>
               {hoursLeft}
             </p>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Heures</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("sub.hours")}</p>
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Jour 1</span>
-            <span>Jour 14</span>
+            <span>{t("sub.day1")}</span>
+            <span>{t("sub.day14")}</span>
           </div>
           <Progress 
             value={progressPercent} 
@@ -168,17 +151,10 @@ export function TrialCountdownCard() {
           />
         </div>
 
-        {/* Message */}
         <p className="text-sm text-muted-foreground text-center">
-          {isUrgent 
-            ? "⚠️ Attention ! Votre essai se termine bientôt. Souscrivez maintenant pour ne pas perdre l'accès."
-            : isWarning
-              ? "Profitez de votre essai ! Pensez à souscrire avant la fin pour conserver toutes les fonctionnalités."
-              : "Explorez toutes les fonctionnalités premium pendant votre essai gratuit."
-          }
+          {isUrgent ? t("sub.urgentMsg") : isWarning ? t("sub.warningMsg") : t("sub.normalMsg")}
         </p>
 
-        {/* CTA Button */}
         <Button 
           onClick={() => createCheckout("professionnel")}
           disabled={checkoutLoading}
@@ -189,7 +165,7 @@ export function TrialCountdownCard() {
           ) : (
             <Sparkles className="h-4 w-4 mr-2" />
           )}
-          Souscrire Maintenant
+          {t("sub.subscribeNow")}
         </Button>
       </CardContent>
     </Card>

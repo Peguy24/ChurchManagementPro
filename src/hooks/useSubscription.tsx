@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface SubscriptionState {
   subscribed: boolean;
@@ -9,22 +10,21 @@ export interface SubscriptionState {
   loading: boolean;
 }
 
-// Plan details mapping
 export const PLAN_DETAILS = {
   essentiel: {
-    name: "Essentiel",
+    name: "Essential",
     price: 49,
     priceId: "price_1SsxZvF3VvKmdn5Gokml3EOt",
     productId: "prod_Tqetfpt7pnhNFf",
   },
   professionnel: {
-    name: "Professionnel", 
+    name: "Professional", 
     price: 99,
     priceId: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
     productId: "prod_TqetHNAL0zc5kD",
   },
   entreprise: {
-    name: "Entreprise",
+    name: "Enterprise",
     price: 199,
     priceId: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
     productId: "prod_TqeuZk0jVNwjEp",
@@ -36,6 +36,7 @@ export type PlanKey = StripePlanKey | "free";
 
 export function useSubscription() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     plan: null,
@@ -84,8 +85,8 @@ export function useSubscription() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
-          title: "Connexion requise",
-          description: "Veuillez vous connecter pour souscrire à un abonnement.",
+          title: t("sub.loginRequired"),
+          description: t("sub.loginToSubscribe"),
           variant: "destructive",
         });
         return;
@@ -102,8 +103,8 @@ export function useSubscription() {
 
       if (data?.updated) {
         toast({
-          title: "Abonnement mis à jour",
-          description: data.message || "Votre abonnement a été mis à jour avec succès.",
+          title: t("sub.subscriptionUpdated"),
+          description: data.message || t("sub.subscriptionUpdatedMsg"),
         });
         await checkSubscription();
         return;
@@ -115,8 +116,8 @@ export function useSubscription() {
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de créer la session de paiement. Veuillez réessayer.",
+        title: t("common.error"),
+        description: t("sub.checkoutError"),
         variant: "destructive",
       });
     } finally {
@@ -131,8 +132,8 @@ export function useSubscription() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
-          title: "Connexion requise",
-          description: "Veuillez vous connecter pour gérer votre abonnement.",
+          title: t("sub.loginRequired"),
+          description: t("sub.loginToManage"),
           variant: "destructive",
         });
         return;
@@ -152,8 +153,8 @@ export function useSubscription() {
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'ouvrir le portail de gestion. Veuillez réessayer.",
+        title: t("common.error"),
+        description: t("sub.portalError"),
         variant: "destructive",
       });
     } finally {
@@ -161,7 +162,6 @@ export function useSubscription() {
     }
   };
 
-  // Check subscription on mount and when auth changes
   useEffect(() => {
     checkSubscription();
 
@@ -172,7 +172,6 @@ export function useSubscription() {
     return () => subscription.unsubscribe();
   }, [checkSubscription]);
 
-  // Auto-refresh every minute
   useEffect(() => {
     const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);

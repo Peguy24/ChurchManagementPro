@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Settings, Loader2, Crown, Sparkles } from "lucide-react";
 import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function SubscriptionCard() {
+  const { t, language } = useLanguage();
   const { 
     subscribed, 
     plan, 
@@ -17,6 +18,8 @@ export function SubscriptionCard() {
     createCheckout, 
     openCustomerPortal 
   } = useSubscription();
+
+  const dateLocale = language === "fr" ? "fr-FR" : language === "ht" ? "fr-HT" : "en-US";
 
   if (loading) {
     return (
@@ -37,10 +40,10 @@ export function SubscriptionCard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">Votre Abonnement</CardTitle>
+              <CardTitle className="text-lg">{t("sub.yourSubscription")}</CardTitle>
             </div>
             <Badge className="bg-primary/10 text-primary border-primary/20">
-              Actif
+              {t("sub.active")}
             </Badge>
           </div>
         </CardHeader>
@@ -49,14 +52,14 @@ export function SubscriptionCard() {
             <div>
               <p className="text-2xl font-bold">{currentPlan.name}</p>
               <p className="text-sm text-muted-foreground">
-                ${currentPlan.price}/mois
+                ${currentPlan.price}{t("sub.perMonth")}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Renouvellement</p>
+              <p className="text-sm text-muted-foreground">{t("sub.renewal")}</p>
               <p className="font-medium">
                 {subscriptionEnd 
-                  ? format(new Date(subscriptionEnd), "d MMMM yyyy", { locale: fr })
+                  ? new Date(subscriptionEnd).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
                   : "—"
                 }
               </p>
@@ -73,23 +76,22 @@ export function SubscriptionCard() {
             ) : (
               <Settings className="h-4 w-4 mr-2" />
             )}
-            Gérer l'abonnement
+            {t("sub.manageSubscription")}
           </Button>
         </CardContent>
       </Card>
     );
   }
 
-  // Not subscribed - show upgrade options
   return (
     <Card className="border-2 border-dashed border-muted-foreground/30">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Passer à Premium</CardTitle>
+          <CardTitle className="text-lg">{t("sub.upgradePremium")}</CardTitle>
         </div>
         <CardDescription>
-          Débloquez toutes les fonctionnalités avec un abonnement
+          {t("sub.unlockFeatures")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -100,7 +102,7 @@ export function SubscriptionCard() {
           >
             <div>
               <p className="font-medium">{details.name}</p>
-              <p className="text-sm text-muted-foreground">${details.price}/mois</p>
+              <p className="text-sm text-muted-foreground">${details.price}{t("sub.perMonth")}</p>
             </div>
             <Button 
               size="sm"
@@ -112,7 +114,7 @@ export function SubscriptionCard() {
               ) : (
                 <>
                   <CreditCard className="h-4 w-4 mr-1" />
-                  Choisir
+                  {t("sub.choose")}
                 </>
               )}
             </Button>
