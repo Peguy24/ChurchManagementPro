@@ -29,7 +29,7 @@ serve(async (req) => {
     const { church_name, contact_name, contact_email, contact_phone, address, requested_plan, message } = await req.json();
 
     if (!church_name || !contact_name || !contact_email) {
-      return new Response(JSON.stringify({ error: "Champs obligatoires manquants" }), {
+      return new Response(JSON.stringify({ error: "Required fields missing" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });
@@ -42,7 +42,6 @@ serve(async (req) => {
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     
-    // Check for slug uniqueness
     const { data: existingTenant } = await supabase
       .from("tenants")
       .select("slug")
@@ -65,7 +64,7 @@ serve(async (req) => {
       .select()
       .single();
 
-    if (tenantError) throw new Error(`Erreur création tenant: ${tenantError.message}`);
+    if (tenantError) throw new Error(`Error creating tenant: ${tenantError.message}`);
     logStep("Tenant created", { tenantId: tenant.id, slug });
 
     // 3. Create trial subscription
@@ -94,7 +93,7 @@ serve(async (req) => {
         trial_ends_at: trialEndsAt,
       });
 
-    if (subError) throw new Error(`Erreur création abonnement: ${subError.message}`);
+    if (subError) throw new Error(`Error creating subscription: ${subError.message}`);
     logStep("Trial subscription created", { plan, trialEndsAt });
 
     // 4. Store request record
@@ -122,13 +121,19 @@ serve(async (req) => {
       .select("token")
       .single();
 
-    if (inviteError) throw new Error(`Erreur création invitation: ${inviteError.message}`);
+    if (inviteError) throw new Error(`Error creating invitation: ${inviteError.message}`);
     logStep("Admin invitation created");
 
     // 6. Send email with invitation link
     const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://cogmpw-sys.lovable.app";
     const registrationLink = `${siteUrl}/t/${slug}/auth?invite=${invitation.token}`;
     logStep("Registration link generated", { registrationLink });
+
+    const planLabels: Record<string, string> = {
+      basic: "Essential",
+      standard: "Professional",
+      premium: "Enterprise",
+    };
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     let emailSent = false;
@@ -139,7 +144,7 @@ serve(async (req) => {
         const emailResponse = await resend.emails.send({
           from: "Church Manager Pro <noreply@churchmanagementpro.com>",
           to: [contact_email],
-          subject: `Bienvenue sur Church Manager Pro - ${church_name}`,
+          subject: `Welcome to Church Manager Pro - ${church_name}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -150,55 +155,55 @@ serve(async (req) => {
             <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
               <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 <div style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); padding: 40px 20px; text-align: center;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Bienvenue !</h1>
-                  <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">Votre espace Church Manager Pro est prêt</p>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Welcome!</h1>
+                  <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">Your Church Manager Pro space is ready</p>
                 </div>
                 
                 <div style="padding: 40px 30px;">
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Bonjour <strong>${contact_name}</strong>,
+                    Hello <strong>${contact_name}</strong>,
                   </p>
                   
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Votre église <strong>${church_name}</strong> a été enregistrée avec succès sur Church Manager Pro ! 
-                    Vous bénéficiez d'un <strong>essai gratuit de 14 jours</strong> avec toutes les fonctionnalités.
+                    Your church <strong>${church_name}</strong> has been successfully registered on Church Manager Pro! 
+                    You have a <strong>14-day free trial</strong> with all features included.
                   </p>
 
                   <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px; margin: 24px 0; border-radius: 4px;">
                     <p style="color: #1E40AF; font-size: 14px; margin: 0;">
-                      <strong>📋 Récapitulatif</strong><br>
-                      <strong>Église :</strong> ${church_name}<br>
-                      <strong>Plan :</strong> ${plan === 'basic' ? 'Essentiel' : plan === 'standard' ? 'Professionnel' : 'Entreprise'} (essai gratuit)<br>
-                      <strong>Fin d'essai :</strong> ${new Date(trialEndsAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      <strong>📋 Summary</strong><br>
+                      <strong>Church:</strong> ${church_name}<br>
+                      <strong>Plan:</strong> ${planLabels[plan] || plan} (free trial)<br>
+                      <strong>Trial ends:</strong> ${new Date(trialEndsAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                   </div>
                   
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                    Cliquez sur le bouton ci-dessous pour créer votre compte administrateur et commencer à gérer votre église.
+                    Click the button below to create your admin account and start managing your church.
                   </p>
                   
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${registrationLink}" style="display: inline-block; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                      ✨ Créer mon compte administrateur
+                      ✨ Create My Admin Account
                     </a>
                   </div>
 
                   <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 12px 16px; margin: 24px 0; border-radius: 4px;">
                     <p style="color: #92400E; font-size: 14px; margin: 0;">
-                      <strong>⚠️ Lien personnel et sécurisé</strong><br>
-                      Ce lien est unique et valide pour 7 jours. Ne le partagez avec personne.
+                      <strong>⚠️ Personal & Secure Link</strong><br>
+                      This link is unique and valid for 7 days. Do not share it with anyone.
                     </p>
                   </div>
                   
                   <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0;">
-                    Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
+                    If the button doesn't work, copy this link into your browser:<br>
                     <a href="${registrationLink}" style="color: #3B82F6; word-break: break-all;">${registrationLink}</a>
                   </p>
                 </div>
                 
                 <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
                   <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
-                    © ${new Date().getFullYear()} Church Manager Pro. Tous droits réservés.
+                    © ${new Date().getFullYear()} Church Manager Pro. All rights reserved.
                   </p>
                 </div>
               </div>
@@ -227,8 +232,8 @@ serve(async (req) => {
       registrationLink,
       emailSent,
       message: emailSent 
-        ? "Votre église a été créée ! Vérifiez votre email pour activer votre compte."
-        : "Votre église a été créée ! Utilisez le lien ci-dessous pour activer votre compte.",
+        ? "Your church has been created! Check your email to activate your account."
+        : "Your church has been created! Use the link below to activate your account.",
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
