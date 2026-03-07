@@ -1,3 +1,4 @@
+// Language context with FR/EN/HT support
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type Language = "fr" | "en" | "ht";
