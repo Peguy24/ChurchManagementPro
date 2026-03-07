@@ -230,7 +230,7 @@ const drawCard = async (
   // QR code label
   pdf.setFontSize(4);
   pdf.setTextColor(120, 120, 120);
-  const qrLabel = member.qr_code || `MEMBER-${member.id.slice(0, 8)}`;
+  const qrLabel = member.member_number || member.qr_code || `#${String(memberIndex + 1).padStart(4, "0")}`;
   pdf.text(qrLabel, qrX + qrSize / 2, qrY + qrSize + 2, { align: "center" });
 
   // Footer branding
