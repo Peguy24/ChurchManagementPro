@@ -506,17 +506,20 @@ export default function MemberDialog({
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="personal" className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                {t("members.personalInfo")}
+              <TabsTrigger value="personal" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <User className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.personalInfo")}</span>
+                <span className="sm:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="spiritual" className="flex items-center gap-1">
-                <Church className="h-4 w-4" />
-                {t("members.spiritualInfo")}
+              <TabsTrigger value="spiritual" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <Church className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.spiritualInfo")}</span>
+                <span className="sm:hidden">Spiritual</span>
               </TabsTrigger>
-              <TabsTrigger value="family" className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {t("members.familyInfo")}
+              <TabsTrigger value="family" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <Users className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.familyInfo")}</span>
+                <span className="sm:hidden">Family</span>
               </TabsTrigger>
             </TabsList>
             
@@ -525,7 +528,7 @@ export default function MemberDialog({
               {/* Photo Upload Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
                 <Label className="text-base font-semibold">Photo du Membre</Label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                   {/* Photo Preview */}
                   <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted border-2 border-dashed border-primary/30 flex items-center justify-center">
                     {photoPreview ? (
@@ -577,7 +580,7 @@ export default function MemberDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="lastName">{t("members.lastName")} *</Label>
                   <Input
@@ -604,7 +607,7 @@ export default function MemberDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="gender">{t("members.gender")}</Label>
                   <Select
@@ -636,7 +639,7 @@ export default function MemberDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="phone">{t("common.phone")} *</Label>
                   <Input
@@ -678,7 +681,7 @@ export default function MemberDialog({
               {/* Address Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
                 <Label className="text-base font-semibold">{t("members.address")}</Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="addressNumber">N°</Label>
                     <Input
@@ -690,7 +693,7 @@ export default function MemberDialog({
                       placeholder="123"
                     />
                   </div>
-                  <div className="grid gap-2 col-span-2">
+                  <div className="grid gap-2 sm:col-span-2">
                     <Label htmlFor="street">{t("members.street")}</Label>
                     <Input
                       id="street"
@@ -702,7 +705,7 @@ export default function MemberDialog({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="apartment">Apt</Label>
                     <Input
@@ -737,7 +740,7 @@ export default function MemberDialog({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="state">{t("members.stateRegion")}</Label>
                     <Input
@@ -763,7 +766,7 @@ export default function MemberDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="joinDate">{t("members.joinDate")}</Label>
                   <Input
@@ -820,7 +823,7 @@ export default function MemberDialog({
               {/* Formation Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
                 <Label className="text-base font-semibold">Formation</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="academicFormation">Formation académique</Label>
                     <Input
@@ -849,7 +852,7 @@ export default function MemberDialog({
 
             {/* Spiritual Information Tab */}
             <TabsContent value="spiritual" className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="baptismStatus">{t("members.baptized")}</Label>
                   <Select
@@ -979,7 +982,7 @@ export default function MemberDialog({
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="spouseName">{t("members.spouseName")}</Label>
                   <Input
@@ -1004,7 +1007,7 @@ export default function MemberDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="numberOfChildren">{t("members.numberOfChildren")}</Label>
                   <Input
