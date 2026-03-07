@@ -140,11 +140,34 @@ serve(async (req) => {
       }
     }
 
+    // Get all users associated with this tenant (to delete their auth accounts)
+    const { data: tenantProfiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("tenant_id", tenant_id);
+
     // Update profiles to remove tenant_id reference
     await supabaseAdmin
       .from("profiles")
       .update({ tenant_id: null })
       .eq("tenant_id", tenant_id);
+
+    // Delete auth users that were associated with this tenant
+    if (tenantProfiles?.length) {
+      for (const profile of tenantProfiles) {
+        // Remove user_roles entries
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", profile.id);
+        // Delete profile
+        await supabaseAdmin.from("profiles").delete().eq("id", profile.id);
+        // Delete the auth user so the email can be reused
+        const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(profile.id);
+        if (authDeleteError) {
+          console.log(`[DELETE-TENANT] Warning deleting auth user ${profile.id}: ${authDeleteError.message}`);
+        } else {
+          console.log(`[DELETE-TENANT] Auth user ${profile.id} deleted`);
+        }
+      }
+    }
 
     // Finally delete the tenant itself
     const { error: deleteError } = await supabaseAdmin
