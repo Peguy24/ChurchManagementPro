@@ -506,17 +506,20 @@ export default function MemberDialog({
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="personal" className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                {t("members.personalInfo")}
+              <TabsTrigger value="personal" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <User className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.personalInfo")}</span>
+                <span className="sm:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="spiritual" className="flex items-center gap-1">
-                <Church className="h-4 w-4" />
-                {t("members.spiritualInfo")}
+              <TabsTrigger value="spiritual" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <Church className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.spiritualInfo")}</span>
+                <span className="sm:hidden">Spiritual</span>
               </TabsTrigger>
-              <TabsTrigger value="family" className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {t("members.familyInfo")}
+              <TabsTrigger value="family" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                <Users className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("members.familyInfo")}</span>
+                <span className="sm:hidden">Family</span>
               </TabsTrigger>
             </TabsList>
             
