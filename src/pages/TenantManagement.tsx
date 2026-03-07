@@ -610,7 +610,7 @@ export default function TenantManagement() {
                     <Input id="contact_phone" value={formData.contact_phone}
                       onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })} />
                   </div>
-                  <div className="col-span-2 space-y-2">
+                  <div className="col-span-1 sm:col-span-2 space-y-2">
                     <Label htmlFor="address">{t("superAdmin.address")}</Label>
                     <Input id="address" value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
