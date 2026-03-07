@@ -439,7 +439,7 @@ export default function TenantUserManagement() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                  </Table></div>
                 )}
               </CardContent>
             </Card>

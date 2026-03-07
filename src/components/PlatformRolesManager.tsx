@@ -307,7 +307,7 @@ export default function PlatformRolesManager() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </Table></div>
         )}
       </CardContent>
     </Card>

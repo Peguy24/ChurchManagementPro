@@ -698,7 +698,7 @@ export default function TenantManagement() {
 
                 <Card className="bg-muted/50">
                   <CardContent className="pt-4">
-                    <div className="grid grid-cols-4 gap-4 text-sm">
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">{t("superAdmin.maxMembers")}</p>
                         <p className="font-semibold">{PLAN_CONFIG[formData.plan].members === -1 ? t("superAdmin.unlimited") : PLAN_CONFIG[formData.plan].members}</p>

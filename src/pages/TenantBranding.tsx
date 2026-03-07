@@ -78,8 +78,8 @@ export default function TenantBranding() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t("tenant.brandingTitle")}</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{t("tenant.brandingTitle")}</h2>
+          <p className="text-sm md:text-base text-muted-foreground">
             {t("tenant.brandingSubtitle")}
           </p>
         </div>
