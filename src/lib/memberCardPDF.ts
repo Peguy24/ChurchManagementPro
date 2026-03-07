@@ -83,7 +83,8 @@ const drawCard = async (
   member: MemberCardData,
   x: number,
   y: number,
-  customization?: CardCustomization
+  customization?: CardCustomization,
+  memberIndex: number = 0
 ) => {
   const primaryColor = hexToRgb(customization?.primaryColor || "#3B82F6");
   const secondaryColor = hexToRgb(customization?.secondaryColor || "#1E40AF");
