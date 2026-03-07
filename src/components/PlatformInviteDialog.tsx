@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle, Shield, Wallet, MessageSquare, HeadphonesIcon, TrendingUp } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Database } from "@/integrations/supabase/types";
 
 type PlatformRole = Database["public"]["Enums"]["platform_role"];
@@ -16,14 +17,6 @@ interface PlatformInviteDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
-  super_admin: "Super Administrateur",
-  finance_admin: "Admin Finance",
-  moderator: "Modérateur",
-  support: "Support Technique",
-  sales: "Commercial / Ventes",
-};
-
 const PLATFORM_ROLE_ICONS: Record<PlatformRole, React.ReactNode> = {
   super_admin: <Shield className="h-4 w-4" />,
   finance_admin: <Wallet className="h-4 w-4" />,
@@ -32,23 +25,32 @@ const PLATFORM_ROLE_ICONS: Record<PlatformRole, React.ReactNode> = {
   sales: <TrendingUp className="h-4 w-4" />,
 };
 
-const PLATFORM_ROLE_DESCRIPTIONS: Record<PlatformRole, string> = {
-  super_admin: "Accès complet à toutes les fonctionnalités de la plateforme",
-  finance_admin: "Consulter les données financières globales et les revenus",
-  moderator: "Modérer les contenus et gérer les signalements",
-  support: "Accéder aux tenants pour le support technique",
-  sales: "Gérer les prospects et effectuer des démonstrations",
-};
-
 const PLATFORM_ROLES: PlatformRole[] = ["super_admin", "finance_admin", "moderator", "support", "sales"];
 
 export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialogProps) {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<PlatformRole>("support");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mode, setMode] = useState<"email" | "link" | null>(null);
+
+  const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
+    super_admin: t("platform.roleSuperAdmin"),
+    finance_admin: t("platform.roleFinanceAdmin"),
+    moderator: t("platform.roleModerator"),
+    support: t("platform.roleSupport"),
+    sales: t("platform.roleSales"),
+  };
+
+  const PLATFORM_ROLE_DESCRIPTIONS: Record<PlatformRole, string> = {
+    super_admin: t("platform.roleSuperAdminDesc"),
+    finance_admin: t("platform.roleFinanceAdminDesc"),
+    moderator: t("platform.roleModeratorDesc"),
+    support: t("platform.roleSupportDesc"),
+    sales: t("platform.roleSalesDesc"),
+  };
 
   const resetState = () => {
     setEmail("");
@@ -85,17 +87,17 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
 
       if (skipEmail) {
         setInvitationLink(data.invitationLink);
-        toast.success("Lien d'invitation généré avec succès");
+        toast.success(t("platform.inviteLinkGenerated"));
       } else {
-        toast.success(`Email d'invitation envoyé à ${email}`);
+        toast.success(`${t("platform.inviteEmailSent")} ${email}`);
         handleClose(false);
       }
     } catch (err: any) {
       console.error("Error generating invitation:", err);
       if (skipEmail) {
-        toast.error("Erreur: " + err.message);
+        toast.error(t("common.error") + ": " + err.message);
       } else {
-        toast.error("Erreur d'envoi email. Essayez 'Générer le lien' à la place.");
+        toast.error(t("platform.emailErrorTryLink"));
       }
     } finally {
       setIsLoading(false);
@@ -108,10 +110,10 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
     try {
       await navigator.clipboard.writeText(invitationLink);
       setCopied(true);
-      toast.success("Lien copié dans le presse-papiers");
+      toast.success(t("platform.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Impossible de copier le lien");
+      toast.error(t("platform.copyError"));
     }
   };
 
@@ -121,16 +123,16 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-purple-600" />
-            Inviter un Administrateur Plateforme
+            {t("platform.invitePlatformAdmin")}
           </DialogTitle>
           <DialogDescription>
-            Invitez un nouvel administrateur avec un rôle spécifique.
+            {t("platform.invitePlatformAdminDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="platform-email">Email</Label>
+            <Label htmlFor="platform-email">{t("common.email")}</Label>
             <Input
               id="platform-email"
               type="email"
@@ -142,7 +144,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
           </div>
 
           <div className="space-y-2">
-            <Label>Rôle</Label>
+            <Label>{t("tenant.role")}</Label>
             <Select
               value={selectedRole}
               onValueChange={(value) => setSelectedRole(value as PlatformRole)}
@@ -180,7 +182,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
                   ) : (
                     <Mail className="h-4 w-4 mr-2" />
                   )}
-                  Envoyer par email
+                  {t("platform.sendByEmail")}
                 </Button>
                 <Button
                   className="flex-1"
@@ -193,7 +195,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
                   ) : (
                     <Link2 className="h-4 w-4 mr-2" />
                   )}
-                  Générer le lien
+                  {t("platform.generateLink")}
                 </Button>
               </div>
 
@@ -201,8 +203,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
                 <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
                   <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-red-700 dark:text-red-300">
-                    <strong>Attention :</strong> Un Super Administrateur a accès à TOUTES les fonctionnalités, 
-                    y compris la gestion des autres admins et tous les tenants.
+                    <strong>{t("platform.warning")}:</strong> {t("platform.superAdminWarning")}
                   </p>
                 </div>
               )}
@@ -210,7 +211,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
           ) : (
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Lien d'invitation</Label>
+                <Label>{t("platform.invitationLink")}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={invitationLink}
@@ -235,18 +236,18 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-xs text-amber-700 dark:text-amber-300">
-                  <p><strong>Lien sécurisé et à usage unique</strong></p>
+                  <p><strong>{t("platform.secureLink")}</strong></p>
                   <ul className="list-disc list-inside mt-1 space-y-0.5">
-                    <li>Valide pendant 7 jours</li>
-                    <li>Rôle assigné : <strong>{PLATFORM_ROLE_LABELS[selectedRole]}</strong></li>
-                    <li>Ne le partagez qu'avec la personne concernée</li>
+                    <li>{t("platform.validFor7Days")}</li>
+                    <li>{t("platform.assignedRole")}: <strong>{PLATFORM_ROLE_LABELS[selectedRole]}</strong></li>
+                    <li>{t("platform.shareOnlyWithPerson")}</li>
                   </ul>
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => handleClose(false)}>
-                  Fermer
+                  {t("common.close")}
                 </Button>
               </div>
             </div>

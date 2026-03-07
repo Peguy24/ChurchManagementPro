@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Shield, XCircle, UserCog, Wallet, MessageSquare, HeadphonesIcon, TrendingUp } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -20,14 +21,6 @@ interface PlatformUser {
   platform_roles: PlatformRole[];
   has_legacy_admin: boolean;
 }
-
-const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
-  super_admin: "Super Administrateur",
-  finance_admin: "Admin Finance",
-  moderator: "Modérateur",
-  support: "Support Technique",
-  sales: "Commercial / Ventes",
-};
 
 const PLATFORM_ROLE_ICONS: Record<PlatformRole, React.ReactNode> = {
   super_admin: <Shield className="h-3 w-3" />,
@@ -45,27 +38,33 @@ const PLATFORM_ROLE_COLORS: Record<PlatformRole, string> = {
   sales: "bg-orange-500/10 text-orange-500 border-orange-500/20",
 };
 
-const PLATFORM_ROLE_DESCRIPTIONS: Record<PlatformRole, string> = {
-  super_admin: "Accès complet à toutes les fonctionnalités",
-  finance_admin: "Voir les données financières de tous les tenants",
-  moderator: "Modérer le contenu et les utilisateurs",
-  support: "Accès support technique pour les tenants",
-  sales: "Gérer les prospects et les démonstrations",
-};
-
-// Roles that can be assigned (super_admin has all permissions implicitly)
 const ASSIGNABLE_ROLES: PlatformRole[] = ["super_admin", "finance_admin", "moderator", "support", "sales"];
 
 export default function PlatformRolesManager() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<Record<string, PlatformRole>>({});
 
-  // Fetch platform users with their roles
+  const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
+    super_admin: t("platform.roleSuperAdmin"),
+    finance_admin: t("platform.roleFinanceAdmin"),
+    moderator: t("platform.roleModerator"),
+    support: t("platform.roleSupport"),
+    sales: t("platform.roleSales"),
+  };
+
+  const PLATFORM_ROLE_DESCRIPTIONS: Record<PlatformRole, string> = {
+    super_admin: t("platform.roleSuperAdminDesc"),
+    finance_admin: t("platform.roleFinanceAdminDesc"),
+    moderator: t("platform.roleModeratorDesc"),
+    support: t("platform.roleSupportDesc"),
+    sales: t("platform.roleSalesDesc"),
+  };
+
   const { data: users, isLoading } = useQuery({
     queryKey: ["platform-users-roles"],
     queryFn: async () => {
-      // Get profiles WITHOUT tenant_id (platform users only)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, created_at")
@@ -73,7 +72,6 @@ export default function PlatformRolesManager() {
 
       if (profilesError) throw profilesError;
 
-      // Get legacy admin roles from user_roles
       const { data: legacyRoles, error: legacyError } = await supabase
         .from("user_roles")
         .select("user_id, role")
@@ -81,7 +79,6 @@ export default function PlatformRolesManager() {
 
       if (legacyError) throw legacyError;
 
-      // Get new platform roles
       const { data: platformRoles, error: platformError } = await supabase
         .from("platform_user_roles")
         .select("user_id, role");
@@ -105,14 +102,12 @@ export default function PlatformRolesManager() {
         };
       });
 
-      // Filter to only show users with platform roles or legacy admin
       return usersWithRoles.filter(
         (u) => u.platform_roles.length > 0 || u.has_legacy_admin
       );
     },
   });
 
-  // Mutation to assign a platform role
   const assignRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: PlatformRole }) => {
       const { error } = await supabase
@@ -124,25 +119,23 @@ export default function PlatformRolesManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-users-roles"] });
       toast({
-        title: "Succès",
-        description: "Rôle plateforme assigné avec succès",
+        title: t("common.success") || "Success",
+        description: t("platform.platformRoleAssigned"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erreur",
+        title: t("common.error"),
         description: error.message.includes("duplicate")
-          ? "Ce rôle est déjà assigné à cet utilisateur"
+          ? t("platform.roleAlreadyAssigned")
           : error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Mutation to remove a platform role
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: PlatformRole }) => {
-      // Remove from platform_user_roles
       const { error } = await supabase
         .from("platform_user_roles")
         .delete()
@@ -151,7 +144,6 @@ export default function PlatformRolesManager() {
 
       if (error) throw error;
 
-      // If removing super_admin, also remove legacy admin role
       if (role === "super_admin") {
         await supabase
           .from("user_roles")
@@ -160,13 +152,11 @@ export default function PlatformRolesManager() {
           .eq("role", "admin");
       }
 
-      // Check if user has any platform roles left
       const { data: remainingRoles } = await supabase
         .from("platform_user_roles")
         .select("id")
         .eq("user_id", userId);
 
-      // If no platform roles left, assign 'user' role in user_roles (pending state)
       if (!remainingRoles || remainingRoles.length === 0) {
         const { data: existingUserRole } = await supabase
           .from("user_roles")
@@ -185,14 +175,14 @@ export default function PlatformRolesManager() {
       queryClient.invalidateQueries({ queryKey: ["platform-users-roles"] });
       queryClient.invalidateQueries({ queryKey: ["platform-users-with-roles"] });
       toast({
-        title: "Succès",
-        description: "Rôle plateforme retiré avec succès",
+        title: t("common.success") || "Success",
+        description: t("platform.platformRoleRemoved"),
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
-        description: "Impossible de retirer le rôle",
+        title: t("common.error"),
+        description: t("platform.removeRoleError"),
         variant: "destructive",
       });
     },
@@ -211,10 +201,10 @@ export default function PlatformRolesManager() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserCog className="h-5 w-5" />
-          Rôles de la Plateforme
+          {t("platform.platformRoles")}
         </CardTitle>
         <CardDescription>
-          Gérez les rôles granulaires pour les administrateurs de la plateforme
+          {t("platform.platformRolesDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -236,19 +226,19 @@ export default function PlatformRolesManager() {
 
         {/* Users Table */}
         {isLoading ? (
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         ) : !users || users.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
-            Aucun utilisateur avec des rôles plateforme. Invitez d'abord des administrateurs.
+            {t("platform.noPlatformUsers")}
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Utilisateur</TableHead>
-                <TableHead>Rôles Actuels</TableHead>
-                <TableHead>Ajouter un Rôle</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{t("platform.user")}</TableHead>
+                <TableHead>{t("platform.currentRoles")}</TableHead>
+                <TableHead>{t("platform.addRole")}</TableHead>
+                <TableHead>{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -290,7 +280,7 @@ export default function PlatformRolesManager() {
                       }
                     >
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Ajouter un rôle" />
+                        <SelectValue placeholder={t("platform.addRole")} />
                       </SelectTrigger>
                       <SelectContent>
                         {ASSIGNABLE_ROLES.filter((r) => !user.platform_roles.includes(r)).map((role) => (
@@ -311,7 +301,7 @@ export default function PlatformRolesManager() {
                       onClick={() => handleAssignRole(user.id)}
                       disabled={!selectedRole[user.id] || assignRoleMutation.isPending}
                     >
-                      Ajouter
+                      {t("common.add")}
                     </Button>
                   </TableCell>
                 </TableRow>
