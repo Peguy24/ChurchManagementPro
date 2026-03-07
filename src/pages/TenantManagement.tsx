@@ -641,7 +641,7 @@ export default function TenantManagement() {
                   </div>
                   
                   {formData.status === "trial" && (
-                    <div className="col-span-2 space-y-2">
+                     <div className="col-span-1 sm:col-span-2 space-y-2">
                       <Label htmlFor="trial_duration">
                         <Clock className="h-4 w-4 inline mr-2" />
                         {t("superAdmin.trialDurationLabel")}
