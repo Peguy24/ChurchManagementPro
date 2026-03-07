@@ -51,6 +51,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   );
 }
 
+// Translation data - updated with admin invitations keys
 const translations = {
   fr: {
     common: {
