@@ -393,7 +393,7 @@ export default function TenantUserManagement() {
                     {t('tenant.noActiveUsers')}
                   </div>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto"><Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t('common.name')}</TableHead>
