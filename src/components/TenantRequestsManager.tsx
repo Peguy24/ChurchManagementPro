@@ -8,7 +8,95 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Check, X, Mail, Clock, Building2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Registration Requests",
+    pending: "pending",
+    subtitle: "Requests received from the commercial page form",
+    church: "Church",
+    contact: "Contact",
+    desiredPlan: "Desired Plan",
+    message: "Message",
+    status: "Status",
+    date: "Date",
+    actions: "Actions",
+    statusPending: "Pending",
+    statusApproved: "Approved",
+    statusRejected: "Rejected",
+    processed: "Processed",
+    rejected: "Rejected",
+    noRequests: "No registration requests",
+    noRequestsDesc: "Requests from the commercial page will appear here",
+    approveConfirm: "Approve the request from \"{name}\" and create the tenant?",
+    rejectConfirm: "Are you sure you want to reject this request?",
+    approveSuccess: "Request approved! Tenant created and invitation sent.",
+    rejectSuccess: "Request rejected",
+    error: "Error: ",
+    planFree: "Free",
+    planBasic: "Essential",
+    planStandard: "Professional",
+    planPremium: "Enterprise",
+  },
+  fr: {
+    title: "Demandes d'inscription",
+    pending: "en attente",
+    subtitle: "Demandes reçues depuis le formulaire de la page commerciale",
+    church: "Église",
+    contact: "Contact",
+    desiredPlan: "Plan souhaité",
+    message: "Message",
+    status: "Statut",
+    date: "Date",
+    actions: "Actions",
+    statusPending: "En attente",
+    statusApproved: "Approuvé",
+    statusRejected: "Refusé",
+    processed: "Traité",
+    rejected: "Refusé",
+    noRequests: "Aucune demande d'inscription",
+    noRequestsDesc: "Les demandes depuis la page commerciale apparaîtront ici",
+    approveConfirm: "Approuver la demande de \"{name}\" et créer le tenant ?",
+    rejectConfirm: "Êtes-vous sûr de vouloir refuser cette demande ?",
+    approveSuccess: "Demande approuvée! Tenant créé et invitation envoyée.",
+    rejectSuccess: "Demande refusée",
+    error: "Erreur: ",
+    planFree: "Gratuit",
+    planBasic: "Essentiel",
+    planStandard: "Professionnel",
+    planPremium: "Entreprise",
+  },
+  ht: {
+    title: "Demann Enskripsyon",
+    pending: "an atant",
+    subtitle: "Demann ki resevwa nan fòm paj komèsyal la",
+    church: "Legliz",
+    contact: "Kontak",
+    desiredPlan: "Plan Swete",
+    message: "Mesaj",
+    status: "Estati",
+    date: "Dat",
+    actions: "Aksyon",
+    statusPending: "An atant",
+    statusApproved: "Apwouve",
+    statusRejected: "Refize",
+    processed: "Trete",
+    rejected: "Refize",
+    noRequests: "Pa gen demann enskripsyon",
+    noRequestsDesc: "Demann ki soti nan paj komèsyal la ap parèt isit la",
+    approveConfirm: "Apwouve demann \"{name}\" epi kreye tenant lan?",
+    rejectConfirm: "Èske ou sèten ou vle refize demann sa a?",
+    approveSuccess: "Demann apwouve! Tenant kreye epi envitasyon voye.",
+    rejectSuccess: "Demann refize",
+    error: "Erè: ",
+    planFree: "Gratis",
+    planBasic: "Esansyèl",
+    planStandard: "Pwofesyonèl",
+    planPremium: "Antrepriz",
+  },
+};
 
 interface TenantRequest {
   id: string;
@@ -23,22 +111,35 @@ interface TenantRequest {
   created_at: string;
 }
 
-const PLAN_LABELS: Record<string, string> = {
-  free: "Gratuit",
-  basic: "Essentiel",
-  standard: "Professionnel",
-  premium: "Entreprise",
-};
-
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "En attente", variant: "secondary" },
-  approved: { label: "Approuvé", variant: "default" },
-  rejected: { label: "Refusé", variant: "destructive" },
-};
-
 export function TenantRequestsManager() {
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const { language } = useLanguage();
+
+  const lt = (key: string, replacements?: Record<string, string>) => {
+    let text = localTranslations[language]?.[key] || localTranslations.en[key] || key;
+    if (replacements) {
+      Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+    }
+    return text;
+  };
+
+  const dateLocale = language === "en" ? enUS : fr;
+
+  const PLAN_LABELS: Record<string, string> = {
+    free: lt("planFree"),
+    basic: lt("planBasic"),
+    standard: lt("planStandard"),
+    premium: lt("planPremium"),
+  };
+
+  const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    pending: { label: lt("statusPending"), variant: "secondary" },
+    approved: { label: lt("statusApproved"), variant: "default" },
+    rejected: { label: lt("statusRejected"), variant: "destructive" },
+  };
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["tenant-requests"],
@@ -55,7 +156,6 @@ export function TenantRequestsManager() {
 
   const approveMutation = useMutation({
     mutationFn: async (request: TenantRequest) => {
-      // Create the tenant
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
         .insert({
@@ -70,7 +170,6 @@ export function TenantRequestsManager() {
 
       if (tenantError) throw tenantError;
 
-      // Create subscription based on plan
       const planConfig: Record<string, { price: number; members: number; branches: number; users: number; storage: number }> = {
         free: { price: 0, members: 100, branches: 1, users: 3, storage: 200 },
         basic: { price: 49, members: 200, branches: 1, users: 5, storage: 500 },
@@ -96,7 +195,6 @@ export function TenantRequestsManager() {
 
       if (subError) throw subError;
 
-      // Update request status
       const { error: updateError } = await supabase
         .from("tenant_requests")
         .update({ 
@@ -108,7 +206,6 @@ export function TenantRequestsManager() {
 
       if (updateError) throw updateError;
 
-      // Send admin invite
       try {
         await supabase.functions.invoke('send-admin-invite', {
           body: {
@@ -127,11 +224,11 @@ export function TenantRequestsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenant-requests"] });
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success("Demande approuvée! Tenant créé et invitation envoyée.");
+      toast.success(lt("approveSuccess"));
       setProcessingId(null);
     },
     onError: (error) => {
-      toast.error("Erreur: " + error.message);
+      toast.error(lt("error") + error.message);
       setProcessingId(null);
     },
   });
@@ -150,24 +247,24 @@ export function TenantRequestsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenant-requests"] });
-      toast.success("Demande refusée");
+      toast.success(lt("rejectSuccess"));
       setProcessingId(null);
     },
     onError: (error) => {
-      toast.error("Erreur: " + error.message);
+      toast.error(lt("error") + error.message);
       setProcessingId(null);
     },
   });
 
   const handleApprove = (request: TenantRequest) => {
-    if (confirm(`Approuver la demande de "${request.church_name}" et créer le tenant ?`)) {
+    if (confirm(lt("approveConfirm", { name: request.church_name }))) {
       setProcessingId(request.id);
       approveMutation.mutate(request);
     }
   };
 
   const handleReject = (requestId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir refuser cette demande ?")) {
+    if (confirm(lt("rejectConfirm"))) {
       setProcessingId(requestId);
       rejectMutation.mutate(requestId);
     }
@@ -189,108 +286,110 @@ export function TenantRequestsManager() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          Demandes d'inscription
+          {lt("title")}
           {pendingCount > 0 && (
-            <Badge variant="secondary">{pendingCount} en attente</Badge>
+            <Badge variant="secondary">{pendingCount} {lt("pending")}</Badge>
           )}
         </CardTitle>
         <CardDescription>
-          Demandes reçues depuis le formulaire de la page commerciale
+          {lt("subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {requests && requests.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Église</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Plan souhaité</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {requests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{request.church_name}</p>
-                      {request.address && (
-                        <p className="text-sm text-muted-foreground">{request.address}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{request.contact_name}</p>
-                      <p className="text-sm text-muted-foreground">{request.contact_email}</p>
-                      {request.contact_phone && (
-                        <p className="text-sm text-muted-foreground">{request.contact_phone}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {PLAN_LABELS[request.requested_plan] || request.requested_plan}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm max-w-[200px] truncate">
-                      {request.message || "-"}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_CONFIG[request.status]?.variant || "outline"}>
-                      {STATUS_CONFIG[request.status]?.label || request.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(request.created_at), "dd MMM yyyy", { locale: fr })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {request.status === "pending" ? (
-                      <div className="flex items-center justify-end gap-2">
-                        {processingId === request.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                              onClick={() => handleApprove(request)}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => handleReject(request.id)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{lt("church")}</TableHead>
+                  <TableHead>{lt("contact")}</TableHead>
+                  <TableHead>{lt("desiredPlan")}</TableHead>
+                  <TableHead>{lt("message")}</TableHead>
+                  <TableHead>{lt("status")}</TableHead>
+                  <TableHead>{lt("date")}</TableHead>
+                  <TableHead className="text-right">{lt("actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{request.church_name}</p>
+                        {request.address && (
+                          <p className="text-sm text-muted-foreground">{request.address}</p>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        {request.status === "approved" ? "Traité" : "Refusé"}
-                      </span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{request.contact_name}</p>
+                        <p className="text-sm text-muted-foreground">{request.contact_email}</p>
+                        {request.contact_phone && (
+                          <p className="text-sm text-muted-foreground">{request.contact_phone}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {PLAN_LABELS[request.requested_plan] || request.requested_plan}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm max-w-[200px] truncate">
+                        {request.message || "-"}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={STATUS_CONFIG[request.status]?.variant || "outline"}>
+                        {STATUS_CONFIG[request.status]?.label || request.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(request.created_at), "dd MMM yyyy", { locale: dateLocale })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {request.status === "pending" ? (
+                        <div className="flex items-center justify-end gap-2">
+                          {processingId === request.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                onClick={() => handleApprove(request)}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => handleReject(request.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          {request.status === "approved" ? lt("processed") : lt("rejected")}
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Aucune demande d'inscription</p>
-            <p className="text-sm">Les demandes depuis la page commerciale apparaîtront ici</p>
+            <p>{lt("noRequests")}</p>
+            <p className="text-sm">{lt("noRequestsDesc")}</p>
           </div>
         )}
       </CardContent>
