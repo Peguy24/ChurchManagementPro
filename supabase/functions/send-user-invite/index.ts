@@ -46,7 +46,7 @@ serve(async (req) => {
     // For now, we'll generate the link directly without storing
 
     // Build the invitation URL
-    const siteUrl = Deno.env.get("SITE_URL") || "https://cogmpw-sys.lovable.app";
+    const siteUrl = "https://churchmanagementpro.com";
     const slug = tenantSlug || tenantId;
     const inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || 'user'}`;
 

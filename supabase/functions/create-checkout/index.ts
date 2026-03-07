@@ -103,7 +103,7 @@ serve(async (req) => {
       logStep("No existing customer, will create new one");
     }
 
-    const origin = req.headers.get("origin") || "https://lovable.dev";
+    const origin = "https://churchmanagementpro.com";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
