@@ -286,15 +286,15 @@ export default function TenantUserManagement() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('tenant.userManagementTitle')}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('tenant.userManagementTitle')}</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               {t('tenant.userManagementSubtitle')}
             </p>
           </div>
-          <Button onClick={() => setInviteDialogOpen(true)}>
+          <Button onClick={() => setInviteDialogOpen(true)} className="w-full sm:w-auto">
             <Mail className="mr-2 h-4 w-4" />
             {t('tenant.inviteUser')}
           </Button>
@@ -324,7 +324,7 @@ export default function TenantUserManagement() {
                     {t('tenant.pendingRequestsDesc')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -393,7 +393,7 @@ export default function TenantUserManagement() {
                     {t('tenant.noActiveUsers')}
                   </div>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto"><Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t('common.name')}</TableHead>
@@ -439,7 +439,7 @@ export default function TenantUserManagement() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                  </Table></div>
                 )}
               </CardContent>
             </Card>

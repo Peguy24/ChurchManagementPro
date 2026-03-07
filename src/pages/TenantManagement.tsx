@@ -580,7 +580,7 @@ export default function TenantManagement() {
                 {t("superAdmin.newClient")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingTenant ? t("superAdmin.editClient") : t("superAdmin.addNewClient")}</DialogTitle>
                 <DialogDescription>
@@ -588,7 +588,7 @@ export default function TenantManagement() {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">{t("superAdmin.churchName")}</Label>
                     <Input id="name" value={formData.name}
@@ -610,7 +610,7 @@ export default function TenantManagement() {
                     <Input id="contact_phone" value={formData.contact_phone}
                       onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })} />
                   </div>
-                  <div className="col-span-2 space-y-2">
+                  <div className="col-span-1 sm:col-span-2 space-y-2">
                     <Label htmlFor="address">{t("superAdmin.address")}</Label>
                     <Input id="address" value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
@@ -641,7 +641,7 @@ export default function TenantManagement() {
                   </div>
                   
                   {formData.status === "trial" && (
-                    <div className="col-span-2 space-y-2">
+                     <div className="col-span-1 sm:col-span-2 space-y-2">
                       <Label htmlFor="trial_duration">
                         <Clock className="h-4 w-4 inline mr-2" />
                         {t("superAdmin.trialDurationLabel")}
@@ -683,7 +683,7 @@ export default function TenantManagement() {
                     </div>
                   )}
                   {!editingTenant && (
-                    <div className="col-span-2 space-y-2">
+                    <div className="col-span-1 sm:col-span-2 space-y-2">
                       <Label htmlFor="admin_email">
                         <Mail className="h-4 w-4 inline mr-2" />
                         {t("superAdmin.adminEmailOptional")}
@@ -698,7 +698,7 @@ export default function TenantManagement() {
 
                 <Card className="bg-muted/50">
                   <CardContent className="pt-4">
-                    <div className="grid grid-cols-4 gap-4 text-sm">
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">{t("superAdmin.maxMembers")}</p>
                         <p className="font-semibold">{PLAN_CONFIG[formData.plan].members === -1 ? t("superAdmin.unlimited") : PLAN_CONFIG[formData.plan].members}</p>

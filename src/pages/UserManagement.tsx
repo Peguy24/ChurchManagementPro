@@ -188,13 +188,13 @@ export default function UserManagement() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
-            <p className="text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
+            <p className="text-sm md:text-base text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
           </div>
-          <Button onClick={() => setIsInviteDialogOpen(true)}>
+          <Button onClick={() => setIsInviteDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="h-4 w-4 mr-2" />
             {t("platform.inviteSuperAdmin")}
           </Button>
@@ -261,7 +261,7 @@ export default function UserManagement() {
                     {t("platform.usersPendingApprovalDesc")}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -287,7 +287,7 @@ export default function UserManagement() {
                                 setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
                               }
                             >
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-[140px] sm:w-[180px]">
                                 <SelectValue placeholder={t("platform.chooseRole")} />
                               </SelectTrigger>
                               <SelectContent>
@@ -334,7 +334,7 @@ export default function UserManagement() {
                 ) : approvedUsers.length === 0 ? (
                   <p className="text-muted-foreground">{t("platform.noApprovedUsers")}</p>
                 ) : (
-                  <Table>
+                   <div className="overflow-x-auto"><Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t("common.name")}</TableHead>
@@ -373,7 +373,7 @@ export default function UserManagement() {
                                 setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
                               }
                             >
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-[140px] sm:w-[180px]">
                                 <SelectValue placeholder={t("platform.addRole")} />
                               </SelectTrigger>
                               <SelectContent>
@@ -398,7 +398,7 @@ export default function UserManagement() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                  </Table></div>
                 )}
               </CardContent>
             </Card>
