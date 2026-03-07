@@ -528,7 +528,7 @@ export default function MemberDialog({
               {/* Photo Upload Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
                 <Label className="text-base font-semibold">Photo du Membre</Label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                   {/* Photo Preview */}
                   <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted border-2 border-dashed border-primary/30 flex items-center justify-center">
                     {photoPreview ? (
