@@ -83,7 +83,8 @@ const drawCard = async (
   member: MemberCardData,
   x: number,
   y: number,
-  customization?: CardCustomization
+  customization?: CardCustomization,
+  memberIndex: number = 0
 ) => {
   const primaryColor = hexToRgb(customization?.primaryColor || "#3B82F6");
   const secondaryColor = hexToRgb(customization?.secondaryColor || "#1E40AF");
@@ -128,10 +129,10 @@ const drawCard = async (
     : "CARTE DE MEMBRE";
   pdf.text(headerTitle, headerTextX, y + 6);
 
-  if (member.member_number) {
-    pdf.setFontSize(6);
-    pdf.text(member.member_number, x + CARD_WIDTH - 3, y + 6, { align: "right" });
-  }
+  // Always show member ID in header
+  const displayId = member.member_number || `#${String(memberIndex + 1).padStart(4, "0")}`;
+  pdf.setFontSize(6);
+  pdf.text(displayId, x + CARD_WIDTH - 3, y + 6, { align: "right" });
 
   // Photo placeholder or image
   const photoX = x + 3;
@@ -230,7 +231,7 @@ const drawCard = async (
   // QR code label
   pdf.setFontSize(4);
   pdf.setTextColor(120, 120, 120);
-  const qrLabel = member.qr_code || `MEMBER-${member.id.slice(0, 8)}`;
+  const qrLabel = member.member_number || member.qr_code || `#${String(memberIndex + 1).padStart(4, "0")}`;
   pdf.text(qrLabel, qrX + qrSize / 2, qrY + qrSize + 2, { align: "center" });
 
   // Footer branding
@@ -293,7 +294,7 @@ export const generateMemberCardsPDF = async (
     const x = startX + col * (CARD_WIDTH + CARD_MARGIN);
     const y = PAGE_MARGIN + row * (CARD_HEIGHT + CARD_MARGIN);
 
-    await drawCard(pdf, member, x, y, customization);
+    await drawCard(pdf, member, x, y, customization, i);
 
     cardIndex++;
     onProgress?.(Math.round((cardIndex / totalCards) * 100));
