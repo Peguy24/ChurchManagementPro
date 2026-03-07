@@ -1348,7 +1348,7 @@ const translations = {
       newTrialDuration: "Nouvelle durée d'essai",
       customEndDate: "Date de fin personnalisée",
       newTrialUntilLabel: "Nouvel essai jusqu'au:",
-      extending: "Prolongation...",
+      extendingAction: "Prolongation...",
       extendTrialBtn: "Prolonger l'essai",
       manualPlanManagement: "Gestion manuelle du plan",
       managePlanFor: "Gérer le plan pour",
