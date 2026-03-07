@@ -128,10 +128,10 @@ const drawCard = async (
     : "CARTE DE MEMBRE";
   pdf.text(headerTitle, headerTextX, y + 6);
 
-  if (member.member_number) {
-    pdf.setFontSize(6);
-    pdf.text(member.member_number, x + CARD_WIDTH - 3, y + 6, { align: "right" });
-  }
+  // Always show member ID in header
+  const displayId = member.member_number || `#${String(memberIndex + 1).padStart(4, "0")}`;
+  pdf.setFontSize(6);
+  pdf.text(displayId, x + CARD_WIDTH - 3, y + 6, { align: "right" });
 
   // Photo placeholder or image
   const photoX = x + 3;
