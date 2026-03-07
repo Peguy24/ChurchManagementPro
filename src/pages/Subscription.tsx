@@ -298,7 +298,7 @@ export default function Subscription() {
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />
-                            {t("commercial.feat_prioritySupport")}
+                            Priority Support
                           </li>
                           <li className="flex items-center gap-2 text-sm">
                             <Check className="h-4 w-4 text-primary" />

@@ -5406,7 +5406,6 @@ const translations = {
       feat_prioritySupport: "Sipò priyorite",
       feat_unlimitedMembers: "Manm ilimite",
       feat_unlimitedBranches: "Sikssal ilimite",
-      feat_prioritySupport: "Sipò priyorite",
       feat_trainingIncluded: "Fòmasyon enkli",
       feat_support247: "Sipò 24/7",
       feat_whiteLabel: "White-label disponib",
