@@ -11,6 +11,166 @@ import { Church, Crown, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    loading: "Loading...",
+    churchNotFound: "Church Not Found",
+    churchNotFoundDesc: "The church \"{slug}\" does not exist or is no longer available.",
+    chooseChurch: "Choose a Church",
+    managementSystem: "Management System",
+    login: "Login",
+    signup: "Sign Up",
+    loginTitle: "Login",
+    loginDesc: "Log in to your {name} space",
+    email: "Email",
+    emailPlaceholder: "name@example.com",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    connecting: "Loading...",
+    connectButton: "Log In",
+    firstName: "First Name",
+    firstNamePlaceholder: "John",
+    lastName: "Last Name",
+    lastNamePlaceholder: "Doe",
+    becomeAdmin: "Become Administrator",
+    createAccount: "Create an Account",
+    adminSignupDesc: "Create your account to manage {name}",
+    userSignupDesc: "Join {name} - an admin must approve your access",
+    emailLockedInvite: "Email is locked because it comes from your invitation.",
+    createAdminAccount: "Create My Admin Account",
+    createAccountButton: "Create Account",
+    errorTitle: "Error",
+    fillAllFields: "Please fill in all fields.",
+    loginError: "Login Error",
+    invalidCredentials: "Incorrect email or password",
+    loginSuccess: "Login Successful!",
+    welcomeTo: "Welcome to {name}",
+    passwordMismatch: "Passwords do not match",
+    passwordTooShort: "Password must be at least 6 characters",
+    signupUnauthorized: "Registration Not Authorized",
+    signupUnauthorizedDesc: "Only an invited administrator can create the first account. Contact the Super Admin.",
+    accountExists: "Account Already Exists",
+    accountExistsDesc: "An account with this email already exists. Please log in.",
+    signupError: "Registration Error",
+    congratulations: "Congratulations!",
+    adminCreatedDesc: "You are now the administrator of {name}. Your account is active.",
+    signupSuccess: "Registration Successful!",
+    signupSuccessDesc: "Your account has been created. An administrator of {name} must approve your access.",
+    linkError: "Account created but error linking to the church",
+    invalidInvite: "Invalid or expired invitation link. Contact the Super Admin for a new invitation.",
+    validInvite: "Valid invitation! You are invited as an administrator. Create your account with the email:",
+    noAdminConfigured: "No administrator configured.",
+    noAdminConfiguredDesc: "Only a person with a valid invitation can create the administrator account.",
+    admin: "Admin",
+    errorLoading: "Error loading",
+  },
+  fr: {
+    loading: "Chargement...",
+    churchNotFound: "Église non trouvée",
+    churchNotFoundDesc: "L'église \"{slug}\" n'existe pas ou n'est plus disponible.",
+    chooseChurch: "Choisir une église",
+    managementSystem: "Système de gestion",
+    login: "Connexion",
+    signup: "Inscription",
+    loginTitle: "Connexion",
+    loginDesc: "Connectez-vous à votre espace {name}",
+    email: "Email",
+    emailPlaceholder: "nom@exemple.com",
+    password: "Mot de passe",
+    confirmPassword: "Confirmer le Mot de passe",
+    connecting: "Chargement...",
+    connectButton: "Se connecter",
+    firstName: "Prénom",
+    firstNamePlaceholder: "Jean",
+    lastName: "Nom",
+    lastNamePlaceholder: "Pierre",
+    becomeAdmin: "Devenir Administrateur",
+    createAccount: "Créer un Compte",
+    adminSignupDesc: "Créez votre compte pour administrer {name}",
+    userSignupDesc: "Rejoignez {name} - un admin doit approuver votre accès",
+    emailLockedInvite: "L'email est verrouillé car il provient de votre invitation.",
+    createAdminAccount: "Créer mon compte Admin",
+    createAccountButton: "Créer le Compte",
+    errorTitle: "Erreur",
+    fillAllFields: "Veuillez remplir tous les champs",
+    loginError: "Erreur de connexion",
+    invalidCredentials: "Email ou mot de passe incorrect",
+    loginSuccess: "Connexion réussie!",
+    welcomeTo: "Bienvenue sur {name}",
+    passwordMismatch: "Les mots de passe ne correspondent pas",
+    passwordTooShort: "Le mot de passe doit contenir au moins 6 caractères",
+    signupUnauthorized: "Inscription non autorisée",
+    signupUnauthorizedDesc: "Seul un administrateur invité peut créer le premier compte. Contactez le Super Admin.",
+    accountExists: "Compte déjà existant",
+    accountExistsDesc: "Un compte avec cet email existe déjà. Veuillez vous connecter.",
+    signupError: "Erreur d'inscription",
+    congratulations: "Félicitations!",
+    adminCreatedDesc: "Vous êtes maintenant l'administrateur de {name}. Votre compte est actif.",
+    signupSuccess: "Inscription réussie!",
+    signupSuccessDesc: "Votre compte a été créé. Un administrateur de {name} doit approuver votre accès.",
+    linkError: "Compte créé mais erreur lors de l'association à l'église",
+    invalidInvite: "Lien d'invitation invalide ou expiré. Contactez le Super Admin pour obtenir une nouvelle invitation.",
+    validInvite: "Invitation valide! Vous êtes invité en tant qu'administrateur. Créez votre compte avec l'email:",
+    noAdminConfigured: "Aucun administrateur configuré.",
+    noAdminConfiguredDesc: "Seule une personne avec une invitation valide peut créer le compte administrateur.",
+    admin: "Admin",
+    errorLoading: "Erreur lors du chargement",
+  },
+  ht: {
+    loading: "Chajman...",
+    churchNotFound: "Legliz pa Jwenn",
+    churchNotFoundDesc: "Legliz \"{slug}\" pa egziste oswa li pa disponib ankò.",
+    chooseChurch: "Chwazi yon legliz",
+    managementSystem: "Sistèm Jesyon",
+    login: "Koneksyon",
+    signup: "Enskripsyon",
+    loginTitle: "Koneksyon",
+    loginDesc: "Konekte nan espas {name} ou a",
+    email: "Imèl",
+    emailPlaceholder: "non@egzanp.com",
+    password: "Mo de pas",
+    confirmPassword: "Konfime Mo de pas",
+    connecting: "Chajman...",
+    connectButton: "Konekte",
+    firstName: "Prenon",
+    firstNamePlaceholder: "Jan",
+    lastName: "Non",
+    lastNamePlaceholder: "Pyè",
+    becomeAdmin: "Vin Administratè",
+    createAccount: "Kreye yon Kont",
+    adminSignupDesc: "Kreye kont ou pou jere {name}",
+    userSignupDesc: "Rejwenn {name} - yon admin dwe apwouve aksè ou",
+    emailLockedInvite: "Imèl la bloke paske li soti nan envitasyon ou a.",
+    createAdminAccount: "Kreye Kont Admin Mwen",
+    createAccountButton: "Kreye Kont",
+    errorTitle: "Erè",
+    fillAllFields: "Tanpri ranpli tout chan yo.",
+    loginError: "Erè Koneksyon",
+    invalidCredentials: "Imèl oswa mo de pas pa kòrèk",
+    loginSuccess: "Koneksyon Reyisi!",
+    welcomeTo: "Byenveni nan {name}",
+    passwordMismatch: "Mo de pas yo pa menm",
+    passwordTooShort: "Mo de pas la dwe gen omwen 6 karaktè",
+    signupUnauthorized: "Enskripsyon pa Otorize",
+    signupUnauthorizedDesc: "Sèlman yon administratè envite ka kreye premye kont la. Kontakte Super Admin.",
+    accountExists: "Kont Deja Egziste",
+    accountExistsDesc: "Yon kont ak imèl sa a deja egziste. Tanpri konekte.",
+    signupError: "Erè Enskripsyon",
+    congratulations: "Felisitasyon!",
+    adminCreatedDesc: "Ou se administratè {name} kounye a. Kont ou aktif.",
+    signupSuccess: "Enskripsyon Reyisi!",
+    signupSuccessDesc: "Kont ou kreye. Yon administratè {name} dwe apwouve aksè ou.",
+    linkError: "Kont kreye men erè lè yo ap asosye ak legliz la",
+    invalidInvite: "Lyen envitasyon envalid oswa ekspire. Kontakte Super Admin pou jwenn yon nouvo envitasyon.",
+    validInvite: "Envitasyon valid! Yo envite ou kòm administratè. Kreye kont ou ak imèl:",
+    noAdminConfigured: "Pa gen administratè konfigire.",
+    noAdminConfiguredDesc: "Sèlman yon moun ki gen yon envitasyon valid ka kreye kont administratè a.",
+    admin: "Admin",
+    errorLoading: "Erè pandan chajman",
+  },
+};
 
 interface Tenant {
   id: string;
@@ -35,6 +195,17 @@ export default function TenantAuth() {
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { language } = useLanguage();
+
+  const lt = (key: string, replacements?: Record<string, string>) => {
+    let text = localTranslations[language]?.[key] || localTranslations.en[key] || key;
+    if (replacements) {
+      Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+    }
+    return text;
+  };
   
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [hasAdmin, setHasAdmin] = useState(false);
@@ -84,7 +255,7 @@ export default function TenantAuth() {
       
       if (fetchError) {
         console.error('Error fetching tenant:', fetchError);
-        setError('Église non trouvée');
+        setError(lt('churchNotFound'));
         setLoading(false);
         return;
       }
@@ -133,7 +304,7 @@ export default function TenantAuth() {
       setLoading(false);
     } catch (err) {
       console.error('Error in fetchTenantAndInvitation:', err);
-      setError('Erreur lors du chargement');
+      setError(lt('errorLoading'));
       setLoading(false);
     }
   }
@@ -159,8 +330,8 @@ export default function TenantAuth() {
 
     if (!loginForm.email || !loginForm.password) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs',
+        title: lt('errorTitle'),
+        description: lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -171,16 +342,16 @@ export default function TenantAuth() {
 
     if (error) {
       toast({
-        title: 'Erreur de connexion',
+        title: lt('loginError'),
         description: error.message === 'Invalid login credentials' 
-          ? 'Email ou mot de passe incorrect' 
+          ? lt('invalidCredentials')
           : error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Connexion réussie!',
-        description: `Bienvenue sur ${tenant?.name}`,
+        title: lt('loginSuccess'),
+        description: lt('welcomeTo', { name: tenant?.name || '' }),
       });
       navigate('/');
     }
@@ -194,8 +365,8 @@ export default function TenantAuth() {
 
     if (!signupForm.firstName || !signupForm.lastName || !signupForm.email || !signupForm.password) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs',
+        title: lt('errorTitle'),
+        description: lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -204,8 +375,8 @@ export default function TenantAuth() {
 
     if (signupForm.password !== signupForm.confirmPassword) {
       toast({
-        title: 'Erreur',
-        description: 'Les mots de passe ne correspondent pas',
+        title: lt('errorTitle'),
+        description: lt('passwordMismatch'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -214,8 +385,8 @@ export default function TenantAuth() {
 
     if (signupForm.password.length < 6) {
       toast({
-        title: 'Erreur',
-        description: 'Le mot de passe doit contenir au moins 6 caractères',
+        title: lt('errorTitle'),
+        description: lt('passwordTooShort'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -239,8 +410,8 @@ export default function TenantAuth() {
     // If no admin exists AND no valid invitation, block signup for admin role
     if (!hasAdmin && !hasValidInvitation) {
       toast({
-        title: 'Inscription non autorisée',
-        description: 'Seul un administrateur invité peut créer le premier compte. Contactez le Super Admin.',
+        title: lt('signupUnauthorized'),
+        description: lt('signupUnauthorizedDesc'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -258,13 +429,13 @@ export default function TenantAuth() {
     if (error) {
       if (error.message.includes('already registered')) {
         toast({
-          title: 'Compte déjà existant',
-          description: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
+          title: lt('accountExists'),
+          description: lt('accountExistsDesc'),
           variant: 'destructive',
         });
       } else {
         toast({
-          title: "Erreur d'inscription",
+          title: lt('signupError'),
           description: error.message,
           variant: 'destructive',
         });
@@ -306,13 +477,13 @@ export default function TenantAuth() {
 
         if (isAdminInvite) {
           toast({
-            title: 'Félicitations!',
-            description: `Vous êtes maintenant l'administrateur de ${tenant.name}. Votre compte est actif.`,
+            title: lt('congratulations'),
+            description: lt('adminCreatedDesc', { name: tenant.name }),
           });
         } else {
           toast({
-            title: 'Inscription réussie!',
-            description: `Votre compte a été créé. Un administrateur de ${tenant.name} doit approuver votre accès.`,
+            title: lt('signupSuccess'),
+            description: lt('signupSuccessDesc', { name: tenant.name }),
           });
         }
         
@@ -320,8 +491,8 @@ export default function TenantAuth() {
       } catch (err) {
         console.error('Error linking user to tenant:', err);
         toast({
-          title: 'Erreur',
-          description: "Compte créé mais erreur lors de l'association à l'église",
+          title: lt('errorTitle'),
+          description: lt('linkError'),
           variant: 'destructive',
         });
       }
@@ -335,7 +506,7 @@ export default function TenantAuth() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+          <p className="mt-4 text-muted-foreground">{lt('loading')}</p>
         </div>
       </div>
     );
@@ -347,9 +518,9 @@ export default function TenantAuth() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Church className="mx-auto h-12 w-12 text-destructive" />
-            <CardTitle className="text-destructive">Église non trouvée</CardTitle>
+            <CardTitle className="text-destructive">{lt('churchNotFound')}</CardTitle>
             <CardDescription>
-              L'église "{slug}" n'existe pas ou n'est plus disponible.
+              {lt('churchNotFoundDesc', { slug: slug || '' })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -357,7 +528,7 @@ export default function TenantAuth() {
               onClick={() => navigate('/select-tenant')} 
               className="w-full"
             >
-              Choisir une église
+              {lt('chooseChurch')}
             </Button>
           </CardContent>
         </Card>
@@ -374,7 +545,7 @@ export default function TenantAuth() {
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Lien d'invitation invalide ou expiré.</strong> Contactez le Super Admin pour obtenir une nouvelle invitation.
+            <strong>{lt('invalidInvite')}</strong>
           </AlertDescription>
         </Alert>
       );
@@ -385,7 +556,7 @@ export default function TenantAuth() {
         <Alert className="mb-4 border-green-500/50 bg-green-50 dark:bg-green-950">
           <ShieldCheck className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            <strong>Invitation valide!</strong> Vous êtes invité en tant qu'administrateur. Créez votre compte avec l'email: <strong>{invitation.email}</strong>
+            <strong>{lt('validInvite')}</strong> <strong>{invitation.email}</strong>
           </AlertDescription>
         </Alert>
       );
@@ -427,7 +598,7 @@ export default function TenantAuth() {
             )}
             <div>
               <h1 className="text-xl font-bold text-foreground">{tenant.name}</h1>
-              <p className="text-sm text-muted-foreground">Système de gestion</p>
+              <p className="text-sm text-muted-foreground">{lt('managementSystem')}</p>
             </div>
           </div>
           
@@ -437,7 +608,7 @@ export default function TenantAuth() {
             <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-amber-800 dark:text-amber-200">
-                <strong>Aucun administrateur configuré.</strong> Seule une personne avec une invitation valide peut créer le compte administrateur.
+                <strong>{lt('noAdminConfigured')}</strong> {lt('noAdminConfiguredDesc')}
               </AlertDescription>
             </Alert>
           )}
@@ -445,11 +616,11 @@ export default function TenantAuth() {
 
         <Tabs defaultValue={canSignupAsAdmin ? "signup" : "login"} className="w-full">
           <TabsList className={`grid w-full ${showSignupTab ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            <TabsTrigger value="login">Connexion</TabsTrigger>
+            <TabsTrigger value="login">{lt('login')}</TabsTrigger>
             {showSignupTab && (
               <TabsTrigger value="signup" className="flex items-center gap-2">
-                Inscription
-                {canSignupAsAdmin && <Badge variant="secondary" className="text-xs">Admin</Badge>}
+                {lt('signup')}
+                {canSignupAsAdmin && <Badge variant="secondary" className="text-xs">{lt('admin')}</Badge>}
               </TabsTrigger>
             )}
           </TabsList>
@@ -457,19 +628,19 @@ export default function TenantAuth() {
           <TabsContent value="login">
             <Card>
               <CardHeader>
-                <CardTitle>Connexion</CardTitle>
+                <CardTitle>{lt('loginTitle')}</CardTitle>
                 <CardDescription>
-                  Connectez-vous à votre espace {tenant.name}
+                  {lt('loginDesc', { name: tenant.name })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">{lt('email')}</Label>
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="nom@exemple.com"
+                      placeholder={lt('emailPlaceholder')}
                       value={loginForm.email}
                       onChange={(e) =>
                         setLoginForm({ ...loginForm, email: e.target.value })
@@ -478,7 +649,7 @@ export default function TenantAuth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
+                    <Label htmlFor="login-password">{lt('password')}</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -496,7 +667,7 @@ export default function TenantAuth() {
                     disabled={isLoading}
                     style={{ backgroundColor: tenant.primary_color || undefined }}
                   >
-                    {isLoading ? 'Chargement...' : 'Se connecter'}
+                    {isLoading ? lt('connecting') : lt('connectButton')}
                   </Button>
                 </form>
               </CardContent>
@@ -511,19 +682,19 @@ export default function TenantAuth() {
                     {canSignupAsAdmin ? (
                       <>
                         <Crown className="h-5 w-5 text-primary" />
-                        Devenir Administrateur
+                        {lt('becomeAdmin')}
                       </>
                     ) : (
                       <>
                         <Users className="h-5 w-5" />
-                        Créer un Compte
+                        {lt('createAccount')}
                       </>
                     )}
                   </CardTitle>
                   <CardDescription>
                     {canSignupAsAdmin 
-                      ? `Créez votre compte pour administrer ${tenant.name}`
-                      : `Rejoignez ${tenant.name} - un admin doit approuver votre accès`
+                      ? lt('adminSignupDesc', { name: tenant.name })
+                      : lt('userSignupDesc', { name: tenant.name })
                     }
                   </CardDescription>
                 </CardHeader>
@@ -531,10 +702,10 @@ export default function TenantAuth() {
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signup-firstname">Prénom</Label>
+                        <Label htmlFor="signup-firstname">{lt('firstName')}</Label>
                         <Input
                           id="signup-firstname"
-                          placeholder="Jean"
+                          placeholder={lt('firstNamePlaceholder')}
                           value={signupForm.firstName}
                           onChange={(e) =>
                             setSignupForm({ ...signupForm, firstName: e.target.value })
@@ -543,10 +714,10 @@ export default function TenantAuth() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-lastname">Nom</Label>
+                        <Label htmlFor="signup-lastname">{lt('lastName')}</Label>
                         <Input
                           id="signup-lastname"
-                          placeholder="Pierre"
+                          placeholder={lt('lastNamePlaceholder')}
                           value={signupForm.lastName}
                           onChange={(e) =>
                             setSignupForm({ ...signupForm, lastName: e.target.value })
@@ -556,11 +727,11 @@ export default function TenantAuth() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
+                      <Label htmlFor="signup-email">{lt('email')}</Label>
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="nom@exemple.com"
+                        placeholder={lt('emailPlaceholder')}
                         value={signupForm.email}
                         onChange={(e) =>
                           setSignupForm({ ...signupForm, email: e.target.value })
@@ -570,12 +741,12 @@ export default function TenantAuth() {
                       />
                       {canSignupAsAdmin && (
                         <p className="text-xs text-muted-foreground">
-                          L'email est verrouillé car il provient de votre invitation.
+                          {lt('emailLockedInvite')}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Mot de passe</Label>
+                      <Label htmlFor="signup-password">{lt('password')}</Label>
                       <Input
                         id="signup-password"
                         type="password"
@@ -588,7 +759,7 @@ export default function TenantAuth() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
+                      <Label htmlFor="signup-confirm">{lt('confirmPassword')}</Label>
                       <Input
                         id="signup-confirm"
                         type="password"
@@ -610,10 +781,10 @@ export default function TenantAuth() {
                       style={{ backgroundColor: tenant.primary_color || undefined }}
                     >
                       {isLoading 
-                        ? 'Chargement...' 
+                        ? lt('connecting')
                         : canSignupAsAdmin 
-                          ? 'Créer mon compte Admin'
-                          : 'Créer le Compte'
+                          ? lt('createAdminAccount')
+                          : lt('createAccountButton')
                       }
                     </Button>
                   </form>
