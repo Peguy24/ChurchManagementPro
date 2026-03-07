@@ -693,7 +693,7 @@ export default function MemberDialog({
                       placeholder="123"
                     />
                   </div>
-                  <div className="grid gap-2 col-span-2">
+                  <div className="grid gap-2 sm:col-span-2">
                     <Label htmlFor="street">{t("members.street")}</Label>
                     <Input
                       id="street"
