@@ -16,11 +16,11 @@ export default function SuperAdminDashboard() {
   const { t, language } = useLanguage();
 
   const planDisplayName: Record<string, string> = {
-    free: "Gratuit",
-    basic: "Essentiel",
-    standard: "Professionnel",
-    premium: "Entreprise",
-    none: "Aucun",
+    free: t("superAdmin.free"),
+    basic: t("superAdmin.planBasic"),
+    standard: t("superAdmin.planStandard"),
+    premium: t("superAdmin.planPremium"),
+    none: t("superAdmin.noPlan"),
   };
 
   const { data: stats, isLoading } = useQuery({

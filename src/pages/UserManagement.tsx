@@ -26,25 +26,6 @@ interface UserWithRoles {
   roles: AppRole[];
 }
 
-// Super Admin only manages global admin roles - tenant roles are managed in TenantUserManagement
-const ROLE_LABELS: Record<AppRole, string> = {
-  admin: "Super Administrateur",
-  pastor: "Pasteur",
-  treasurer: "Trésorier",
-  secretary: "Secrétaire",
-  volunteer: "Bénévole",
-  user: "En attente",
-};
-
-const ROLE_COLORS: Record<AppRole, string> = {
-  admin: "bg-red-500/10 text-red-500 border-red-500/20",
-  pastor: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  treasurer: "bg-green-500/10 text-green-500 border-green-500/20",
-  secretary: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  volunteer: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-  user: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-};
-
 // Only admin role can be assigned at the platform level - other roles are tenant-specific
 const APPROVED_ROLES: AppRole[] = ["admin"];
 
@@ -55,12 +36,28 @@ export default function UserManagement() {
   const [selectedRole, setSelectedRole] = useState<Record<string, AppRole>>({});
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
+  const ROLE_LABELS: Record<AppRole, string> = {
+    admin: t("platform.roleSuperAdmin"),
+    pastor: t("tenant.rolePastor"),
+    treasurer: t("tenant.roleTreasurer"),
+    secretary: t("tenant.roleSecretary"),
+    volunteer: t("tenant.roleVolunteer"),
+    user: t("platform.rolePending"),
+  };
+
+  const ROLE_COLORS: Record<AppRole, string> = {
+    admin: "bg-red-500/10 text-red-500 border-red-500/20",
+    pastor: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    treasurer: "bg-green-500/10 text-green-500 border-green-500/20",
+    secretary: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    volunteer: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+    user: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+  };
+
   // Fetch only platform-level users (those WITHOUT a tenant_id)
-  // Tenant users are managed in TenantUserManagement
   const { data: users, isLoading } = useQuery({
     queryKey: ["platform-users-with-roles"],
     queryFn: async () => {
-      // Get profiles WITHOUT tenant_id (platform users only)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, created_at, tenant_id")
@@ -68,14 +65,12 @@ export default function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Get all user roles
       const { data: allRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select("user_id, role");
 
       if (rolesError) throw rolesError;
 
-      // Filter to only platform users (no tenant association)
       const usersWithRoles: UserWithRoles[] = profiles.map((profile) => {
         const userRoles = allRoles
           .filter((r) => r.user_id === profile.id)
@@ -95,10 +90,8 @@ export default function UserManagement() {
     },
   });
 
-  // Mutation to assign a role
   const assignRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      // First, remove the 'user' role if it exists and we're assigning a real role
       if (role !== "user") {
         await supabase
           .from("user_roles")
@@ -107,7 +100,6 @@ export default function UserManagement() {
           .eq("role", "user");
       }
 
-      // Check if the role already exists
       const { data: existingRole } = await supabase
         .from("user_roles")
         .select("id")
@@ -116,10 +108,9 @@ export default function UserManagement() {
         .single();
 
       if (existingRole) {
-        throw new Error("Ce rôle est déjà assigné à cet utilisateur");
+        throw new Error(t("platform.roleAlreadyAssigned"));
       }
 
-      // Insert the new role
       const { error } = await supabase
         .from("user_roles")
         .insert({ user_id: userId, role });
@@ -129,20 +120,19 @@ export default function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       toast({
-        title: "Succès",
-        description: "Rôle assigné avec succès",
+        title: t("common.success") || "Success",
+        description: t("platform.roleAssigned"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erreur",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Mutation to remove a role
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
       const { error } = await supabase
@@ -153,13 +143,11 @@ export default function UserManagement() {
 
       if (error) throw error;
 
-      // Check if user has any roles left
       const { data: remainingRoles } = await supabase
         .from("user_roles")
         .select("id")
         .eq("user_id", userId);
 
-      // If no roles left, assign 'user' role (pending)
       if (!remainingRoles || remainingRoles.length === 0) {
         await supabase
           .from("user_roles")
@@ -169,14 +157,14 @@ export default function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       toast({
-        title: "Succès",
-        description: "Rôle retiré avec succès",
+        title: t("common.success") || "Success",
+        description: t("platform.roleRemoved"),
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
-        description: "Impossible de retirer le rôle",
+        title: t("common.error"),
+        description: t("platform.removeRoleError"),
         variant: "destructive",
       });
     },
@@ -203,12 +191,12 @@ export default function UserManagement() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestion des Super Administrateurs</h1>
-            <p className="text-muted-foreground">Gérez les accès des administrateurs de la plateforme</p>
+            <h1 className="text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
+            <p className="text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
           </div>
           <Button onClick={() => setIsInviteDialogOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Inviter un Super Admin
+            {t("platform.inviteSuperAdmin")}
           </Button>
         </div>
 
@@ -221,199 +209,199 @@ export default function UserManagement() {
           <TabsList>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Utilisateurs
+              {t("platform.usersTab")}
             </TabsTrigger>
             <TabsTrigger value="platform-roles" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
-              Rôles Plateforme
+              {t("platform.platformRolesTab")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Utilisateurs</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{users?.length || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">En Attente d'Approbation</CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-500">{pendingUsers.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Utilisateurs Approuvés</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{approvedUsers.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t("platform.totalUsers")}</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{users?.length || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t("platform.pendingApproval")}</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-500">{pendingUsers.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t("platform.approvedUsers")}</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">{approvedUsers.length}</div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Pending Approval Section */}
-        {pendingUsers.length > 0 && (
-          <Card className="border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-orange-500" />
-                Utilisateurs en Attente d'Approbation
-              </CardTitle>
-              <CardDescription>
-                Ces utilisateurs se sont inscrits mais n'ont pas encore accès au système
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Date d'inscription</TableHead>
-                    <TableHead>Assigner un Rôle</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        {user.first_name} {user.last_name}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString("fr-FR")}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={selectedRole[user.id] || ""}
-                          onValueChange={(value) =>
-                            setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Choisir un rôle" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {APPROVED_ROLES.map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {ROLE_LABELS[role]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          onClick={() => handleAssignRole(user.id)}
-                          disabled={!selectedRole[user.id] || assignRoleMutation.isPending}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approuver
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Approved Users Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Utilisateurs Approuvés
-            </CardTitle>
-            <CardDescription>
-              Gérez les rôles des utilisateurs ayant accès au système
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p className="text-muted-foreground">Chargement...</p>
-            ) : approvedUsers.length === 0 ? (
-              <p className="text-muted-foreground">Aucun utilisateur approuvé</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Rôles Actuels</TableHead>
-                    <TableHead>Ajouter un Rôle</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {approvedUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        {user.first_name} {user.last_name}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {user.roles
-                            .filter((r) => r !== "user")
-                            .map((role) => (
-                              <Badge
-                                key={role}
-                                variant="outline"
-                                className={`${ROLE_COLORS[role]} cursor-pointer`}
-                                onClick={() => removeRoleMutation.mutate({ userId: user.id, role })}
-                              >
-                                {ROLE_LABELS[role]}
-                                <XCircle className="h-3 w-3 ml-1" />
-                              </Badge>
-                            ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={selectedRole[user.id] || ""}
-                          onValueChange={(value) =>
-                            setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Ajouter un rôle" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {APPROVED_ROLES.filter((r) => !user.roles.includes(r)).map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {ROLE_LABELS[role]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleAssignRole(user.id)}
-                          disabled={!selectedRole[user.id] || assignRoleMutation.isPending}
-                        >
-                          Ajouter
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            {/* Pending Approval Section */}
+            {pendingUsers.length > 0 && (
+              <Card className="border-orange-500/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-orange-500" />
+                    {t("platform.usersPendingApproval")}
+                  </CardTitle>
+                  <CardDescription>
+                    {t("platform.usersPendingApprovalDesc")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("common.name")}</TableHead>
+                        <TableHead>{t("platform.registrationDate")}</TableHead>
+                        <TableHead>{t("platform.assignRole")}</TableHead>
+                        <TableHead>{t("common.actions")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.first_name} {user.last_name}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={selectedRole[user.id] || ""}
+                              onValueChange={(value) =>
+                                setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
+                              }
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder={t("platform.chooseRole")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {APPROVED_ROLES.map((role) => (
+                                  <SelectItem key={role} value={role}>
+                                    {ROLE_LABELS[role]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignRole(user.id)}
+                              disabled={!selectedRole[user.id] || assignRoleMutation.isPending}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              {t("tenant.approve")}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+
+            {/* Approved Users Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  {t("platform.approvedUsersTitle")}
+                </CardTitle>
+                <CardDescription>
+                  {t("platform.approvedUsersDesc")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <p className="text-muted-foreground">{t("common.loading")}</p>
+                ) : approvedUsers.length === 0 ? (
+                  <p className="text-muted-foreground">{t("platform.noApprovedUsers")}</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("common.name")}</TableHead>
+                        <TableHead>{t("platform.currentRoles")}</TableHead>
+                        <TableHead>{t("platform.addRole")}</TableHead>
+                        <TableHead>{t("common.actions")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {approvedUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.first_name} {user.last_name}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {user.roles
+                                .filter((r) => r !== "user")
+                                .map((role) => (
+                                  <Badge
+                                    key={role}
+                                    variant="outline"
+                                    className={`${ROLE_COLORS[role]} cursor-pointer`}
+                                    onClick={() => removeRoleMutation.mutate({ userId: user.id, role })}
+                                  >
+                                    {ROLE_LABELS[role]}
+                                    <XCircle className="h-3 w-3 ml-1" />
+                                  </Badge>
+                                ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={selectedRole[user.id] || ""}
+                              onValueChange={(value) =>
+                                setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
+                              }
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder={t("platform.addRole")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {APPROVED_ROLES.filter((r) => !user.roles.includes(r)).map((role) => (
+                                  <SelectItem key={role} value={role}>
+                                    {ROLE_LABELS[role]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAssignRole(user.id)}
+                              disabled={!selectedRole[user.id] || assignRoleMutation.isPending}
+                            >
+                              {t("common.add")}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="platform-roles">
