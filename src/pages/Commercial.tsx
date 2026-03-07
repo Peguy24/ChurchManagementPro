@@ -152,7 +152,7 @@ const Commercial = () => {
       features: [
         t("commercial.feat_unlimitedMembers"),
         t("commercial.feat_unlimitedBranches"),
-        t("commercial.feat_customApi"),
+        t("commercial.feat_prioritySupport"),
         t("commercial.feat_trainingIncluded"),
         t("commercial.feat_support247"),
         t("commercial.feat_whiteLabel"),

@@ -94,7 +94,7 @@ export interface PlanLimits {
     advancedReports: boolean;
     emailNotifications: boolean;
     inventory: boolean;
-    api: boolean;
+    prioritySupport: boolean;
     whiteLabel: boolean;
   };
 }
