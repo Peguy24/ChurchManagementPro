@@ -21,7 +21,7 @@ import {
 import { toast } from "sonner";
 import { Users, Mail, Trash2, Copy, Check, AlertCircle, UserCheck, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,127 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    adminsOf: "Administrators of",
+    manageAdmins: "Manage the administrators of this church. You can remove them or send them an email.",
+    administrator: "Administrator",
+    email: "Email",
+    status: "Status",
+    since: "Since",
+    actions: "Actions",
+    approved: "Approved",
+    pending: "Pending",
+    sendEmail: "Send an email",
+    deleteAdmin: "Delete this admin",
+    noAdmins: "No administrator configured",
+    noAdminsDesc: "This church does not have an administrator yet.",
+    inviteNewAdmin: "Invite a new admin",
+    generateShareLink: "Generate a shareable invitation link",
+    generateLink: "Generate a link",
+    linkExpires: "This link expires in 7 days and can only be used once.",
+    linkCopied: "Link copied to clipboard",
+    confirmDelete: "Confirm deletion",
+    confirmDeleteDesc: "Are you sure you want to remove",
+    deleteWarning: "? This action is irreversible. The user will lose all access to this church.",
+    cancel: "Cancel",
+    delete: "Delete",
+    adminRemoved: "removed successfully",
+    error: "Error",
+    sendEmailTitle: "Send an email",
+    sendEmailTo: "Send an email to",
+    theAdmin: "the administrator",
+    subject: "Subject",
+    subjectPlaceholder: "Email subject",
+    message: "Message",
+    messagePlaceholder: "Your message...",
+    send: "Send",
+    emailSentTo: "Email sent to",
+    sendError: "Error sending",
+    importantInfo: "Important information",
+    hello: "Hello",
+  },
+  fr: {
+    adminsOf: "Administrateurs de",
+    manageAdmins: "Gérez les administrateurs de cette église. Vous pouvez les supprimer ou leur envoyer un email.",
+    administrator: "Administrateur",
+    email: "Email",
+    status: "Statut",
+    since: "Depuis",
+    actions: "Actions",
+    approved: "Approuvé",
+    pending: "En attente",
+    sendEmail: "Envoyer un email",
+    deleteAdmin: "Supprimer cet admin",
+    noAdmins: "Aucun administrateur configuré",
+    noAdminsDesc: "Cette église n'a pas encore d'administrateur.",
+    inviteNewAdmin: "Inviter un nouvel admin",
+    generateShareLink: "Générez un lien d'invitation à partager",
+    generateLink: "Générer un lien",
+    linkExpires: "Ce lien expire dans 7 jours et ne peut être utilisé qu'une seule fois.",
+    linkCopied: "Lien copié dans le presse-papier",
+    confirmDelete: "Confirmer la suppression",
+    confirmDeleteDesc: "Êtes-vous sûr de vouloir supprimer",
+    deleteWarning: " ? Cette action est irréversible. L'utilisateur perdra tous ses accès à cette église.",
+    cancel: "Annuler",
+    delete: "Supprimer",
+    adminRemoved: "retiré avec succès",
+    error: "Erreur",
+    sendEmailTitle: "Envoyer un email",
+    sendEmailTo: "Envoyez un email à",
+    theAdmin: "l'administrateur",
+    subject: "Sujet",
+    subjectPlaceholder: "Sujet de l'email",
+    message: "Message",
+    messagePlaceholder: "Votre message...",
+    send: "Envoyer",
+    emailSentTo: "Email envoyé à",
+    sendError: "Erreur lors de l'envoi",
+    importantInfo: "Information importante",
+    hello: "Bonjour",
+  },
+  ht: {
+    adminsOf: "Administratè pou",
+    manageAdmins: "Jere administratè legliz sa a. Ou ka retire yo oswa voye yo yon imèl.",
+    administrator: "Administratè",
+    email: "Imèl",
+    status: "Estati",
+    since: "Depi",
+    actions: "Aksyon",
+    approved: "Apwouve",
+    pending: "An atant",
+    sendEmail: "Voye yon imèl",
+    deleteAdmin: "Efase administratè sa a",
+    noAdmins: "Pa gen administratè konfigire",
+    noAdminsDesc: "Legliz sa a poko gen administratè.",
+    inviteNewAdmin: "Envite yon nouvo admin",
+    generateShareLink: "Jenere yon lyen envitasyon pou pataje",
+    generateLink: "Jenere yon lyen",
+    linkExpires: "Lyen sa a ekspire nan 7 jou e li ka itilize yon sèl fwa.",
+    linkCopied: "Lyen kopye nan pres-papye",
+    confirmDelete: "Konfime sipresyon",
+    confirmDeleteDesc: "Èske ou sèten ou vle retire",
+    deleteWarning: " ? Aksyon sa a pa ka anile. Itilizatè a ap pèdi tout aksè li nan legliz sa a.",
+    cancel: "Anile",
+    delete: "Efase",
+    adminRemoved: "retire avèk siksè",
+    error: "Erè",
+    sendEmailTitle: "Voye yon imèl",
+    sendEmailTo: "Voye yon imèl bay",
+    theAdmin: "administratè a",
+    subject: "Sijè",
+    subjectPlaceholder: "Sijè imèl la",
+    message: "Mesaj",
+    messagePlaceholder: "Mesaj ou...",
+    send: "Voye",
+    emailSentTo: "Imèl voye bay",
+    sendError: "Erè nan anvwa",
+    importantInfo: "Enfòmasyon enpòtan",
+    hello: "Bonjou",
+  },
+};
 
 interface TenantAdmin {
   id: string;
@@ -59,6 +180,10 @@ interface TenantAdminManagerProps {
 
 export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminManagerProps) {
   const queryClient = useQueryClient();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
+  const dateLocale = language === "fr" ? fr : language === "ht" ? fr : enUS;
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState<TenantAdmin | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -73,7 +198,6 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      // Get admin roles for this tenant
       const { data: adminRoles, error: rolesError } = await supabase
         .from("tenant_user_roles")
         .select("*")
@@ -81,13 +205,10 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
         .eq("role", "admin");
 
       if (rolesError) throw rolesError;
-
       if (!adminRoles || adminRoles.length === 0) return [];
 
-      // Get user profiles for these admins
       const userIds = adminRoles.map((r) => r.user_id);
-      
-      // Get profiles
+
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name")
@@ -95,29 +216,18 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
 
       if (profilesError) throw profilesError;
 
-      // Get auth users emails - we need to use a different approach
-      // Since we can't directly query auth.users, we'll get emails from the admin_invitations
-      // or display what we have from profiles
       const { data: invitations } = await supabase
         .from("admin_invitations")
         .select("email, used_at")
         .eq("tenant_id", tenant.id)
         .not("used_at", "is", null);
 
-      // Build a map of user_id to profile info
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
       const usedInvitations = invitations || [];
 
-      // Try to match invitations with profiles based on the order they were used
       const adminsWithInfo: TenantAdmin[] = adminRoles.map((role) => {
         const profile = profileMap.get(role.user_id);
-        
-        // Try to find an email - we'll use the invitation email if available
-        // For a more robust solution, we'd need a server-side function
-        const matchingInvitation = usedInvitations.find((inv) => {
-          // This is a simplified match - in production, you'd want to store user_id in invitations
-          return true; // We'll fall back to showing the first name/last name
-        });
+        const matchingInvitation = usedInvitations.find(() => true);
 
         return {
           id: role.id,
@@ -137,13 +247,11 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     enabled: open && !!tenant?.id,
   });
 
-  // Get user emails using a more direct approach by fetching from profiles
   const { data: adminEmails } = useQuery({
     queryKey: ["tenant-admin-emails", tenant?.id, admins?.map((a) => a.user_id)],
     queryFn: async () => {
       if (!admins || admins.length === 0) return {};
-      
-      // Try to get emails from admin_invitations that were used for this tenant
+
       const { data: usedInvitations } = await supabase
         .from("admin_invitations")
         .select("email, created_at, used_at")
@@ -151,15 +259,13 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
         .not("used_at", "is", null)
         .order("used_at", { ascending: true });
 
-      // Map the used invitations to admin users by order (first invitation -> first admin, etc.)
       const emailMap: Record<string, string> = {};
-      
+
       if (usedInvitations && admins) {
-        // Sort admins by created_at to match with invitations
         const sortedAdmins = [...admins].sort(
           (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
-        
+
         sortedAdmins.forEach((admin, index) => {
           if (usedInvitations[index]) {
             emailMap[admin.user_id] = usedInvitations[index].email;
@@ -174,7 +280,6 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
 
   const deleteAdminMutation = useMutation({
     mutationFn: async (admin: TenantAdmin) => {
-      // Delete the tenant role
       const { error } = await supabase
         .from("tenant_user_roles")
         .delete()
@@ -182,7 +287,6 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
 
       if (error) throw error;
 
-      // Also update the user's profile to remove tenant_id if this was their only role
       const { data: remainingRoles } = await supabase
         .from("tenant_user_roles")
         .select("id")
@@ -200,12 +304,12 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     onSuccess: (admin) => {
       queryClient.invalidateQueries({ queryKey: ["tenant-admins", tenant?.id] });
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success(`Admin ${admin.user_first_name || "supprimé"} retiré avec succès`);
+      toast.success(`Admin ${admin.user_first_name || ""} ${lt("adminRemoved")}`);
       setDeleteDialogOpen(false);
       setAdminToDelete(null);
     },
     onError: (error) => {
-      toast.error("Erreur: " + error.message);
+      toast.error(`${lt("error")}: ${error.message}`);
     },
   });
 
@@ -227,14 +331,14 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
       return { email };
     },
     onSuccess: ({ email }) => {
-      toast.success(`Email envoyé à ${email}`);
+      toast.success(`${lt("emailSentTo")} ${email}`);
       setEmailDialogOpen(false);
       setSelectedAdminForEmail(null);
       setEmailSubject("");
       setEmailMessage("");
     },
     onError: (error) => {
-      toast.error("Erreur lors de l'envoi: " + error.message);
+      toast.error(`${lt("sendError")}: ${error.message}`);
     },
   });
 
@@ -257,7 +361,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
       setInvitationLink(link);
     },
     onError: (error) => {
-      toast.error("Erreur: " + error.message);
+      toast.error(`${lt("error")}: ${error.message}`);
     },
   });
 
@@ -268,8 +372,8 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
 
   const handleEmailClick = (admin: TenantAdmin) => {
     setSelectedAdminForEmail(admin);
-    setEmailSubject(`Information importante - ${tenant?.name}`);
-    setEmailMessage(`Bonjour${admin.user_first_name ? ` ${admin.user_first_name}` : ""},\n\n`);
+    setEmailSubject(`${lt("importantInfo")} - ${tenant?.name}`);
+    setEmailMessage(`${lt("hello")}${admin.user_first_name ? ` ${admin.user_first_name}` : ""},\n\n`);
     setEmailDialogOpen(true);
   };
 
@@ -277,7 +381,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     if (invitationLink) {
       await navigator.clipboard.writeText(invitationLink);
       setCopied(true);
-      toast.success("Lien copié dans le presse-papier");
+      toast.success(lt("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -299,14 +403,14 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Administrateurs de {tenant?.name}
+              {lt("adminsOf")} {tenant?.name}
             </DialogTitle>
             <DialogDescription>
-              Gérez les administrateurs de cette église. Vous pouvez les supprimer ou leur envoyer un email.
+              {lt("manageAdmins")}
             </DialogDescription>
           </DialogHeader>
 
@@ -316,85 +420,85 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : admins && admins.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Administrateur</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Depuis</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {admins.map((admin) => (
-                    <TableRow key={admin.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{getAdminName(admin)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {getAdminEmail(admin)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {admin.is_approved ? (
-                          <Badge variant="default">
-                            Approuvé
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">En attente</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(admin.created_at), "dd MMM yyyy", { locale: fr })}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleEmailClick(admin)}
-                            title="Envoyer un email"
-                          >
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteClick(admin)}
-                            title="Supprimer cet admin"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{lt("administrator")}</TableHead>
+                      <TableHead>{lt("email")}</TableHead>
+                      <TableHead>{lt("status")}</TableHead>
+                      <TableHead>{lt("since")}</TableHead>
+                      <TableHead className="text-right">{lt("actions")}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {admins.map((admin) => (
+                      <TableRow key={admin.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <UserCheck className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{getAdminName(admin)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {getAdminEmail(admin)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {admin.is_approved ? (
+                            <Badge variant="default">{lt("approved")}</Badge>
+                          ) : (
+                            <Badge variant="secondary">{lt("pending")}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {format(new Date(admin.created_at), "dd MMM yyyy", { locale: dateLocale })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEmailClick(admin)}
+                              title={lt("sendEmail")}
+                            >
+                              <Mail className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteClick(admin)}
+                              title={lt("deleteAdmin")}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="font-medium">Aucun administrateur configuré</p>
-                <p className="text-sm">Cette église n'a pas encore d'administrateur.</p>
+                <p className="font-medium">{lt("noAdmins")}</p>
+                <p className="text-sm">{lt("noAdminsDesc")}</p>
               </div>
             )}
 
             {/* Generate invite link section */}
             <div className="border-t pt-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="font-medium text-sm">Inviter un nouvel admin</p>
+                  <p className="font-medium text-sm">{lt("inviteNewAdmin")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Générez un lien d'invitation à partager
+                    {lt("generateShareLink")}
                   </p>
                 </div>
                 <Button
@@ -408,7 +512,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
                   ) : (
                     <Mail className="h-4 w-4 mr-2" />
                   )}
-                  Générer un lien
+                  {lt("generateLink")}
                 </Button>
               </div>
 
@@ -434,7 +538,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Ce lien expire dans 7 jours et ne peut être utilisé qu'une seule fois.
+                    {lt("linkExpires")}
                   </p>
                 </div>
               )}
@@ -447,14 +551,13 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>{lt("confirmDelete")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer {adminToDelete ? getAdminName(adminToDelete) : "cet administrateur"} ?
-              Cette action est irréversible. L'utilisateur perdra tous ses accès à cette église.
+              {lt("confirmDeleteDesc")} {adminToDelete ? getAdminName(adminToDelete) : lt("theAdmin")}{lt("deleteWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{lt("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => adminToDelete && deleteAdminMutation.mutate(adminToDelete)}
@@ -465,7 +568,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
-              Supprimer
+              {lt("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -477,36 +580,36 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Envoyer un email
+              {lt("sendEmailTitle")}
             </DialogTitle>
             <DialogDescription>
-              Envoyez un email à {selectedAdminForEmail ? getAdminEmail(selectedAdminForEmail) : "l'administrateur"}
+              {lt("sendEmailTo")} {selectedAdminForEmail ? getAdminEmail(selectedAdminForEmail) : lt("theAdmin")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email-subject">Sujet</Label>
+              <Label htmlFor="email-subject">{lt("subject")}</Label>
               <Input
                 id="email-subject"
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
-                placeholder="Sujet de l'email"
+                placeholder={lt("subjectPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email-message">Message</Label>
+              <Label htmlFor="email-message">{lt("message")}</Label>
               <textarea
                 id="email-message"
                 className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={emailMessage}
                 onChange={(e) => setEmailMessage(e.target.value)}
-                placeholder="Votre message..."
+                placeholder={lt("messagePlaceholder")}
               />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
-                Annuler
+                {lt("cancel")}
               </Button>
               <Button
                 onClick={() => {
@@ -525,7 +628,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
                 ) : (
                   <Mail className="h-4 w-4 mr-2" />
                 )}
-                Envoyer
+                {lt("send")}
               </Button>
             </div>
           </div>
