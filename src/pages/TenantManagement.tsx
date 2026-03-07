@@ -334,15 +334,18 @@ export default function TenantManagement() {
 
   const deleteTenantMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("tenants").delete().eq("id", id);
+      const { data, error } = await supabase.functions.invoke('delete-tenant', {
+        body: { tenant_id: id },
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success("Client supprimé avec succès");
+      toast.success("Church deleted successfully");
     },
     onError: (error) => {
-      toast.error("Erreur lors de la suppression: " + error.message);
+      toast.error("Error deleting church: " + error.message);
     },
   });
 
@@ -1075,9 +1078,9 @@ export default function TenantManagement() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 text-destructive hover:text-destructive"
-                                title="Supprimer"
+                                title="Delete"
                                 onClick={() => {
-                                  if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
+                                  if (confirm(`Are you sure you want to permanently delete "${tenant.name}"? This will remove ALL data and cannot be undone.`)) {
                                     deleteTenantMutation.mutate(tenant.id);
                                   }
                                 }}
