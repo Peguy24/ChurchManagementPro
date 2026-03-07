@@ -15,7 +15,7 @@ export const PLAN_LIMITS = {
       advancedReports: false,
       emailNotifications: false,
       inventory: false,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
@@ -29,7 +29,7 @@ export const PLAN_LIMITS = {
       advancedReports: false,
       emailNotifications: false,
       inventory: false,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
@@ -44,7 +44,7 @@ export const PLAN_LIMITS = {
       advancedReports: false,
       emailNotifications: false,
       inventory: false,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
@@ -58,7 +58,7 @@ export const PLAN_LIMITS = {
       advancedReports: true,
       emailNotifications: true,
       inventory: true,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
@@ -72,7 +72,7 @@ export const PLAN_LIMITS = {
       advancedReports: true,
       emailNotifications: true,
       inventory: true,
-      api: true,
+      prioritySupport: true,
       whiteLabel: true,
     },
   },
@@ -94,7 +94,7 @@ export interface PlanLimits {
     advancedReports: boolean;
     emailNotifications: boolean;
     inventory: boolean;
-    api: boolean;
+    prioritySupport: boolean;
     whiteLabel: boolean;
   };
 }
