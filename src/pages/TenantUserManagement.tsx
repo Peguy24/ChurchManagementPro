@@ -324,7 +324,7 @@ export default function TenantUserManagement() {
                     {t('tenant.pendingRequestsDesc')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
