@@ -1,32 +1,26 @@
 
 
-## Current Situation
+## Plan: Replace "Custom API" with "Priority Support" in the Enterprise plan
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### Changes Required
 
-## What Needs to Be Done
+**1. Update translation keys** in `src/contexts/LanguageContext.tsx`:
+- Rename `feat_customApi` to `feat_prioritySupport` across all 3 languages:
+  - FR: "Support prioritaire"
+  - EN: "Priority Support"
+  - HT: "Sipò priyorite"
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+**2. Update `src/pages/Commercial.tsx`** (line 155):
+- Change `t("commercial.feat_customApi")` to `t("commercial.feat_prioritySupport")`
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+**3. Update `src/pages/Subscription.tsx`** (line 301):
+- Replace the hardcoded "Custom API" text with the translated `t("commercial.feat_prioritySupport")` call
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+**4. Update `src/hooks/usePlanLimits.tsx`**:
+- Remove `api: true` from the Enterprise features (or rename it to `prioritySupport: true`)
+- Update the `PlanLimits` interface accordingly
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+**5. Update `src/components/FeatureLockedCard.tsx`** (if it references API anywhere) -- no changes needed based on current code.
+
+This is a straightforward find-and-replace across 4 files with no database or backend changes needed.
 
