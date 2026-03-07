@@ -3506,7 +3506,7 @@ const translations = {
       feat_prioritySupport: "Priority support",
       feat_unlimitedMembers: "Unlimited members",
       feat_unlimitedBranches: "Unlimited branches",
-      feat_prioritySupport: "Priority Support",
+      
       feat_trainingIncluded: "Training included",
       feat_support247: "24/7 Support",
       feat_whiteLabel: "White-label available",
