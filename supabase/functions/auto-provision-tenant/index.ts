@@ -37,6 +37,30 @@ serve(async (req) => {
 
     logStep("Request received", { church_name, contact_email, requested_plan });
 
+    // Check if email is already registered as a user
+    const { data: existingUser } = await supabase.auth.admin.listUsers();
+    const emailExists = existingUser?.users?.some(u => u.email?.toLowerCase() === contact_email.toLowerCase());
+    if (emailExists) {
+      return new Response(JSON.stringify({ error: "This email is already registered. Please use a different email address." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    // Check if email already has a tenant
+    const { data: existingTenantContact } = await supabase
+      .from("tenants")
+      .select("id")
+      .eq("contact_email", contact_email.toLowerCase())
+      .maybeSingle();
+
+    if (existingTenantContact) {
+      return new Response(JSON.stringify({ error: "A church is already registered with this email address." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
     // 1. Generate slug
     const baseSlug = church_name.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
