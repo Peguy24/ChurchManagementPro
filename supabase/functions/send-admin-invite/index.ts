@@ -135,8 +135,8 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Created new invitation token");
     }
 
-    // Get the app URL from environment or request origin
-    const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://lovable.dev";
+    // Always use the production domain for generated links
+    const siteUrl = "https://churchmanagementpro.com";
     const registrationLink = `${siteUrl}/t/${tenantSlug}/auth?invite=${inviteToken}`;
 
     // If skipEmail is true, return the link without sending email
