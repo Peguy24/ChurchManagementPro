@@ -261,7 +261,7 @@ export default function UserManagement() {
                     {t("platform.usersPendingApprovalDesc")}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
