@@ -232,7 +232,7 @@ export default function PlatformRolesManager() {
             {t("platform.noPlatformUsers")}
           </p>
         ) : (
-          <Table>
+          <div className="overflow-x-auto"><Table>
             <TableHeader>
               <TableRow>
                 <TableHead>{t("platform.user")}</TableHead>
