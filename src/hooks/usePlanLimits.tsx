@@ -29,7 +29,7 @@ export const PLAN_LIMITS = {
       advancedReports: false,
       emailNotifications: false,
       inventory: false,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
