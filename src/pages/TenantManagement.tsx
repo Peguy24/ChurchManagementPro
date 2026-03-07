@@ -683,7 +683,7 @@ export default function TenantManagement() {
                     </div>
                   )}
                   {!editingTenant && (
-                    <div className="col-span-2 space-y-2">
+                    <div className="col-span-1 sm:col-span-2 space-y-2">
                       <Label htmlFor="admin_email">
                         <Mail className="h-4 w-4 inline mr-2" />
                         {t("superAdmin.adminEmailOptional")}
