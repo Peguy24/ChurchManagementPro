@@ -33,7 +33,6 @@ export default function AdminInvitations() {
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { t, language } = useLanguage();
-  console.log("DEBUG lang:", language, "test:", t("platform.superAdminManagement"), "new:", t("platform.adminInvitationsTitle"));
 
   const dateLocale = language === "fr" ? fr : language === "ht" ? fr : enUS;
 
