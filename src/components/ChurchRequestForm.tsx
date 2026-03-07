@@ -103,7 +103,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
   if (result) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <div className="text-center space-y-6 py-4">
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -157,7 +157,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Church className="h-5 w-5 text-primary" />
