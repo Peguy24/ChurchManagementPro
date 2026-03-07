@@ -58,7 +58,7 @@ export const PLAN_LIMITS = {
       advancedReports: true,
       emailNotifications: true,
       inventory: true,
-      api: false,
+      prioritySupport: false,
       whiteLabel: false,
     },
   },
