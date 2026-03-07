@@ -279,8 +279,8 @@ export default function PlatformRolesManager() {
                         setSelectedRole((prev) => ({ ...prev, [user.id]: value as PlatformRole }))
                       }
                     >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder={t("platform.addRole")} />
+                       <SelectTrigger className="w-[140px] sm:w-[180px]">
+                         <SelectValue placeholder={t("platform.addRole")} />
                       </SelectTrigger>
                       <SelectContent>
                         {ASSIGNABLE_ROLES.filter((r) => !user.platform_roles.includes(r)).map((role) => (
