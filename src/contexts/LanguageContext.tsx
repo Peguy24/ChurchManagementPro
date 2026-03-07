@@ -1607,7 +1607,7 @@ const translations = {
       feat_prioritySupport: "Support prioritaire",
       feat_unlimitedMembers: "Membres illimités",
       feat_unlimitedBranches: "Succursales illimitées",
-      feat_customApi: "API personnalisée",
+      feat_prioritySupport: "Support prioritaire",
       feat_trainingIncluded: "Formation incluse",
       feat_support247: "Support 24/7",
       feat_whiteLabel: "White-label disponible",
