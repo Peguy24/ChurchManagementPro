@@ -373,7 +373,7 @@ export default function UserManagement() {
                                 setSelectedRole((prev) => ({ ...prev, [user.id]: value as AppRole }))
                               }
                             >
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-[140px] sm:w-[180px]">
                                 <SelectValue placeholder={t("platform.addRole")} />
                               </SelectTrigger>
                               <SelectContent>
