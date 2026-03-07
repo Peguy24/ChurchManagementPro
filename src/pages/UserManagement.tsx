@@ -188,13 +188,13 @@ export default function UserManagement() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
-            <p className="text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
+            <p className="text-sm md:text-base text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
           </div>
-          <Button onClick={() => setIsInviteDialogOpen(true)}>
+          <Button onClick={() => setIsInviteDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="h-4 w-4 mr-2" />
             {t("platform.inviteSuperAdmin")}
           </Button>
