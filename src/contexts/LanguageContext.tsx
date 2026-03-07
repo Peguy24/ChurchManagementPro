@@ -4970,7 +4970,7 @@ const translations = {
       newTrialDuration: "Nouvo dire esè",
       customEndDate: "Dat fen pèsonalize",
       newTrialUntilLabel: "Nouvo esè jiska:",
-      extending: "Ap pwolonje...",
+      extendingAction: "Ap pwolonje...",
       extendTrialBtn: "Pwolonje Esè",
       manualPlanManagement: "Jesyon Manyèl Plan",
       managePlanFor: "Jere plan pou",
