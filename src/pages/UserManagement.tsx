@@ -334,7 +334,7 @@ export default function UserManagement() {
                 ) : approvedUsers.length === 0 ? (
                   <p className="text-muted-foreground">{t("platform.noApprovedUsers")}</p>
                 ) : (
-                  <Table>
+                   <div className="overflow-x-auto"><Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t("common.name")}</TableHead>
