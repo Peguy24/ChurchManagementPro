@@ -76,7 +76,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: Users,
       items: [
         { to: "/members", icon: Users, label: t("nav.members") },
-        { to: "/members/requests", icon: UserPlus, label: "Demandes d'adhésion" },
+        { to: "/members/requests", icon: UserPlus, label: t("memberRequests.title") },
         { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
         { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
         { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
