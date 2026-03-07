@@ -3159,7 +3159,7 @@ const translations = {
       newTrialDuration: "New trial duration",
       customEndDate: "Custom end date",
       newTrialUntilLabel: "New trial until:",
-      extending: "Extending...",
+      extendingAction: "Extending...",
       extendTrialBtn: "Extend Trial",
       manualPlanManagement: "Manual Plan Management",
       managePlanFor: "Manage plan for",
