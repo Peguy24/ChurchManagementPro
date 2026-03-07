@@ -6,6 +6,73 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    inviteAdmin: "Invite an administrator",
+    inviteAdminFor: "Invite an administrator for",
+    adminEmail: "Administrator email",
+    sendByEmail: "Send by email",
+    generateLink: "Generate link",
+    tip: "Tip",
+    tipText: "If email sending fails, use \"Generate link\" to get a link you can share via WhatsApp, SMS, etc.",
+    invitationLink: "Invitation link",
+    secureLink: "Secure and single-use link",
+    validFor: "Valid for 7 days",
+    shareOnly: "Share only with the intended person",
+    shareVia: "Can be shared via WhatsApp, SMS, etc.",
+    close: "Close",
+    linkGenerated: "Invitation link generated successfully",
+    emailSent: "Invitation email sent to",
+    errorSending: "Email sending error. Try 'Generate link' instead.",
+    error: "Error",
+    linkCopied: "Link copied to clipboard",
+    copyError: "Unable to copy link",
+  },
+  fr: {
+    inviteAdmin: "Inviter un administrateur",
+    inviteAdminFor: "Invitez un administrateur pour",
+    adminEmail: "Email de l'administrateur",
+    sendByEmail: "Envoyer par email",
+    generateLink: "Générer le lien",
+    tip: "Conseil",
+    tipText: "Si l'envoi d'email échoue, utilisez \"Générer le lien\" pour obtenir un lien que vous pouvez partager via WhatsApp, SMS, etc.",
+    invitationLink: "Lien d'invitation",
+    secureLink: "Lien sécurisé et à usage unique",
+    validFor: "Valide pendant 7 jours",
+    shareOnly: "Ne le partagez qu'avec la personne concernée",
+    shareVia: "Peut être partagé via WhatsApp, SMS, etc.",
+    close: "Fermer",
+    linkGenerated: "Lien d'invitation généré avec succès",
+    emailSent: "Email d'invitation envoyé à",
+    errorSending: "Erreur d'envoi email. Essayez 'Générer le lien' à la place.",
+    error: "Erreur",
+    linkCopied: "Lien copié dans le presse-papiers",
+    copyError: "Impossible de copier le lien",
+  },
+  ht: {
+    inviteAdmin: "Envite yon administratè",
+    inviteAdminFor: "Envite yon administratè pou",
+    adminEmail: "Imèl administratè a",
+    sendByEmail: "Voye pa imèl",
+    generateLink: "Jenere lyen",
+    tip: "Konsèy",
+    tipText: "Si anvwa imèl la pa mache, itilize \"Jenere lyen\" pou jwenn yon lyen ou ka pataje pa WhatsApp, SMS, elatriye.",
+    invitationLink: "Lyen envitasyon",
+    secureLink: "Lyen sekirize ak itilizasyon inik",
+    validFor: "Valab pandan 7 jou",
+    shareOnly: "Pataje li sèlman ak moun ki konsène a",
+    shareVia: "Ka pataje pa WhatsApp, SMS, elatriye.",
+    close: "Fèmen",
+    linkGenerated: "Lyen envitasyon jenere avèk siksè",
+    emailSent: "Imèl envitasyon voye bay",
+    errorSending: "Erè nan anvwa imèl. Eseye 'Jenere lyen' pito.",
+    error: "Erè",
+    linkCopied: "Lyen kopye nan pres-papye",
+    copyError: "Enposib kopye lyen nan",
+  },
+};
 
 interface AdminInviteDialogProps {
   open: boolean;
@@ -18,6 +85,9 @@ interface AdminInviteDialogProps {
 }
 
 export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDialogProps) {
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
+
   const [email, setEmail] = useState("");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,19 +130,17 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
 
       if (skipEmail) {
         setInvitationLink(data.invitationLink);
-        toast.success("Lien d'invitation généré avec succès");
+        toast.success(lt("linkGenerated"));
       } else {
-        toast.success(`Email d'invitation envoyé à ${email}`);
+        toast.success(`${lt("emailSent")} ${email}`);
         handleClose(false);
       }
     } catch (err: any) {
       console.error("Error generating invitation:", err);
       if (skipEmail) {
-        // Even if there's an error, try to show the link if we got one
-        toast.error("Erreur: " + err.message);
+        toast.error(`${lt("error")}: ${err.message}`);
       } else {
-        // For email sending, suggest using the link option
-        toast.error("Erreur d'envoi email. Essayez 'Générer le lien' à la place.");
+        toast.error(lt("errorSending"));
       }
     } finally {
       setIsLoading(false);
@@ -85,10 +153,10 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
     try {
       await navigator.clipboard.writeText(invitationLink);
       setCopied(true);
-      toast.success("Lien copié dans le presse-papiers");
+      toast.success(lt("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Impossible de copier le lien");
+      toast.error(lt("copyError"));
     }
   };
 
@@ -96,17 +164,17 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Inviter un administrateur</DialogTitle>
+          <DialogTitle>{lt("inviteAdmin")}</DialogTitle>
           <DialogDescription>
-            Invitez un administrateur pour <strong>{tenant.name}</strong>
+            {lt("inviteAdminFor")} <strong>{tenant.name}</strong>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="admin-email">Email de l'administrateur</Label>
+            <Label htmlFor="admin-email">{lt("adminEmail")}</Label>
             <Input
               id="admin-email"
               type="email"
@@ -130,7 +198,7 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
                   ) : (
                     <Mail className="h-4 w-4 mr-2" />
                   )}
-                  Envoyer par email
+                  {lt("sendByEmail")}
                 </Button>
                 <Button
                   className="flex-1"
@@ -143,21 +211,21 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
                   ) : (
                     <Link2 className="h-4 w-4 mr-2" />
                   )}
-                  Générer le lien
+                  {lt("generateLink")}
                 </Button>
               </div>
 
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  <strong>Conseil :</strong> Si l'envoi d'email échoue, utilisez "Générer le lien" pour obtenir un lien que vous pouvez partager via WhatsApp, SMS, etc.
+                  <strong>{lt("tip")} :</strong> {lt("tipText")}
                 </p>
               </div>
             </>
           ) : (
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Lien d'invitation</Label>
+                <Label>{lt("invitationLink")}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={invitationLink}
@@ -182,18 +250,18 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-xs text-amber-700 dark:text-amber-300">
-                  <p><strong>Lien sécurisé et à usage unique</strong></p>
+                  <p><strong>{lt("secureLink")}</strong></p>
                   <ul className="list-disc list-inside mt-1 space-y-0.5">
-                    <li>Valide pendant 7 jours</li>
-                    <li>Ne le partagez qu'avec la personne concernée</li>
-                    <li>Peut être partagé via WhatsApp, SMS, etc.</li>
+                    <li>{lt("validFor")}</li>
+                    <li>{lt("shareOnly")}</li>
+                    <li>{lt("shareVia")}</li>
                   </ul>
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => handleClose(false)}>
-                  Fermer
+                  {lt("close")}
                 </Button>
               </div>
             </div>

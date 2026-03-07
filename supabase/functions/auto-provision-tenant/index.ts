@@ -149,7 +149,7 @@ serve(async (req) => {
     logStep("Admin invitation created");
 
     // 6. Send email with invitation link
-    const siteUrl = Deno.env.get("SITE_URL") || req.headers.get("origin") || "https://cogmpw-sys.lovable.app";
+    const siteUrl = "https://churchmanagementpro.com";
     const registrationLink = `${siteUrl}/t/${slug}/auth?invite=${invitation.token}`;
     logStep("Registration link generated", { registrationLink });
 
