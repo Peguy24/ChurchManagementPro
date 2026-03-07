@@ -294,7 +294,7 @@ export const generateMemberCardsPDF = async (
     const x = startX + col * (CARD_WIDTH + CARD_MARGIN);
     const y = PAGE_MARGIN + row * (CARD_HEIGHT + CARD_MARGIN);
 
-    await drawCard(pdf, member, x, y, customization);
+    await drawCard(pdf, member, x, y, customization, i);
 
     cardIndex++;
     onProgress?.(Math.round((cardIndex / totalCards) * 100));
