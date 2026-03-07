@@ -580,7 +580,7 @@ export default function TenantManagement() {
                 {t("superAdmin.newClient")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingTenant ? t("superAdmin.editClient") : t("superAdmin.addNewClient")}</DialogTitle>
                 <DialogDescription>
