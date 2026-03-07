@@ -1078,9 +1078,9 @@ export default function TenantManagement() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 text-destructive hover:text-destructive"
-                                title="Supprimer"
+                                title="Delete"
                                 onClick={() => {
-                                  if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
+                                  if (confirm(`Are you sure you want to permanently delete "${tenant.name}"? This will remove ALL data and cannot be undone.`)) {
                                     deleteTenantMutation.mutate(tenant.id);
                                   }
                                 }}
