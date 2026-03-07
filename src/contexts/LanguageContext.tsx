@@ -35,13 +35,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: any = translations[language];
+    let value: any = (translations as any)[language];
     
     for (const k of keys) {
-      value = value?.[k];
+      if (value === undefined || value === null) return key;
+      value = value[k];
     }
     
-    return value || key;
+    return typeof value === 'string' ? value : key;
   };
 
   return (
@@ -51,6 +52,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   );
 }
 
+// Translation data - updated with admin invitations keys
 const translations = {
   fr: {
     common: {
