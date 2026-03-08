@@ -246,7 +246,7 @@ export default function TenantUserManagement() {
       if (!skipEmail) {
         toast({
           title: t('common.error'),
-          description: t('tenant.inviteErrorTryLink') || "Erreur d'envoi email. Essayez 'Générer le lien' à la place.",
+          description: t('tenant.inviteErrorTryLink'),
           variant: 'destructive',
         });
       } else {
