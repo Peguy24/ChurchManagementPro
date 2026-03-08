@@ -260,7 +260,7 @@ export default function IncomeCategories() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryName")} *</Label>
+                  <Label>{t("layout.categoryName")} *</Label>
                   <Input
                     value={form.name}
                     onChange={(e) => handleNameChange(e.target.value)}
