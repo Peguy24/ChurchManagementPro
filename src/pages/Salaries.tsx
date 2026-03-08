@@ -645,7 +645,7 @@ export default function Salaries() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="salary_amount">Salaire *</Label>
+                        <Label htmlFor="salary_amount">{t("salariesPage.salaryAmount")} *</Label>
                         <Input
                           id="salary_amount"
                           type="number"
