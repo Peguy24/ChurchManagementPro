@@ -107,7 +107,7 @@ export default function AttendanceKiosk() {
         setMemberName(fullName);
         setFeedbackMessage(t("kiosk.welcomeMessage"));
         setTotalCheckins(prev => prev + 1);
-        playSuccessSound(80);
+        playSuccessSound(0.8);
       }
     } catch (err) {
       console.error("Kiosk scan error:", err);
