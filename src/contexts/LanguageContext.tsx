@@ -2791,6 +2791,8 @@ const translations = {
       back: "Retour",
       registerAnother: "Inscrire une autre personne",
       eventOn: "le",
+      eventClosedTitle: "Inscription fermée",
+      eventClosedMessage: "Cet événement est déjà terminé. Les inscriptions ne sont plus possibles.",
     },
   onboarding: {
     title: "Progression d'intégration",
@@ -5591,6 +5593,8 @@ const translations = {
       back: "Back",
       registerAnother: "Register another person",
       eventOn: "on",
+      eventClosedTitle: "Registration Closed",
+      eventClosedMessage: "This event is already over. Registration is no longer available.",
     },
   onboarding: {
     title: "Onboarding Progress",
@@ -8390,6 +8394,8 @@ const translations = {
       back: "Retounen",
       registerAnother: "Enskri yon lòt moun",
       eventOn: "nan",
+      eventClosedTitle: "Enskripsyon Fèmen",
+      eventClosedMessage: "Evènman sa a deja fini. Enskripsyon pa disponib ankò.",
     },
   onboarding: {
     title: "Pwogrè Entegrasyon",
