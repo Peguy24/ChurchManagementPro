@@ -52,6 +52,7 @@ export default function MemberDialog({
   const [cropperOpen, setCropperOpen] = useState(false);
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedMinistryId, setSelectedMinistryId] = useState("");
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
@@ -123,6 +124,29 @@ export default function MemberDialog({
     },
     enabled: !!tenantId,
   });
+
+  // Load current ministry for existing member
+  const { data: currentMinistryMember } = useQuery({
+    queryKey: ["member-ministry", member?.id, tenantId],
+    queryFn: async () => {
+      if (!member?.id) return null;
+      const { data, error } = await supabase
+        .from("ministry_members")
+        .select("ministry_id")
+        .eq("member_id", member.id)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!member?.id,
+  });
+
+  useEffect(() => {
+    if (currentMinistryMember) {
+      setSelectedMinistryId(currentMinistryMember.ministry_id || "");
+    }
+  }, [currentMinistryMember]);
 
   useEffect(() => {
     if (member) {
@@ -222,6 +246,7 @@ export default function MemberDialog({
         numberOfChildren: "",
         childrenNames: "",
       });
+      setSelectedMinistryId("");
       setPhotoPreview("");
       setPhotoFile(null);
     }
@@ -471,6 +496,34 @@ export default function MemberDialog({
               console.error("Error sending welcome email:", emailError);
             }
           }
+          // Handle ministry for new member
+          if (selectedMinistryId) {
+            await supabase.from("ministry_members").insert({
+              ministry_id: selectedMinistryId,
+              member_id: data.id,
+              role: "member",
+              joined_date: new Date().toISOString().split("T")[0],
+            });
+          }
+        }
+      }
+
+      // Handle ministry assignment for existing members
+      if (member?.id && selectedMinistryId !== undefined) {
+        // Remove existing ministry assignments
+        await supabase
+          .from("ministry_members")
+          .delete()
+          .eq("member_id", member.id);
+
+        // Add new ministry assignment if selected
+        if (selectedMinistryId) {
+          await supabase.from("ministry_members").insert({
+            ministry_id: selectedMinistryId,
+            member_id: member.id,
+            role: "member",
+            joined_date: new Date().toISOString().split("T")[0],
+          });
         }
       }
 
@@ -954,17 +1007,28 @@ export default function MemberDialog({
                 />
               </div>
 
-              {/* Ministries info (readonly for display) */}
-              {ministries && ministries.length > 0 && (
-                <div className="border rounded-lg p-4 bg-muted/30">
-                  <Label className="text-sm font-semibold text-muted-foreground">
-                    {t("members.availableMinistries")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("members.ministriesNote")}
-                  </p>
-                </div>
-              )}
+              {/* Ministry Selection */}
+              <div className="grid gap-2">
+                <Label htmlFor="ministry">{t("members.ministry") || "Ministère"}</Label>
+                <Select
+                  value={selectedMinistryId || "none"}
+                  onValueChange={(value) =>
+                    setSelectedMinistryId(value === "none" ? "" : value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("members.selectMinistry") || "Sélectionner un ministère"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("common.none") || "Aucun"}</SelectItem>
+                    {ministries?.map((ministry) => (
+                      <SelectItem key={ministry.id} value={ministry.id}>
+                        {ministry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </TabsContent>
 
             {/* Family Information Tab */}
