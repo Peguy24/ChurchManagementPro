@@ -210,7 +210,7 @@ export default function RolePermissionsManager() {
 
         <div className="mt-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {t("rolePermissions.dashboardNote")}
+            {t("rolePermissions.dashboardAlwaysAccessible")}
           </p>
           <Button
             onClick={() => saveMutation.mutate()}
