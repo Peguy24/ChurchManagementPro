@@ -456,10 +456,14 @@ export default function TenantAuth() {
     if (data?.user && tenant) {
       try {
         // Update profile with tenant_id
-        await supabase
+        const { error: profileUpdateError } = await supabase
           .from('profiles')
           .update({ tenant_id: tenant.id })
           .eq('id', data.user.id);
+
+        if (profileUpdateError) {
+          throw profileUpdateError;
+        }
         
         // Determine role + approval behavior based on invitation source
         const isInvitedSignup = hasValidInvitation;
@@ -473,8 +477,8 @@ export default function TenantAuth() {
         // Token-based admin invitation = trusted, auto-approved.
         // Email+role invitation (tenant user invite) = requires manual approval.
         const isAutoApproved = isTokenInvite;
-        
-        await supabase
+
+        const { error: roleInsertError } = await supabase
           .from('tenant_user_roles')
           .insert({
             tenant_id: tenant.id,
@@ -482,6 +486,10 @@ export default function TenantAuth() {
             role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
             is_approved: isAutoApproved,
           });
+
+        if (roleInsertError) {
+          throw roleInsertError;
+        }
 
         // Mark token invitation as used when applicable
         if (isTokenInvite && invitation?.id) {
