@@ -773,12 +773,12 @@ export default function Salaries() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Employé</TableHead>
-                      <TableHead>Période</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Mode de paiement</TableHead>
-                      <TableHead>Statut</TableHead>
+                      <TableHead>{t("salariesPage.date")}</TableHead>
+                      <TableHead>{t("salariesPage.employee")}</TableHead>
+                      <TableHead>{t("salariesPage.period")}</TableHead>
+                      <TableHead>{t("salariesPage.amount")}</TableHead>
+                      <TableHead>{t("salariesPage.paymentMethod")}</TableHead>
+                      <TableHead>{t("salariesPage.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
