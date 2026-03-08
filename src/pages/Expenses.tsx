@@ -357,7 +357,7 @@ export default function Expenses() {
 
   const exportData = () => {
     const csv = [
-      ["Date", "Description", "Catégorie", "Montant", "Fournisseur", "Statut"].join(","),
+      [t("expense.csvDate"), t("expense.csvDescription"), t("expense.csvCategory"), t("expense.csvAmount"), t("expense.csvVendor"), t("expense.csvStatus")].join(","),
       ...expenses.map((e) =>
         [
           e.expense_date,
