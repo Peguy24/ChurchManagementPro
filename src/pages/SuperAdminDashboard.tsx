@@ -313,6 +313,14 @@ export default function SuperAdminDashboard() {
                 <Users className="mr-2 h-4 w-4" />
                 {t("superAdmin.userManagement")}
               </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/activity")}
+              >
+                <Activity className="mr-2 h-4 w-4" />
+                {t("superAdmin.activityLog.title")}
+              </Button>
             </CardContent>
           </Card>
         </div>
