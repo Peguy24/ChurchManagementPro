@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Plus, Wallet, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -22,6 +23,7 @@ const CashRegister = () => {
   const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
+  const { formatAmount } = useCurrency();
   const queryClient = useQueryClient();
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -90,10 +92,10 @@ const CashRegister = () => {
       queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
       setRegisterDialogOpen(false);
       setRegisterForm({ name: "", branch_id: "", current_balance: "" });
-      toast({ title: t("common.save"), description: "Caisse créée avec succès" });
+      toast({ title: t("common.save"), description: t("cashRegisterPage.successCreate") });
     },
     onError: () => {
-      toast({ title: "Erreur", description: "Impossible de créer la caisse", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("cashRegisterPage.errorCreate"), variant: "destructive" });
     },
   });
 
@@ -113,7 +115,6 @@ const CashRegister = () => {
       });
       if (error) throw error;
 
-      // Update register balance
       const register = registers?.find((r) => r.id === selectedRegister);
       if (register) {
         const newBalance = Number(register.current_balance) + (isExpense ? -Math.abs(amount) : Math.abs(amount));
@@ -125,41 +126,29 @@ const CashRegister = () => {
       queryClient.invalidateQueries({ queryKey: ["cash-transactions"] });
       setTransactionDialogOpen(false);
       setTransactionForm({ transaction_type: "income", amount: "", description: "", transaction_date: format(new Date(), "yyyy-MM-dd"), reference_number: "" });
-      toast({ title: t("common.save"), description: "Transaction enregistrée" });
+      toast({ title: t("common.save"), description: t("cashRegisterPage.successTransaction") });
     },
     onError: () => {
-      toast({ title: "Erreur", description: "Impossible d'enregistrer la transaction", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("cashRegisterPage.errorTransaction"), variant: "destructive" });
     },
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "income":
-        return <ArrowUpRight className="h-4 w-4 text-green-600" />;
-      case "expense":
-        return <ArrowDownRight className="h-4 w-4 text-red-600" />;
+      case "income": return <ArrowUpRight className="h-4 w-4 text-green-600" />;
+      case "expense": return <ArrowDownRight className="h-4 w-4 text-red-600" />;
       case "transfer_in":
-      case "transfer_out":
-        return <ArrowLeftRight className="h-4 w-4 text-blue-600" />;
-      default:
-        return null;
+      case "transfer_out": return <ArrowLeftRight className="h-4 w-4 text-blue-600" />;
+      default: return null;
     }
   };
 
   const getTransactionLabel = (type: string) => {
     const labels: Record<string, string> = {
-      income: "Entrée",
-      expense: "Sortie",
-      transfer_in: "Transfert entrant",
-      transfer_out: "Transfert sortant",
+      income: t("cashRegisterPage.income"),
+      expense: t("cashRegisterPage.expense"),
+      transfer_in: t("cashRegisterPage.transferIn"),
+      transfer_out: t("cashRegisterPage.transferOut"),
     };
     return labels[type] || type;
   };
@@ -171,34 +160,34 @@ const CashRegister = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">{t("finance.cashRegister")}</h1>
-            <p className="text-muted-foreground">Gérez les caisses physiques</p>
+            <h1 className="text-3xl font-bold">{t("cashRegisterPage.title")}</h1>
+            <p className="text-muted-foreground">{t("cashRegisterPage.subtitle")}</p>
           </div>
           <div className="flex gap-2">
             <TransferDialog />
             <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="mr-2 h-4 w-4" />Nouvelle Caisse</Button>
+                <Button><Plus className="mr-2 h-4 w-4" />{t("cashRegisterPage.newRegister")}</Button>
               </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Créer une Caisse</DialogTitle>
+                <DialogTitle>{t("cashRegisterPage.createRegister")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Nom de la caisse *</Label>
+                  <Label>{t("cashRegisterPage.registerName")} *</Label>
                   <Input
                     value={registerForm.name}
                     onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                    placeholder="Ex: Caisse Principale"
+                    placeholder={t("cashRegisterPage.registerNamePlaceholder")}
                   />
                 </div>
                 <div>
-                  <Label>Branche</Label>
+                  <Label>{t("cashRegisterPage.branch")}</Label>
                   <Select value={registerForm.branch_id} onValueChange={(v) => setRegisterForm({ ...registerForm, branch_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Toutes les branches" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("cashRegisterPage.allBranches")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Toutes les branches</SelectItem>
+                      <SelectItem value="none">{t("cashRegisterPage.allBranches")}</SelectItem>
                       {branches?.map((b) => (
                         <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                       ))}
@@ -206,7 +195,7 @@ const CashRegister = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label>Solde initial ($)</Label>
+                  <Label>{t("cashRegisterPage.initialBalance")}</Label>
                   <Input
                     type="number"
                     value={registerForm.current_balance}
@@ -215,7 +204,7 @@ const CashRegister = () => {
                   />
                 </div>
                 <Button onClick={() => createRegister.mutate()} disabled={!registerForm.name || createRegister.isPending}>
-                  {createRegister.isPending ? "Création..." : "Créer la Caisse"}
+                  {createRegister.isPending ? t("cashRegisterPage.creating") : t("cashRegisterPage.createButton")}
                 </Button>
               </div>
               </DialogContent>
@@ -223,25 +212,23 @@ const CashRegister = () => {
           </div>
         </div>
 
-        {/* Summary Card */}
         <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-800">Solde Total des Caisses</p>
-                <p className="text-3xl font-bold text-green-700">{formatCurrency(totalBalance)}</p>
+                <p className="text-sm font-medium text-green-800">{t("cashRegisterPage.totalBalance")}</p>
+                <p className="text-3xl font-bold text-green-700">{formatAmount(totalBalance)}</p>
               </div>
               <Wallet className="h-12 w-12 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Registers Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            <p>Chargement...</p>
+            <p>{t("cashRegisterPage.loading")}</p>
           ) : registers?.length === 0 ? (
-            <p className="text-muted-foreground col-span-full text-center py-8">Aucune caisse créée</p>
+            <p className="text-muted-foreground col-span-full text-center py-8">{t("cashRegisterPage.noRegisters")}</p>
           ) : (
             registers?.map((register) => (
               <Card 
@@ -256,17 +243,17 @@ const CashRegister = () => {
                       <CardTitle className="text-lg">{register.name}</CardTitle>
                     </div>
                     <Badge variant={Number(register.current_balance) >= 0 ? "default" : "destructive"}>
-                      {Number(register.current_balance) >= 0 ? "Positif" : "Négatif"}
+                      {Number(register.current_balance) >= 0 ? t("cashRegisterPage.positive") : t("cashRegisterPage.negative")}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <p className={`text-2xl font-bold ${Number(register.current_balance) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      {formatCurrency(Number(register.current_balance))}
+                      {formatAmount(Number(register.current_balance))}
                     </p>
                     {(register.branches as any)?.name && (
-                      <p className="text-sm text-muted-foreground">Branche: {(register.branches as any).name}</p>
+                      <p className="text-sm text-muted-foreground">{t("cashRegisterPage.branchLabel")}: {(register.branches as any).name}</p>
                     )}
                   </div>
                 </CardContent>
@@ -275,34 +262,33 @@ const CashRegister = () => {
           )}
         </div>
 
-        {/* Selected Register Transactions */}
         {selectedRegister && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Transactions - {registers?.find((r) => r.id === selectedRegister)?.name}</CardTitle>
+              <CardTitle>{t("cashRegisterPage.transactions")} - {registers?.find((r) => r.id === selectedRegister)?.name}</CardTitle>
               <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="mr-2 h-4 w-4" />Ajouter</Button>
+                  <Button size="sm"><Plus className="mr-2 h-4 w-4" />{t("cashRegisterPage.addTransaction")}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Nouvelle Transaction</DialogTitle>
+                    <DialogTitle>{t("cashRegisterPage.newTransaction")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>Type</Label>
+                      <Label>{t("cashRegisterPage.type")}</Label>
                       <Select value={transactionForm.transaction_type} onValueChange={(v) => setTransactionForm({ ...transactionForm, transaction_type: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="income">Entrée</SelectItem>
-                          <SelectItem value="expense">Sortie</SelectItem>
-                          <SelectItem value="transfer_in">Transfert entrant</SelectItem>
-                          <SelectItem value="transfer_out">Transfert sortant</SelectItem>
+                          <SelectItem value="income">{t("cashRegisterPage.income")}</SelectItem>
+                          <SelectItem value="expense">{t("cashRegisterPage.expense")}</SelectItem>
+                          <SelectItem value="transfer_in">{t("cashRegisterPage.transferIn")}</SelectItem>
+                          <SelectItem value="transfer_out">{t("cashRegisterPage.transferOut")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>Montant ($) *</Label>
+                      <Label>{t("cashRegisterPage.amount")} *</Label>
                       <Input
                         type="number"
                         value={transactionForm.amount}
@@ -310,22 +296,22 @@ const CashRegister = () => {
                       />
                     </div>
                     <div>
-                      <Label>Description</Label>
+                      <Label>{t("cashRegisterPage.description")}</Label>
                       <Input
                         value={transactionForm.description}
                         onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
                       />
                     </div>
                     <div>
-                      <Label>Référence</Label>
+                      <Label>{t("cashRegisterPage.reference")}</Label>
                       <Input
                         value={transactionForm.reference_number}
                         onChange={(e) => setTransactionForm({ ...transactionForm, reference_number: e.target.value })}
-                        placeholder="N° reçu, bordereau..."
+                        placeholder={t("cashRegisterPage.referencePlaceholder")}
                       />
                     </div>
                     <div>
-                      <Label>Date</Label>
+                      <Label>{t("cashRegisterPage.date")}</Label>
                       <Input
                         type="date"
                         value={transactionForm.transaction_date}
@@ -333,7 +319,7 @@ const CashRegister = () => {
                       />
                     </div>
                     <Button onClick={() => createTransaction.mutate()} disabled={!transactionForm.amount || createTransaction.isPending}>
-                      Enregistrer
+                      {t("cashRegisterPage.save")}
                     </Button>
                   </div>
                 </DialogContent>
@@ -343,22 +329,22 @@ const CashRegister = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Référence</TableHead>
-                    <TableHead className="text-right">Montant</TableHead>
+                    <TableHead>{t("cashRegisterPage.date")}</TableHead>
+                    <TableHead>{t("cashRegisterPage.type")}</TableHead>
+                    <TableHead>{t("cashRegisterPage.description")}</TableHead>
+                    <TableHead>{t("cashRegisterPage.reference")}</TableHead>
+                    <TableHead className="text-right">{t("cashRegisterPage.amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {cashTransactions?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">Aucune transaction</TableCell>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">{t("cashRegisterPage.noTransactions")}</TableCell>
                     </TableRow>
                   ) : (
                     cashTransactions?.map((tx) => (
                       <TableRow key={tx.id}>
-                        <TableCell>{format(new Date(tx.transaction_date), "dd/MM/yyyy", { locale: fr })}</TableCell>
+                        <TableCell>{format(new Date(tx.transaction_date), "dd/MM/yyyy", { locale: language === "fr" ? fr : undefined })}</TableCell>
                         <TableCell>
                           <span className="flex items-center gap-1">
                             {getTransactionIcon(tx.transaction_type)}
@@ -368,7 +354,7 @@ const CashRegister = () => {
                         <TableCell>{tx.description || "-"}</TableCell>
                         <TableCell>{tx.reference_number || "-"}</TableCell>
                         <TableCell className={`text-right font-medium ${Number(tx.amount) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                          {Number(tx.amount) >= 0 ? "+" : ""}{formatCurrency(Number(tx.amount))}
+                          {Number(tx.amount) >= 0 ? "+" : ""}{formatAmount(Number(tx.amount))}
                         </TableCell>
                       </TableRow>
                     ))

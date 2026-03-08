@@ -24,8 +24,8 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 export default function FinancialReports() {
   const { hasFeature, loading: planLoading } = usePlanLimits();
+  const { t } = useLanguage();
 
-  // Check for advanced reports feature access
   if (!planLoading && !hasFeature("advancedReports")) {
     return (
       <Layout>
@@ -42,7 +42,7 @@ export default function FinancialReports() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
       </Layout>
     );

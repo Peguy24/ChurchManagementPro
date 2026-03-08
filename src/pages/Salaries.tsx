@@ -39,6 +39,7 @@ import { fr } from "date-fns/locale";
 import { Plus, Users, History, Edit, Trash2, Banknote, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Employee {
   id: string;
@@ -73,6 +74,7 @@ export default function Salaries() {
   const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
@@ -211,16 +213,16 @@ export default function Salaries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast({
-        title: selectedEmployee ? "Employé modifié" : "Employé ajouté",
-        description: "L'opération a été effectuée avec succès.",
+        title: selectedEmployee ? t("salariesPage.employeeModified") : t("salariesPage.employeeAdded"),
+        description: t("salariesPage.operationSuccess"),
       });
       setEmployeeDialogOpen(false);
       resetEmployeeForm();
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.genericError"),
         variant: "destructive",
       });
       console.error(error);
@@ -232,9 +234,9 @@ export default function Salaries() {
     mutationFn: async (data: any) => {
       const amount = parseFloat(data.amount);
       const employee = employees.find(e => e.id === data.employee_id);
-      const employeeName = employee ? `${employee.first_name} ${employee.last_name}` : "Employé";
+      const employeeName = employee ? `${employee.first_name} ${employee.last_name}` : t("salariesPage.employee");
       const periodLabel = `${format(new Date(data.period_start), "dd/MM/yyyy")} - ${format(new Date(data.period_end), "dd/MM/yyyy")}`;
-      const expenseDescription = `Salaire - ${employeeName} - ${periodLabel}`;
+      const expenseDescription = `${t("salariesPage.salary")} - ${employeeName} - ${periodLabel}`;
 
       // 1. Insert salary payment
       const { error: salaryError } = await supabase
@@ -271,7 +273,7 @@ export default function Salaries() {
           approved_by: user?.id,
           created_by: user?.id,
           tenant_id: tenantId,
-          notes: `Paiement automatique - ${data.notes || ""}`.trim(),
+          notes: `${t("salariesPage.autoPayment")} - ${data.notes || ""}`.trim(),
         });
       if (expenseError) throw expenseError;
 
@@ -321,16 +323,16 @@ export default function Salaries() {
       queryClient.invalidateQueries({ queryKey: ["cash-transactions"] });
       queryClient.invalidateQueries({ queryKey: ["bank-transactions"] });
       toast({
-        title: "Paiement enregistré",
-        description: "Le salaire a été payé et synchronisé avec les dépenses.",
+        title: t("salariesPage.paymentRecorded"),
+        description: t("salariesPage.paymentSuccess"),
       });
       setPaymentDialogOpen(false);
       resetPaymentForm();
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du paiement.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.paymentError"),
         variant: "destructive",
       });
       console.error(error);
@@ -346,14 +348,14 @@ export default function Salaries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast({
-        title: "Employé supprimé",
-        description: "L'employé a été supprimé avec succès.",
+        title: t("salariesPage.employeeDeleted"),
+        description: t("salariesPage.employeeDeletedSuccess"),
       });
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'employé.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.employeeDeleteError"),
         variant: "destructive",
       });
       console.error(error);
