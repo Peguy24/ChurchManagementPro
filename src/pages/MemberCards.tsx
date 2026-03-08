@@ -673,18 +673,6 @@ export default function MemberCards() {
                         className="p-1.5 rounded-lg"
                         style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
                       >
-                        <Calendar className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">{t("memberCards.bornOn")}</p>
-                        <p className="font-medium text-foreground truncate">{formatDate(member.date_of_birth)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <div 
-                        className="p-1.5 rounded-lg"
-                        style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
-                      >
                         <Church className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
                       </div>
                       <div className="flex-1 min-w-0">
