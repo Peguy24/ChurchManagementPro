@@ -468,15 +468,15 @@ export default function Salaries() {
   const totalSalaries = activeEmployees.reduce((sum, e) => sum + e.salary_amount, 0);
 
   const paymentMethods: Record<string, string> = {
-    bank_transfer: "Virement bancaire",
-    cash: "Espèces",
-    check: "Chèque",
+    bank_transfer: t("salariesPage.bankTransfer"),
+    cash: t("salariesPage.cash"),
+    check: t("salariesPage.check"),
   };
 
   const paymentFrequencies: Record<string, string> = {
-    weekly: "Hebdomadaire",
-    biweekly: "Bimensuel",
-    monthly: "Mensuel",
+    weekly: t("salariesPage.weekly"),
+    biweekly: t("salariesPage.biweekly"),
+    monthly: t("salariesPage.monthly"),
   };
 
   return (
@@ -484,9 +484,9 @@ export default function Salaries() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Gestion des Salaires</h1>
+            <h1 className="text-2xl font-bold">{t("salariesPage.title")}</h1>
             <p className="text-muted-foreground">
-              Gérez le personnel rémunéré et l'historique des paiements
+              {t("salariesPage.subtitle")}
             </p>
           </div>
         </div>
@@ -495,27 +495,27 @@ export default function Salaries() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Personnel actif</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("salariesPage.activeStaff")}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeEmployees.length}</div>
-              <p className="text-xs text-muted-foreground">employé(s) rémunéré(s)</p>
+              <p className="text-xs text-muted-foreground">{t("salariesPage.paidEmployees")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Masse salariale mensuelle</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("salariesPage.monthlyPayroll")}</CardTitle>
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(totalSalaries)}</div>
-              <p className="text-xs text-muted-foreground">par mois</p>
+              <p className="text-xs text-muted-foreground">{t("salariesPage.perMonth")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Paiements ce mois</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("salariesPage.paymentsThisMonth")}</CardTitle>
               <History className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -526,7 +526,7 @@ export default function Salaries() {
                     new Date(p.payment_date).getFullYear() === new Date().getFullYear()
                 ).length}
               </div>
-              <p className="text-xs text-muted-foreground">paiement(s) effectué(s)</p>
+              <p className="text-xs text-muted-foreground">{t("salariesPage.paymentsMade")}</p>
             </CardContent>
           </Card>
         </div>
@@ -535,11 +535,11 @@ export default function Salaries() {
           <TabsList>
             <TabsTrigger value="employees" className="gap-2">
               <Users className="h-4 w-4" />
-              Personnel
+              {t("salariesPage.staff")}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <History className="h-4 w-4" />
-              Historique des paiements
+              {t("salariesPage.paymentHistory")}
             </TabsTrigger>
           </TabsList>
 
@@ -548,7 +548,7 @@ export default function Salaries() {
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder={t("salariesPage.search")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -558,24 +558,24 @@ export default function Salaries() {
                 <DialogTrigger asChild>
                   <Button onClick={resetEmployeeForm}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Ajouter un employé
+                    {t("salariesPage.addEmployee")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>
-                      {selectedEmployee ? "Modifier l'employé" : "Nouvel employé"}
+                      {selectedEmployee ? t("salariesPage.editEmployee") : t("salariesPage.newEmployee")}
                     </DialogTitle>
                     <DialogDescription>
                       {selectedEmployee
-                        ? "Modifiez les informations de l'employé"
-                        : "Ajoutez un nouveau membre du personnel rémunéré"}
+                        ? t("salariesPage.editEmployeeDesc")
+                        : t("salariesPage.newEmployeeDesc")}
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmitEmployee} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="first_name">Prénom *</Label>
+                        <Label htmlFor="first_name">{t("salariesPage.firstName")} *</Label>
                         <Input
                           id="first_name"
                           value={employeeForm.first_name}
@@ -586,7 +586,7 @@ export default function Salaries() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="last_name">Nom *</Label>
+                        <Label htmlFor="last_name">{t("salariesPage.lastName")} *</Label>
                         <Input
                           id="last_name"
                           value={employeeForm.last_name}
@@ -598,20 +598,20 @@ export default function Salaries() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="position">Poste *</Label>
+                      <Label htmlFor="position">{t("salariesPage.position")} *</Label>
                       <Input
                         id="position"
                         value={employeeForm.position}
                         onChange={(e) =>
                           setEmployeeForm({ ...employeeForm, position: e.target.value })
                         }
-                        placeholder="Ex: Pasteur, Secrétaire, Agent d'entretien..."
+                        placeholder={t("salariesPage.positionPlaceholder")}
                         required
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t("salariesPage.email")}</Label>
                         <Input
                           id="email"
                           type="email"
@@ -622,7 +622,7 @@ export default function Salaries() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Téléphone</Label>
+                        <Label htmlFor="phone">{t("salariesPage.phone")}</Label>
                         <Input
                           id="phone"
                           value={employeeForm.phone}
@@ -633,7 +633,7 @@ export default function Salaries() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="hire_date">Date d'embauche</Label>
+                      <Label htmlFor="hire_date">{t("salariesPage.hireDate")}</Label>
                       <Input
                         id="hire_date"
                         type="date"
@@ -645,7 +645,7 @@ export default function Salaries() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="salary_amount">Salaire *</Label>
+                        <Label htmlFor="salary_amount">{t("salariesPage.salaryAmount")} *</Label>
                         <Input
                           id="salary_amount"
                           type="number"
@@ -658,7 +658,7 @@ export default function Salaries() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="payment_frequency">Fréquence</Label>
+                        <Label htmlFor="payment_frequency">{t("salariesPage.frequency")}</Label>
                         <Select
                           value={employeeForm.payment_frequency}
                           onValueChange={(value) =>
@@ -669,16 +669,16 @@ export default function Salaries() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                            <SelectItem value="biweekly">Bimensuel</SelectItem>
-                            <SelectItem value="monthly">Mensuel</SelectItem>
+                            <SelectItem value="weekly">{t("salariesPage.weekly")}</SelectItem>
+                            <SelectItem value="biweekly">{t("salariesPage.biweekly")}</SelectItem>
+                            <SelectItem value="monthly">{t("salariesPage.monthly")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button type="submit" disabled={employeeMutation.isPending}>
-                        {employeeMutation.isPending ? "Enregistrement..." : "Enregistrer"}
+                        {employeeMutation.isPending ? t("salariesPage.saving") : t("salariesPage.save")}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -690,25 +690,25 @@ export default function Salaries() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Poste</TableHead>
-                    <TableHead>Salaire</TableHead>
-                    <TableHead>Fréquence</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("salariesPage.name")}</TableHead>
+                    <TableHead>{t("salariesPage.position")}</TableHead>
+                    <TableHead>{t("salariesPage.salaryAmount")}</TableHead>
+                    <TableHead>{t("salariesPage.frequency")}</TableHead>
+                    <TableHead>{t("salariesPage.status")}</TableHead>
+                    <TableHead className="text-right">{t("salariesPage.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loadingEmployees ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        Chargement...
+                        {t("salariesPage.loading")}
                       </TableCell>
                     </TableRow>
                   ) : filteredEmployees.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Aucun employé trouvé
+                        {t("salariesPage.noEmployees")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -724,7 +724,7 @@ export default function Salaries() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={employee.is_active ? "default" : "secondary"}>
-                            {employee.is_active ? "Actif" : "Inactif"}
+                            {employee.is_active ? t("salariesPage.active") : t("salariesPage.inactive")}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -735,7 +735,7 @@ export default function Salaries() {
                               onClick={() => handlePayEmployee(employee)}
                             >
                               <Banknote className="h-4 w-4 mr-1" />
-                              Payer
+                              {t("salariesPage.pay")}
                             </Button>
                             <Button
                               variant="ghost"
@@ -764,34 +764,34 @@ export default function Salaries() {
           <TabsContent value="history" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Historique des paiements</CardTitle>
+                <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
                 <CardDescription>
-                  Tous les salaires versés au personnel
+                  {t("salariesPage.allPayments")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Employé</TableHead>
-                      <TableHead>Période</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Mode de paiement</TableHead>
-                      <TableHead>Statut</TableHead>
+                      <TableHead>{t("salariesPage.date")}</TableHead>
+                      <TableHead>{t("salariesPage.employee")}</TableHead>
+                      <TableHead>{t("salariesPage.period")}</TableHead>
+                      <TableHead>{t("salariesPage.amount")}</TableHead>
+                      <TableHead>{t("salariesPage.paymentMethod")}</TableHead>
+                      <TableHead>{t("salariesPage.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loadingPayments ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8">
-                          Chargement...
+                          {t("salariesPage.loading")}
                         </TableCell>
                       </TableRow>
                     ) : payments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          Aucun paiement enregistré
+                          {t("salariesPage.noPayments")}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -813,7 +813,7 @@ export default function Salaries() {
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === "paid" ? "default" : "secondary"}>
-                              {payment.status === "paid" ? "Payé" : payment.status}
+                              {payment.status === "paid" ? t("salariesPage.paid") : payment.status}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -830,14 +830,14 @@ export default function Salaries() {
         <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Enregistrer un paiement</DialogTitle>
+              <DialogTitle>{t("salariesPage.recordPayment")}</DialogTitle>
               <DialogDescription>
-                Enregistrez le versement du salaire
+                {t("salariesPage.recordPaymentDesc")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitPayment} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="payment_employee">Employé</Label>
+                <Label htmlFor="payment_employee">{t("salariesPage.employee")}</Label>
                 <Select
                   value={paymentForm.employee_id}
                   onValueChange={(value) => {
@@ -850,7 +850,7 @@ export default function Salaries() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un employé" />
+                    <SelectValue placeholder={t("salariesPage.selectEmployee")} />
                   </SelectTrigger>
                   <SelectContent>
                     {employees
@@ -864,7 +864,7 @@ export default function Salaries() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_amount">Montant *</Label>
+                <Label htmlFor="payment_amount">{t("salariesPage.amount")} *</Label>
                 <Input
                   id="payment_amount"
                   type="number"
@@ -875,7 +875,7 @@ export default function Salaries() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_date">Date de paiement *</Label>
+                <Label htmlFor="payment_date">{t("salariesPage.paymentDate")} *</Label>
                 <Input
                   id="payment_date"
                   type="date"
@@ -886,7 +886,7 @@ export default function Salaries() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="period_start">Début période *</Label>
+                  <Label htmlFor="period_start">{t("salariesPage.periodStart")} *</Label>
                   <Input
                     id="period_start"
                     type="date"
@@ -898,7 +898,7 @@ export default function Salaries() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="period_end">Fin période *</Label>
+                  <Label htmlFor="period_end">{t("salariesPage.periodEnd")} *</Label>
                   <Input
                     id="period_end"
                     type="date"
@@ -909,7 +909,7 @@ export default function Salaries() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_method">Mode de paiement *</Label>
+                <Label htmlFor="payment_method">{t("salariesPage.paymentMethod")} *</Label>
                 <Select
                   value={paymentForm.payment_method}
                   onValueChange={(value) =>
@@ -920,22 +920,22 @@ export default function Salaries() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bank_transfer">Virement bancaire</SelectItem>
-                    <SelectItem value="cash">Espèces</SelectItem>
-                    <SelectItem value="check">Chèque</SelectItem>
+                    <SelectItem value="bank_transfer">{t("salariesPage.bankTransfer")}</SelectItem>
+                    <SelectItem value="cash">{t("salariesPage.cash")}</SelectItem>
+                    <SelectItem value="check">{t("salariesPage.check")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {/* Source account selection */}
               {(paymentForm.payment_method === "bank_transfer" || paymentForm.payment_method === "check") && (
                 <div className="space-y-2">
-                  <Label>Compte bancaire source *</Label>
+                  <Label>{t("salariesPage.sourceBankAccount")} *</Label>
                   <Select
                     value={paymentForm.bank_account_id}
                     onValueChange={(value) => setPaymentForm({ ...paymentForm, bank_account_id: value, cash_register_id: "" })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un compte" />
+                      <SelectValue placeholder={t("salariesPage.selectAccount")} />
                     </SelectTrigger>
                     <SelectContent>
                       {bankAccounts.map((account: any) => (
@@ -949,13 +949,13 @@ export default function Salaries() {
               )}
               {paymentForm.payment_method === "cash" && (
                 <div className="space-y-2">
-                  <Label>Caisse source *</Label>
+                  <Label>{t("salariesPage.sourceCashRegister")} *</Label>
                   <Select
                     value={paymentForm.cash_register_id}
                     onValueChange={(value) => setPaymentForm({ ...paymentForm, cash_register_id: value, bank_account_id: "" })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une caisse" />
+                      <SelectValue placeholder={t("salariesPage.selectCashRegister")} />
                     </SelectTrigger>
                     <SelectContent>
                       {cashRegisters.map((register: any) => (
@@ -968,18 +968,18 @@ export default function Salaries() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="reference_number">Référence</Label>
+                <Label htmlFor="reference_number">{t("salariesPage.reference")}</Label>
                 <Input
                   id="reference_number"
                   value={paymentForm.reference_number}
                   onChange={(e) =>
                     setPaymentForm({ ...paymentForm, reference_number: e.target.value })
                   }
-                  placeholder="N° de chèque, référence virement..."
+                  placeholder={t("salariesPage.referencePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_notes">Notes</Label>
+                <Label htmlFor="payment_notes">{t("salariesPage.notes")}</Label>
                 <Input
                   id="payment_notes"
                   value={paymentForm.notes}
@@ -988,7 +988,7 @@ export default function Salaries() {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={paymentMutation.isPending}>
-                  {paymentMutation.isPending ? "Enregistrement..." : "Enregistrer le paiement"}
+                  {paymentMutation.isPending ? t("salariesPage.savingPayment") : t("salariesPage.savePayment")}
                 </Button>
               </DialogFooter>
             </form>
