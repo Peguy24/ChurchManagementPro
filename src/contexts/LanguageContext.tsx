@@ -5131,6 +5131,7 @@ const translations = {
       kioskMode: "Mòd Kiosk",
       automations: "Otomatizasyon",
       visitors: "Jesyon Vizitè",
+      volunteers: "Planifikasyon Volontè",
       logout: "Dekonekte",
     },
     visitors: {
