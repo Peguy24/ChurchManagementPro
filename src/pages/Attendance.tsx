@@ -900,7 +900,18 @@ function AttendanceContent() {
         </div>
 
         {/* QR Scanner Section */}
-        {scannerMode && (
+        {scannerMode && !selectedEventId && (
+          <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+            <CardContent className="flex items-center gap-3 py-6">
+              <CalendarDays className="h-8 w-8 text-yellow-600 shrink-0" />
+              <div>
+                <p className="font-semibold text-lg">{t("attendance.selectEventToStart")}</p>
+                <p className="text-sm text-muted-foreground">{t("attendance.eventRequiredToScan")}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {scannerMode && selectedEventId && (
           <Card className="border-primary bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
