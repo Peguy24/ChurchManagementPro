@@ -130,7 +130,7 @@ export default function IncomeCategories() {
       if (!data.id) throw new Error("ID missing");
       
       if (checkDuplicate(data.name, data.code, data.id)) {
-        throw new Error(t("nav.categoryDuplicate"));
+        throw new Error(t("layout.categoryDuplicate"));
       }
 
       const { error } = await supabase
