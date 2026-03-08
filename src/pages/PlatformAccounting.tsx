@@ -492,7 +492,7 @@ export default function PlatformAccounting() {
             type="month"
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
           />
           {(filterCategory !== "all" || filterMonth) && (
             <Button variant="ghost" size="sm" onClick={() => { setFilterCategory("all"); setFilterMonth(""); }}>
