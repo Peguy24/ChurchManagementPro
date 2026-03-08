@@ -69,6 +69,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const { tenantId } = useCurrentTenant();
   const navigate = useNavigate();
   const isEditing = !!event;
+  const isReadOnly = isEditing && (event.status === "completed" || event.status === "cancelled");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -195,6 +196,109 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  const statusLabels: Record<string, string> = {
+    confirmed: t("events.confirmed"),
+    planned: t("events.planned"),
+    cancelled: t("events.cancelled"),
+    completed: t("events.completed"),
+  };
+
+  const formatTime = (time: string) => time.substring(0, 5);
+
+  // Read-only report view for completed/cancelled events
+  if (isReadOnly && event) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("events.eventReport")}</DialogTitle>
+            <DialogDescription>{t("events.eventReportDesc")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">{event.name}</h3>
+              <Badge
+                variant="outline"
+                className={event.status === "completed"
+                  ? "bg-muted text-muted-foreground border-muted"
+                  : "bg-destructive/10 text-destructive border-destructive/20"}
+              >
+                {statusLabels[event.status] || event.status}
+              </Badge>
+            </div>
+
+            <div className="grid gap-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("events.category")}</span>
+                <Badge variant="secondary">{t(`events.${event.event_category || "general"}`)}</Badge>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("events.startDate")}</span>
+                <span className="font-medium">{event.event_date}</span>
+              </div>
+              {event.end_date && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{t("events.endDate")}</span>
+                  <span className="font-medium">{event.end_date}</span>
+                </div>
+              )}
+              {event.event_time && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{t("events.startTime")}</span>
+                  <span className="font-medium">
+                    {formatTime(event.event_time)}
+                    {event.end_time && ` - ${formatTime(event.end_time)}`}
+                  </span>
+                </div>
+              )}
+              {event.location && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{t("events.locationLabel")}</span>
+                  <span className="font-medium">{event.location}</span>
+                </div>
+              )}
+              {event.expected_attendees > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{t("events.expectedAttendees")}</span>
+                  <span className="font-medium">{event.expected_attendees}</span>
+                </div>
+              )}
+            </div>
+
+            {event.description && (
+              <div className="rounded-lg border p-4">
+                <p className="text-sm text-muted-foreground mb-1">{t("events.descriptionLabel")}</p>
+                <p className="text-sm">{event.description}</p>
+              </div>
+            )}
+
+            {/* QR Code & Registration Link */}
+            <div className="space-y-2">
+              <EventQRCode eventId={event.id} />
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/events/registrations?eventId=${event.id}`);
+                }}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                {t("eventRegistration.viewRegistrations")}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              {t("events.close")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
