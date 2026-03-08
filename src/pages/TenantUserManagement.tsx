@@ -600,7 +600,7 @@ export default function TenantUserManagement() {
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => handleInviteDialogClose(false)}>
-                    {t('common.close') || 'Fermer'}
+                    {t('common.close')}
                   </Button>
                 </div>
               </div>

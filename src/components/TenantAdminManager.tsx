@@ -400,7 +400,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     if (admin.user_first_name || admin.user_last_name) {
       return `${admin.user_first_name || ""} ${admin.user_last_name || ""}`.trim();
     }
-    return "Admin";
+    return lt("defaultAdminName");
   };
 
   return (
