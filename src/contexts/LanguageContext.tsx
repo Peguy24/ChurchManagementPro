@@ -8394,6 +8394,8 @@ const translations = {
       back: "Retounen",
       registerAnother: "Enskri yon lòt moun",
       eventOn: "nan",
+      eventClosedTitle: "Enskripsyon Fèmen",
+      eventClosedMessage: "Evènman sa a deja fini. Enskripsyon pa disponib ankò.",
     },
   onboarding: {
     title: "Pwogrè Entegrasyon",
