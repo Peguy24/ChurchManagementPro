@@ -274,7 +274,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/subscriptions", icon: CreditCard, label: sl("subscriptions") },
         { to: "/super-admin/churn", icon: ShieldAlertIcon, label: sl("churn") },
         { to: "/super-admin/comparison", icon: GitCompareArrows, label: sl("comparison") },
-        { to: "/super-admin/branding", icon: Palette, label: sl("branding") },
+        
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
     },
