@@ -6947,6 +6947,7 @@ const translations = {
       eventReportDesc: "Rezime evènman fini/anile a.",
       eventDetails: "Detay Evènman",
       close: "Fèmen",
+      actualAttendees: "Patisipan ki te prezan",
     },
     financialReports: {
       title: "Rapò Finans",
