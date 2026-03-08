@@ -4327,6 +4327,7 @@ const translations = {
       inviteError: "Unable to send invitation",
       noActiveUsers: "No active users",
       emailAddress: "Email address",
+      emailExample: "email@example.com",
       role: "Role",
       send: "Send",
       sending: "Sending...",
