@@ -735,7 +735,7 @@ export default function Salaries() {
                               onClick={() => handlePayEmployee(employee)}
                             >
                               <Banknote className="h-4 w-4 mr-1" />
-                              Payer
+                              {t("salariesPage.pay")}
                             </Button>
                             <Button
                               variant="ghost"
