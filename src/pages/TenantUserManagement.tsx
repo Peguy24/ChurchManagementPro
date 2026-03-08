@@ -557,7 +557,7 @@ export default function TenantUserManagement() {
                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-700 dark:text-amber-300">
-                    <strong>{t('tenant.tip') || 'Conseil'} :</strong> {t('tenant.tipEmailFallback') || "Si l'envoi d'email échoue, utilisez \"Générer le lien\" pour obtenir un lien que vous pouvez partager via WhatsApp, SMS, etc."}
+                    <strong>{t('tenant.tip')} :</strong> {t('tenant.tipText')}
                   </p>
                 </div>
               </>
