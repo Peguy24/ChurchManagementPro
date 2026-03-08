@@ -16,6 +16,7 @@ interface MemberCardData {
   member_number: string | null;
   role: string | null;
   baptism_status: string | null;
+  ministry: string | null;
 }
 
 export interface CardCustomization {
