@@ -622,7 +622,7 @@ export default function Salaries() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Téléphone</Label>
+                        <Label htmlFor="phone">{t("salariesPage.phone")}</Label>
                         <Input
                           id="phone"
                           value={employeeForm.phone}
