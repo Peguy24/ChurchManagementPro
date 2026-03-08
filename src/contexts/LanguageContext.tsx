@@ -1345,6 +1345,7 @@ const translations = {
       eventReportDesc: "Résumé de l'événement terminé/annulé.",
       eventDetails: "Détails de l'Événement",
       close: "Fermer",
+      actualAttendees: "Participants présents",
     },
     financialReports: {
       title: "Rapports Financiers",
@@ -4146,6 +4147,7 @@ const translations = {
       eventReportDesc: "Summary of the completed/cancelled event.",
       eventDetails: "Event Details",
       close: "Close",
+      actualAttendees: "Actual Attendees",
     },
     financialReports: {
       title: "Financial Reports",
@@ -6945,6 +6947,7 @@ const translations = {
       eventReportDesc: "Rezime evènman fini/anile a.",
       eventDetails: "Detay Evènman",
       close: "Fèmen",
+      actualAttendees: "Patisipan ki te prezan",
     },
     financialReports: {
       title: "Rapò Finans",
