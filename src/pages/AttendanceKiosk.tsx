@@ -98,7 +98,7 @@ export default function AttendanceKiosk() {
           setFeedback("duplicate");
           setMemberName(fullName);
           setFeedbackMessage(t("kiosk.alreadyCheckedIn"));
-          playErrorSound(80);
+          playErrorSound(0.8);
         } else {
           throw error;
         }
