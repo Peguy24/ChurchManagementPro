@@ -170,7 +170,7 @@ export default function IncomeCategories() {
         .eq("category_id", id);
 
       if (count && count > 0) {
-        throw new Error(t("nav.categoryUsed"));
+        throw new Error(t("layout.categoryUsed"));
       }
 
       const { error } = await supabase
