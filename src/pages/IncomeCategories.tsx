@@ -96,7 +96,7 @@ export default function IncomeCategories() {
   const createCategory = useMutation({
     mutationFn: async (data: CategoryForm) => {
       if (checkDuplicate(data.name, data.code)) {
-        throw new Error(t("nav.categoryDuplicate"));
+        throw new Error(t("layout.categoryDuplicate"));
       }
 
       const { error } = await supabase.from("income_categories").insert({
