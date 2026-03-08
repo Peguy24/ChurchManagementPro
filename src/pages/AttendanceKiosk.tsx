@@ -208,7 +208,7 @@ export default function AttendanceKiosk() {
       }
 
       const fullName = `${member.first_name} ${member.last_name}`;
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalToday();
 
       const { error } = await supabase.from("attendance_records").insert({
         member_id: memberId,

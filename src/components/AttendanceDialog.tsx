@@ -58,7 +58,7 @@ export default function AttendanceDialog({
   const [eventType, setEventType] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [events, setEvents] = useState<EventOption[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getLocalToday());
   const [checkedMembers, setCheckedMembers] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
