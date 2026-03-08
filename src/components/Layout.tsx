@@ -294,14 +294,23 @@ export default function Layout({ children }: LayoutProps) {
 
   // Determine if user is a super admin (admin without tenant)
   const isSuperAdmin = isAdmin && !tenantId && !tenantLoading;
+  
+  // While tenant is loading for admin users, use route to predict which nav to show
+  // This prevents the church menu from flashing before super admin menu appears
+  const isSuperAdminRoute = location.pathname.startsWith("/super-admin") || 
+    location.pathname === "/settings/tenants" || 
+    location.pathname === "/settings/invitations" ||
+    location.pathname === "/settings/users" ||
+    location.pathname === "/support-management";
+  const showAsSuperAdmin = isSuperAdmin || (isAdmin && tenantLoading && isSuperAdminRoute);
 
   // Get appropriate navigation based on user type
-  const allNavGroups = isSuperAdmin 
+  const allNavGroups = showAsSuperAdmin 
     ? getSuperAdminNavGroups(t, language) 
     : getChurchNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions (only for church users)
-  const navGroups = isSuperAdmin 
+  const navGroups = showAsSuperAdmin 
     ? allNavGroups 
     : allNavGroups
         .filter(group => canSeeNav(group.key))
@@ -422,9 +431,9 @@ export default function Layout({ children }: LayoutProps) {
   );
 
   // Branding for super admin vs church users
-  const brandingName = isSuperAdmin ? "Church Manager Pro" : whiteLabelSettings.app_name;
-  const brandingSubtitle = isSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
-  const brandingLogo = isSuperAdmin ? "/images/church-management-pro-logo.png" : whiteLabelSettings.logo_url;
+  const brandingName = showAsSuperAdmin ? "Church Manager Pro" : whiteLabelSettings.app_name;
+  const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
+  const brandingLogo = showAsSuperAdmin ? "/images/church-management-pro-logo.png" : whiteLabelSettings.logo_url;
 
   return (
     <div className="min-h-screen bg-background">
@@ -462,7 +471,7 @@ export default function Layout({ children }: LayoutProps) {
             </SheetContent>
           </Sheet>
 
-          <Link to={isSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+          <Link to={showAsSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
             {brandingLogo ? (
               <img 
                 src={brandingLogo} 
@@ -482,7 +491,7 @@ export default function Layout({ children }: LayoutProps) {
           
           <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSelector />
-            {isSuperAdmin && <SuperAdminNotifications />}
+            {showAsSuperAdmin && <SuperAdminNotifications />}
             <div className="hidden sm:flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground hidden lg:block max-w-[150px] truncate">
@@ -504,7 +513,7 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Main Content */}
         <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">
-          {!isSuperAdmin && <PlatformAnnouncementBanner />}
+          {!showAsSuperAdmin && <PlatformAnnouncementBanner />}
           {children}
         </main>
       </div>
