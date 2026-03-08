@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,6 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -32,7 +39,8 @@ import { Calendar, CalendarCheck, CalendarX, Users, FileSpreadsheet, FileText } 
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, isPast, isFuture, isToday, subMonths } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -44,13 +52,26 @@ interface EventsReportTabProps {
 }
 
 export default function EventsReportTab({ selectedBranch }: EventsReportTabProps) {
+  const { t, language } = useLanguage();
   const currentDate = new Date();
+  const [periodMonths, setPeriodMonths] = useState<number>(12);
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
-  // Fetch attendance records to get event data
+  const er = (key: string) => t(`layout.eventsReport.${key}`);
+
+  const eventTypeLabels: Record<string, string> = {
+    sunday_service: er("sundayService"),
+    bible_study: er("bibleStudy"),
+    prayer_meeting: er("prayerMeeting"),
+    youth_group: er("youthGroup"),
+    other: er("other"),
+  };
+
+  // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
-    queryKey: ["events-report-attendance", selectedBranch],
+    queryKey: ["events-report-attendance", selectedBranch, periodMonths],
     queryFn: async () => {
-      const startDate = format(subMonths(currentDate, 12), "yyyy-MM-dd");
+      const startDate = format(subMonths(currentDate, periodMonths), "yyyy-MM-dd");
       
       let query = supabase
         .from("attendance_records")
@@ -118,16 +139,8 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
       breakdown[e.type].attendees += e.attendees;
     });
 
-    const labels: Record<string, string> = {
-      sunday_service: "Service Dimanche",
-      bible_study: "Étude Biblique",
-      prayer_meeting: "Réunion Prière",
-      youth_group: "Groupe Jeunesse",
-      other: "Autre",
-    };
-
     return Object.entries(breakdown).map(([type, data], index) => ({
-      name: labels[type] || type,
+      name: eventTypeLabels[type] || type,
       events: data.count,
       attendees: data.attendees,
       avgAttendees: data.count > 0 ? Math.round(data.attendees / data.count) : 0,
@@ -139,7 +152,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
   const monthlyEvents = useMemo(() => {
     const months: Record<string, { events: number; attendees: number }> = {};
     
-    for (let i = 11; i >= 0; i--) {
+    for (let i = periodMonths - 1; i >= 0; i--) {
       const date = subMonths(currentDate, i);
       const monthKey = format(date, "yyyy-MM");
       months[monthKey] = { events: 0, attendees: 0 };
@@ -154,80 +167,86 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
     });
 
     return Object.entries(months).map(([key, value]) => ({
-      month: format(parseISO(key + "-01"), "MMM yy", { locale: fr }),
+      month: format(parseISO(key + "-01"), "MMM yy", { locale: dateLocale }),
       events: value.events,
       attendees: value.attendees,
     }));
-  }, [events]);
+  }, [events, periodMonths, dateLocale]);
 
   // Export functions
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Events list
     const eventsSheet = XLSX.utils.json_to_sheet(events.map(e => ({
-      Date: format(parseISO(e.date), "dd/MM/yyyy"),
-      Type: e.type,
-      Participants: e.attendees,
+      [er("date")]: format(parseISO(e.date), "dd/MM/yyyy"),
+      [er("type")]: eventTypeLabels[e.type] || e.type,
+      [er("participants")]: e.attendees,
     })));
-    XLSX.utils.book_append_sheet(wb, eventsSheet, "Événements");
+    XLSX.utils.book_append_sheet(wb, eventsSheet, er("events"));
 
-    // By type
     const typeSheet = XLSX.utils.json_to_sheet(eventsByType.map(t => ({
-      Type: t.name,
-      "Nb Événements": t.events,
-      "Total Participants": t.attendees,
-      "Moy Participants": t.avgAttendees,
+      [er("type")]: t.name,
+      [er("events")]: t.events,
+      [er("totalParticipants")]: t.attendees,
+      [er("avgParticipants")]: t.avgAttendees,
     })));
-    XLSX.utils.book_append_sheet(wb, typeSheet, "Par Type");
+    XLSX.utils.book_append_sheet(wb, typeSheet, er("statsByType"));
 
-    XLSX.writeFile(wb, `rapport-evenements-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `events-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(20);
-    doc.text("Rapport des Événements", 14, 22);
+    doc.text(er("reportTitle"), 14, 22);
     doc.setFontSize(12);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
+    doc.text(`${er("date")}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
 
-    // Stats
-    doc.setFontSize(14);
-    doc.text("Statistiques", 14, 42);
     doc.setFontSize(11);
-    doc.text(`Total Événements: ${stats.totalEvents}`, 14, 50);
-    doc.text(`Total Participations: ${stats.totalAttendees}`, 14, 56);
-    doc.text(`Moyenne par événement: ${stats.avgAttendees.toFixed(0)}`, 14, 62);
+    doc.text(`${er("totalEvents")}: ${stats.totalEvents}`, 14, 42);
+    doc.text(`${er("totalParticipations")}: ${stats.totalAttendees}`, 14, 48);
+    doc.text(`${er("avgPerEvent")}: ${stats.avgAttendees.toFixed(0)}`, 14, 54);
 
-    // Events table
     autoTable(doc, {
-      startY: 74,
-      head: [["Date", "Type", "Participants"]],
+      startY: 66,
+      head: [[er("date"), er("type"), er("participants")]],
       body: events.slice(0, 30).map(e => [
         format(parseISO(e.date), "dd/MM/yyyy"),
-        e.type,
+        eventTypeLabels[e.type] || e.type,
         e.attendees,
       ]),
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-evenements-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`events-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
-  const eventTypeLabels: Record<string, string> = {
-    sunday_service: "Service Dimanche",
-    bible_study: "Étude Biblique",
-    prayer_meeting: "Réunion Prière",
-    youth_group: "Groupe Jeunesse",
-    other: "Autre",
-  };
+  const periodOptions = [
+    { value: "1", label: er("lastMonth") },
+    { value: "3", label: er("last3Months") },
+    { value: "6", label: er("last6Months") },
+    { value: "12", label: er("last12Months") },
+  ];
 
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
+        <Select value={String(periodMonths)} onValueChange={(v) => setPeriodMonths(Number(v))}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder={er("period")} />
+          </SelectTrigger>
+          <SelectContent>
+            {periodOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex-1" />
         <Button variant="outline" onClick={exportToExcel}>
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Excel
@@ -242,7 +261,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Événements</CardTitle>
+            <CardTitle className="text-sm font-medium">{er("totalEvents")}</CardTitle>
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -251,7 +270,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Participations</CardTitle>
+            <CardTitle className="text-sm font-medium">{er("totalParticipations")}</CardTitle>
             <Users className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
@@ -260,7 +279,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyenne/Événement</CardTitle>
+            <CardTitle className="text-sm font-medium">{er("avgPerEvent")}</CardTitle>
             <CalendarCheck className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
@@ -269,7 +288,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Types d'Événements</CardTitle>
+            <CardTitle className="text-sm font-medium">{er("eventTypes")}</CardTitle>
             <CalendarX className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
@@ -282,8 +301,8 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Événements par Mois</CardTitle>
-            <CardDescription>Nombre d'événements et participants (12 derniers mois)</CardDescription>
+            <CardTitle>{er("eventsByMonth")}</CardTitle>
+            <CardDescription>{er("eventsByMonthDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -294,8 +313,8 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
                   <YAxis yAxisId="left" />
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip />
-                  <Bar yAxisId="left" dataKey="events" name="Événements" fill="hsl(var(--primary))" />
-                  <Bar yAxisId="right" dataKey="attendees" name="Participants" fill="hsl(var(--secondary))" />
+                  <Bar yAxisId="left" dataKey="events" name={er("events")} fill="hsl(var(--primary))" />
+                  <Bar yAxisId="right" dataKey="attendees" name={er("participants")} fill="hsl(var(--secondary))" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -304,7 +323,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
 
         <Card>
           <CardHeader>
-            <CardTitle>Répartition par Type</CardTitle>
+            <CardTitle>{er("distributionByType")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -334,17 +353,17 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
       {/* Events by Type Stats */}
       <Card>
         <CardHeader>
-          <CardTitle>Statistiques par Type d'Événement</CardTitle>
+          <CardTitle>{er("statsByType")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Événements</TableHead>
-                <TableHead className="text-right">Total Participants</TableHead>
-                <TableHead className="text-right">Moy. Participants</TableHead>
+                <TableHead>{er("type")}</TableHead>
+                <TableHead className="text-right">{er("events")}</TableHead>
+                <TableHead className="text-right">{er("totalParticipants")}</TableHead>
+                <TableHead className="text-right">{er("avgParticipants")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -365,18 +384,18 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
       {/* Recent Events List */}
       <Card>
         <CardHeader>
-          <CardTitle>Événements Récents</CardTitle>
-          <CardDescription>Liste des derniers événements enregistrés</CardDescription>
+          <CardTitle>{er("recentEvents")}</CardTitle>
+          <CardDescription>{er("recentEventsDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Participants</TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>{er("date")}</TableHead>
+                <TableHead>{er("type")}</TableHead>
+                <TableHead className="text-right">{er("participants")}</TableHead>
+                <TableHead>{er("status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -391,7 +410,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
                     <TableCell className="text-right font-semibold">{event.attendees}</TableCell>
                     <TableCell>
                       <Badge variant={status === "passed" ? "secondary" : status === "today" ? "default" : "outline"}>
-                        {status === "passed" ? "Passé" : status === "today" ? "Aujourd'hui" : "À venir"}
+                        {status === "passed" ? er("passed") : status === "today" ? er("today") : er("upcoming")}
                       </Badge>
                     </TableCell>
                   </TableRow>
