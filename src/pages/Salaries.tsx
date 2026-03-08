@@ -213,8 +213,8 @@ export default function Salaries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast({
-        title: selectedEmployee ? "Employé modifié" : "Employé ajouté",
-        description: "L'opération a été effectuée avec succès.",
+        title: selectedEmployee ? t("salariesPage.employeeModified") : t("salariesPage.employeeAdded"),
+        description: t("salariesPage.operationSuccess"),
       });
       setEmployeeDialogOpen(false);
       resetEmployeeForm();
