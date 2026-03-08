@@ -484,7 +484,7 @@ export default function TenantManagement() {
 
       return { activate, plan };
     },
-    onSuccess: ({ activate, plan }) => {
+    onSuccess: ({ activate, plan }, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
       toast.success(
@@ -492,6 +492,15 @@ export default function TenantManagement() {
           ? t("superAdmin.planActivatedSuccess").replace("{plan}", PLAN_CONFIG[plan].label)
           : t("superAdmin.planDeactivatedSuccess")
       );
+      logPlatformActivity({
+        eventType: activate ? "plan_activated" : "plan_deactivated",
+        eventCategory: "subscription",
+        description: activate 
+          ? `Plan ${PLAN_CONFIG[plan].label} activé pour ${variables.tenantName}`
+          : `Plan désactivé pour ${variables.tenantName}`,
+        tenantId: variables.tenantId,
+        metadata: { plan, activate, old_plan: variables.oldPlan, old_status: variables.oldStatus },
+      });
       setPlanActivationDialogOpen(false);
       setSelectedTenantForPlan(null);
     },
