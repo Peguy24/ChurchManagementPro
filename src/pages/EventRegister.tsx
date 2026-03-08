@@ -133,18 +133,37 @@ export default function EventRegister() {
   if (isEventClosed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-8 space-y-4">
-            <XCircle className="h-16 w-16 text-destructive mx-auto" />
-            <h2 className="text-2xl font-bold">{t("eventRegistration.eventClosedTitle")}</h2>
-            <p className="text-muted-foreground">{t("eventRegistration.eventClosedMessage")}</p>
-            <div className="pt-2 space-y-1">
-              <p className="font-semibold text-lg">{event.name}</p>
-              {churchName && <p className="text-sm text-muted-foreground">{churchName}</p>}
-              <p className="text-sm text-muted-foreground">{event.event_date}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="w-full max-w-md space-y-4">
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Globe className="h-4 w-4 mr-1" />
+                  {languages.find((l) => l.code === language)?.flag}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {languages.map((l) => (
+                  <DropdownMenuItem key={l.code} onClick={() => setLanguage(l.code)}>
+                    {l.flag} {l.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <Card className="text-center">
+            <CardContent className="pt-8 pb-8 space-y-4">
+              <XCircle className="h-16 w-16 text-destructive mx-auto" />
+              <h2 className="text-2xl font-bold">{t("eventRegistration.eventClosedTitle")}</h2>
+              <p className="text-muted-foreground">{t("eventRegistration.eventClosedMessage")}</p>
+              <div className="pt-2 space-y-1">
+                <p className="font-semibold text-lg">{event.name}</p>
+                {churchName && <p className="text-sm text-muted-foreground">{churchName}</p>}
+                <p className="text-sm text-muted-foreground">{event.event_date}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
