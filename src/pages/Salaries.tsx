@@ -886,7 +886,7 @@ export default function Salaries() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="period_start">Début période *</Label>
+                  <Label htmlFor="period_start">{t("salariesPage.periodStart")} *</Label>
                   <Input
                     id="period_start"
                     type="date"
