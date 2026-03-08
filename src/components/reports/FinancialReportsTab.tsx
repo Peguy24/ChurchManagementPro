@@ -45,8 +45,6 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -56,10 +54,8 @@ import {
   startOfMonth,
   endOfMonth,
   parseISO,
-  startOfYear,
-  endOfYear,
 } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -73,11 +69,13 @@ interface FinancialReportsTabProps {
 }
 
 export default function FinancialReportsTab({ selectedBranch, branches }: FinancialReportsTabProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const r = (key: string) => t(`financialReports.${key}`);
   const [period, setPeriod] = useState("12");
   const [reportType, setReportType] = useState("monthly");
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
   const categoryLabels: Record<string, string> = {
     tithe: t("donations.tithe"),
@@ -202,7 +200,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     for (let i = parseInt(period) - 1; i >= 0; i--) {
       const date = subMonths(currentDate, i);
       const monthKey = format(date, "yyyy-MM");
-      const monthLabel = format(date, "MMM yyyy", { locale: fr });
+      const monthLabel = format(date, "MMM yyyy", { locale: dateLocale });
       months[monthKey] = { month: monthLabel, revenue: 0, expenses: 0, net: 0 };
     }
 
@@ -225,7 +223,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     });
 
     return Object.values(months);
-  }, [donations, expenses, period]);
+  }, [donations, expenses, period, dateLocale]);
 
   // Budget vs actual data
   const budgetVsActualData = useMemo(() => {
@@ -291,58 +289,53 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Revenue vs Expenses sheet
     const revenueSheet = XLSX.utils.json_to_sheet(revenueVsExpensesData.map(m => ({
-      Mois: m.month,
-      "Revenus ($)": m.revenue.toFixed(2),
-      "Dépenses ($)": m.expenses.toFixed(2),
-      "Net ($)": m.net.toFixed(2),
+      [r("month")]: m.month,
+      [r("revenue")]: m.revenue.toFixed(2),
+      [r("expenses")]: m.expenses.toFixed(2),
+      [r("net")]: m.net.toFixed(2),
     })));
-    XLSX.utils.book_append_sheet(wb, revenueSheet, "Revenus vs Dépenses");
+    XLSX.utils.book_append_sheet(wb, revenueSheet, r("revenueVsExpenses"));
 
-    // Budget vs Actual sheet
     if (budgetVsActualData.length > 0) {
       const budgetSheet = XLSX.utils.json_to_sheet(budgetVsActualData.map(b => ({
-        Budget: b.name,
-        "Prévu ($)": b.planned.toFixed(2),
-        "Réel ($)": b.actual.toFixed(2),
-        "Variance ($)": b.variance.toFixed(2),
-        "% Utilisé": b.percentUsed.toFixed(1) + "%",
+        [r("budget")]: b.name,
+        [r("planned")]: b.planned.toFixed(2),
+        [r("actual")]: b.actual.toFixed(2),
+        [r("variance")]: b.variance.toFixed(2),
+        [r("percentUsed")]: b.percentUsed.toFixed(1) + "%",
       })));
-      XLSX.utils.book_append_sheet(wb, budgetSheet, "Budget vs Réel");
+      XLSX.utils.book_append_sheet(wb, budgetSheet, r("budgetVsActual"));
     }
 
-    // Category breakdown
     const categorySheet = XLSX.utils.json_to_sheet(categoryData.map(c => ({
-      Catégorie: c.name,
-      "Montant ($)": c.value.toFixed(2),
+      [r("categoryDistribution")]: c.name,
+      [r("amount")]: c.value.toFixed(2),
     })));
-    XLSX.utils.book_append_sheet(wb, categorySheet, "Par Catégorie");
+    XLSX.utils.book_append_sheet(wb, categorySheet, r("categoryDistribution"));
 
-    XLSX.writeFile(wb, `rapport-financier-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
     
     doc.setFontSize(20);
-    doc.text("Rapport Financier", 14, 22);
+    doc.text(r("pdfTitle"), 14, 22);
     doc.setFontSize(12);
-    doc.text(`Période: ${period} derniers mois`, 14, 30);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
+    doc.text(r("pdfPeriod").replace("{n}", period), 14, 30);
+    doc.text(`${r("pdfDate")}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
 
-    // Summary
     doc.setFontSize(14);
-    doc.text("Résumé", 14, 48);
+    doc.text(r("pdfSummary"), 14, 48);
     doc.setFontSize(11);
-    doc.text(`Total Revenus: $${stats.totalRevenue.toFixed(2)}`, 14, 56);
-    doc.text(`Total Dépenses: $${stats.totalExpenses.toFixed(2)}`, 14, 62);
-    doc.text(`Revenu Net: $${stats.netIncome.toFixed(2)}`, 14, 68);
+    doc.text(`${r("totalRevenue")}: $${stats.totalRevenue.toFixed(2)}`, 14, 56);
+    doc.text(`${r("totalExpenses")}: $${stats.totalExpenses.toFixed(2)}`, 14, 62);
+    doc.text(`${r("netIncome")}: $${stats.netIncome.toFixed(2)}`, 14, 68);
 
-    // Revenue vs Expenses table
     autoTable(doc, {
       startY: 80,
-      head: [["Mois", "Revenus", "Dépenses", "Net"]],
+      head: [[r("month"), r("revenue"), r("expenses"), r("net")]],
       body: revenueVsExpensesData.map(m => [
         m.month,
         `$${m.revenue.toFixed(2)}`,
@@ -353,7 +346,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-financier-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   return (
@@ -366,10 +359,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="3">3 derniers mois</SelectItem>
-            <SelectItem value="6">6 derniers mois</SelectItem>
-            <SelectItem value="12">12 derniers mois</SelectItem>
-            <SelectItem value="24">24 derniers mois</SelectItem>
+            <SelectItem value="3">{r("last3Months")}</SelectItem>
+            <SelectItem value="6">{r("last6Months")}</SelectItem>
+            <SelectItem value="12">{r("last12Months")}</SelectItem>
+            <SelectItem value="24">{r("last24Months")}</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={exportToExcel}>
@@ -385,20 +378,19 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
       {/* Sub-tabs for different financial reports */}
       <Tabs value={reportType} onValueChange={setReportType}>
         <TabsList className="flex flex-wrap h-auto gap-1 w-full">
-          <TabsTrigger value="monthly" className="text-xs sm:text-sm">Mensuel</TabsTrigger>
-          <TabsTrigger value="annual" className="text-xs sm:text-sm">Annuel</TabsTrigger>
-          <TabsTrigger value="revenueVsExpenses" className="text-xs sm:text-sm">Revenus vs Dépenses</TabsTrigger>
-          <TabsTrigger value="budgetVsActual" className="text-xs sm:text-sm">Budget vs Réel</TabsTrigger>
-          <TabsTrigger value="funds" className="text-xs sm:text-sm">Fonds</TabsTrigger>
+          <TabsTrigger value="monthly" className="text-xs sm:text-sm">{r("monthly")}</TabsTrigger>
+          <TabsTrigger value="annual" className="text-xs sm:text-sm">{r("annual")}</TabsTrigger>
+          <TabsTrigger value="revenueVsExpenses" className="text-xs sm:text-sm">{r("revenueVsExpenses")}</TabsTrigger>
+          <TabsTrigger value="budgetVsActual" className="text-xs sm:text-sm">{r("budgetVsActual")}</TabsTrigger>
+          <TabsTrigger value="funds" className="text-xs sm:text-sm">{r("funds")}</TabsTrigger>
         </TabsList>
 
         {/* Monthly Report */}
         <TabsContent value="monthly" className="space-y-6">
-          {/* Stats Cards */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenus</CardTitle>
+                <CardTitle className="text-sm font-medium">{r("totalRevenue")}</CardTitle>
                 <TrendingUp className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
@@ -407,7 +399,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Dépenses</CardTitle>
+                <CardTitle className="text-sm font-medium">{r("totalExpenses")}</CardTitle>
                 <TrendingDown className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
@@ -416,7 +408,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenu Net</CardTitle>
+                <CardTitle className="text-sm font-medium">{r("netIncome")}</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -427,7 +419,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Budget Restant</CardTitle>
+                <CardTitle className="text-sm font-medium">{r("budgetRemaining")}</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -439,7 +431,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
           {/* Category Pie Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Revenus par Catégorie</CardTitle>
+              <CardTitle>{r("revenueByCategory")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -459,7 +451,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Montant"]} />
+                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, r("amount")]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -471,21 +463,21 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
         <TabsContent value="annual" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Rapport Annuel {currentYear}</CardTitle>
-              <CardDescription>Vue d'ensemble de l'année fiscale</CardDescription>
+              <CardTitle>{r("annualReport")} {currentYear}</CardTitle>
+              <CardDescription>{r("fiscalYearOverview")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 <div className="text-center p-4 bg-success/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total Revenus</p>
+                  <p className="text-sm text-muted-foreground">{r("totalRevenue")}</p>
                   <p className="text-2xl font-bold text-success">${stats.totalRevenue.toFixed(2)}</p>
                 </div>
                 <div className="text-center p-4 bg-destructive/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total Dépenses</p>
+                  <p className="text-sm text-muted-foreground">{r("totalExpenses")}</p>
                   <p className="text-2xl font-bold text-destructive">${stats.totalExpenses.toFixed(2)}</p>
                 </div>
                 <div className={`text-center p-4 rounded-lg ${stats.netIncome >= 0 ? "bg-success/10" : "bg-destructive/10"}`}>
-                  <p className="text-sm text-muted-foreground">Résultat Net</p>
+                  <p className="text-sm text-muted-foreground">{r("netResult")}</p>
                   <p className={`text-2xl font-bold ${stats.netIncome >= 0 ? "text-success" : "text-destructive"}`}>
                     ${stats.netIncome.toFixed(2)}
                   </p>
@@ -500,8 +492,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     <YAxis tickFormatter={(value) => `$${value}`} />
                     <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
                     <Legend />
-                    <Bar dataKey="revenue" name="Revenus" fill="hsl(var(--success))" />
-                    <Bar dataKey="expenses" name="Dépenses" fill="hsl(var(--destructive))" />
+                    <Bar dataKey="revenue" name={r("revenue")} fill="hsl(var(--success))" />
+                    <Bar dataKey="expenses" name={r("expenses")} fill="hsl(var(--destructive))" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -513,8 +505,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
         <TabsContent value="revenueVsExpenses" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Revenus vs Dépenses</CardTitle>
-              <CardDescription>Comparaison mensuelle des flux financiers</CardDescription>
+              <CardTitle>{r("revenueVsExpenses")}</CardTitle>
+              <CardDescription>{r("monthlyComparison")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
@@ -525,9 +517,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     <YAxis tickFormatter={(value) => `$${value}`} />
                     <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
                     <Legend />
-                    <Line type="monotone" dataKey="revenue" name="Revenus" stroke="hsl(var(--success))" strokeWidth={2} />
-                    <Line type="monotone" dataKey="expenses" name="Dépenses" stroke="hsl(var(--destructive))" strokeWidth={2} />
-                    <Line type="monotone" dataKey="net" name="Net" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="5 5" />
+                    <Line type="monotone" dataKey="revenue" name={r("revenue")} stroke="hsl(var(--success))" strokeWidth={2} />
+                    <Line type="monotone" dataKey="expenses" name={r("expenses")} stroke="hsl(var(--destructive))" strokeWidth={2} />
+                    <Line type="monotone" dataKey="net" name={r("net")} stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="5 5" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -536,10 +528,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               <Table className="mt-6">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Mois</TableHead>
-                    <TableHead className="text-right">Revenus</TableHead>
-                    <TableHead className="text-right">Dépenses</TableHead>
-                    <TableHead className="text-right">Net</TableHead>
+                    <TableHead>{r("month")}</TableHead>
+                    <TableHead className="text-right">{r("revenue")}</TableHead>
+                    <TableHead className="text-right">{r("expenses")}</TableHead>
+                    <TableHead className="text-right">{r("net")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -564,8 +556,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
         <TabsContent value="budgetVsActual" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Budget Prévu vs Réel</CardTitle>
-              <CardDescription>Suivi de l'exécution budgétaire {currentYear}</CardDescription>
+              <CardTitle>{r("plannedBudget")}</CardTitle>
+              <CardDescription>{r("budgetExecution")} {currentYear}</CardDescription>
             </CardHeader>
             <CardContent>
               {budgetVsActualData.length > 0 ? (
@@ -578,8 +570,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                         <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
                         <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
                         <Legend />
-                        <Bar dataKey="planned" name="Prévu" fill="hsl(var(--primary))" />
-                        <Bar dataKey="actual" name="Réel" fill="hsl(var(--secondary))" />
+                        <Bar dataKey="planned" name={r("planned")} fill="hsl(var(--primary))" />
+                        <Bar dataKey="actual" name={r("actual")} fill="hsl(var(--secondary))" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -588,11 +580,11 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Budget</TableHead>
-                        <TableHead className="text-right">Prévu</TableHead>
-                        <TableHead className="text-right">Réel</TableHead>
-                        <TableHead className="text-right">Variance</TableHead>
-                        <TableHead className="text-right">% Utilisé</TableHead>
+                        <TableHead>{r("budget")}</TableHead>
+                        <TableHead className="text-right">{r("planned")}</TableHead>
+                        <TableHead className="text-right">{r("actual")}</TableHead>
+                        <TableHead className="text-right">{r("variance")}</TableHead>
+                        <TableHead className="text-right">{r("percentUsed")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -614,7 +606,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   </div>
                 </>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Aucun budget créé pour {currentYear}</p>
+                <p className="text-center text-muted-foreground py-8">{r("noBudgets")} {currentYear}</p>
               )}
             </CardContent>
           </Card>
@@ -624,8 +616,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
         <TabsContent value="funds" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Rapport par Fonds Spéciaux</CardTitle>
-              <CardDescription>Suivi des fonds spéciaux actifs</CardDescription>
+              <CardTitle>{r("specialFundsReport")}</CardTitle>
+              <CardDescription>{r("activeFundsTracking")}</CardDescription>
             </CardHeader>
             <CardContent>
               {fundsData.length > 0 ? (
@@ -638,8 +630,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                         <YAxis tickFormatter={(value) => `$${value}`} />
                         <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
                         <Legend />
-                        <Bar dataKey="target" name="Objectif" fill="hsl(var(--muted-foreground))" />
-                        <Bar dataKey="current" name="Collecté" fill="hsl(var(--primary))" />
+                        <Bar dataKey="target" name={r("target")} fill="hsl(var(--muted-foreground))" />
+                        <Bar dataKey="current" name={r("collected")} fill="hsl(var(--primary))" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -648,10 +640,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Fonds</TableHead>
-                        <TableHead className="text-right">Objectif</TableHead>
-                        <TableHead className="text-right">Collecté</TableHead>
-                        <TableHead className="text-right">Progression</TableHead>
+                        <TableHead>{r("fund")}</TableHead>
+                        <TableHead className="text-right">{r("target")}</TableHead>
+                        <TableHead className="text-right">{r("collected")}</TableHead>
+                        <TableHead className="text-right">{r("progress")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -678,7 +670,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   </div>
                 </>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Aucun fonds spécial actif</p>
+                <p className="text-center text-muted-foreground py-8">{r("noActiveFunds")}</p>
               )}
             </CardContent>
           </Card>
