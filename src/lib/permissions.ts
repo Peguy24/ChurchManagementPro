@@ -78,6 +78,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/attendance": "attendance",
   "/attendance/stats": "attendance",
   "/attendance/alerts": "attendance",
+  "/attendance/kiosk": "attendance",
   "/attendance/comparison": "reports",
   "/donations": "finances",
   "/donations/categories": "finances",
@@ -91,6 +92,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/finance/cash": "finances",
   "/finance/audit": "finances",
   "/events": "events",
+  "/events/calendar": "events",
   "/ministries": "ministries",
   "/ministries/details": "ministries",
   "/ministries/stats": "ministries",
@@ -103,6 +105,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/inventory": "inventory",
   "/finance/salaries": "finances",
   "/insights": "reports",
+  "/automations": "communication",
   "/support": "communication",
   "/support-management": "tenants",
 };

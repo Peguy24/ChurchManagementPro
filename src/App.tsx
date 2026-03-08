@@ -65,6 +65,9 @@ import SubscriptionOverrides from "./pages/SubscriptionOverrides";
 import ChurnPrevention from "./pages/ChurnPrevention";
 import TenantComparison from "./pages/TenantComparison";
 import WhiteLabelManager from "./pages/WhiteLabelManager";
+import EventCalendar from "./pages/EventCalendar";
+import AttendanceKiosk from "./pages/AttendanceKiosk";
+import EngagementAutomations from "./pages/EngagementAutomations";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
 import EventRegister from "./pages/EventRegister";
@@ -115,6 +118,9 @@ const App = () => (
               <Route path="/finance/salaries" element={<ProtectedRoute><Salaries /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+              <Route path="/events/calendar" element={<ProtectedRoute><EventCalendar /></ProtectedRoute>} />
+              <Route path="/attendance/kiosk" element={<ProtectedRoute><AttendanceKiosk /></ProtectedRoute>} />
+              <Route path="/automations" element={<ProtectedRoute><EngagementAutomations /></ProtectedRoute>} />
               <Route path="/events/registrations" element={<ProtectedRoute><EventRegistrations /></ProtectedRoute>} />
               <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
               <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />

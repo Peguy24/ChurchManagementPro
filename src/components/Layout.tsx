@@ -37,6 +37,8 @@ import {
   Megaphone,
   GitCompareArrows,
   ShieldAlert as ShieldAlertIcon,
+  Zap,
+  Monitor,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -84,6 +86,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/members/requests", icon: UserPlus, label: t("memberRequests.title") },
         { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
         { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
+        { to: "/attendance/kiosk", icon: Monitor, label: t("nav.kioskMode") },
         { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
         { to: "/branches", icon: Church, label: t("nav.branches") },
         { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
@@ -124,6 +127,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: MessageSquare,
       items: [
         { to: "/settings/email-templates", icon: Mail, label: t("layout.emailTemplates") },
+        { to: "/automations", icon: Zap, label: t("nav.automations") },
       ],
     },
     {
@@ -132,6 +136,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: Calendar,
       items: [
         { to: "/events", icon: Calendar, label: t("nav.events") },
+        { to: "/events/calendar", icon: Calendar, label: t("nav.eventCalendar") },
       ],
     },
     {
