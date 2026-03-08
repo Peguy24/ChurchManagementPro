@@ -29,6 +29,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Error",
     linkCopied: "Link copied to clipboard",
     copyError: "Unable to copy link",
+    emailAlreadyRegistered: "This email is already registered as",
+    approvedStatus: "approved",
+    pendingStatus: "pending approval",
   },
   fr: {
     inviteAdmin: "Inviter un administrateur",
@@ -50,6 +53,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Erreur",
     linkCopied: "Lien copié dans le presse-papiers",
     copyError: "Impossible de copier le lien",
+    emailAlreadyRegistered: "Cet email est déjà enregistré comme",
+    approvedStatus: "approuvé",
+    pendingStatus: "en attente d'approbation",
   },
   ht: {
     inviteAdmin: "Envite yon administratè",
@@ -71,6 +77,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Erè",
     linkCopied: "Lyen kopye nan pres-papye",
     copyError: "Enposib kopye lyen nan",
+    emailAlreadyRegistered: "Imèl sa a deja anrejistre kòm",
+    approvedStatus: "apwouve",
+    pendingStatus: "ap tann apwobasyon",
   },
 };
 
@@ -126,7 +135,22 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if the error contains alreadyExists info (409 response)
+        const errorBody = typeof error === 'object' && error !== null ? error : {};
+        const errorMsg = (error as any)?.message || '';
+        
+        // supabase.functions.invoke puts non-2xx body in data when there's a FunctionsHttpError
+        if (data?.alreadyExists) {
+          const roleLabel = data.role || 'admin';
+          const statusLabel = data.isApproved ? lt("approvedStatus") || 'approved' : lt("pendingStatus") || 'pending';
+          toast.error(`${lt("emailAlreadyRegistered") || "This email is already registered as"} ${roleLabel} (${statusLabel})`);
+          setIsLoading(false);
+          return;
+        }
+        
+        throw new Error(errorMsg || 'Unknown error');
+      }
 
       if (skipEmail) {
         setInvitationLink(data.invitationLink);
