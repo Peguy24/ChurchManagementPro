@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -50,6 +50,7 @@ interface Member {
 export default function Visitors() {
   const { tenantId, forInsert } = useCurrentTenant();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
@@ -58,7 +59,6 @@ export default function Visitors() {
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
   const [filter, setFilter] = useState('all');
 
-  // Visitor dialog
   const [visitorDialogOpen, setVisitorDialogOpen] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -68,7 +68,6 @@ export default function Visitors() {
   const [howHeard, setHowHeard] = useState('');
   const [visitorNotes, setVisitorNotes] = useState('');
 
-  // Follow-up dialog
   const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false);
   const [followUpDate, setFollowUpDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [followUpType, setFollowUpType] = useState('call');
@@ -86,7 +85,6 @@ export default function Visitors() {
         .order('visit_date', { ascending: false }),
       supabase.from('members').select('id, first_name, last_name').eq('tenant_id', tenantId!).eq('status', 'active').order('first_name'),
     ]);
-
     if (visitorsRes.data) setVisitors(visitorsRes.data as any);
     if (membersRes.data) setMembers(membersRes.data);
     setLoading(false);
@@ -111,29 +109,29 @@ export default function Visitors() {
         how_heard: howHeard || null,
         notes: visitorNotes || null,
       }));
-      toast({ title: 'Visiteur ajouté' });
+      toast({ title: t('visitors.visitorAdded') });
       resetVisitorDialog();
       fetchAll();
-    } catch (err) {
-      toast({ title: 'Erreur', variant: 'destructive' });
+    } catch {
+      toast({ title: t('visitors.error'), variant: 'destructive' });
     }
   }
 
   async function updateStatus(visitor: Visitor, newStatus: string) {
     await supabase.from('visitors').update({ follow_up_status: newStatus }).eq('id', visitor.id);
-    toast({ title: 'Statut mis à jour' });
+    toast({ title: t('visitors.statusUpdated') });
     fetchAll();
   }
 
   async function assignMember(visitorId: string, memberId: string) {
     await supabase.from('visitors').update({ assigned_to: memberId }).eq('id', visitorId);
-    toast({ title: 'Responsable assigné' });
+    toast({ title: t('visitors.assignedUpdated') });
     fetchAll();
   }
 
   async function deleteVisitor(id: string) {
     await supabase.from('visitors').delete().eq('id', id);
-    toast({ title: 'Visiteur supprimé' });
+    toast({ title: t('visitors.visitorDeleted') });
     if (selectedVisitor?.id === id) setSelectedVisitor(null);
     fetchAll();
   }
@@ -147,17 +145,16 @@ export default function Visitors() {
         follow_up_type: followUpType,
         notes: followUpNotes || null,
       }));
-      // Update visitor status
       if (selectedVisitor.follow_up_status === 'new') {
         await supabase.from('visitors').update({ follow_up_status: 'contacted' }).eq('id', selectedVisitor.id);
       }
-      toast({ title: 'Suivi enregistré' });
+      toast({ title: t('visitors.followUpSaved') });
       setFollowUpDialogOpen(false);
       setFollowUpNotes('');
       fetchFollowUps(selectedVisitor.id);
       fetchAll();
-    } catch (err) {
-      toast({ title: 'Erreur', variant: 'destructive' });
+    } catch {
+      toast({ title: t('visitors.error'), variant: 'destructive' });
     }
   }
 
@@ -181,18 +178,32 @@ export default function Visitors() {
   const filteredVisitors = filter === 'all' ? visitors : visitors.filter(v => v.follow_up_status === filter);
 
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
-    new: { label: 'Nouveau', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: UserPlus },
-    contacted: { label: 'Contacté', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', icon: Phone },
-    follow_up: { label: 'En suivi', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200', icon: Clock },
-    interested: { label: 'Intéressé', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
-    converted: { label: 'Converti (membre)', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200', icon: ArrowRight },
-    inactive: { label: 'Inactif', color: 'bg-muted text-muted-foreground', icon: Clock },
+    new: { label: t('visitors.statusNew'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: UserPlus },
+    contacted: { label: t('visitors.statusContacted'), color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', icon: Phone },
+    follow_up: { label: t('visitors.statusFollowUp'), color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200', icon: Clock },
+    interested: { label: t('visitors.statusInterested'), color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
+    converted: { label: t('visitors.statusConverted'), color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200', icon: ArrowRight },
+    inactive: { label: t('visitors.statusInactive'), color: 'bg-muted text-muted-foreground', icon: Clock },
   };
 
-  const howHeardOptions = ['Ami/Famille', 'Réseaux sociaux', 'Site web', 'Événement', 'Publicité', 'Passage', 'Autre'];
-  const followUpTypes: Record<string, string> = { call: 'Appel', visit: 'Visite', email: 'Email', sms: 'SMS', meeting: 'Rencontre' };
+  const howHeardOptions = [
+    { value: 'Ami/Famille', label: t('visitors.howHeardFriend') },
+    { value: 'Réseaux sociaux', label: t('visitors.howHeardSocial') },
+    { value: 'Site web', label: t('visitors.howHeardWebsite') },
+    { value: 'Événement', label: t('visitors.howHeardEvent') },
+    { value: 'Publicité', label: t('visitors.howHeardAd') },
+    { value: 'Passage', label: t('visitors.howHeardWalkIn') },
+    { value: 'Autre', label: t('visitors.howHeardOther') },
+  ];
 
-  // Stats
+  const followUpTypes: Record<string, string> = {
+    call: t('visitors.followUpCall'),
+    visit: t('visitors.followUpVisit'),
+    email: t('visitors.followUpEmail'),
+    sms: t('visitors.followUpSMS'),
+    meeting: t('visitors.followUpMeeting'),
+  };
+
   const stats = {
     total: visitors.length,
     new: visitors.filter(v => v.follow_up_status === 'new').length,
@@ -205,38 +216,38 @@ export default function Visitors() {
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gestion des Visiteurs</h1>
-            <p className="text-muted-foreground">Suivez les visiteurs et gérez le pipeline de conversion</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('visitors.title')}</h1>
+            <p className="text-muted-foreground">{t('visitors.subtitle')}</p>
           </div>
           <Dialog open={visitorDialogOpen} onOpenChange={setVisitorDialogOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />Nouveau visiteur</Button>
+              <Button><Plus className="h-4 w-4 mr-2" />{t('visitors.newVisitor')}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Enregistrer un visiteur</DialogTitle>
+                <DialogTitle>{t('visitors.registerVisitor')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Prénom</Label><Input value={firstName} onChange={e => setFirstName(e.target.value)} /></div>
-                  <div><Label>Nom</Label><Input value={lastName} onChange={e => setLastName(e.target.value)} /></div>
+                  <div><Label>{t('visitors.firstName')}</Label><Input value={firstName} onChange={e => setFirstName(e.target.value)} /></div>
+                  <div><Label>{t('visitors.lastName')}</Label><Input value={lastName} onChange={e => setLastName(e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Téléphone</Label><Input value={phone} onChange={e => setPhone(e.target.value)} /></div>
-                  <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+                  <div><Label>{t('visitors.phone')}</Label><Input value={phone} onChange={e => setPhone(e.target.value)} /></div>
+                  <div><Label>{t('visitors.email')}</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
                 </div>
-                <div><Label>Date de visite</Label><Input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} /></div>
+                <div><Label>{t('visitors.visitDate')}</Label><Input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} /></div>
                 <div>
-                  <Label>Comment nous avez-vous connu ?</Label>
+                  <Label>{t('visitors.howHeard')}</Label>
                   <Select value={howHeard} onValueChange={setHowHeard}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('visitors.selectOption')} /></SelectTrigger>
                     <SelectContent>
-                      {howHeardOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                      {howHeardOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>Notes</Label><Textarea value={visitorNotes} onChange={e => setVisitorNotes(e.target.value)} /></div>
-                <Button onClick={saveVisitor} className="w-full">Enregistrer</Button>
+                <div><Label>{t('visitors.notes')}</Label><Textarea value={visitorNotes} onChange={e => setVisitorNotes(e.target.value)} /></div>
+                <Button onClick={saveVisitor} className="w-full">{t('visitors.save')}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -244,15 +255,15 @@ export default function Visitors() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-foreground">{stats.total}</p><p className="text-sm text-muted-foreground">Total visiteurs</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-600">{stats.new}</p><p className="text-sm text-muted-foreground">Nouveaux</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-yellow-600">{stats.contacted}</p><p className="text-sm text-muted-foreground">Contactés</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{stats.converted}</p><p className="text-sm text-muted-foreground">Convertis</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-foreground">{stats.total}</p><p className="text-sm text-muted-foreground">{t('visitors.totalVisitors')}</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-600">{stats.new}</p><p className="text-sm text-muted-foreground">{t('visitors.newOnes')}</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-yellow-600">{stats.contacted}</p><p className="text-sm text-muted-foreground">{t('visitors.contacted')}</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{stats.converted}</p><p className="text-sm text-muted-foreground">{t('visitors.converted')}</p></CardContent></Card>
         </div>
 
         {/* Filter */}
         <div className="flex gap-2 flex-wrap">
-          {[{ key: 'all', label: 'Tous' }, ...Object.entries(statusConfig).map(([k, v]) => ({ key: k, label: v.label }))].map(f => (
+          {[{ key: 'all', label: t('visitors.all') }, ...Object.entries(statusConfig).map(([k, v]) => ({ key: k, label: v.label }))].map(f => (
             <Button key={f.key} variant={filter === f.key ? 'default' : 'outline'} size="sm" onClick={() => setFilter(f.key)}>
               {f.label}
             </Button>
@@ -267,17 +278,17 @@ export default function Visitors() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Visiteur</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Date de visite</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Responsable</TableHead>
+                      <TableHead>{t('visitors.visitor')}</TableHead>
+                      <TableHead>{t('visitors.contact')}</TableHead>
+                      <TableHead>{t('visitors.visitDate')}</TableHead>
+                      <TableHead>{t('visitors.status')}</TableHead>
+                      <TableHead>{t('visitors.responsible')}</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredVisitors.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Aucun visiteur trouvé</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{t('visitors.noVisitorFound')}</TableCell></TableRow>
                     ) : filteredVisitors.map(v => {
                       const sc = statusConfig[v.follow_up_status] || statusConfig.new;
                       return (
@@ -296,7 +307,7 @@ export default function Visitors() {
                           <TableCell>
                             <Select value={v.assigned_to || ''} onValueChange={(val) => assignMember(v.id, val)}>
                               <SelectTrigger className="h-8 text-xs w-32">
-                                <SelectValue placeholder="Assigner..." />
+                                <SelectValue placeholder={t('visitors.assign')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {members.map(m => <SelectItem key={m.id} value={m.id}>{m.first_name} {m.last_name}</SelectItem>)}
@@ -333,13 +344,13 @@ export default function Visitors() {
                 <CardContent className="space-y-4">
                   {selectedVisitor.phone && <div className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-muted-foreground" />{selectedVisitor.phone}</div>}
                   {selectedVisitor.email && <div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-muted-foreground" />{selectedVisitor.email}</div>}
-                  <div className="flex items-center gap-2 text-sm"><Calendar className="h-4 w-4 text-muted-foreground" />Visite : {format(new Date(selectedVisitor.visit_date), 'd MMMM yyyy', { locale: fr })}</div>
-                  {selectedVisitor.how_heard && <div className="text-sm text-muted-foreground">Source : {selectedVisitor.how_heard}</div>}
+                  <div className="flex items-center gap-2 text-sm"><Calendar className="h-4 w-4 text-muted-foreground" />{t('visitors.visit')}{format(new Date(selectedVisitor.visit_date), 'd MMMM yyyy', { locale: fr })}</div>
+                  {selectedVisitor.how_heard && <div className="text-sm text-muted-foreground">{t('visitors.source')}{selectedVisitor.how_heard}</div>}
                   {selectedVisitor.notes && <div className="text-sm bg-muted p-2 rounded">{selectedVisitor.notes}</div>}
 
                   {/* Status update */}
                   <div>
-                    <Label className="text-xs">Changer le statut</Label>
+                    <Label className="text-xs">{t('visitors.changeStatus')}</Label>
                     <Select value={selectedVisitor.follow_up_status} onValueChange={(val) => updateStatus(selectedVisitor, val)}>
                       <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -351,17 +362,17 @@ export default function Visitors() {
                   {/* Follow-ups */}
                   <div className="border-t pt-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-sm">Historique de suivi</h4>
+                      <h4 className="font-semibold text-sm">{t('visitors.followUpHistory')}</h4>
                       <Dialog open={followUpDialogOpen} onOpenChange={setFollowUpDialogOpen}>
                         <DialogTrigger asChild>
-                          <Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" />Suivi</Button>
+                          <Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" />{t('visitors.addFollowUp')}</Button>
                         </DialogTrigger>
                         <DialogContent>
-                          <DialogHeader><DialogTitle>Ajouter un suivi</DialogTitle></DialogHeader>
+                          <DialogHeader><DialogTitle>{t('visitors.addFollowUpTitle')}</DialogTitle></DialogHeader>
                           <div className="space-y-4">
-                            <div><Label>Date</Label><Input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} /></div>
+                            <div><Label>{t('visitors.date')}</Label><Input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} /></div>
                             <div>
-                              <Label>Type</Label>
+                              <Label>{t('visitors.type')}</Label>
                               <Select value={followUpType} onValueChange={setFollowUpType}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -369,15 +380,15 @@ export default function Visitors() {
                                 </SelectContent>
                               </Select>
                             </div>
-                            <div><Label>Notes</Label><Textarea value={followUpNotes} onChange={e => setFollowUpNotes(e.target.value)} /></div>
-                            <Button onClick={saveFollowUp} className="w-full">Enregistrer</Button>
+                            <div><Label>{t('visitors.notes')}</Label><Textarea value={followUpNotes} onChange={e => setFollowUpNotes(e.target.value)} /></div>
+                            <Button onClick={saveFollowUp} className="w-full">{t('visitors.save')}</Button>
                           </div>
                         </DialogContent>
                       </Dialog>
                     </div>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {followUps.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic">Aucun suivi enregistré</p>
+                        <p className="text-xs text-muted-foreground italic">{t('visitors.noFollowUp')}</p>
                       ) : followUps.map(fu => (
                         <div key={fu.id} className="flex items-start gap-2 text-xs border rounded p-2">
                           <button onClick={() => toggleFollowUpComplete(fu)} className="mt-0.5">
@@ -397,7 +408,7 @@ export default function Visitors() {
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
                   <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Sélectionnez un visiteur pour voir les détails</p>
+                  <p>{t('visitors.selectVisitorDetails')}</p>
                 </CardContent>
               </Card>
             )}
