@@ -471,7 +471,7 @@ export default function Layout({ children }: LayoutProps) {
             </SheetContent>
           </Sheet>
 
-          <Link to={isSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+          <Link to={showAsSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
             {brandingLogo ? (
               <img 
                 src={brandingLogo} 
