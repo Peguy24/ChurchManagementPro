@@ -836,7 +836,7 @@ function AttendanceContent() {
                           )}
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-3">
                         <Badge 
                           variant={member.status === 'success' ? 'default' : 'destructive'}
                           className={`text-lg px-4 py-2 w-full justify-center ${
@@ -847,6 +847,33 @@ function AttendanceContent() {
                             ? `✓ ${t("attendance.attendanceMarked")}` 
                             : `✗ ${t("attendance.codeAlreadyScanned")}`}
                         </Badge>
+                        {member.status === 'success' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="w-full text-destructive border-destructive/30 hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t("common.delete")}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t("attendance.deleteConfirmTitle")}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t("attendance.deleteConfirmDesc").replace("{name}", `${member.first_name} ${member.last_name}`)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => handleDeleteAttendance(member, index)}
+                                >
+                                  {t("common.delete")}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
