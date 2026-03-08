@@ -55,6 +55,17 @@ export default function JoinChurch() {
             setLogoUrl(data.logo_url);
           }
         });
+
+      // Fetch active ministries for this tenant
+      supabase
+        .from("ministries")
+        .select("id, name")
+        .eq("tenant_id", tenantId)
+        .eq("status", "active")
+        .order("name")
+        .then(({ data }) => {
+          if (data) setMinistries(data);
+        });
     }
   }, [tenantId]);
 
