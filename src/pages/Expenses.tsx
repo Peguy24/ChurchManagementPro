@@ -320,7 +320,7 @@ export default function Expenses() {
       return;
     }
     if (formData.accountType === "bank" && !formData.bank_account_id) {
-      toast({ title: t("errors.required"), description: "Sélectionnez un compte bancaire", variant: "destructive" });
+      toast({ title: t("errors.required"), description: t("expense.selectBankAccount"), variant: "destructive" });
       return;
     }
     createExpense.mutate(formData);
