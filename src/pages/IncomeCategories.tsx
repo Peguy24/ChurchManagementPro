@@ -421,9 +421,9 @@ export default function IncomeCategories() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>{t("nav.deleteCategory")}</AlertDialogTitle>
+                                <AlertDialogTitle>{t("layout.deleteCategory")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  {t("nav.deleteCategoryDesc")}
+                                  {t("layout.deleteCategoryDesc")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
