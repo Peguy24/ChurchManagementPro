@@ -78,7 +78,7 @@ export default function Members() {
     if (filteredMembers.length === 0) {
       toast({
         title: t("common.error"),
-        description: "Aucun membre à exporter",
+        description: t("donations.noMembersExport"),
         variant: "destructive",
       });
       return;
