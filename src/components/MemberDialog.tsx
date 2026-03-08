@@ -496,6 +496,30 @@ export default function MemberDialog({
               console.error("Error sending welcome email:", emailError);
             }
           }
+      }
+
+      // Handle ministry assignment
+      const memberId = member?.id || undefined;
+      const resolvedMemberId = memberId || (await supabase.from("members").select("id").eq("first_name", formData.firstName).eq("last_name", formData.lastName).eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(1).single()).data?.id;
+      
+      if (resolvedMemberId || member?.id) {
+        const finalMemberId = member?.id || resolvedMemberId;
+        if (finalMemberId) {
+          // Remove existing ministry assignments
+          await supabase
+            .from("ministry_members")
+            .delete()
+            .eq("member_id", finalMemberId);
+
+          // Add new ministry assignment if selected
+          if (selectedMinistryId) {
+            await supabase.from("ministry_members").insert({
+              ministry_id: selectedMinistryId,
+              member_id: finalMemberId,
+              role: "member",
+              joined_date: new Date().toISOString().split("T")[0],
+            });
+          }
         }
       }
 
