@@ -132,6 +132,7 @@ export default function MinistryDialog({
         toast.success(m("createSuccess"));
       }
       onSuccess();
+      queryClient.invalidateQueries({ queryKey: ["ministries-active", tenantId] });
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || m("errorOccurred"));
