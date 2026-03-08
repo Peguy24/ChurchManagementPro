@@ -127,6 +127,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: MessageSquare,
       items: [
         { to: "/settings/email-templates", icon: Mail, label: t("layout.emailTemplates") },
+        { to: "/automations", icon: Zap, label: t("nav.automations") },
       ],
     },
     {
