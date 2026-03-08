@@ -98,6 +98,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`User ${userId} authorized (superAdmin: ${isSuperAdmin}, tenantAdmin: ${isTenantAdmin}). Creating invitation for ${email} to tenant ${tenantName}`);
 
+    // Check if email is already registered as an approved user/admin for this tenant
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(
+      (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+
+    if (existingUser) {
+      const { data: existingRole } = await supabase
+        .from("tenant_user_roles")
+        .select("role, is_approved")
+        .eq("user_id", existingUser.id)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+
+      if (existingRole) {
+        const statusLabel = existingRole.is_approved ? "approved" : "pending approval";
+        console.log(`Email ${email} already has role '${existingRole.role}' (${statusLabel}) for tenant ${tenantId}`);
+        return new Response(
+          JSON.stringify({ 
+            error: `This email is already registered as ${existingRole.role} for this church (${statusLabel}).`,
+            alreadyExists: true,
+            role: existingRole.role,
+            isApproved: existingRole.is_approved,
+          }),
+          { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
     // Check if invitation already exists for this email and tenant
     const { data: existingInvite } = await supabase
       .from("admin_invitations")
