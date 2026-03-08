@@ -1,5 +1,6 @@
 import { ReactNode, useState, lazy, Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
+import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import { cn } from "@/lib/utils";
 import {
   Users,
