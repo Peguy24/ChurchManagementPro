@@ -419,7 +419,7 @@ function AttendanceContent() {
 
       // Insert attendance record
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      const { error: insertError } = await supabase
+      const { data: insertedRecord, error: insertError } = await supabase
         .from("attendance_records")
         .insert({
           member_id: member.id,
@@ -429,7 +429,9 @@ function AttendanceContent() {
           scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
           marked_by: currentUser?.id || null,
-        });
+        })
+        .select("id")
+        .single();
 
       if (insertError) {
         // Handle unique constraint violation (race condition fallback)
