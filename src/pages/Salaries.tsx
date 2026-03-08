@@ -535,7 +535,7 @@ export default function Salaries() {
           <TabsList>
             <TabsTrigger value="employees" className="gap-2">
               <Users className="h-4 w-4" />
-              Personnel
+              {t("salariesPage.staff")}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <History className="h-4 w-4" />
