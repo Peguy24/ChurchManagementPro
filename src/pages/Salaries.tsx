@@ -633,7 +633,7 @@ export default function Salaries() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="hire_date">Date d'embauche</Label>
+                      <Label htmlFor="hire_date">{t("salariesPage.hireDate")}</Label>
                       <Input
                         id="hire_date"
                         type="date"
