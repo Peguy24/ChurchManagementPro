@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LogoUploadProps {
   tenantId: string | null;
@@ -16,40 +17,36 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useLanguage();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error("Veuillez sélectionner une image (PNG, JPG, etc.)");
+      toast.error(t("churchSettings.logoSelectImage"));
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("L'image ne doit pas dépasser 2 Mo");
+      toast.error(t("churchSettings.logoMaxSize"));
       return;
     }
 
     if (!tenantId) {
-      toast.error("Aucune église sélectionnée");
+      toast.error(t("churchSettings.logoNoChurch"));
       return;
     }
 
-    // Show preview
     const reader = new FileReader();
     reader.onload = (e) => setPreviewUrl(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Upload to Supabase Storage
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${tenantId}/logo-${Date.now()}.${fileExt}`;
 
-      // Delete old logo if exists
       if (currentLogoUrl && currentLogoUrl.includes('tenant-logos')) {
         const oldPath = currentLogoUrl.split('/tenant-logos/')[1];
         if (oldPath) {
@@ -57,7 +54,6 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
         }
       }
 
-      // Upload new logo
       const { error: uploadError } = await supabase.storage
         .from('tenant-logos')
         .upload(fileName, file, {
@@ -67,16 +63,15 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('tenant-logos')
         .getPublicUrl(fileName);
 
       onLogoUploaded(publicUrl);
-      toast.success("Logo téléchargé avec succès");
+      toast.success(t("churchSettings.logoSuccess"));
     } catch (error: any) {
       console.error("Error uploading logo:", error);
-      toast.error("Erreur lors du téléchargement: " + error.message);
+      toast.error(t("churchSettings.logoUploadError") + ": " + error.message);
       setPreviewUrl(null);
     } finally {
       setUploading(false);
@@ -88,7 +83,6 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
 
     setUploading(true);
     try {
-      // Delete from storage if it's our bucket
       if (currentLogoUrl.includes('tenant-logos')) {
         const path = currentLogoUrl.split('/tenant-logos/')[1];
         if (path) {
@@ -98,10 +92,10 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
 
       onLogoUploaded("");
       setPreviewUrl(null);
-      toast.success("Logo supprimé");
+      toast.success(t("churchSettings.logoRemoved"));
     } catch (error: any) {
       console.error("Error removing logo:", error);
-      toast.error("Erreur lors de la suppression");
+      toast.error(t("churchSettings.logoRemoveError"));
     } finally {
       setUploading(false);
     }
@@ -113,17 +107,16 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
     <div className="space-y-4">
       <Label className="flex items-center gap-2">
         <ImageIcon className="h-4 w-4" />
-        Logo de l'Église
+        {t("churchSettings.logoLabel")}
       </Label>
       
       <div className="flex items-start gap-4">
-        {/* Logo Preview */}
         <div className="relative w-24 h-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center overflow-hidden bg-muted/50">
           {displayUrl ? (
             <>
               <img 
                 src={displayUrl} 
-                alt="Logo de l'église" 
+                alt={t("churchSettings.logoAlt")}
                 className="w-full h-full object-contain"
               />
               {!uploading && (
@@ -147,7 +140,6 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
           )}
         </div>
 
-        {/* Upload Controls */}
         <div className="flex-1 space-y-2">
           <Input
             ref={fileInputRef}
@@ -169,18 +161,18 @@ export default function LogoUpload({ tenantId, currentLogoUrl, onLogoUploaded }:
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
+                {t("churchSettings.logoUploading")}
               </>
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                {displayUrl ? "Changer le logo" : "Télécharger un logo"}
+                {displayUrl ? t("churchSettings.logoChange") : t("churchSettings.logoUpload")}
               </>
             )}
           </Button>
           
           <p className="text-xs text-muted-foreground">
-            PNG, JPG ou WEBP. Max 2 Mo.
+            {t("churchSettings.logoHint")}
           </p>
         </div>
       </div>
