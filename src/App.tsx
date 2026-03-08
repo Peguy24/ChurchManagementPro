@@ -64,6 +64,7 @@ import AnnouncementBanners from "./pages/AnnouncementBanners";
 import SubscriptionOverrides from "./pages/SubscriptionOverrides";
 import ChurnPrevention from "./pages/ChurnPrevention";
 import TenantComparison from "./pages/TenantComparison";
+import WhiteLabelManager from "./pages/WhiteLabelManager";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
 import EventRegister from "./pages/EventRegister";
