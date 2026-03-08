@@ -98,7 +98,7 @@ export default function AttendanceKiosk() {
   // Load today's events
   useEffect(() => {
     if (!tenantId) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalToday();
 
     supabase
       .from("events")
