@@ -18,7 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
@@ -68,6 +79,7 @@ interface ScannedMember {
   photo_url: string | null;
   time: string;
   status: 'success' | 'error';
+  attendance_record_id?: string;
 }
 
 export default function Attendance() {
@@ -407,7 +419,7 @@ function AttendanceContent() {
 
       // Insert attendance record
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      const { error: insertError } = await supabase
+      const { data: insertedRecord, error: insertError } = await supabase
         .from("attendance_records")
         .insert({
           member_id: member.id,
@@ -417,7 +429,9 @@ function AttendanceContent() {
           scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
           marked_by: currentUser?.id || null,
-        });
+        })
+        .select("id")
+        .single();
 
       if (insertError) {
         // Handle unique constraint violation (race condition fallback)
@@ -458,7 +472,8 @@ function AttendanceContent() {
       setScannedMembers(prev => [{
         ...member,
         time: new Date().toLocaleTimeString("fr-FR"),
-        status: 'success' as const
+        status: 'success' as const,
+        attendance_record_id: insertedRecord?.id,
       }, ...prev].slice(0, 10));
 
       await loadAttendanceRecords();
@@ -621,8 +636,47 @@ function AttendanceContent() {
       setLoading(false);
     }
   };
+  const handleDeleteAttendance = async (member: ScannedMember, index: number) => {
+    try {
+      if (member.attendance_record_id) {
+        const { error } = await supabase
+          .from("attendance_records")
+          .delete()
+          .eq("id", member.attendance_record_id);
+        if (error) throw error;
+      } else {
+        // Fallback: delete by member_id + today's date + event
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        let query = supabase
+          .from("attendance_records")
+          .delete()
+          .eq("member_id", member.id)
+          .eq("event_date", today);
+        if (selectedEventId) {
+          query = query.eq("event_id", selectedEventId);
+        }
+        const { error } = await query;
+        if (error) throw error;
+      }
 
-  // Kiosk Mode Full Screen View
+      setScannedMembers(prev => prev.filter((_, i) => i !== index));
+      await loadAttendanceRecords();
+      toast({
+        title: t("attendance.deleteSuccess"),
+        description: t("attendance.deleteSuccessDesc").replace("{name}", `${member.first_name} ${member.last_name}`),
+      });
+    } catch (error) {
+      console.error("Error deleting attendance:", error);
+      toast({
+        title: t("common.error"),
+        description: t("attendance.deleteError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+
   if (kioskMode) {
     return (
       <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -782,7 +836,7 @@ function AttendanceContent() {
                           )}
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-3">
                         <Badge 
                           variant={member.status === 'success' ? 'default' : 'destructive'}
                           className={`text-lg px-4 py-2 w-full justify-center ${
@@ -793,6 +847,33 @@ function AttendanceContent() {
                             ? `✓ ${t("attendance.attendanceMarked")}` 
                             : `✗ ${t("attendance.codeAlreadyScanned")}`}
                         </Badge>
+                        {member.status === 'success' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="w-full text-destructive border-destructive/30 hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t("common.delete")}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t("attendance.deleteConfirmTitle")}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t("attendance.deleteConfirmDesc").replace("{name}", `${member.first_name} ${member.last_name}`)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => handleDeleteAttendance(member, index)}
+                                >
+                                  {t("common.delete")}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -999,6 +1080,32 @@ function AttendanceContent() {
                         <Badge variant={member.status === 'success' ? 'default' : 'destructive'}>
                           {member.status === 'success' ? t("attendance.success") : t("attendance.error")}
                         </Badge>
+                        {member.status === 'success' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t("attendance.deleteConfirmTitle")}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t("attendance.deleteConfirmDesc").replace("{name}", `${member.first_name} ${member.last_name}`)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => handleDeleteAttendance(member, index)}
+                                >
+                                  {t("common.delete")}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     ))}
                   </div>
