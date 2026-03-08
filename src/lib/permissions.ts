@@ -16,7 +16,9 @@ export type RouteGroup =
   | "settings"
   | "users"
   | "inventory"
-  | "tenants";
+  | "tenants"
+  | "volunteers"
+  | "visitors";
 
 // Default permissions (fallback when DB is not available)
 export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
@@ -34,6 +36,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "users",
     "inventory",
     "tenants",
+    "volunteers",
+    "visitors",
   ],
   pastor: [
     "dashboard",
@@ -46,6 +50,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "communication",
     "settings",
     "inventory",
+    "volunteers",
+    "visitors",
   ],
   treasurer: [
     "dashboard",
@@ -60,6 +66,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "events",
     "communication",
     "inventory",
+    "visitors",
   ],
   volunteer: [
     "dashboard",
@@ -108,15 +115,17 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/automations": "communication",
   "/support": "communication",
   "/support-management": "tenants",
+  "/volunteers": "volunteers",
+  "/visitors": "visitors",
 };
 
 // Map nav groups to route groups (using internal keys, not translated labels)
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
-  "members": ["members", "attendance", "branches", "ministries"],
+  "members": ["members", "attendance", "branches", "ministries", "visitors"],
   "finances": ["finances"],
   "reports": ["dashboard", "reports", "finances"],
   "communication": ["communication"],
-  "planning": ["events"],
+  "planning": ["events", "volunteers"],
   "settings": ["settings", "users", "tenants"],
   "inventory": ["inventory"],
   "administration": ["dashboard", "tenants", "users"],
@@ -197,4 +206,6 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   users: "Gestion utilisateurs",
   inventory: "Inventaire",
   tenants: "Gestion Multi-Tenant",
+  volunteers: "Planification Bénévoles",
+  visitors: "Gestion Visiteurs",
 };

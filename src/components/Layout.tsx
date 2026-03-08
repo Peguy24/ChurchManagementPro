@@ -90,6 +90,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
         { to: "/branches", icon: Church, label: t("nav.branches") },
         { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
+        { to: "/visitors", icon: UserPlus, label: "Gestion Visiteurs" },
       ],
     },
     {
@@ -137,6 +138,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       items: [
         { to: "/events", icon: Calendar, label: t("nav.events") },
         { to: "/events/calendar", icon: Calendar, label: t("nav.eventCalendar") },
+        { to: "/volunteers", icon: Users, label: "Planification Bénévoles" },
       ],
     },
     {
