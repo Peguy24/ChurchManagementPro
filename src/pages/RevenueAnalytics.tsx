@@ -125,13 +125,19 @@ export default function RevenueAnalytics() {
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {t("superAdmin.revenue.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("superAdmin.revenue.subtitle")}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              {t("superAdmin.revenue.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t("superAdmin.revenue.subtitle")}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isLoading || !data?.subscriptions?.length}>
+            <Download className="h-4 w-4 mr-2" />
+            {t("superAdmin.revenue.exportCsv") || "Export CSV"}
+          </Button>
         </div>
 
         {/* KPI Cards */}
