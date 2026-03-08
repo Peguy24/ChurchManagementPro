@@ -515,7 +515,7 @@ export default function Salaries() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Paiements ce mois</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("salariesPage.paymentsThisMonth")}</CardTitle>
               <History className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
