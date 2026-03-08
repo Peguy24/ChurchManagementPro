@@ -1,32 +1,31 @@
 
 
-## Current Situation
+## Plan: Replace Date of Birth with Ministry on Member Cards
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### What Changes
+Two files need updating:
 
-## What Needs to Be Done
+1. **`src/lib/memberCardPDF.ts`** -- The PDF generation logic
+   - Add `ministry` field to the `MemberCardData` interface
+   - Replace the "Né(e) le:" (date of birth) line with "Ministère:" showing the member's ministry name
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+2. **`src/pages/MemberCards.tsx`** -- The data query and interface
+   - Update the `Member` interface to include `ministry` (remove `date_of_birth` from the interface or keep it unused)
+   - Update the Supabase query to join `ministry_members` and `ministries` tables to fetch the member's ministry name
+   - Pass the ministry name through to the PDF generator
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+### Query Change
+The current query:
+```sql
+select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status, date_of_birth, join_date, member_number")
+```
+Will become:
+```sql
+select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status, date_of_birth, join_date, member_number, ministry_members(ministries(name))")
+```
+The first ministry found will be used as the display value. If a member belongs to multiple ministries, the first one is shown.
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
-
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### PDF Card Layout Change
+- Line currently showing `Né(e) le: 01/01/1990` will show `Ministère: Louange` (or "Non défini" if no ministry)
+- All other card elements remain unchanged
 
