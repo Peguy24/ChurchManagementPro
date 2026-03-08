@@ -564,7 +564,7 @@ export default function TenantUserManagement() {
             ) : (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label>{t('tenant.invitationLink') || "Lien d'invitation"}</Label>
+                  <Label>{t('tenant.invitationLink')}</Label>
                   <div className="flex gap-2">
                     <Input
                       value={invitationLink}
