@@ -1068,6 +1068,7 @@ export default function TenantManagement() {
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   </ScrollArea>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
