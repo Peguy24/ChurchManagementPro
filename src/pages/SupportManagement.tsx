@@ -99,11 +99,11 @@ export default function SupportManagement() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h1 className="text-2xl font-bold">{t("layout.supportManagement")}</h1>
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl md:text-3xl font-bold">{t("layout.supportManagement")}</h1>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
