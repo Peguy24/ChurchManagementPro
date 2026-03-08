@@ -5593,6 +5593,8 @@ const translations = {
       back: "Back",
       registerAnother: "Register another person",
       eventOn: "on",
+      eventClosedTitle: "Registration Closed",
+      eventClosedMessage: "This event is already over. Registration is no longer available.",
     },
   onboarding: {
     title: "Onboarding Progress",
