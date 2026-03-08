@@ -288,6 +288,13 @@ function PlanCard({
   const [mu, setMu] = useState(limits.max_users ?? 3);
   const [ms, setMs] = useState(limits.max_storage_mb ?? 200);
 
+  useEffect(() => {
+    setMm(limits.max_members ?? 100);
+    setMb(limits.max_branches ?? 1);
+    setMu(limits.max_users ?? 3);
+    setMs(limits.max_storage_mb ?? 200);
+  }, [limits.max_members, limits.max_branches, limits.max_users, limits.max_storage_mb]);
+
   return (
     <Card>
       <CardHeader className="pb-3">
