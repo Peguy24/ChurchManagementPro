@@ -8,6 +8,7 @@ import { Camera, X, Package, AlertTriangle, CheckCircle2, ScanBarcode } from "lu
 import { toast } from "sonner";
 import { useCurrency } from "@/hooks/useCurrency";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InventoryItem {
   id: string;
@@ -36,33 +37,12 @@ interface InventoryBarcodeScannerProps {
   onItemNotFound?: (code: string) => void;
 }
 
-const statusLabels: Record<string, { label: string; color: string }> = {
-  available: { label: "Disponible", color: "bg-green-500" },
-  in_use: { label: "En utilisation", color: "bg-blue-500" },
-  maintenance: { label: "En maintenance", color: "bg-yellow-500" },
-  missing: { label: "Manquant", color: "bg-red-500" },
-  disposed: { label: "Retiré", color: "bg-gray-500" },
-};
-
-const categoryLabels: Record<string, string> = {
-  general: "Général",
-  audio_video: "Audio/Vidéo",
-  furniture: "Mobilier",
-  musical: "Instruments de musique",
-  office: "Bureautique",
-  kitchen: "Cuisine",
-  cleaning: "Nettoyage",
-  decoration: "Décoration",
-  vehicle: "Véhicule",
-  it_equipment: "Équipement informatique",
-  other: "Autre",
-};
-
 export default function InventoryBarcodeScanner({ 
   items, 
   onItemFound, 
   onItemNotFound 
 }: InventoryBarcodeScannerProps) {
+  const { t } = useLanguage();
   const { formatAmount: formatCurrency } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -72,6 +52,28 @@ export default function InventoryBarcodeScanner({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanTimeRef = useRef<number>(0);
 
+  const statusKeys: Record<string, { key: string; color: string }> = {
+    available: { key: "inventory.statusAvailable", color: "bg-green-500" },
+    in_use: { key: "inventory.statusInUse", color: "bg-blue-500" },
+    maintenance: { key: "inventory.statusMaintenance", color: "bg-yellow-500" },
+    missing: { key: "inventory.statusMissing", color: "bg-red-500" },
+    disposed: { key: "inventory.statusDisposed", color: "bg-gray-500" },
+  };
+
+  const categoryKeys: Record<string, string> = {
+    general: "inventory.catGeneral",
+    audio_video: "inventory.catAudioVideo",
+    furniture: "inventory.catFurniture",
+    musical: "inventory.catMusical",
+    office: "inventory.catOffice",
+    kitchen: "inventory.catKitchen",
+    cleaning: "inventory.catCleaning",
+    decoration: "inventory.catDecoration",
+    vehicle: "inventory.catVehicle",
+    it_equipment: "inventory.catITEquipment",
+    other: "inventory.catOther",
+  };
+
   const startScanner = async () => {
     try {
       const html5QrCode = new Html5Qrcode("barcode-reader");
@@ -79,30 +81,19 @@ export default function InventoryBarcodeScanner({
 
       await html5QrCode.start(
         { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 300, height: 150 },
-          aspectRatio: 2,
-        },
+        { fps: 10, qrbox: { width: 300, height: 150 }, aspectRatio: 2 },
         (decodedText) => {
-          // Prevent multiple rapid scans of the same code
           const now = Date.now();
-          if (now - lastScanTimeRef.current < 2000) {
-            return;
-          }
+          if (now - lastScanTimeRef.current < 2000) return;
           lastScanTimeRef.current = now;
-          
           handleScanResult(decodedText);
         },
-        () => {
-          // Ignore errors during scanning
-        }
+        () => {}
       );
-      
       setIsScanning(true);
     } catch (error) {
       console.error("Error starting scanner:", error);
-      toast.error("Impossible d'accéder à la caméra");
+      toast.error(t("inventory.cameraError"));
     }
   };
 
@@ -120,28 +111,19 @@ export default function InventoryBarcodeScanner({
 
   const handleScanResult = (code: string) => {
     setLastScannedCode(code);
-    
-    // Normalize the scanned code for comparison
     const normalizedCode = code.toLowerCase().trim();
     
-    // Search for item by barcode, serial_number, or name
     const foundItem = items.find((item) => {
-      // Check barcode (primary)
       if (item.barcode) {
         if (item.barcode.toLowerCase() === normalizedCode) return true;
         if (item.barcode.toLowerCase().includes(normalizedCode)) return true;
         if (normalizedCode.includes(item.barcode.toLowerCase())) return true;
       }
-      
-      // Check serial_number
       if (item.serial_number) {
         if (item.serial_number.toLowerCase() === normalizedCode) return true;
         if (item.serial_number.toLowerCase().includes(normalizedCode)) return true;
       }
-      
-      // Check name as fallback
       if (item.name.toLowerCase() === normalizedCode) return true;
-      
       return false;
     });
 
@@ -150,13 +132,13 @@ export default function InventoryBarcodeScanner({
       setScanResult("found");
       playSuccessSound();
       onItemFound(foundItem);
-      toast.success(`Article trouvé: ${foundItem.name}`);
+      toast.success(t("inventory.itemFoundToast").replace("{name}", foundItem.name));
     } else {
       setLastScannedItem(null);
       setScanResult("not_found");
       playErrorSound();
       onItemNotFound?.(code);
-      toast.error(`Aucun article trouvé pour le code: ${code}`);
+      toast.error(t("inventory.itemNotFoundToast").replace("{code}", code));
     }
   };
 
@@ -177,26 +159,19 @@ export default function InventoryBarcodeScanner({
 
   useEffect(() => {
     if (isOpen && !isScanning) {
-      // Small delay to ensure DOM is ready
-      const timeout = setTimeout(() => {
-        startScanner();
-      }, 100);
+      const timeout = setTimeout(() => { startScanner(); }, 100);
       return () => clearTimeout(timeout);
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    return () => {
-      stopScanner();
-    };
-  }, []);
+  useEffect(() => { return () => { stopScanner(); }; }, []);
 
   const getStatusBadge = (status: string) => {
-    const statusInfo = statusLabels[status] || { label: status, color: "bg-gray-500" };
+    const info = statusKeys[status];
     return (
       <Badge variant="outline" className="flex items-center gap-1">
-        <span className={`w-2 h-2 rounded-full ${statusInfo.color}`} />
-        {statusInfo.label}
+        <span className={`w-2 h-2 rounded-full ${info?.color || "bg-gray-500"}`} />
+        {info ? t(info.key) : status}
       </Badge>
     );
   };
@@ -205,7 +180,7 @@ export default function InventoryBarcodeScanner({
     <>
       <Button onClick={handleOpen} variant="outline">
         <ScanBarcode className="h-4 w-4 mr-2" />
-        Scanner
+        {t("inventory.scannerBtn")}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -213,50 +188,36 @@ export default function InventoryBarcodeScanner({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Camera className="h-5 w-5" />
-              Scanner un code-barres
+              {t("inventory.scanBarcode")}
             </DialogTitle>
-            <DialogDescription>
-              Scannez le code-barres ou QR code d'un article pour le retrouver rapidement
-            </DialogDescription>
+            <DialogDescription>{t("inventory.scanBarcodeDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Scanner viewport */}
             <div className="relative">
-              <div 
-                id="barcode-reader" 
-                className="w-full rounded-lg overflow-hidden bg-muted"
-                style={{ minHeight: "200px" }}
-              />
+              <div id="barcode-reader" className="w-full rounded-lg overflow-hidden bg-muted" style={{ minHeight: "200px" }} />
               {!isScanning && (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
                   <div className="text-center text-muted-foreground">
                     <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Initialisation de la caméra...</p>
+                    <p>{t("inventory.cameraInit")}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Scan result */}
             {scanResult && (
               <Card className={scanResult === "found" ? "border-green-500" : "border-red-500"}>
                 <CardHeader className="py-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     {scanResult === "found" ? (
-                      <>
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        Article trouvé
-                      </>
+                      <><CheckCircle2 className="h-5 w-5 text-green-500" />{t("inventory.itemFound")}</>
                     ) : (
-                      <>
-                        <AlertTriangle className="h-5 w-5 text-red-500" />
-                        Article non trouvé
-                      </>
+                      <><AlertTriangle className="h-5 w-5 text-red-500" />{t("inventory.itemNotFound")}</>
                     )}
                   </CardTitle>
                   {lastScannedCode && (
-                    <CardDescription>Code scanné: {lastScannedCode}</CardDescription>
+                    <CardDescription>{t("inventory.scannedCode")}: {lastScannedCode}</CardDescription>
                   )}
                 </CardHeader>
                 {lastScannedItem && (
@@ -271,28 +232,26 @@ export default function InventoryBarcodeScanner({
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                         <div>
-                          <span className="font-medium">Catégorie:</span>{" "}
-                          {categoryLabels[lastScannedItem.category] || lastScannedItem.category}
+                          <span className="font-medium">{t("inventory.categoryLabel")}:</span>{" "}
+                          {categoryKeys[lastScannedItem.category] ? t(categoryKeys[lastScannedItem.category]) : lastScannedItem.category}
                         </div>
                         <div>
-                          <span className="font-medium">Quantité:</span> {lastScannedItem.quantity}
+                          <span className="font-medium">{t("inventory.quantityLabel")}:</span> {lastScannedItem.quantity}
                         </div>
                         {lastScannedItem.location && (
                           <div>
-                            <span className="font-medium">Emplacement:</span> {lastScannedItem.location}
+                            <span className="font-medium">{t("inventory.locationLabel")}:</span> {lastScannedItem.location}
                           </div>
                         )}
                         {lastScannedItem.current_value && (
                           <div>
-                            <span className="font-medium">Valeur:</span>{" "}
+                            <span className="font-medium">{t("inventory.valueLabel")}:</span>{" "}
                             {formatCurrency(lastScannedItem.current_value)}
                           </div>
                         )}
                       </div>
                       {lastScannedItem.description && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {lastScannedItem.description}
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">{lastScannedItem.description}</p>
                       )}
                     </div>
                   </CardContent>
@@ -300,17 +259,14 @@ export default function InventoryBarcodeScanner({
               </Card>
             )}
 
-            {/* Instructions */}
             <div className="text-center text-sm text-muted-foreground">
-              <p>Placez le code-barres devant la caméra</p>
-              <p className="text-xs mt-1">
-                Formats supportés: QR Code, Code 128, EAN-13, UPC-A, et plus
-              </p>
+              <p>{t("inventory.placeBarcode")}</p>
+              <p className="text-xs mt-1">{t("inventory.supportedFormats")}</p>
             </div>
 
             <Button variant="outline" onClick={handleClose} className="w-full">
               <X className="h-4 w-4 mr-2" />
-              Fermer
+              {t("inventory.close")}
             </Button>
           </div>
         </DialogContent>
