@@ -830,9 +830,9 @@ export default function Salaries() {
         <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Enregistrer un paiement</DialogTitle>
+              <DialogTitle>{t("salariesPage.recordPayment")}</DialogTitle>
               <DialogDescription>
-                Enregistrez le versement du salaire
+                {t("salariesPage.recordPaymentDesc")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitPayment} className="space-y-4">
