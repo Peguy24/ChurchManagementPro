@@ -2057,6 +2057,51 @@ export type Database = {
           },
         ]
       }
+      platform_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          expense_date: string
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          recurring_frequency: string | null
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          recurring_frequency?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          recurring_frequency?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: []
+      }
       platform_permissions: {
         Row: {
           created_at: string | null
