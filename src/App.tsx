@@ -133,6 +133,7 @@ const App = () => (
               <Route path="/super-admin/revenue" element={<ProtectedRoute requireSuperAdmin><RevenueAnalytics /></ProtectedRoute>} />
               <Route path="/super-admin/health" element={<ProtectedRoute requireSuperAdmin><ChurchHealthScores /></ProtectedRoute>} />
               <Route path="/super-admin/communication" element={<ProtectedRoute requireSuperAdmin><BulkCommunication /></ProtectedRoute>} />
+              <Route path="/super-admin/settings" element={<ProtectedRoute requireSuperAdmin><PlatformSettings /></ProtectedRoute>} />
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/support-management" element={<ProtectedRoute requireSuperAdmin><SupportManagement /></ProtectedRoute>} />
