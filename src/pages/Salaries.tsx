@@ -968,7 +968,7 @@ export default function Salaries() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="reference_number">Référence</Label>
+                <Label htmlFor="reference_number">{t("salariesPage.reference")}</Label>
                 <Input
                   id="reference_number"
                   value={paymentForm.reference_number}
