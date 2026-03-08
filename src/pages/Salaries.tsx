@@ -837,7 +837,7 @@ export default function Salaries() {
             </DialogHeader>
             <form onSubmit={handleSubmitPayment} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="payment_employee">Employé</Label>
+                <Label htmlFor="payment_employee">{t("salariesPage.employee")}</Label>
                 <Select
                   value={paymentForm.employee_id}
                   onValueChange={(value) => {
