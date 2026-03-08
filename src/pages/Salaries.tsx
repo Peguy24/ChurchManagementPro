@@ -898,7 +898,7 @@ export default function Salaries() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="period_end">Fin période *</Label>
+                  <Label htmlFor="period_end">{t("salariesPage.periodEnd")} *</Label>
                   <Input
                     id="period_end"
                     type="date"
