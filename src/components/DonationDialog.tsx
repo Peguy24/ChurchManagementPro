@@ -349,7 +349,7 @@ export default function DonationDialog({
 
           {/* Account Type - Required */}
           <div className="space-y-2">
-            <Label>Compte de destination *</Label>
+            <Label>{t("donations.destinationAccount")} *</Label>
             <RadioGroup
               value={formData.accountType}
               onValueChange={(value: "cash" | "bank") => setFormData({ ...formData, accountType: value })}
@@ -359,14 +359,14 @@ export default function DonationDialog({
                 <RadioGroupItem value="cash" id="cash" />
                 <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
                   <Wallet className="h-4 w-4" />
-                  Caisse
+                  {t("donations.cashRegister")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bank" id="bank" />
                 <Label htmlFor="bank" className="flex items-center gap-1 cursor-pointer">
                   <Building2 className="h-4 w-4" />
-                  Banque
+                  {t("donations.bank")}
                 </Label>
               </div>
             </RadioGroup>
