@@ -26,6 +26,7 @@ import { TenantAdminManager } from "@/components/TenantAdminManager";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { logPlatformActivity } from "@/lib/activityLogger";
 
 type SubscriptionPlan = "free" | "basic" | "standard" | "premium" | "enterprise";
 type TenantStatus = "active" | "suspended" | "trial" | "cancelled";
@@ -264,9 +265,16 @@ export default function TenantManagement() {
 
       return tenant;
     },
-    onSuccess: () => {
+    onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       toast.success(t("superAdmin.churchCreated"));
+      logPlatformActivity({
+        eventType: "tenant_created",
+        eventCategory: "tenant",
+        description: `Église créée: ${tenant.name}`,
+        tenantId: tenant.id,
+        metadata: { name: tenant.name, slug: tenant.slug },
+      });
       resetForm();
       setIsDialogOpen(false);
     },
@@ -334,9 +342,15 @@ export default function TenantManagement() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       toast.success(t("superAdmin.churchDeleted"));
+      logPlatformActivity({
+        eventType: "tenant_deleted",
+        eventCategory: "tenant",
+        description: `Église supprimée (ID: ${id})`,
+        metadata: { tenant_id: id },
+      });
     },
     onError: (error) => {
       toast.error(t("superAdmin.deleteError") + ": " + error.message);
@@ -385,10 +399,17 @@ export default function TenantManagement() {
 
       return newTrialEnd;
     },
-    onSuccess: (newTrialEnd) => {
+    onSuccess: (newTrialEnd, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
       toast.success(`${t("superAdmin.trialExtended")} ${format(newTrialEnd, "dd MMM yyyy", { locale: dateLocale })}`);
+      logPlatformActivity({
+        eventType: "trial_extended",
+        eventCategory: "subscription",
+        description: `Essai prolongé pour ${variables.tenantName}`,
+        tenantId: variables.tenantId,
+        metadata: { new_trial_end: newTrialEnd.toISOString(), duration: variables.duration },
+      });
       setExtendTrialDialogOpen(false);
       setSelectedTenantForExtend(null);
     },
@@ -463,7 +484,7 @@ export default function TenantManagement() {
 
       return { activate, plan };
     },
-    onSuccess: ({ activate, plan }) => {
+    onSuccess: ({ activate, plan }, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
       toast.success(
@@ -471,6 +492,15 @@ export default function TenantManagement() {
           ? t("superAdmin.planActivatedSuccess").replace("{plan}", PLAN_CONFIG[plan].label)
           : t("superAdmin.planDeactivatedSuccess")
       );
+      logPlatformActivity({
+        eventType: activate ? "plan_activated" : "plan_deactivated",
+        eventCategory: "subscription",
+        description: activate 
+          ? `Plan ${PLAN_CONFIG[plan].label} activé pour ${variables.tenantName}`
+          : `Plan désactivé pour ${variables.tenantName}`,
+        tenantId: variables.tenantId,
+        metadata: { plan, activate, old_plan: variables.oldPlan, old_status: variables.oldStatus },
+      });
       setPlanActivationDialogOpen(false);
       setSelectedTenantForPlan(null);
     },

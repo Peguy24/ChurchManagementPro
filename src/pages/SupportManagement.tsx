@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { logPlatformActivity } from "@/lib/activityLogger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +59,12 @@ export default function SupportManagement() {
         const next = { ...prev };
         delete next[variables.ticketId];
         return next;
+      });
+      logPlatformActivity({
+        eventType: "support_ticket",
+        eventCategory: "support",
+        description: `Ticket ${variables.ticketId.slice(0, 8)} → ${variables.newStatus}`,
+        metadata: { ticketId: variables.ticketId, newStatus: variables.newStatus },
       });
       toast({
         title: t("layout.supportResponseSent"),

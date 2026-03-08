@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Users, Shield, Clock, CheckCircle, XCircle, UserPlus, UserCog } from "lucide-react";
 import { PlatformInviteDialog } from "@/components/PlatformInviteDialog";
+import { logPlatformActivity } from "@/lib/activityLogger";
 import PlatformRolesManager from "@/components/PlatformRolesManager";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -117,8 +118,14 @@ export default function UserManagement() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      logPlatformActivity({
+        eventType: "role_changed",
+        eventCategory: "user",
+        description: `Rôle ${variables.role} attribué à l'utilisateur ${variables.userId.slice(0, 8)}`,
+        metadata: { userId: variables.userId, role: variables.role },
+      });
       toast({
         title: t("common.success") || "Success",
         description: t("platform.roleAssigned"),
