@@ -949,7 +949,7 @@ export default function Salaries() {
               )}
               {paymentForm.payment_method === "cash" && (
                 <div className="space-y-2">
-                  <Label>Caisse source *</Label>
+                  <Label>{t("salariesPage.sourceCashRegister")} *</Label>
                   <Select
                     value={paymentForm.cash_register_id}
                     onValueChange={(value) => setPaymentForm({ ...paymentForm, cash_register_id: value, bank_account_id: "" })}
