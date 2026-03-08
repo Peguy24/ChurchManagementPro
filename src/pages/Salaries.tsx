@@ -323,8 +323,8 @@ export default function Salaries() {
       queryClient.invalidateQueries({ queryKey: ["cash-transactions"] });
       queryClient.invalidateQueries({ queryKey: ["bank-transactions"] });
       toast({
-        title: "Paiement enregistré",
-        description: "Le salaire a été payé et synchronisé avec les dépenses.",
+        title: t("salariesPage.paymentRecorded"),
+        description: t("salariesPage.paymentSuccess"),
       });
       setPaymentDialogOpen(false);
       resetPaymentForm();
