@@ -113,44 +113,46 @@ Deno.serve(async (req) => {
                         announcementType === "new_feature" ? "🚀 New Feature" :
                         announcementType === "update" ? "📦 Platform Update" : "📢 Announcement";
 
-      const batchSize = 50;
-      for (let i = 0; i < adminEmails.length; i += batchSize) {
-        const batch = adminEmails.slice(i, i + batchSize);
-        
-        const emailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: "Church Management Pro <noreply@churchmanagementpro.com>",
-            to: batch,
-            subject: `${priorityLabel ? priorityLabel + " - " : ""}${typeLabel}: ${title}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background: #1a1a2e; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-                  <h1 style="margin: 0; font-size: 20px;">Church Management Pro</h1>
-                  <p style="margin: 5px 0 0; opacity: 0.8; font-size: 14px;">${typeLabel}</p>
+      // Send individual emails for better deliverability
+      for (const recipientEmail of adminEmails) {
+        try {
+          const emailRes = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: "Church Management Pro <noreply@churchmanagementpro.com>",
+              to: [recipientEmail],
+              subject: `${priorityLabel ? priorityLabel + " - " : ""}${typeLabel}: ${title}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background: #1a1a2e; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+                    <h1 style="margin: 0; font-size: 20px;">Church Management Pro</h1>
+                    <p style="margin: 5px 0 0; opacity: 0.8; font-size: 14px;">${typeLabel}</p>
+                  </div>
+                  <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+                    ${priorityLabel ? `<div style="background: ${priority === 'critical' ? '#fef2f2' : '#fff7ed'}; border-left: 4px solid ${priority === 'critical' ? '#ef4444' : '#f97316'}; padding: 12px; margin-bottom: 20px; border-radius: 4px;">${priorityLabel}</div>` : ""}
+                    <h2 style="color: #1a1a2e; margin-top: 0;">${title}</h2>
+                    <div style="color: #374151; line-height: 1.6;">${message.replace(/\n/g, "<br>")}</div>
+                  </div>
+                  <div style="text-align: center; padding: 15px; color: #9ca3af; font-size: 12px;">
+                    This is an automated message from Church Management Pro platform.
+                  </div>
                 </div>
-                <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
-                  ${priorityLabel ? `<div style="background: ${priority === 'critical' ? '#fef2f2' : '#fff7ed'}; border-left: 4px solid ${priority === 'critical' ? '#ef4444' : '#f97316'}; padding: 12px; margin-bottom: 20px; border-radius: 4px;">${priorityLabel}</div>` : ""}
-                  <h2 style="color: #1a1a2e; margin-top: 0;">${title}</h2>
-                  <div style="color: #374151; line-height: 1.6;">${message.replace(/\n/g, "<br>")}</div>
-                </div>
-                <div style="text-align: center; padding: 15px; color: #9ca3af; font-size: 12px;">
-                  This is an automated message from Church Management Pro platform.
-                </div>
-              </div>
-            `,
-          }),
-        });
+              `,
+            }),
+          });
 
-        if (emailRes.ok) {
-          emailsSent += batch.length;
-        } else {
-          const errBody = await emailRes.text();
-          console.error("Resend error:", errBody);
+          if (emailRes.ok) {
+            emailsSent++;
+          } else {
+            const errBody = await emailRes.text();
+            console.error("Resend error for", recipientEmail, ":", errBody);
+          }
+        } catch (emailErr) {
+          console.error("Failed to send to", recipientEmail, ":", emailErr);
         }
       }
     }
