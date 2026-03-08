@@ -6940,6 +6940,11 @@ const translations = {
       errorUpdate: "Enposib pou modifye evènman an.",
       errorDelete: "Enposib pou efase evènman an.",
       noTenant: "Pa gen tenant ki asosye ak itilizatè sa a",
+      viewReport: "Wè Rapò",
+      eventReport: "Rapò Evènman",
+      eventReportDesc: "Rezime evènman fini/anile a.",
+      eventDetails: "Detay Evènman",
+      close: "Fèmen",
     },
     financialReports: {
       title: "Rapò Finans",
