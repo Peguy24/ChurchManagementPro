@@ -1,32 +1,29 @@
 
 
-## Current Situation
+## Password Reset for Super Admin
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+**Current state:** The app has no forgot password or reset password functionality at all. Users who forget their password have no way to recover it.
 
-## What Needs to Be Done
+**Plan:**
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### 1. Add "Forgot Password" link to Auth page (`src/pages/Auth.tsx`)
+- Add a "Mot de passe oublié ?" link below the login form password field
+- Clicking it shows an inline form (or dialog) asking for email
+- Calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`
+- Shows success toast confirming the reset email was sent
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+### 2. Create Reset Password page (`src/pages/ResetPassword.tsx`)
+- New page at `/reset-password` route
+- Detects `type=recovery` in URL hash (set by the auth system's email link)
+- Shows a form with "New password" and "Confirm password" fields
+- Calls `supabase.auth.updateUser({ password })` to save
+- On success, redirects to `/auth` with a success message
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+### 3. Register route in `src/App.tsx`
+- Add `/reset-password` as a **public route** (no ProtectedRoute wrapper)
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### 4. Add translations in `src/contexts/LanguageContext.tsx`
+- Add French/English/Creole translations for forgot password and reset password labels
+
+This works for all users (super admin, tenant admin, regular users) since it uses the standard auth password reset flow.
 
