@@ -4235,7 +4235,7 @@ const translations = {
       actualAttendees: "Actual Attendees",
     },
     financialReports: {
-      title: "Financial Reports",
+      title: "General Report",
       subtitle: "Detailed analysis of contributions",
       allBranches: "All branches",
       lastMonths: "last months",
