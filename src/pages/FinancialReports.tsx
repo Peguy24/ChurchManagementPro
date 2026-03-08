@@ -42,7 +42,7 @@ export default function FinancialReports() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-muted-foreground">Chargement...</div>
+          <div className="text-muted-foreground">{t("common.loading")}</div>
         </div>
       </Layout>
     );
