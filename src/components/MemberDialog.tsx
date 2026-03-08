@@ -227,8 +227,8 @@ export default function MemberDialog({
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "Fichier trop volumineux",
-          description: "La photo ne doit pas dépasser 5 Mo.",
+          title: t("members.photoTooLarge"),
+          description: t("members.photoTooLargeDesc"),
           variant: "destructive",
         });
         return;
