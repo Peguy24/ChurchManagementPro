@@ -18,7 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import ScannerSettings, { ScannerSoundSettings } from "@/components/ScannerSettings";
