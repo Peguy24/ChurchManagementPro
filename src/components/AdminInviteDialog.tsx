@@ -126,7 +126,22 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if the error contains alreadyExists info (409 response)
+        const errorBody = typeof error === 'object' && error !== null ? error : {};
+        const errorMsg = (error as any)?.message || '';
+        
+        // supabase.functions.invoke puts non-2xx body in data when there's a FunctionsHttpError
+        if (data?.alreadyExists) {
+          const roleLabel = data.role || 'admin';
+          const statusLabel = data.isApproved ? lt("approvedStatus") || 'approved' : lt("pendingStatus") || 'pending';
+          toast.error(`${lt("emailAlreadyRegistered") || "This email is already registered as"} ${roleLabel} (${statusLabel})`);
+          setIsLoading(false);
+          return;
+        }
+        
+        throw new Error(errorMsg || 'Unknown error');
+      }
 
       if (skipEmail) {
         setInvitationLink(data.invitationLink);
