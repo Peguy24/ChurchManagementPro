@@ -66,6 +66,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "events",
     "communication",
     "inventory",
+    "visitors",
   ],
   volunteer: [
     "dashboard",
