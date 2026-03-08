@@ -316,8 +316,6 @@ export default function Events() {
                                 : t("events.edit")}
                             </Button>
                           </div>
-                            </Button>
-                          </div>
                         </div>
                       ))}
                     </div>
