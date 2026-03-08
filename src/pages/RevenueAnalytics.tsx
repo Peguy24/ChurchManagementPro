@@ -72,6 +72,24 @@ export default function RevenueAnalytics() {
   // Compute analytics
   const analytics = computeAnalytics(data?.subscriptions || [], data?.auditLogs || []);
 
+  const handleExportCSV = () => {
+    if (!data?.subscriptions?.length) {
+      toast.error(t("superAdmin.revenue.noData") || "No data to export");
+      return;
+    }
+    const subs = data.subscriptions;
+    const columns: CsvColumn<any>[] = [
+      { key: "tenants.created_at", header: t("superAdmin.revenue.tenantCreated") || "Tenant Created", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+      { key: "plan", header: "Plan" },
+      { key: "status", header: "Status" },
+      { key: "price_monthly", header: "MRR ($)", formatter: (v) => (v || 0).toFixed(2) },
+      { key: "trial_ends_at", header: t("superAdmin.revenue.trialEnds") || "Trial Ends", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+      { key: "created_at", header: t("superAdmin.revenue.subscriptionCreated") || "Subscription Created", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+    ];
+    exportToCsv(subs, columns, `revenue-analytics-${format(new Date(), "yyyy-MM-dd")}`);
+    toast.success(t("superAdmin.revenue.exported") || "Export completed");
+  };
+
   const StatCard = ({
     title, value, icon: Icon, description, trend, loading,
   }: {
