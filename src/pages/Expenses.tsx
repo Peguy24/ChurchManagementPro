@@ -316,7 +316,7 @@ export default function Expenses() {
     }
     // Validate account selection
     if (formData.accountType === "cash" && !formData.cash_register_id) {
-      toast({ title: t("errors.required"), description: "Sélectionnez une caisse", variant: "destructive" });
+      toast({ title: t("errors.required"), description: t("expense.selectCashRegister"), variant: "destructive" });
       return;
     }
     if (formData.accountType === "bank" && !formData.bank_account_id) {
