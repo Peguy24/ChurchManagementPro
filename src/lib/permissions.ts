@@ -16,7 +16,9 @@ export type RouteGroup =
   | "settings"
   | "users"
   | "inventory"
-  | "tenants";
+  | "tenants"
+  | "volunteers"
+  | "visitors";
 
 // Default permissions (fallback when DB is not available)
 export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
