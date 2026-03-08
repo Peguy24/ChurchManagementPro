@@ -1345,6 +1345,7 @@ const translations = {
       eventReportDesc: "Résumé de l'événement terminé/annulé.",
       eventDetails: "Détails de l'Événement",
       close: "Fermer",
+      actualAttendees: "Participants présents",
     },
     financialReports: {
       title: "Rapports Financiers",
