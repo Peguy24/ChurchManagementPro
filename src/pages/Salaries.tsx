@@ -564,12 +564,12 @@ export default function Salaries() {
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>
-                      {selectedEmployee ? "Modifier l'employé" : "Nouvel employé"}
+                      {selectedEmployee ? t("salariesPage.editEmployee") : t("salariesPage.newEmployee")}
                     </DialogTitle>
                     <DialogDescription>
                       {selectedEmployee
-                        ? "Modifiez les informations de l'employé"
-                        : "Ajoutez un nouveau membre du personnel rémunéré"}
+                        ? t("salariesPage.editEmployeeDesc")
+                        : t("salariesPage.newEmployeeDesc")}
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmitEmployee} className="space-y-4">
