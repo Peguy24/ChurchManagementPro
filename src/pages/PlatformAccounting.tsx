@@ -476,9 +476,9 @@ export default function PlatformAccounting() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder={t("platformAccounting.allCategories")} />
             </SelectTrigger>
             <SelectContent>
@@ -492,7 +492,7 @@ export default function PlatformAccounting() {
             type="month"
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
           />
           {(filterCategory !== "all" || filterMonth) && (
             <Button variant="ghost" size="sm" onClick={() => { setFilterCategory("all"); setFilterMonth(""); }}>
@@ -511,6 +511,7 @@ export default function PlatformAccounting() {
             ) : filteredExpenses.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("platformAccounting.noExpenses")}</p>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -553,6 +554,7 @@ export default function PlatformAccounting() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
