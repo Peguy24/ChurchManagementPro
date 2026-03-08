@@ -1348,7 +1348,7 @@ const translations = {
       actualAttendees: "Participants présents",
     },
     financialReports: {
-      title: "Rapports Financiers",
+      title: "Rapport Général",
       subtitle: "Analyse détaillée des contributions",
       allBranches: "Toutes les branches",
       lastMonths: "derniers mois",
