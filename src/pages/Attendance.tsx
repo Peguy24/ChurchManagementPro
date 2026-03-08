@@ -815,12 +815,12 @@ function AttendanceContent() {
             <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
               <SelectTrigger className="w-full sm:w-[300px]">
                 <CalendarDays className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={todayEvents.length === 0 ? "Aucun événement aujourd'hui" : "Sélectionner un événement"} />
+                <SelectValue placeholder={todayEvents.length === 0 ? t("attendance.noEventToday") : t("attendance.selectAnEvent")} />
               </SelectTrigger>
               <SelectContent>
                 {todayEvents.length === 0 ? (
                   <SelectItem value="none" disabled>
-                    Aucun événement programmé pour aujourd'hui
+                    {t("attendance.noEventScheduled")}
                   </SelectItem>
                 ) : (
                   todayEvents.map((event) => (
