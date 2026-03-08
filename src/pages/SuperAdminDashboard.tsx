@@ -329,6 +329,14 @@ export default function SuperAdminDashboard() {
                 <BarChart3 className="mr-2 h-4 w-4" />
                 {t("superAdmin.revenue.title")}
               </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/health")}
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                {t("superAdmin.health.title")}
+              </Button>
             </CardContent>
           </Card>
         </div>
