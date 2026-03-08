@@ -30,19 +30,17 @@ interface EventOption {
   status: string | null;
 }
 
-function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: string } {
+function isWithinEventWindow(event: EventOption): { allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> } {
   const now = new Date();
   const today = getLocalToday();
 
-  // Check date range
   const eventStartDate = event.event_date;
   const eventEndDate = event.end_date || event.event_date;
 
   if (today < eventStartDate || today > eventEndDate) {
-    return { allowed: false, reason: "L'événement n'a pas lieu aujourd'hui." };
+    return { allowed: false, reasonKey: "kiosk.eventNotToday" };
   }
 
-  // If event has a start time, check 30min before
   if (event.event_time) {
     const [h, m] = event.event_time.split(":").map(Number);
     const eventStart = new Date(now);
@@ -51,22 +49,21 @@ function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: st
 
     if (now < windowOpen) {
       const openTime = windowOpen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      return { allowed: false, reason: `Le scan ouvrira à ${openTime} (30 min avant le début).` };
+      return { allowed: false, reasonKey: "kiosk.scanOpensAt", reasonParams: { time: openTime } };
     }
   }
 
-  // If event has an end time, check if it's past
   if (event.end_time) {
     const [eh, em] = event.end_time.split(":").map(Number);
     const eventEnd = new Date(now);
     eventEnd.setHours(eh, em, 0, 0);
 
     if (now > eventEnd) {
-      return { allowed: false, reason: "L'événement est terminé. Le scan n'est plus accepté." };
+      return { allowed: false, reasonKey: "kiosk.eventEnded" };
     }
   }
 
-  return { allowed: true, reason: "" };
+  return { allowed: true, reasonKey: "" };
 }
 
 export default function AttendanceKiosk() {
@@ -86,7 +83,7 @@ export default function AttendanceKiosk() {
   const [events, setEvents] = useState<EventOption[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reason: string }>({ allowed: false, reason: "Sélectionnez un événement." });
+  const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> }>({ allowed: false, reasonKey: "kiosk.selectEvent" });
 
   // Resolve tenant
   useEffect(() => {
@@ -124,19 +121,19 @@ export default function AttendanceKiosk() {
   useEffect(() => {
     const checkWindow = () => {
       if (!selectedEventId) {
-        setWindowStatus({ allowed: false, reason: "Sélectionnez un événement." });
+        setWindowStatus({ allowed: false, reasonKey: "kiosk.selectEvent" });
         return;
       }
       const event = events.find(e => e.id === selectedEventId);
       if (!event) {
-        setWindowStatus({ allowed: false, reason: "Événement introuvable." });
+        setWindowStatus({ allowed: false, reasonKey: "kiosk.eventNotFound" });
         return;
       }
       setWindowStatus(isWithinEventWindow(event));
     };
 
     checkWindow();
-    const interval = setInterval(checkWindow, 15000); // re-check every 15s
+    const interval = setInterval(checkWindow, 15000);
     return () => clearInterval(interval);
   }, [selectedEventId, events]);
 
@@ -159,7 +156,7 @@ export default function AttendanceKiosk() {
     // Re-validate time window at scan time
     if (!selectedEvent) {
       setFeedback("error");
-      setFeedbackMessage("Aucun événement sélectionné.");
+      setFeedbackMessage(t("kiosk.noEventSelected"));
       playErrorSound(0.8);
       resetFeedback();
       return;
@@ -167,8 +164,11 @@ export default function AttendanceKiosk() {
 
     const check = isWithinEventWindow(selectedEvent);
     if (!check.allowed) {
+      const reason = check.reasonParams
+        ? t(check.reasonKey).replace(/\{(\w+)\}/g, (_, k) => check.reasonParams?.[k] || "")
+        : t(check.reasonKey);
       setFeedback("error");
-      setFeedbackMessage(check.reason);
+      setFeedbackMessage(reason);
       playErrorSound(0.8);
       resetFeedback();
       return;
@@ -298,7 +298,7 @@ export default function AttendanceKiosk() {
         <div className="w-full">
           <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={events.length === 0 ? "Aucun événement aujourd'hui" : "Sélectionner l'événement"} />
+              <SelectValue placeholder={events.length === 0 ? t("kiosk.noEventsToday") : t("kiosk.selectEventPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-background">
               {events.map((event) => (
@@ -316,8 +316,12 @@ export default function AttendanceKiosk() {
             <CardContent className="flex items-center gap-3 py-4">
               <AlertTriangle className="h-6 w-6 text-yellow-500 shrink-0" />
               <div>
-                <p className="font-semibold text-sm">Scan non disponible</p>
-                <p className="text-sm text-muted-foreground">{windowStatus.reason}</p>
+                <p className="font-semibold text-sm">{t("kiosk.scanUnavailable")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {windowStatus.reasonParams
+                    ? t(windowStatus.reasonKey).replace(/\{(\w+)\}/g, (_, k) => windowStatus.reasonParams?.[k] || "")
+                    : t(windowStatus.reasonKey)}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -374,8 +378,8 @@ export default function AttendanceKiosk() {
           <Card className="w-full">
             <CardContent className="flex flex-col items-center py-8">
               <Clock className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-lg font-semibold">Aucun événement aujourd'hui</p>
-              <p className="text-sm text-muted-foreground">Créez un événement pour activer le scan.</p>
+              <p className="text-lg font-semibold">{t("kiosk.noEventsToday")}</p>
+              <p className="text-sm text-muted-foreground">{t("kiosk.createEventToActivate")}</p>
             </CardContent>
           </Card>
         )}
