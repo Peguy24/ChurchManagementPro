@@ -589,6 +589,9 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Onboarding Progress */}
+        <OnboardingProgressCard />
+
         {/* Trial Countdown - show prominently if in trial */}
         <TrialCountdownCard />
 
