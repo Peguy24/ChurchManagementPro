@@ -127,14 +127,14 @@ export default function RolePermissionsManager() {
       queryClient.invalidateQueries({ queryKey: ["role-permissions"] });
       toast({
         title: t("common.success"),
-        description: t("rolePermissions.permissionsSaved"),
+        description: t("rolePermissions.saveSuccess"),
       });
       setHasChanges(false);
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: t("rolePermissions.permissionsSaveError"),
+        description: t("rolePermissions.saveError"),
         variant: "destructive",
       });
       console.error("Error saving permissions:", error);
