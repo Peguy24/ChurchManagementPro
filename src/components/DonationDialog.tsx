@@ -266,8 +266,8 @@ export default function DonationDialog({
     { value: "tithe", label: t("donations.tithe") },
     { value: "offering", label: t("donations.offering") },
     { value: "special", label: t("donations.special") },
-    { value: "activity", label: "Activité" },
-    { value: "other", label: "Autre" },
+    { value: "activity", label: t("donations.activity") },
+    { value: "other", label: t("donations.other") },
   ];
 
   return (
