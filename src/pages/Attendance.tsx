@@ -1053,6 +1053,32 @@ function AttendanceContent() {
                         <Badge variant={member.status === 'success' ? 'default' : 'destructive'}>
                           {member.status === 'success' ? t("attendance.success") : t("attendance.error")}
                         </Badge>
+                        {member.status === 'success' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t("attendance.deleteConfirmTitle")}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t("attendance.deleteConfirmDesc").replace("{name}", `${member.first_name} ${member.last_name}`)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => handleDeleteAttendance(member, index)}
+                                >
+                                  {t("common.delete")}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     ))}
                   </div>
