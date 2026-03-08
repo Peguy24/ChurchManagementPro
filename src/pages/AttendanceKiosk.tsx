@@ -156,7 +156,7 @@ export default function AttendanceKiosk() {
     // Re-validate time window at scan time
     if (!selectedEvent) {
       setFeedback("error");
-      setFeedbackMessage("Aucun événement sélectionné.");
+      setFeedbackMessage(t("kiosk.noEventSelected"));
       playErrorSound(0.8);
       resetFeedback();
       return;
