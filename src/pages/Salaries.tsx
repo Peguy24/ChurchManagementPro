@@ -558,7 +558,7 @@ export default function Salaries() {
                 <DialogTrigger asChild>
                   <Button onClick={resetEmployeeForm}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Ajouter un employé
+                    {t("salariesPage.addEmployee")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
