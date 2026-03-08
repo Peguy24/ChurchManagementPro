@@ -500,7 +500,7 @@ export default function Salaries() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeEmployees.length}</div>
-              <p className="text-xs text-muted-foreground">employé(s) rémunéré(s)</p>
+              <p className="text-xs text-muted-foreground">{t("salariesPage.paidEmployees")}</p>
             </CardContent>
           </Card>
           <Card>
