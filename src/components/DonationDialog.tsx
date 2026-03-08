@@ -315,7 +315,7 @@ export default function DonationDialog({
               onValueChange={(value) => setFormData({ ...formData, donationType: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner le type" />
+                <SelectValue placeholder={t("donations.selectType")} />
               </SelectTrigger>
               <SelectContent>
                 {donationTypes.map((type) => (
