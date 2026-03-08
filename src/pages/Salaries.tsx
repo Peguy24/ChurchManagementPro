@@ -221,8 +221,8 @@ export default function Salaries() {
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.genericError"),
         variant: "destructive",
       });
       console.error(error);
