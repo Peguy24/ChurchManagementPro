@@ -3552,7 +3552,6 @@ const translations = {
       markedPresentToast: "{name} marked present.",
       information: "Information",
       noEventToday: "No events today",
-      selectAnEvent: "Select an event",
       noEventScheduled: "No events scheduled for today",
       eventRequiredToScan: "Please select an event before scanning",
       selectEventToStart: "Select an event to start scanning",
