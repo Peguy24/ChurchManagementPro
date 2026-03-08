@@ -164,8 +164,11 @@ export default function AttendanceKiosk() {
 
     const check = isWithinEventWindow(selectedEvent);
     if (!check.allowed) {
+      const reason = check.reasonParams
+        ? t(check.reasonKey).replace(/\{(\w+)\}/g, (_, k) => check.reasonParams?.[k] || "")
+        : t(check.reasonKey);
       setFeedback("error");
-      setFeedbackMessage(check.reason);
+      setFeedbackMessage(reason);
       playErrorSound(0.8);
       resetFeedback();
       return;
