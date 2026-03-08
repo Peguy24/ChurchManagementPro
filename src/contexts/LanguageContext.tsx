@@ -6820,6 +6820,7 @@ const translations = {
       inviteError: "Enposib voye envitasyon",
       noActiveUsers: "Pa gen itilizatè aktif",
       emailAddress: "Adrès imèl",
+      emailExample: "email@egzanp.com",
       role: "Wòl",
       send: "Voye",
       sending: "Ap voye...",
