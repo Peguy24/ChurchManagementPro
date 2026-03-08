@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, Edit, Trash2, Calendar, Users, UserCheck } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 
 interface ServiceRole {
   id: string;
@@ -46,7 +46,10 @@ interface Member {
 export default function VolunteerScheduling() {
   const { tenantId, forInsert } = useCurrentTenant();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'fr' || language === 'ht' ? fr : enUS;
+
+  const v = (key: string) => t(`volunteers.${key}`);
 
   const [roles, setRoles] = useState<ServiceRole[]>([]);
   const [schedules, setSchedules] = useState<VolunteerSchedule[]>([]);
@@ -102,17 +105,17 @@ export default function VolunteerScheduling() {
       } else {
         await supabase.from('service_roles').insert(forInsert({ name: roleName, description: roleDescription || null, color: roleColor }));
       }
-      toast({ title: editingRole ? 'Rôle modifié' : 'Rôle créé' });
+      toast({ title: editingRole ? v('roleUpdated') : v('roleCreated') });
       resetRoleDialog();
       fetchAll();
     } catch (err) {
-      toast({ title: 'Erreur', variant: 'destructive' });
+      toast({ title: v('error'), variant: 'destructive' });
     }
   }
 
   async function deleteRole(id: string) {
     await supabase.from('service_roles').delete().eq('id', id);
-    toast({ title: 'Rôle supprimé' });
+    toast({ title: v('roleDeleted') });
     fetchAll();
   }
 
@@ -125,17 +128,17 @@ export default function VolunteerScheduling() {
         service_date: selectedDate,
         notes: scheduleNotes || null,
       }));
-      toast({ title: 'Bénévole planifié' });
+      toast({ title: v('volunteerScheduled') });
       resetScheduleDialog();
       fetchAll();
     } catch (err) {
-      toast({ title: 'Erreur', variant: 'destructive' });
+      toast({ title: v('error'), variant: 'destructive' });
     }
   }
 
   async function deleteSchedule(id: string) {
     await supabase.from('volunteer_schedules').delete().eq('id', id);
-    toast({ title: 'Planification supprimée' });
+    toast({ title: v('scheduleDeleted') });
     fetchAll();
   }
 
@@ -176,9 +179,9 @@ export default function VolunteerScheduling() {
   };
 
   const statusLabels: Record<string, string> = {
-    scheduled: 'Planifié',
-    confirmed: 'Confirmé',
-    completed: 'Terminé',
+    scheduled: v('scheduled'),
+    confirmed: v('confirmed'),
+    completed: v('completed'),
   };
 
   return (
@@ -186,39 +189,39 @@ export default function VolunteerScheduling() {
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Planification des Bénévoles</h1>
-            <p className="text-muted-foreground">Gérez les rôles de service et planifiez les équipes</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{v('title')}</h1>
+            <p className="text-muted-foreground">{v('subtitle')}</p>
           </div>
         </div>
 
         <Tabs defaultValue="calendar" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-2" />Calendrier</TabsTrigger>
-            <TabsTrigger value="roles"><Users className="h-4 w-4 mr-2" />Rôles de service</TabsTrigger>
+            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-2" />{v('calendar')}</TabsTrigger>
+            <TabsTrigger value="roles"><Users className="h-4 w-4 mr-2" />{v('serviceRoles')}</TabsTrigger>
           </TabsList>
 
           {/* Calendar Tab */}
           <TabsContent value="calendar" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Button variant="outline" onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}>← Semaine précédente</Button>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+              <Button variant="outline" onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}>← {v('previousWeek')}</Button>
               <h2 className="text-lg font-semibold">
-                {format(weekStart, 'd MMM', { locale: fr })} - {format(weekEnd, 'd MMM yyyy', { locale: fr })}
+                {format(weekStart, 'd MMM', { locale: dateLocale })} - {format(weekEnd, 'd MMM yyyy', { locale: dateLocale })}
               </h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}>Semaine suivante →</Button>
+                <Button variant="outline" onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}>{v('nextWeek')} →</Button>
                 <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button><Plus className="h-4 w-4 mr-2" />Planifier</Button>
+                    <Button><Plus className="h-4 w-4 mr-2" />{v('schedule')}</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Planifier un bénévole</DialogTitle>
+                      <DialogTitle>{v('scheduleVolunteer')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label>Rôle de service</Label>
+                        <Label>{v('serviceRole')}</Label>
                         <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
-                          <SelectTrigger><SelectValue placeholder="Sélectionner un rôle" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={v('selectRole')} /></SelectTrigger>
                           <SelectContent>
                             {roles.filter(r => r.is_active).map(r => (
                               <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
@@ -227,9 +230,9 @@ export default function VolunteerScheduling() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Membre</Label>
+                        <Label>{v('member')}</Label>
                         <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                          <SelectTrigger><SelectValue placeholder="Sélectionner un membre" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={v('selectMember')} /></SelectTrigger>
                           <SelectContent>
                             {members.map(m => (
                               <SelectItem key={m.id} value={m.id}>{m.first_name} {m.last_name}</SelectItem>
@@ -238,14 +241,14 @@ export default function VolunteerScheduling() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Date de service</Label>
+                        <Label>{v('serviceDate')}</Label>
                         <Input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
                       </div>
                       <div>
-                        <Label>Notes</Label>
-                        <Textarea value={scheduleNotes} onChange={e => setScheduleNotes(e.target.value)} placeholder="Notes optionnelles..." />
+                        <Label>{v('notes')}</Label>
+                        <Textarea value={scheduleNotes} onChange={e => setScheduleNotes(e.target.value)} placeholder={v('notesPlaceholder')} />
                       </div>
-                      <Button onClick={saveSchedule} className="w-full">Enregistrer</Button>
+                      <Button onClick={saveSchedule} className="w-full">{v('save')}</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -263,12 +266,12 @@ export default function VolunteerScheduling() {
                   <Card key={dateStr} className={isToday ? 'border-primary' : ''}>
                     <CardHeader className="p-3 pb-1">
                       <CardTitle className="text-sm font-medium">
-                        {format(day, 'EEE d', { locale: fr })}
+                        {format(day, 'EEE d', { locale: dateLocale })}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0 space-y-1">
                       {daySchedules.length === 0 && (
-                        <p className="text-xs text-muted-foreground italic">Aucun</p>
+                        <p className="text-xs text-muted-foreground italic">{v('none')}</p>
                       )}
                       {daySchedules.map(s => (
                         <div
@@ -296,26 +299,26 @@ export default function VolunteerScheduling() {
             {/* List view */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Détails de la semaine</CardTitle>
+                <CardTitle className="text-lg">{v('weekDetails')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Bénévole</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Notes</TableHead>
+                      <TableHead>{v('date')}</TableHead>
+                      <TableHead>{v('role')}</TableHead>
+                      <TableHead>{v('volunteer')}</TableHead>
+                      <TableHead>{v('status')}</TableHead>
+                      <TableHead>{v('notes')}</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {schedules.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Aucune planification cette semaine</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">{v('noScheduleThisWeek')}</TableCell></TableRow>
                     ) : schedules.map(s => (
                       <TableRow key={s.id}>
-                        <TableCell>{format(new Date(s.service_date), 'd MMM yyyy', { locale: fr })}</TableCell>
+                        <TableCell>{format(new Date(s.service_date), 'd MMM yyyy', { locale: dateLocale })}</TableCell>
                         <TableCell>
                           <Badge variant="outline" style={{ borderColor: (s as any).service_roles?.color, color: (s as any).service_roles?.color }}>
                             {(s as any).service_roles?.name}
@@ -346,29 +349,29 @@ export default function VolunteerScheduling() {
             <div className="flex justify-end">
               <Dialog open={roleDialogOpen} onOpenChange={(open) => { if (!open) resetRoleDialog(); else setRoleDialogOpen(true); }}>
                 <DialogTrigger asChild>
-                  <Button><Plus className="h-4 w-4 mr-2" />Nouveau rôle</Button>
+                  <Button><Plus className="h-4 w-4 mr-2" />{v('newRole')}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{editingRole ? 'Modifier le rôle' : 'Nouveau rôle de service'}</DialogTitle>
+                    <DialogTitle>{editingRole ? v('editRole') : v('newServiceRole')}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>Nom du rôle</Label>
-                      <Input value={roleName} onChange={e => setRoleName(e.target.value)} placeholder="Ex: Louange, Accueil, Technique..." />
+                      <Label>{v('roleName')}</Label>
+                      <Input value={roleName} onChange={e => setRoleName(e.target.value)} placeholder={v('roleNamePlaceholder')} />
                     </div>
                     <div>
-                      <Label>Description</Label>
-                      <Textarea value={roleDescription} onChange={e => setRoleDescription(e.target.value)} placeholder="Description du rôle..." />
+                      <Label>{v('description')}</Label>
+                      <Textarea value={roleDescription} onChange={e => setRoleDescription(e.target.value)} placeholder={v('descriptionPlaceholder')} />
                     </div>
                     <div>
-                      <Label>Couleur</Label>
+                      <Label>{v('color')}</Label>
                       <div className="flex gap-2 items-center">
                         <Input type="color" value={roleColor} onChange={e => setRoleColor(e.target.value)} className="w-16 h-10" />
                         <span className="text-sm text-muted-foreground">{roleColor}</span>
                       </div>
                     </div>
-                    <Button onClick={saveRole} className="w-full">{editingRole ? 'Modifier' : 'Créer'}</Button>
+                    <Button onClick={saveRole} className="w-full">{editingRole ? v('edit') : v('create')}</Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -402,8 +405,8 @@ export default function VolunteerScheduling() {
                 <Card className="col-span-full">
                   <CardContent className="p-8 text-center text-muted-foreground">
                     <UserCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Aucun rôle de service créé</p>
-                    <p className="text-sm">Créez des rôles comme Louange, Accueil, Technique, etc.</p>
+                    <p>{v('noRolesCreated')}</p>
+                    <p className="text-sm">{v('noRolesHint')}</p>
                   </CardContent>
                 </Card>
               )}
