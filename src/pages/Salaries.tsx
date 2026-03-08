@@ -909,7 +909,7 @@ export default function Salaries() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_method">Mode de paiement *</Label>
+                <Label htmlFor="payment_method">{t("salariesPage.paymentMethod")} *</Label>
                 <Select
                   value={paymentForm.payment_method}
                   onValueChange={(value) =>
