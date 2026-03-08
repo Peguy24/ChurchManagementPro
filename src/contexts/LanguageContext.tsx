@@ -3780,6 +3780,8 @@ const translations = {
       groupInventory: "Inventory",
       groupUsers: "User Management",
       groupTenants: "Multi-Tenant Management",
+      groupVolunteers: "Volunteer Planning",
+      groupVisitors: "Visitor Management",
     },
     errors: {
       required: "This field is required",
