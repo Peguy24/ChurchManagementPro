@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getLocalToday } from "@/lib/utils";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AttendanceDialogProps {
   open: boolean;
@@ -54,6 +55,7 @@ export default function AttendanceDialog({
   onSuccess,
 }: AttendanceDialogProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { tenantId } = useCurrentTenant();
   const [eventType, setEventType] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -115,8 +117,8 @@ export default function AttendanceDialog({
     } catch (error) {
       console.error("Error loading members:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les membres.",
+        title: t("attendance.error"),
+        description: t("attendance.errorLoadingMembers"),
         variant: "destructive",
       });
     }
@@ -124,7 +126,6 @@ export default function AttendanceDialog({
 
   const loadEvents = async () => {
     try {
-      // Load events for the selected date
       const { data, error } = await supabase
         .from("events")
         .select("id, name, event_time, end_time, event_date")
@@ -136,7 +137,6 @@ export default function AttendanceDialog({
       
       setEvents(data || []);
       
-      // Auto-select first event if available
       if (data && data.length > 0) {
         setSelectedEventId(data[0].id);
         setEventType(data[0].name);
@@ -165,8 +165,8 @@ export default function AttendanceDialog({
     e.preventDefault();
     if (checkedMembers.length === 0) {
       toast({
-        title: "Erreur",
-        description: "Vous devez sélectionner au moins un membre.",
+        title: t("attendance.error"),
+        description: t("attendance.selectAtLeastOneMember"),
         variant: "destructive",
       });
       return;
@@ -177,7 +177,7 @@ export default function AttendanceDialog({
       const selectedEvent = events.find(e => e.id === selectedEventId);
       if (selectedEvent) {
         const now = new Date();
-        const today = now.toISOString().split("T")[0];
+        const today = getLocalToday();
 
         if (date === today && selectedEvent.event_time) {
           const [h, m] = selectedEvent.event_time.split(":").map(Number);
@@ -188,23 +188,23 @@ export default function AttendanceDialog({
           if (now < windowOpen) {
             const openTime = windowOpen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
             toast({
-              title: "Trop tôt",
-              description: `Le scan ouvrira à ${openTime} (30 min avant le début).`,
+              title: t("attendance.tooEarly"),
+              description: t("attendance.scanOpensAt").replace("{time}", openTime),
               variant: "destructive",
             });
             return;
           }
         }
 
-        if (date === today && (selectedEvent as any).end_time) {
-          const [eh, em] = (selectedEvent as any).end_time.split(":").map(Number);
+        if (date === today && selectedEvent.end_time) {
+          const [eh, em] = selectedEvent.end_time.split(":").map(Number);
           const eventEnd = new Date(now);
           eventEnd.setHours(eh, em, 0, 0);
 
           if (now > eventEnd) {
             toast({
-              title: "Événement terminé",
-              description: "L'événement est terminé. La présence ne peut plus être enregistrée.",
+              title: t("attendance.eventEndedTitle"),
+              description: t("attendance.eventEndedDesc"),
               variant: "destructive",
             });
             return;
@@ -243,8 +243,8 @@ export default function AttendanceDialog({
 
       if (membersToInsert.length === 0) {
         toast({
-          title: "Information",
-          description: "Ces membres sont déjà marqués présents pour cet événement.",
+          title: t("attendance.information"),
+          description: t("attendance.membersAlreadyPresent"),
         });
         return;
       }
@@ -266,8 +266,8 @@ export default function AttendanceDialog({
       if (error) {
         if (error.code === "23505") {
           toast({
-            title: "Information",
-            description: "Un ou plusieurs membres sont déjà marqués présents pour cet événement.",
+            title: t("attendance.information"),
+            description: t("attendance.someAlreadyPresent"),
           });
           return;
         }
@@ -275,8 +275,10 @@ export default function AttendanceDialog({
       }
 
       toast({
-        title: "Présence enregistrée!",
-        description: `${membersToInsert.length} membre(s) marqué(s) présent(s) pour ${eventType}.`,
+        title: t("attendance.scanSuccess"),
+        description: t("attendance.attendanceRecordedCount")
+          .replace("{count}", String(membersToInsert.length))
+          .replace("{event}", eventType),
       });
       
       setCheckedMembers([]);
@@ -286,8 +288,8 @@ export default function AttendanceDialog({
     } catch (error) {
       console.error("Error saving attendance:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer la présence.",
+        title: t("attendance.error"),
+        description: t("attendance.errorSavingAttendance"),
         variant: "destructive",
       });
     } finally {
@@ -339,8 +341,8 @@ export default function AttendanceDialog({
       
       if (!member) {
         toast({
-          title: "Erreur",
-          description: "Ce QR code n'est pas reconnu.",
+          title: t("attendance.error"),
+          description: t("attendance.qrNotRecognized"),
           variant: "destructive",
         });
         return;
@@ -348,16 +350,16 @@ export default function AttendanceDialog({
 
       if (checkedMembers.includes(member.id)) {
         toast({
-          title: "Attention",
-          description: `${member.first_name} ${member.last_name} est déjà marqué présent.`,
+          title: t("attendance.information"),
+          description: t("attendance.alreadyMarkedInList").replace("{name}", `${member.first_name} ${member.last_name}`),
         });
         return;
       }
 
       setCheckedMembers((prev) => [...prev, member.id]);
       toast({
-        title: "Succès!",
-        description: `${member.first_name} ${member.last_name} marqué présent.`,
+        title: t("attendance.success"),
+        description: t("attendance.markedPresentToast").replace("{name}", `${member.first_name} ${member.last_name}`),
       });
     } catch (error) {
       console.error("Error processing QR scan:", error);
@@ -368,15 +370,15 @@ export default function AttendanceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>Enregistrer la Présence</DialogTitle>
+          <DialogTitle>{t("attendance.dialogTitle")}</DialogTitle>
           <DialogDescription>
-            Choisissez la réunion et marquez les membres présents.
+            {t("attendance.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{t("attendance.date")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -386,15 +388,15 @@ export default function AttendanceDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="event">Type de Réunion</Label>
+              <Label htmlFor="event">{t("attendance.meetingType")}</Label>
               <Select value={selectedEventId || ""} onValueChange={handleEventChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder={events.length === 0 ? "Aucun événement pour cette date" : "Sélectionner un événement"} />
+                  <SelectValue placeholder={events.length === 0 ? t("attendance.noEventsForDate") : t("attendance.selectAnEvent")} />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
                   {events.length === 0 ? (
                     <SelectItem value="none" disabled>
-                      Aucun événement programmé pour cette date
+                      {t("attendance.noEventsScheduled")}
                     </SelectItem>
                   ) : (
                     events.map((event) => (
@@ -407,7 +409,7 @@ export default function AttendanceDialog({
               </Select>
               {events.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  Créez un événement pour cette date dans la page Événements
+                  {t("attendance.createEventHint")}
                 </p>
               )}
             </div>
@@ -416,21 +418,21 @@ export default function AttendanceDialog({
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="manual">
                   <Search className="mr-2 h-4 w-4" />
-                  Manuel
+                  {t("attendance.manual")}
                 </TabsTrigger>
                 <TabsTrigger value="qr" onClick={startQRScanner}>
                   <QrCode className="mr-2 h-4 w-4" />
-                  Scanner QR
+                  {t("attendance.scanQRTab")}
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="manual" className="space-y-4">
                 <div className="grid gap-2">
-                  <Label>Rechercher un Membre</Label>
+                  <Label>{t("attendance.searchMember")}</Label>
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Tapez le nom du membre..."
+                      placeholder={t("attendance.typeMemberName")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-8"
@@ -439,11 +441,11 @@ export default function AttendanceDialog({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label>Liste de Présence</Label>
+                  <Label>{t("attendance.attendanceList")}</Label>
                   <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-4">
                     {filteredMembers.length === 0 ? (
                       <p className="text-center text-sm text-muted-foreground py-4">
-                        {members.length === 0 ? "Aucun membre dans la base de données." : "Aucun résultat."}
+                        {members.length === 0 ? t("attendance.noMembersInDb") : t("attendance.noResults")}
                       </p>
                     ) : (
                       filteredMembers.map((member) => (
@@ -467,14 +469,14 @@ export default function AttendanceDialog({
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {checkedMembers.length} membre(s) sélectionné(s)
+                    {t("attendance.membersSelected").replace("{count}", String(checkedMembers.length))}
                   </p>
                 </div>
               </TabsContent>
 
               <TabsContent value="qr" className="space-y-4">
                 <div className="grid gap-2">
-                  <Label>Scanner le QR Code du Membre</Label>
+                  <Label>{t("attendance.scanMemberQR")}</Label>
                   <div className="rounded-lg border p-4">
                     {scannerActive ? (
                       <>
@@ -485,20 +487,20 @@ export default function AttendanceDialog({
                           className="mt-4 w-full"
                           onClick={stopQRScanner}
                         >
-                          Arrêter le Scanner
+                          {t("attendance.stopScanner")}
                         </Button>
                       </>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-center">
                         <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
                         <p className="text-sm text-muted-foreground">
-                          Cliquez sur l'onglet "Scanner QR" pour commencer
+                          {t("attendance.clickScanQRTab")}
                         </p>
                       </div>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {checkedMembers.length} membre(s) marqué(s) présent(s)
+                    {t("attendance.membersMarkedPresent").replace("{count}", String(checkedMembers.length))}
                   </p>
                 </div>
               </TabsContent>
@@ -513,10 +515,10 @@ export default function AttendanceDialog({
                 onOpenChange(false);
               }}
             >
-              Annuler
+              {t("attendance.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Enregistrement..." : "Enregistrer"}
+              {loading ? t("attendance.saving") : t("attendance.save")}
             </Button>
           </DialogFooter>
         </form>
