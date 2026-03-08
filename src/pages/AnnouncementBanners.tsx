@@ -17,8 +17,72 @@ import { Plus, Megaphone, Trash2, Edit, Power } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Announcement Banners",
+    subtitle: "Manage banners visible to all church administrators",
+    add: "Add Banner",
+    edit: "Edit Banner",
+    titleLabel: "Title",
+    messageLabel: "Message",
+    type: "Type",
+    priority: "Priority",
+    status: "Status",
+    endsAt: "End Date",
+    created: "Banner created",
+    updated: "Banner updated",
+    deleted: "Banner deleted",
+    noBanners: "No banners",
+    save: "Save",
+    error: "Error",
+    date: "Date",
+    actions: "Actions",
+  },
+  fr: {
+    title: "Bannières d'Annonces",
+    subtitle: "Gérez les bannières visibles par tous les administrateurs d'églises",
+    add: "Ajouter une bannière",
+    edit: "Modifier la bannière",
+    titleLabel: "Titre",
+    messageLabel: "Message",
+    type: "Type",
+    priority: "Priorité",
+    status: "Statut",
+    endsAt: "Date de fin",
+    created: "Bannière créée",
+    updated: "Bannière mise à jour",
+    deleted: "Bannière supprimée",
+    noBanners: "Aucune bannière",
+    save: "Enregistrer",
+    error: "Erreur",
+    date: "Date",
+    actions: "Actions",
+  },
+  ht: {
+    title: "Bannyè Anons",
+    subtitle: "Jere bannyè vizib pou tout administratè legliz yo",
+    add: "Ajoute Bannyè",
+    edit: "Modifye Bannyè",
+    titleLabel: "Tit",
+    messageLabel: "Mesaj",
+    type: "Tip",
+    priority: "Priyorite",
+    status: "Estati",
+    endsAt: "Dat Fen",
+    created: "Bannyè kreye",
+    updated: "Bannyè mete ajou",
+    deleted: "Bannyè efase",
+    noBanners: "Pa gen bannyè",
+    save: "Anrejistre",
+    error: "Erè",
+    date: "Dat",
+    actions: "Aksyon",
+  },
+};
+
 export default function AnnouncementBanners() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -55,12 +119,12 @@ export default function AnnouncementBanners() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
-      toast.success(editing ? t("superAdmin.banners.updated") : t("superAdmin.banners.created"));
+      toast.success(editing ? lt("updated") : lt("created"));
       setDialogOpen(false);
       setEditing(null);
       setForm({ title: "", message: "", banner_type: "info", priority: "normal", ends_at: "" });
     },
-    onError: () => toast.error(t("common.error")),
+    onError: () => toast.error(lt("error")),
   });
 
   const toggleBanner = useMutation({
@@ -78,7 +142,7 @@ export default function AnnouncementBanners() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
-      toast.success(t("superAdmin.banners.deleted"));
+      toast.success(lt("deleted"));
     },
   });
 
@@ -108,32 +172,32 @@ export default function AnnouncementBanners() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Megaphone className="h-7 w-7" />
-              {t("superAdmin.banners.title")}
+              {lt("title")}
             </h1>
-            <p className="text-muted-foreground">{t("superAdmin.banners.subtitle")}</p>
+            <p className="text-muted-foreground">{lt("subtitle")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null); }}>
             <DialogTrigger asChild>
               <Button onClick={() => setForm({ title: "", message: "", banner_type: "info", priority: "normal", ends_at: "" })}>
-                <Plus className="mr-2 h-4 w-4" /> {t("superAdmin.banners.add")}
+                <Plus className="mr-2 h-4 w-4" /> {lt("add")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editing ? t("superAdmin.banners.edit") : t("superAdmin.banners.add")}</DialogTitle>
+                <DialogTitle>{editing ? lt("edit") : lt("add")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>{t("superAdmin.banners.titleLabel")}</Label>
+                  <Label>{lt("titleLabel")}</Label>
                   <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
                 </div>
                 <div>
-                  <Label>{t("superAdmin.banners.messageLabel")}</Label>
+                  <Label>{lt("messageLabel")}</Label>
                   <Textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={3} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>{t("superAdmin.banners.type")}</Label>
+                    <Label>{lt("type")}</Label>
                     <Select value={form.banner_type} onValueChange={v => setForm({ ...form, banner_type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -145,7 +209,7 @@ export default function AnnouncementBanners() {
                     </Select>
                   </div>
                   <div>
-                    <Label>{t("superAdmin.banners.priority")}</Label>
+                    <Label>{lt("priority")}</Label>
                     <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -157,11 +221,11 @@ export default function AnnouncementBanners() {
                   </div>
                 </div>
                 <div>
-                  <Label>{t("superAdmin.banners.endsAt")}</Label>
+                  <Label>{lt("endsAt")}</Label>
                   <Input type="date" value={form.ends_at} onChange={e => setForm({ ...form, ends_at: e.target.value })} />
                 </div>
                 <Button onClick={() => saveBanner.mutate()} disabled={!form.title || !form.message || saveBanner.isPending} className="w-full">
-                  {editing ? t("common.save") : t("superAdmin.banners.add")}
+                  {editing ? lt("save") : lt("add")}
                 </Button>
               </div>
             </DialogContent>
@@ -173,11 +237,11 @@ export default function AnnouncementBanners() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("superAdmin.banners.titleLabel")}</TableHead>
-                  <TableHead>{t("superAdmin.banners.type")}</TableHead>
-                  <TableHead>{t("superAdmin.banners.status")}</TableHead>
-                  <TableHead>{t("common.date")}</TableHead>
-                  <TableHead>{t("common.actions")}</TableHead>
+                  <TableHead>{lt("titleLabel")}</TableHead>
+                  <TableHead>{lt("type")}</TableHead>
+                  <TableHead>{lt("status")}</TableHead>
+                  <TableHead>{lt("date")}</TableHead>
+                  <TableHead>{lt("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -212,7 +276,7 @@ export default function AnnouncementBanners() {
                 {!banners?.length && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      {t("superAdmin.banners.noBanners")}
+                      {lt("noBanners")}
                     </TableCell>
                   </TableRow>
                 )}

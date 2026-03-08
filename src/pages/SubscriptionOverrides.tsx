@@ -17,8 +17,93 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/currency";
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Subscription Overrides",
+    subtitle: "Manage discounts and special pricing for churches",
+    addDiscount: "Add Discount",
+    church: "Church",
+    selectChurch: "Select a church",
+    discountType: "Discount Type",
+    percentage: "Percentage",
+    fixedAmount: "Fixed Amount",
+    freeAccess: "Free Access",
+    value: "Value",
+    reason: "Reason",
+    validUntil: "Valid Until",
+    apply: "Apply Discount",
+    activeDiscounts: "Active Discounts",
+    freeAccessCount: "Free Access Grants",
+    paidSubscriptions: "Paid Subscriptions",
+    discountAdded: "Discount added successfully",
+    discountRemoved: "Discount removed",
+    noDiscounts: "No active discounts",
+    allSubscriptions: "All Subscriptions",
+    monthlyPrice: "Monthly Price",
+    plan: "Plan",
+    status: "Status",
+    actions: "Actions",
+    error: "Error",
+  },
+  fr: {
+    title: "Gestion des Abonnements",
+    subtitle: "Gérez les réductions et tarifs spéciaux pour les églises",
+    addDiscount: "Ajouter Réduction",
+    church: "Église",
+    selectChurch: "Sélectionner une église",
+    discountType: "Type de réduction",
+    percentage: "Pourcentage",
+    fixedAmount: "Montant fixe",
+    freeAccess: "Accès gratuit",
+    value: "Valeur",
+    reason: "Raison",
+    validUntil: "Valide jusqu'au",
+    apply: "Appliquer la réduction",
+    activeDiscounts: "Réductions actives",
+    freeAccessCount: "Accès gratuits",
+    paidSubscriptions: "Abonnements payants",
+    discountAdded: "Réduction ajoutée avec succès",
+    discountRemoved: "Réduction supprimée",
+    noDiscounts: "Aucune réduction active",
+    allSubscriptions: "Tous les Abonnements",
+    monthlyPrice: "Prix mensuel",
+    plan: "Plan",
+    status: "Statut",
+    actions: "Actions",
+    error: "Erreur",
+  },
+  ht: {
+    title: "Jesyon Abònman",
+    subtitle: "Jere rabè ak pri espesyal pou legliz yo",
+    addDiscount: "Ajoute Rabè",
+    church: "Legliz",
+    selectChurch: "Chwazi yon legliz",
+    discountType: "Tip Rabè",
+    percentage: "Pousantaj",
+    fixedAmount: "Montan fiks",
+    freeAccess: "Aksè gratis",
+    value: "Valè",
+    reason: "Rezon",
+    validUntil: "Valab jiska",
+    apply: "Aplike Rabè",
+    activeDiscounts: "Rabè Aktif",
+    freeAccessCount: "Aksè Gratis",
+    paidSubscriptions: "Abònman Peye",
+    discountAdded: "Rabè ajoute avèk siksè",
+    discountRemoved: "Rabè retire",
+    noDiscounts: "Pa gen rabè aktif",
+    allSubscriptions: "Tout Abònman",
+    monthlyPrice: "Pri mansyèl",
+    plan: "Plan",
+    status: "Estati",
+    actions: "Aksyon",
+    error: "Erè",
+  },
+};
+
 export default function SubscriptionOverrides() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({
@@ -75,11 +160,11 @@ export default function SubscriptionOverrides() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-discounts"] });
-      toast.success(t("superAdmin.overrides.discountAdded"));
+      toast.success(lt("discountAdded"));
       setDialogOpen(false);
       setForm({ tenant_id: "", discount_type: "percentage", discount_value: "", reason: "", valid_until: "" });
     },
-    onError: () => toast.error(t("common.error")),
+    onError: () => toast.error(lt("error")),
   });
 
   const removeDiscount = useMutation({
@@ -89,7 +174,7 @@ export default function SubscriptionOverrides() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-discounts"] });
-      toast.success(t("superAdmin.overrides.discountRemoved"));
+      toast.success(lt("discountRemoved"));
     },
   });
 
@@ -102,7 +187,6 @@ export default function SubscriptionOverrides() {
   };
 
   const activeDiscounts = (discounts || []).filter(d => d.is_active);
-  const totalDiscountValue = activeDiscounts.reduce((sum, d) => sum + (d.discount_value || 0), 0);
 
   return (
     <Layout>
@@ -111,44 +195,44 @@ export default function SubscriptionOverrides() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
               <CreditCard className="h-7 w-7" />
-              {t("superAdmin.overrides.title")}
+              {lt("title")}
             </h1>
-            <p className="text-muted-foreground">{t("superAdmin.overrides.subtitle")}</p>
+            <p className="text-muted-foreground">{lt("subtitle")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="mr-2 h-4 w-4" /> {t("superAdmin.overrides.addDiscount")}</Button>
+              <Button><Plus className="mr-2 h-4 w-4" /> {lt("addDiscount")}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t("superAdmin.overrides.addDiscount")}</DialogTitle>
+                <DialogTitle>{lt("addDiscount")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>{t("superAdmin.overrides.church")}</Label>
+                  <Label>{lt("church")}</Label>
                   <Select value={form.tenant_id} onValueChange={v => setForm({ ...form, tenant_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={t("superAdmin.overrides.selectChurch")} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={lt("selectChurch")} /></SelectTrigger>
                     <SelectContent>
-                      {(tenants || []).map(t => (
-                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      {(tenants || []).map(tenant => (
+                        <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>{t("superAdmin.overrides.discountType")}</Label>
+                    <Label>{lt("discountType")}</Label>
                     <Select value={form.discount_type} onValueChange={v => setForm({ ...form, discount_type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="percentage">{t("superAdmin.overrides.percentage")}</SelectItem>
-                        <SelectItem value="fixed">{t("superAdmin.overrides.fixedAmount")}</SelectItem>
-                        <SelectItem value="free">{t("superAdmin.overrides.freeAccess")}</SelectItem>
+                        <SelectItem value="percentage">{lt("percentage")}</SelectItem>
+                        <SelectItem value="fixed">{lt("fixedAmount")}</SelectItem>
+                        <SelectItem value="free">{lt("freeAccess")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>{t("superAdmin.overrides.value")}</Label>
+                    <Label>{lt("value")}</Label>
                     <Input
                       type="number"
                       value={form.discount_value}
@@ -159,11 +243,11 @@ export default function SubscriptionOverrides() {
                   </div>
                 </div>
                 <div>
-                  <Label>{t("superAdmin.overrides.reason")}</Label>
+                  <Label>{lt("reason")}</Label>
                   <Textarea value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} rows={2} />
                 </div>
                 <div>
-                  <Label>{t("superAdmin.overrides.validUntil")}</Label>
+                  <Label>{lt("validUntil")}</Label>
                   <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} />
                 </div>
                 <Button
@@ -171,7 +255,7 @@ export default function SubscriptionOverrides() {
                   disabled={!form.tenant_id || (!form.discount_value && form.discount_type !== "free") || addDiscount.isPending}
                   className="w-full"
                 >
-                  {t("superAdmin.overrides.apply")}
+                  {lt("apply")}
                 </Button>
               </div>
             </DialogContent>
@@ -186,7 +270,7 @@ export default function SubscriptionOverrides() {
                 <Gift className="h-8 w-8 text-primary" />
                 <div>
                   <p className="text-2xl font-bold">{activeDiscounts.length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.overrides.activeDiscounts")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("activeDiscounts")}</p>
                 </div>
               </div>
             </CardContent>
@@ -197,7 +281,7 @@ export default function SubscriptionOverrides() {
                 <Percent className="h-8 w-8 text-amber-500" />
                 <div>
                   <p className="text-2xl font-bold">{activeDiscounts.filter(d => d.discount_type === "free").length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.overrides.freeAccessCount")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("freeAccessCount")}</p>
                 </div>
               </div>
             </CardContent>
@@ -208,7 +292,7 @@ export default function SubscriptionOverrides() {
                 <DollarSign className="h-8 w-8 text-green-500" />
                 <div>
                   <p className="text-2xl font-bold">{(subscriptions || []).filter(s => s.status === "active").length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.overrides.paidSubscriptions")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("paidSubscriptions")}</p>
                 </div>
               </div>
             </CardContent>
@@ -218,18 +302,18 @@ export default function SubscriptionOverrides() {
         {/* Active Discounts */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("superAdmin.overrides.activeDiscounts")}</CardTitle>
+            <CardTitle>{lt("activeDiscounts")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("superAdmin.overrides.church")}</TableHead>
-                  <TableHead>{t("superAdmin.overrides.discountType")}</TableHead>
-                  <TableHead>{t("superAdmin.overrides.value")}</TableHead>
-                  <TableHead>{t("superAdmin.overrides.reason")}</TableHead>
-                  <TableHead>{t("superAdmin.overrides.validUntil")}</TableHead>
-                  <TableHead>{t("common.actions")}</TableHead>
+                  <TableHead>{lt("church")}</TableHead>
+                  <TableHead>{lt("discountType")}</TableHead>
+                  <TableHead>{lt("value")}</TableHead>
+                  <TableHead>{lt("reason")}</TableHead>
+                  <TableHead>{lt("validUntil")}</TableHead>
+                  <TableHead>{lt("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -254,7 +338,7 @@ export default function SubscriptionOverrides() {
                 {!activeDiscounts.length && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      {t("superAdmin.overrides.noDiscounts")}
+                      {lt("noDiscounts")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -266,16 +350,16 @@ export default function SubscriptionOverrides() {
         {/* All Subscriptions Overview */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("superAdmin.overrides.allSubscriptions")}</CardTitle>
+            <CardTitle>{lt("allSubscriptions")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("superAdmin.overrides.church")}</TableHead>
-                  <TableHead>{t("superAdmin.plan")}</TableHead>
-                  <TableHead>{t("superAdmin.status")}</TableHead>
-                  <TableHead>{t("superAdmin.overrides.monthlyPrice")}</TableHead>
+                  <TableHead>{lt("church")}</TableHead>
+                  <TableHead>{lt("plan")}</TableHead>
+                  <TableHead>{lt("status")}</TableHead>
+                  <TableHead>{lt("monthlyPrice")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

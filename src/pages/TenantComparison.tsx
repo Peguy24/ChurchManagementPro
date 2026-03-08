@@ -11,8 +11,75 @@ import { GitCompareArrows, Users, DollarSign, Calendar, TrendingUp } from "lucid
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Church Comparison",
+    subtitle: "Compare metrics between two churches side by side",
+    churchA: "Church A",
+    churchB: "Church B",
+    select: "Select a church",
+    selectBoth: "Select two churches to compare their metrics",
+    members: "Members",
+    totalMembers: "Total Active Members",
+    donations90d: "Donations (90 days)",
+    attendance90d: "Attendance (90 days)",
+    attendance: "Attendance",
+    events: "Events",
+    healthScore: "Health Score",
+    metricsComparison: "Metrics Comparison",
+    healthComparison: "Health Comparison",
+    engagement: "Engagement",
+    giving: "Giving",
+    features: "Features",
+    overall: "Overall",
+  },
+  fr: {
+    title: "Comparaison des Églises",
+    subtitle: "Comparez les métriques de deux églises côte à côte",
+    churchA: "Église A",
+    churchB: "Église B",
+    select: "Sélectionner une église",
+    selectBoth: "Sélectionnez deux églises pour comparer leurs métriques",
+    members: "Membres",
+    totalMembers: "Total Membres Actifs",
+    donations90d: "Dons (90 jours)",
+    attendance90d: "Présence (90 jours)",
+    attendance: "Présence",
+    events: "Événements",
+    healthScore: "Score de Santé",
+    metricsComparison: "Comparaison des Métriques",
+    healthComparison: "Comparaison de Santé",
+    engagement: "Engagement",
+    giving: "Dons",
+    features: "Fonctionnalités",
+    overall: "Global",
+  },
+  ht: {
+    title: "Konparezon Legliz",
+    subtitle: "Konpare metrik ant de legliz kote ak kote",
+    churchA: "Legliz A",
+    churchB: "Legliz B",
+    select: "Chwazi yon legliz",
+    selectBoth: "Chwazi de legliz pou konpare metrik yo",
+    members: "Manm",
+    totalMembers: "Total Manm Aktif",
+    donations90d: "Don (90 jou)",
+    attendance90d: "Prezans (90 jou)",
+    attendance: "Prezans",
+    events: "Evènman",
+    healthScore: "Nòt Sante",
+    metricsComparison: "Konparezon Metrik",
+    healthComparison: "Konparezon Sante",
+    engagement: "Angajman",
+    giving: "Don",
+    features: "Fonksyonalite",
+    overall: "Global",
+  },
+};
+
 export default function TenantComparison() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
   const [tenantA, setTenantA] = useState<string>("");
   const [tenantB, setTenantB] = useState<string>("");
 
@@ -68,17 +135,17 @@ export default function TenantComparison() {
   const tenantBName = tenants?.find(t => t.id === tenantB)?.name || "Church B";
 
   const barData = comparison ? [
-    { name: t("superAdmin.comparison.members"), [tenantAName]: comparison.a.members, [tenantBName]: comparison.b.members },
-    { name: t("superAdmin.comparison.attendance"), [tenantAName]: comparison.a.attendance90d, [tenantBName]: comparison.b.attendance90d },
-    { name: t("superAdmin.comparison.events"), [tenantAName]: comparison.a.events, [tenantBName]: comparison.b.events },
+    { name: lt("members"), [tenantAName]: comparison.a.members, [tenantBName]: comparison.b.members },
+    { name: lt("attendance"), [tenantAName]: comparison.a.attendance90d, [tenantBName]: comparison.b.attendance90d },
+    { name: lt("events"), [tenantAName]: comparison.a.events, [tenantBName]: comparison.b.events },
   ] : [];
 
   const radarData = comparison ? [
-    { metric: t("superAdmin.comparison.engagement"), A: comparison.a.memberEngagement, B: comparison.b.memberEngagement },
-    { metric: t("superAdmin.comparison.attendance"), A: comparison.a.attendanceScore, B: comparison.b.attendanceScore },
-    { metric: t("superAdmin.comparison.giving"), A: comparison.a.donationScore, B: comparison.b.donationScore },
-    { metric: t("superAdmin.comparison.features"), A: comparison.a.featureAdoption, B: comparison.b.featureAdoption },
-    { metric: t("superAdmin.comparison.overall"), A: comparison.a.healthScore, B: comparison.b.healthScore },
+    { metric: lt("engagement"), A: comparison.a.memberEngagement, B: comparison.b.memberEngagement },
+    { metric: lt("attendance"), A: comparison.a.attendanceScore, B: comparison.b.attendanceScore },
+    { metric: lt("giving"), A: comparison.a.donationScore, B: comparison.b.donationScore },
+    { metric: lt("features"), A: comparison.a.featureAdoption, B: comparison.b.featureAdoption },
+    { metric: lt("overall"), A: comparison.a.healthScore, B: comparison.b.healthScore },
   ] : [];
 
   const MetricCard = ({ icon: Icon, label, valueA, valueB, format: fmt }: any) => (
@@ -108,21 +175,21 @@ export default function TenantComparison() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
             <GitCompareArrows className="h-7 w-7" />
-            {t("superAdmin.comparison.title")}
+            {lt("title")}
           </h1>
-          <p className="text-muted-foreground">{t("superAdmin.comparison.subtitle")}</p>
+          <p className="text-muted-foreground">{lt("subtitle")}</p>
         </div>
 
         {/* Selection */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <label className="text-sm font-medium mb-2 block">{t("superAdmin.comparison.churchA")}</label>
+              <label className="text-sm font-medium mb-2 block">{lt("churchA")}</label>
               <Select value={tenantA} onValueChange={setTenantA}>
-                <SelectTrigger><SelectValue placeholder={t("superAdmin.comparison.select")} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={lt("select")} /></SelectTrigger>
                 <SelectContent>
-                  {(tenants || []).filter(t => t.id !== tenantB).map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  {(tenants || []).filter(tenant => tenant.id !== tenantB).map(tenant => (
+                    <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -130,12 +197,12 @@ export default function TenantComparison() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <label className="text-sm font-medium mb-2 block">{t("superAdmin.comparison.churchB")}</label>
+              <label className="text-sm font-medium mb-2 block">{lt("churchB")}</label>
               <Select value={tenantB} onValueChange={setTenantB}>
-                <SelectTrigger><SelectValue placeholder={t("superAdmin.comparison.select")} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={lt("select")} /></SelectTrigger>
                 <SelectContent>
-                  {(tenants || []).filter(t => t.id !== tenantA).map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  {(tenants || []).filter(tenant => tenant.id !== tenantA).map(tenant => (
+                    <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -153,17 +220,17 @@ export default function TenantComparison() {
           <>
             {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard icon={Users} label={t("superAdmin.comparison.totalMembers")} valueA={comparison.a.members} valueB={comparison.b.members} />
-              <MetricCard icon={DollarSign} label={t("superAdmin.comparison.donations90d")} valueA={comparison.a.donations90d} valueB={comparison.b.donations90d} format={(v: number) => formatCurrency(v)} />
-              <MetricCard icon={Calendar} label={t("superAdmin.comparison.attendance90d")} valueA={comparison.a.attendance90d} valueB={comparison.b.attendance90d} />
-              <MetricCard icon={TrendingUp} label={t("superAdmin.comparison.healthScore")} valueA={`${comparison.a.healthScore}% (${comparison.a.healthGrade})`} valueB={`${comparison.b.healthScore}% (${comparison.b.healthGrade})`} />
+              <MetricCard icon={Users} label={lt("totalMembers")} valueA={comparison.a.members} valueB={comparison.b.members} />
+              <MetricCard icon={DollarSign} label={lt("donations90d")} valueA={comparison.a.donations90d} valueB={comparison.b.donations90d} format={(v: number) => formatCurrency(v)} />
+              <MetricCard icon={Calendar} label={lt("attendance90d")} valueA={comparison.a.attendance90d} valueB={comparison.b.attendance90d} />
+              <MetricCard icon={TrendingUp} label={lt("healthScore")} valueA={`${comparison.a.healthScore}% (${comparison.a.healthGrade})`} valueB={`${comparison.b.healthScore}% (${comparison.b.healthGrade})`} />
             </div>
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("superAdmin.comparison.metricsComparison")}</CardTitle>
+                  <CardTitle>{lt("metricsComparison")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -182,7 +249,7 @@ export default function TenantComparison() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("superAdmin.comparison.healthComparison")}</CardTitle>
+                  <CardTitle>{lt("healthComparison")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -205,7 +272,7 @@ export default function TenantComparison() {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <GitCompareArrows className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p>{t("superAdmin.comparison.selectBoth")}</p>
+              <p>{lt("selectBoth")}</p>
             </CardContent>
           </Card>
         ) : null}

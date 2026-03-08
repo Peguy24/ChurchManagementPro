@@ -12,8 +12,87 @@ import { ShieldAlert, RefreshCw, TrendingDown, Users, AlertTriangle, Activity } 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Churn Prevention",
+    subtitle: "Identify and prevent member attrition across churches",
+    allChurches: "All Churches",
+    runAnalysis: "Run Analysis",
+    predictionComplete: "Prediction complete",
+    highRiskFound: "high-risk members found",
+    highRisk: "High Risk",
+    mediumRisk: "Medium Risk",
+    lowRisk: "Low Risk",
+    totalAnalyzed: "Total Analyzed",
+    atRiskMembers: "At-Risk Members",
+    member: "Member",
+    church: "Church",
+    riskLevel: "Risk Level",
+    probability: "Probability",
+    daysSinceAttendance: "Days Since Attendance",
+    factors: "Factors",
+    days: "days",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+    noRiskMembers: "No at-risk members detected. Run the analysis to start.",
+    error: "Error",
+  },
+  fr: {
+    title: "Prévention de l'Attrition",
+    subtitle: "Identifiez et prévenez la perte de membres dans les églises",
+    allChurches: "Toutes les Églises",
+    runAnalysis: "Lancer l'Analyse",
+    predictionComplete: "Analyse terminée",
+    highRiskFound: "membres à haut risque trouvés",
+    highRisk: "Risque Élevé",
+    mediumRisk: "Risque Moyen",
+    lowRisk: "Risque Faible",
+    totalAnalyzed: "Total Analysé",
+    atRiskMembers: "Membres à Risque",
+    member: "Membre",
+    church: "Église",
+    riskLevel: "Niveau de Risque",
+    probability: "Probabilité",
+    daysSinceAttendance: "Jours depuis présence",
+    factors: "Facteurs",
+    days: "jours",
+    high: "Élevé",
+    medium: "Moyen",
+    low: "Faible",
+    noRiskMembers: "Aucun membre à risque détecté. Lancez l'analyse pour commencer.",
+    error: "Erreur",
+  },
+  ht: {
+    title: "Prevansyon Atrisyon",
+    subtitle: "Idantifye ak anpeche pèt manm nan legliz yo",
+    allChurches: "Tout Legliz",
+    runAnalysis: "Lanse Analiz",
+    predictionComplete: "Analiz fini",
+    highRiskFound: "manm gwo risk jwenn",
+    highRisk: "Gwo Risk",
+    mediumRisk: "Risk Mwayen",
+    lowRisk: "Risk Fèb",
+    totalAnalyzed: "Total Analize",
+    atRiskMembers: "Manm an Risk",
+    member: "Manm",
+    church: "Legliz",
+    riskLevel: "Nivo Risk",
+    probability: "Pwobabilite",
+    daysSinceAttendance: "Jou depi prezans",
+    factors: "Faktè",
+    days: "jou",
+    high: "Wo",
+    medium: "Mwayen",
+    low: "Ba",
+    noRiskMembers: "Pa gen manm an risk detekte. Lanse analiz pou kòmanse.",
+    error: "Erè",
+  },
+};
+
 export default function ChurnPrevention() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
   const queryClient = useQueryClient();
   const [selectedTenant, setSelectedTenant] = useState<string>("all");
 
@@ -58,9 +137,9 @@ export default function ChurnPrevention() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["churn-predictions"] });
-      toast.success(`${t("superAdmin.churn.predictionComplete")} - ${data?.results?.highRisk || 0} ${t("superAdmin.churn.highRiskFound")}`);
+      toast.success(`${lt("predictionComplete")} - ${data?.results?.highRisk || 0} ${lt("highRiskFound")}`);
     },
-    onError: () => toast.error(t("common.error")),
+    onError: () => toast.error(lt("error")),
   });
 
   const highRisk = (predictions || []).filter(p => p.risk_category === "high");
@@ -69,9 +148,9 @@ export default function ChurnPrevention() {
 
   const riskBadge = (category: string) => {
     const config: Record<string, { variant: "destructive" | "secondary" | "outline"; label: string }> = {
-      high: { variant: "destructive", label: t("superAdmin.churn.high") },
-      medium: { variant: "secondary", label: t("superAdmin.churn.medium") },
-      low: { variant: "outline", label: t("superAdmin.churn.low") },
+      high: { variant: "destructive", label: lt("high") },
+      medium: { variant: "secondary", label: lt("medium") },
+      low: { variant: "outline", label: lt("low") },
     };
     const c = config[category] || config.low;
     return <Badge variant={c.variant}>{c.label}</Badge>;
@@ -84,25 +163,25 @@ export default function ChurnPrevention() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
               <ShieldAlert className="h-7 w-7" />
-              {t("superAdmin.churn.title")}
+              {lt("title")}
             </h1>
-            <p className="text-muted-foreground">{t("superAdmin.churn.subtitle")}</p>
+            <p className="text-muted-foreground">{lt("subtitle")}</p>
           </div>
           <div className="flex gap-2">
             <Select value={selectedTenant} onValueChange={setSelectedTenant}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={t("superAdmin.churn.allChurches")} />
+                <SelectValue placeholder={lt("allChurches")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("superAdmin.churn.allChurches")}</SelectItem>
-                {(tenants || []).map(t => (
-                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                <SelectItem value="all">{lt("allChurches")}</SelectItem>
+                {(tenants || []).map(tenant => (
+                  <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Button onClick={() => runPrediction.mutate()} disabled={runPrediction.isPending}>
               <RefreshCw className={`mr-2 h-4 w-4 ${runPrediction.isPending ? "animate-spin" : ""}`} />
-              {t("superAdmin.churn.runAnalysis")}
+              {lt("runAnalysis")}
             </Button>
           </div>
         </div>
@@ -115,7 +194,7 @@ export default function ChurnPrevention() {
                 <AlertTriangle className="h-8 w-8 text-destructive" />
                 <div>
                   <p className="text-2xl font-bold">{highRisk.length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.churn.highRisk")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("highRisk")}</p>
                 </div>
               </div>
             </CardContent>
@@ -126,7 +205,7 @@ export default function ChurnPrevention() {
                 <TrendingDown className="h-8 w-8 text-amber-500" />
                 <div>
                   <p className="text-2xl font-bold">{mediumRisk.length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.churn.mediumRisk")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("mediumRisk")}</p>
                 </div>
               </div>
             </CardContent>
@@ -137,7 +216,7 @@ export default function ChurnPrevention() {
                 <Activity className="h-8 w-8 text-green-500" />
                 <div>
                   <p className="text-2xl font-bold">{lowRisk.length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.churn.lowRisk")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("lowRisk")}</p>
                 </div>
               </div>
             </CardContent>
@@ -148,7 +227,7 @@ export default function ChurnPrevention() {
                 <Users className="h-8 w-8 text-primary" />
                 <div>
                   <p className="text-2xl font-bold">{(predictions || []).length}</p>
-                  <p className="text-xs text-muted-foreground">{t("superAdmin.churn.totalAnalyzed")}</p>
+                  <p className="text-xs text-muted-foreground">{lt("totalAnalyzed")}</p>
                 </div>
               </div>
             </CardContent>
@@ -160,7 +239,7 @@ export default function ChurnPrevention() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              {t("superAdmin.churn.atRiskMembers")}
+              {lt("atRiskMembers")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -172,12 +251,12 @@ export default function ChurnPrevention() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("superAdmin.churn.member")}</TableHead>
-                    <TableHead>{t("superAdmin.churn.church")}</TableHead>
-                    <TableHead>{t("superAdmin.churn.riskLevel")}</TableHead>
-                    <TableHead>{t("superAdmin.churn.probability")}</TableHead>
-                    <TableHead>{t("superAdmin.churn.daysSinceAttendance")}</TableHead>
-                    <TableHead>{t("superAdmin.churn.factors")}</TableHead>
+                    <TableHead>{lt("member")}</TableHead>
+                    <TableHead>{lt("church")}</TableHead>
+                    <TableHead>{lt("riskLevel")}</TableHead>
+                    <TableHead>{lt("probability")}</TableHead>
+                    <TableHead>{lt("daysSinceAttendance")}</TableHead>
+                    <TableHead>{lt("factors")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -190,7 +269,7 @@ export default function ChurnPrevention() {
                       <TableCell className="text-sm">{(p as any).members?.tenants?.name || "-"}</TableCell>
                       <TableCell>{riskBadge(p.risk_category || "low")}</TableCell>
                       <TableCell className="font-mono text-sm">{((p.risk_probability || 0) * 100).toFixed(1)}%</TableCell>
-                      <TableCell className="text-sm">{p.days_since_last_attendance || 0} {t("superAdmin.churn.days")}</TableCell>
+                      <TableCell className="text-sm">{p.days_since_last_attendance || 0} {lt("days")}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {((p.contributing_factors as string[]) || []).slice(0, 2).map((f, i) => (
@@ -203,7 +282,7 @@ export default function ChurnPrevention() {
                   {!(predictions || []).filter(p => p.risk_category !== "low").length && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        {t("superAdmin.churn.noRiskMembers")}
+                        {lt("noRiskMembers")}
                       </TableCell>
                     </TableRow>
                   )}
