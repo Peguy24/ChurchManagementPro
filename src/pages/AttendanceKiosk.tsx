@@ -113,7 +113,7 @@ export default function AttendanceKiosk() {
       console.error("Kiosk scan error:", err);
       setFeedback("error");
       setFeedbackMessage(t("kiosk.scanError"));
-      playErrorSound(80);
+      playErrorSound(0.8);
     }
 
     resetFeedback();
