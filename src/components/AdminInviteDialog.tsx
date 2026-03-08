@@ -53,6 +53,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Erreur",
     linkCopied: "Lien copié dans le presse-papiers",
     copyError: "Impossible de copier le lien",
+    emailAlreadyRegistered: "Cet email est déjà enregistré comme",
+    approvedStatus: "approuvé",
+    pendingStatus: "en attente d'approbation",
   },
   ht: {
     inviteAdmin: "Envite yon administratè",
