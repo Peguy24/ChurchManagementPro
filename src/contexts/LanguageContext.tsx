@@ -3510,6 +3510,18 @@ const translations = {
         noScores: "No scores calculated yet. Click Recalculate to start.",
         noResults: "No results found",
       },
+      notifications: {
+        title: "Platform Alerts",
+        markAllRead: "Mark all read",
+        empty: "No alerts",
+        checked: "Alerts checked",
+        newAlerts: "new alerts",
+        checkError: "Error checking alerts",
+        trialExpiring: "Trial expiring soon",
+        trialExpired: "Trial expired",
+        paymentIssue: "Payment issue",
+        tenantInactive: "Inactive tenant",
+      },
     },
     platform: {
       superAdminManagement: "Super Admin Management",
