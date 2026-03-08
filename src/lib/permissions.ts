@@ -115,6 +115,8 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/automations": "communication",
   "/support": "communication",
   "/support-management": "tenants",
+  "/volunteers": "volunteers",
+  "/visitors": "visitors",
 };
 
 // Map nav groups to route groups (using internal keys, not translated labels)
