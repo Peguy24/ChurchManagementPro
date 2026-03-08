@@ -2543,6 +2543,83 @@ export type Database = {
           },
         ]
       }
+      tenant_health_scores: {
+        Row: {
+          active_members_30d: number
+          attendance_rate_30d: number
+          attendance_score: number
+          avg_donation: number
+          calculated_at: string
+          created_at: string
+          details: Json | null
+          donation_score: number
+          feature_adoption_score: number
+          features_total: number
+          features_used: number
+          health_grade: string
+          id: string
+          member_engagement_score: number
+          overall_score: number
+          tenant_id: string
+          total_donations_30d: number
+          total_members: number
+          trend: string
+          updated_at: string
+        }
+        Insert: {
+          active_members_30d?: number
+          attendance_rate_30d?: number
+          attendance_score?: number
+          avg_donation?: number
+          calculated_at?: string
+          created_at?: string
+          details?: Json | null
+          donation_score?: number
+          feature_adoption_score?: number
+          features_total?: number
+          features_used?: number
+          health_grade?: string
+          id?: string
+          member_engagement_score?: number
+          overall_score?: number
+          tenant_id: string
+          total_donations_30d?: number
+          total_members?: number
+          trend?: string
+          updated_at?: string
+        }
+        Update: {
+          active_members_30d?: number
+          attendance_rate_30d?: number
+          attendance_score?: number
+          avg_donation?: number
+          calculated_at?: string
+          created_at?: string
+          details?: Json | null
+          donation_score?: number
+          feature_adoption_score?: number
+          features_total?: number
+          features_used?: number
+          health_grade?: string
+          id?: string
+          member_engagement_score?: number
+          overall_score?: number
+          tenant_id?: string
+          total_donations_30d?: number
+          total_members?: number
+          trend?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_health_scores_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_requests: {
         Row: {
           address: string | null
