@@ -658,7 +658,7 @@ export default function Salaries() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="payment_frequency">Fréquence</Label>
+                        <Label htmlFor="payment_frequency">{t("salariesPage.frequency")}</Label>
                         <Select
                           value={employeeForm.payment_frequency}
                           onValueChange={(value) =>
