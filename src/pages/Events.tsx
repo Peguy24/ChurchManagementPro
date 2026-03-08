@@ -311,7 +311,9 @@ export default function Events() {
                               className="flex-1"
                               onClick={() => handleEditEvent(event)}
                             >
-                              {t("events.edit")}
+                              {event.status === "completed" || event.status === "cancelled"
+                                ? t("events.viewReport")
+                                : t("events.edit")}
                             </Button>
                           </div>
                         </div>
