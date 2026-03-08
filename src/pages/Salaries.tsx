@@ -348,8 +348,8 @@ export default function Salaries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast({
-        title: "Employé supprimé",
-        description: "L'employé a été supprimé avec succès.",
+        title: t("salariesPage.employeeDeleted"),
+        description: t("salariesPage.employeeDeletedSuccess"),
       });
     },
     onError: (error) => {
