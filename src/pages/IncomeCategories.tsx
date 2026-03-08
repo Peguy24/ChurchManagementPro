@@ -302,7 +302,7 @@ export default function IncomeCategories() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label>{t("nav.categoryActive")}</Label>
+                  <Label>{t("layout.categoryActive")}</Label>
                   <Switch
                     checked={form.is_active}
                     onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
