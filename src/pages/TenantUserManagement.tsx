@@ -268,8 +268,8 @@ export default function TenantUserManagement() {
       await navigator.clipboard.writeText(invitationLink);
       setCopied(true);
       toast({
-        title: t('tenant.linkCopied') || "Lien copié",
-        description: t('tenant.linkCopiedDesc') || "Le lien a été copié dans le presse-papiers",
+        title: t('tenant.linkCopied'),
+        description: t('tenant.linkCopiedDesc'),
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
