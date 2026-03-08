@@ -30,19 +30,17 @@ interface EventOption {
   status: string | null;
 }
 
-function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: string } {
+function isWithinEventWindow(event: EventOption): { allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> } {
   const now = new Date();
   const today = getLocalToday();
 
-  // Check date range
   const eventStartDate = event.event_date;
   const eventEndDate = event.end_date || event.event_date;
 
   if (today < eventStartDate || today > eventEndDate) {
-    return { allowed: false, reason: "L'événement n'a pas lieu aujourd'hui." };
+    return { allowed: false, reasonKey: "kiosk.eventNotToday" };
   }
 
-  // If event has a start time, check 30min before
   if (event.event_time) {
     const [h, m] = event.event_time.split(":").map(Number);
     const eventStart = new Date(now);
@@ -51,22 +49,21 @@ function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: st
 
     if (now < windowOpen) {
       const openTime = windowOpen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      return { allowed: false, reason: `Le scan ouvrira à ${openTime} (30 min avant le début).` };
+      return { allowed: false, reasonKey: "kiosk.scanOpensAt", reasonParams: { time: openTime } };
     }
   }
 
-  // If event has an end time, check if it's past
   if (event.end_time) {
     const [eh, em] = event.end_time.split(":").map(Number);
     const eventEnd = new Date(now);
     eventEnd.setHours(eh, em, 0, 0);
 
     if (now > eventEnd) {
-      return { allowed: false, reason: "L'événement est terminé. Le scan n'est plus accepté." };
+      return { allowed: false, reasonKey: "kiosk.eventEnded" };
     }
   }
 
-  return { allowed: true, reason: "" };
+  return { allowed: true, reasonKey: "" };
 }
 
 export default function AttendanceKiosk() {
