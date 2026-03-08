@@ -468,15 +468,15 @@ export default function Salaries() {
   const totalSalaries = activeEmployees.reduce((sum, e) => sum + e.salary_amount, 0);
 
   const paymentMethods: Record<string, string> = {
-    bank_transfer: "Virement bancaire",
-    cash: "Espèces",
-    check: "Chèque",
+    bank_transfer: t("salariesPage.bankTransfer"),
+    cash: t("salariesPage.cash"),
+    check: t("salariesPage.check"),
   };
 
   const paymentFrequencies: Record<string, string> = {
-    weekly: "Hebdomadaire",
-    biweekly: "Bimensuel",
-    monthly: "Mensuel",
+    weekly: t("salariesPage.weekly"),
+    biweekly: t("salariesPage.biweekly"),
+    monthly: t("salariesPage.monthly"),
   };
 
   return (
