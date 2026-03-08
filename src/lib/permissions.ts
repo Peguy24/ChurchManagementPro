@@ -36,6 +36,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "users",
     "inventory",
     "tenants",
+    "volunteers",
+    "visitors",
   ],
   pastor: [
     "dashboard",
