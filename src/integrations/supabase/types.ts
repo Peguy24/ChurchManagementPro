@@ -2104,6 +2104,48 @@ export type Database = {
           },
         ]
       }
+      platform_announcement_banners: {
+        Row: {
+          banner_type: string
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          message: string
+          priority: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          banner_type?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          message: string
+          priority?: string
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          banner_type?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          message?: string
+          priority?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_announcements: {
         Row: {
           announcement_type: string
@@ -2569,6 +2611,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "subscription_audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_discounts: {
+        Row: {
+          applied_by: string | null
+          created_at: string
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          reason: string | null
+          tenant_id: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          tenant_id: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          tenant_id?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_discounts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows } from "lucide-react";
 import { SuperAdminOnboardingOverview } from "@/components/SuperAdminOnboardingOverview";
 import { SupportTicketsSummary } from "@/components/superadmin/SupportTicketsSummary";
 import { PlatformAlertsWidget } from "@/components/superadmin/PlatformAlertsWidget";
@@ -353,6 +353,38 @@ export default function SuperAdminDashboard() {
               >
                 <Heart className="mr-2 h-4 w-4" />
                 {t("superAdmin.health.title")}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/banners")}
+              >
+                <Megaphone className="mr-2 h-4 w-4" />
+                {t("superAdmin.banners.navTitle")}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/subscriptions")}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                {t("superAdmin.overrides.navTitle")}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/churn")}
+              >
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                {t("superAdmin.churn.navTitle")}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/comparison")}
+              >
+                <GitCompareArrows className="mr-2 h-4 w-4" />
+                {t("superAdmin.comparison.navTitle")}
               </Button>
             </CardContent>
           </Card>

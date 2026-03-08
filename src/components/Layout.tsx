@@ -1,5 +1,6 @@
 import { ReactNode, useState, lazy, Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
+import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -33,6 +34,9 @@ import {
   UserCog,
   Sparkles,
   UserPlus,
+  Megaphone,
+  GitCompareArrows,
+  ShieldAlert as ShieldAlertIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -198,6 +202,10 @@ const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
       { to: "/support-management", icon: MessageSquare, label: t("layout.supportManagement") },
       { to: "/super-admin/communication", icon: Mail, label: t("superAdmin.communication.title") },
       { to: "/super-admin/activity", icon: History, label: t("superAdmin.activityLog.title") },
+      { to: "/super-admin/banners", icon: Megaphone, label: t("superAdmin.banners.navTitle") },
+      { to: "/super-admin/subscriptions", icon: CreditCard, label: t("superAdmin.overrides.navTitle") },
+      { to: "/super-admin/churn", icon: ShieldAlertIcon, label: t("superAdmin.churn.navTitle") },
+      { to: "/super-admin/comparison", icon: GitCompareArrows, label: t("superAdmin.comparison.navTitle") },
       { to: "/super-admin/settings", icon: Settings, label: t("platformSettings.title") },
     ],
   },
@@ -425,7 +433,10 @@ export default function Layout({ children }: LayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">{children}</main>
+        <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">
+          {!isSuperAdmin && <PlatformAnnouncementBanner />}
+          {children}
+        </main>
       </div>
     </div>
   );
