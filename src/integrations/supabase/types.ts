@@ -2149,6 +2149,56 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_notifications: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_dismissed: boolean
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          notification_type: string
+          severity: string
+          tenant_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          severity?: string
+          tenant_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          severity?: string
+          tenant_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_permissions: {
         Row: {
           created_at: string | null
