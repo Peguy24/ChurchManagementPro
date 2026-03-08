@@ -12,9 +12,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify JWT
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -22,26 +21,31 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Verify user via getClaims
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    // Verify user is super admin
-    const anonClient = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const { data: { user }, error: authError } = await anonClient.auth.getUser();
-    if (authError || !user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: isSuperAdmin } = await supabase.rpc("is_super_admin", { _user_id: user.id });
+    const userId = claimsData.claims.sub as string;
+
+    // Use service role client for admin operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify super admin
+    const { data: isSuperAdmin } = await supabase.rpc("is_super_admin", { _user_id: userId });
     if (!isSuperAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
@@ -67,10 +71,9 @@ Deno.serve(async (req) => {
 
     const adminUserIds = [...new Set((tenantAdminRoles || []).map((r: any) => r.user_id))];
 
-    // Get emails from auth.users
     const adminEmails: string[] = [];
-    for (const userId of adminUserIds) {
-      const { data: { user: adminUser } } = await supabase.auth.admin.getUserById(userId as string);
+    for (const uid of adminUserIds) {
+      const { data: { user: adminUser } } = await supabase.auth.admin.getUserById(uid as string);
       if (adminUser?.email) {
         adminEmails.push(adminUser.email);
       }
@@ -89,7 +92,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also get legacy admins from user_roles
+    // Also get legacy admins
     const { data: legacyAdmins } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -104,14 +107,12 @@ Deno.serve(async (req) => {
 
     let emailsSent = 0;
 
-    // Send emails via Resend if configured
     if (resendApiKey && adminEmails.length > 0) {
       const priorityLabel = priority === "critical" ? "🔴 CRITICAL" : priority === "high" ? "🟠 HIGH" : "";
       const typeLabel = announcementType === "maintenance" ? "🔧 Maintenance" :
                         announcementType === "new_feature" ? "🚀 New Feature" :
                         announcementType === "update" ? "📦 Platform Update" : "📢 Announcement";
 
-      // Send in batches of 50
       const batchSize = 50;
       for (let i = 0; i < adminEmails.length; i += batchSize) {
         const batch = adminEmails.slice(i, i + batchSize);
@@ -147,6 +148,9 @@ Deno.serve(async (req) => {
 
         if (emailRes.ok) {
           emailsSent += batch.length;
+        } else {
+          const errBody = await emailRes.text();
+          console.error("Resend error:", errBody);
         }
       }
     }
@@ -158,7 +162,7 @@ Deno.serve(async (req) => {
       announcement_type: announcementType || "general",
       priority: priority || "normal",
       sent_at: new Date().toISOString(),
-      sent_by: user.id,
+      sent_by: userId,
       recipient_count: emailsSent || adminEmails.length,
     });
 
