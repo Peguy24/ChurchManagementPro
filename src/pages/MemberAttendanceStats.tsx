@@ -69,7 +69,7 @@ export default function MemberAttendanceStats() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyStats[]>([]);
   const [eventTypeData, setEventTypeData] = useState<EventTypeStats[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState("6"); // 6 months by default
 
   useEffect(() => {
@@ -79,6 +79,12 @@ export default function MemberAttendanceStats() {
   useEffect(() => {
     if (memberId) {
       loadMemberData(memberId);
+    } else {
+      // No member selected — reset state
+      setMember(null);
+      setAttendanceRecords([]);
+      setMonthlyData([]);
+      setEventTypeData([]);
     }
   }, [memberId, period]);
 
