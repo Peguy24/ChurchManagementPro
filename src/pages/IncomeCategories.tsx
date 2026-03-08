@@ -96,7 +96,7 @@ export default function IncomeCategories() {
   const createCategory = useMutation({
     mutationFn: async (data: CategoryForm) => {
       if (checkDuplicate(data.name, data.code)) {
-        throw new Error(t("nav.categoryDuplicate"));
+        throw new Error(t("layout.categoryDuplicate"));
       }
 
       const { error } = await supabase.from("income_categories").insert({
@@ -114,7 +114,7 @@ export default function IncomeCategories() {
       queryClient.invalidateQueries({ queryKey: ["income-categories-all"] });
       setDialogOpen(false);
       setForm(initialForm);
-      toast({ title: t("common.success"), description: t("nav.newCategory") });
+      toast({ title: t("common.success"), description: t("layout.newCategory") });
     },
     onError: (error: any) => {
       toast({ 
@@ -130,7 +130,7 @@ export default function IncomeCategories() {
       if (!data.id) throw new Error("ID missing");
       
       if (checkDuplicate(data.name, data.code, data.id)) {
-        throw new Error(t("nav.categoryDuplicate"));
+        throw new Error(t("layout.categoryDuplicate"));
       }
 
       const { error } = await supabase
@@ -151,7 +151,7 @@ export default function IncomeCategories() {
       setDialogOpen(false);
       setForm(initialForm);
       setEditMode(false);
-      toast({ title: t("common.success"), description: t("nav.editCategory") });
+      toast({ title: t("common.success"), description: t("layout.editCategory") });
     },
     onError: (error: any) => {
       toast({ 
@@ -170,7 +170,7 @@ export default function IncomeCategories() {
         .eq("category_id", id);
 
       if (count && count > 0) {
-        throw new Error(t("nav.categoryUsed"));
+        throw new Error(t("layout.categoryUsed"));
       }
 
       const { error } = await supabase
@@ -209,7 +209,7 @@ export default function IncomeCategories() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.code.trim()) {
-      toast({ title: t("common.error"), description: t("nav.categoryName") + " & " + t("nav.categoryCode"), variant: "destructive" });
+      toast({ title: t("common.error"), description: t("layout.categoryName") + " & " + t("layout.categoryCode"), variant: "destructive" });
       return;
     }
 
@@ -242,25 +242,25 @@ export default function IncomeCategories() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("nav.incomeCategoriesTitle")}</h1>
-            <p className="text-muted-foreground">{t("nav.incomeCategoriesDesc")}</p>
+            <h1 className="text-3xl font-bold text-foreground">{t("layout.incomeCategoriesTitle")}</h1>
+            <p className="text-muted-foreground">{t("layout.incomeCategoriesDesc")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={handleOpenDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                {t("nav.newCategory")}
+                {t("layout.newCategory")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editMode ? t("nav.editCategory") : t("nav.newCategory")}
+                  {editMode ? t("layout.editCategory") : t("layout.newCategory")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryName")} *</Label>
+                  <Label>{t("layout.categoryName")} *</Label>
                   <Input
                     value={form.name}
                     onChange={(e) => handleNameChange(e.target.value)}
@@ -269,7 +269,7 @@ export default function IncomeCategories() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>{t("nav.categoryCode")} *</Label>
+                    <Label>{t("layout.categoryCode")} *</Label>
                     <Input
                       value={form.code}
                       onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
@@ -278,7 +278,7 @@ export default function IncomeCategories() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{t("nav.displayOrder")}</Label>
+                    <Label>{t("layout.displayOrder")}</Label>
                     <Input
                       type="number"
                       value={form.display_order}
@@ -290,11 +290,11 @@ export default function IncomeCategories() {
                 {(form.name || form.code) && checkDuplicate(form.name, form.code, form.id) && (
                   <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {t("nav.categoryDuplicate")}
+                    {t("layout.categoryDuplicate")}
                   </p>
                 )}
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryDescription")}</Label>
+                  <Label>{t("layout.categoryDescription")}</Label>
                   <Textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -302,7 +302,7 @@ export default function IncomeCategories() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label>{t("nav.categoryActive")}</Label>
+                  <Label>{t("layout.categoryActive")}</Label>
                   <Switch
                     checked={form.is_active}
                     onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
@@ -337,7 +337,7 @@ export default function IncomeCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.actives")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("layout.actives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">{activeCount}</p>
@@ -345,7 +345,7 @@ export default function IncomeCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.inactives")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("layout.inactives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-muted-foreground">{inactiveCount}</p>
@@ -360,7 +360,7 @@ export default function IncomeCategories() {
             onCheckedChange={setShowInactive}
           />
           <Label htmlFor="show-inactive" className="text-sm cursor-pointer">
-            {t("nav.showInactive")}
+            {t("layout.showInactive")}
           </Label>
         </div>
 
@@ -368,7 +368,7 @@ export default function IncomeCategories() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderOpen className="h-5 w-5" />
-              {t("nav.categoryList")}
+              {t("layout.categoryList")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -380,10 +380,10 @@ export default function IncomeCategories() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("nav.displayOrder")}</TableHead>
-                    <TableHead>{t("nav.categoryCode")}</TableHead>
-                    <TableHead>{t("nav.categoryName")}</TableHead>
-                    <TableHead>{t("nav.categoryDescription")}</TableHead>
+                    <TableHead>{t("layout.displayOrder")}</TableHead>
+                    <TableHead>{t("layout.categoryCode")}</TableHead>
+                    <TableHead>{t("layout.categoryName")}</TableHead>
+                    <TableHead>{t("layout.categoryDescription")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
                     <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
@@ -401,7 +401,7 @@ export default function IncomeCategories() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={category.is_active ? "default" : "secondary"}>
-                          {category.is_active ? t("nav.active") : t("nav.inactive")}
+                          {category.is_active ? t("layout.active") : t("layout.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -421,9 +421,9 @@ export default function IncomeCategories() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>{t("nav.deleteCategory")}</AlertDialogTitle>
+                                <AlertDialogTitle>{t("layout.deleteCategory")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  {t("nav.deleteCategoryDesc")}
+                                  {t("layout.deleteCategoryDesc")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
