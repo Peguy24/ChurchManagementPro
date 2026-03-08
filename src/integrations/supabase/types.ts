@@ -2104,6 +2104,45 @@ export type Database = {
           },
         ]
       }
+      platform_announcements: {
+        Row: {
+          announcement_type: string
+          created_at: string
+          id: string
+          message: string
+          priority: string
+          recipient_count: number | null
+          sent_at: string | null
+          sent_by: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          announcement_type?: string
+          created_at?: string
+          id?: string
+          message: string
+          priority?: string
+          recipient_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          announcement_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          priority?: string
+          recipient_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_expenses: {
         Row: {
           amount: number
