@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MinistryDialogProps {
   open: boolean;
@@ -38,6 +39,9 @@ export default function MinistryDialog({
 }: MinistryDialogProps) {
   const [loading, setLoading] = useState(false);
   const { tenantId } = useCurrentTenant();
+  const { t } = useLanguage();
+  const m = (key: string) => t(`ministries.${key}`);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -54,7 +58,6 @@ export default function MinistryDialog({
         .select("id, first_name, last_name")
         .eq("status", "active")
         .order("first_name");
-      
       if (error) throw error;
       return data;
     },
@@ -68,7 +71,6 @@ export default function MinistryDialog({
         .select("id, name")
         .eq("status", "active")
         .order("name");
-      
       if (error) throw error;
       return data;
     },
@@ -84,13 +86,7 @@ export default function MinistryDialog({
         status: ministry.status || "active",
       });
     } else {
-      setFormData({
-        name: "",
-        description: "",
-        leader_id: "",
-        branch_id: "",
-        status: "active",
-      });
+      setFormData({ name: "", description: "", leader_id: "", branch_id: "", status: "active" });
     }
   }, [ministry, open]);
 
@@ -110,29 +106,24 @@ export default function MinistryDialog({
             status: formData.status,
           })
           .eq("id", ministry.id);
-
         if (error) throw error;
-        toast.success("Ministère modifié avec succès");
+        toast.success(m("editSuccess"));
       } else {
-        const { error } = await supabase.from("ministries").insert([
-          {
-            name: formData.name,
-            description: formData.description,
-            leader_id: formData.leader_id || null,
-            branch_id: formData.branch_id || null,
-            status: formData.status,
-            tenant_id: tenantId,
-          },
-        ]);
-
+        const { error } = await supabase.from("ministries").insert([{
+          name: formData.name,
+          description: formData.description,
+          leader_id: formData.leader_id || null,
+          branch_id: formData.branch_id || null,
+          status: formData.status,
+          tenant_id: tenantId,
+        }]);
         if (error) throw error;
-        toast.success("Ministère créé avec succès");
+        toast.success(m("createSuccess"));
       }
-
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || "Une erreur s'est produite");
+      toast.error(error.message || m("errorOccurred"));
     } finally {
       setLoading(false);
     }
@@ -144,42 +135,36 @@ export default function MinistryDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
-              {ministry ? "Modifier le Ministère" : "Ajouter un Nouveau Ministère"}
+              {ministry ? m("editMinistry") : m("addNewMinistry")}
             </DialogTitle>
             <DialogDescription>
-              {ministry
-                ? "Modifiez les informations du ministère"
-                : "Remplissez les informations pour créer un nouveau ministère"}
+              {ministry ? m("dialogDescriptionEdit") : m("dialogDescriptionAdd")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nom du Ministère *</Label>
+              <Label htmlFor="name">{m("ministryNameLabel")} *</Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{m("description")}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="leader">Responsable</Label>
+              <Label htmlFor="leader">{m("leader")}</Label>
               <Select
                 value={formData.leader_id || "none"}
                 onValueChange={(value) =>
@@ -187,10 +172,10 @@ export default function MinistryDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choisir un responsable" />
+                  <SelectValue placeholder={m("chooseLeader")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
+                  <SelectItem value="none">{m("none")}</SelectItem>
                   {members.map((member: any) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.first_name} {member.last_name}
@@ -201,25 +186,23 @@ export default function MinistryDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="status">Statut</Label>
+              <Label htmlFor="status">{m("status")}</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
+                  <SelectItem value="active">{m("active")}</SelectItem>
+                  <SelectItem value="inactive">{m("inactive")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="branch">Branche</Label>
+              <Label htmlFor="branch">{m("branch")}</Label>
               <Select
                 value={formData.branch_id || "none"}
                 onValueChange={(value) =>
@@ -227,10 +210,10 @@ export default function MinistryDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choisir une branche" />
+                  <SelectValue placeholder={m("chooseBranch")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucune</SelectItem>
+                  <SelectItem value="none">{m("noBranch")}</SelectItem>
                   {branches.map((branch: any) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.name}
@@ -242,15 +225,11 @@ export default function MinistryDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Annuler
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {m("cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Chargement..." : ministry ? "Modifier" : "Créer"}
+              {loading ? m("loading") : ministry ? m("edit") : m("create")}
             </Button>
           </DialogFooter>
         </form>
