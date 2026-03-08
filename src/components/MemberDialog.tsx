@@ -125,6 +125,29 @@ export default function MemberDialog({
     enabled: !!tenantId,
   });
 
+  // Load current ministry for existing member
+  const { data: currentMinistryMember } = useQuery({
+    queryKey: ["member-ministry", member?.id, tenantId],
+    queryFn: async () => {
+      if (!member?.id) return null;
+      const { data, error } = await supabase
+        .from("ministry_members")
+        .select("ministry_id")
+        .eq("member_id", member.id)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!member?.id,
+  });
+
+  useEffect(() => {
+    if (currentMinistryMember) {
+      setSelectedMinistryId(currentMinistryMember.ministry_id || "");
+    }
+  }, [currentMinistryMember]);
+
   useEffect(() => {
     if (member) {
       let address: Record<string, string> = {};
