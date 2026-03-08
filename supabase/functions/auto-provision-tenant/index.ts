@@ -242,6 +242,68 @@ serve(async (req) => {
 
         emailSent = true;
         logStep("Welcome email sent successfully", { messageId: emailResponse.data?.id });
+
+        // Notify super admins about new tenant signup
+        try {
+          const { data: platformAdmins } = await supabase
+            .from("platform_user_roles")
+            .select("user_id")
+            .eq("role", "super_admin");
+
+          const superAdminEmails: string[] = [];
+          for (const admin of platformAdmins || []) {
+            const { data: userData } = await supabase.auth.admin.getUserById(admin.user_id);
+            if (userData?.user?.email) {
+              superAdminEmails.push(userData.user.email);
+            }
+          }
+
+          if (superAdminEmails.length > 0) {
+            await resend.emails.send({
+              from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+              to: superAdminEmails,
+              subject: `🆕 New Church Registered: ${church_name}`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+                <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
+                  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <div style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); padding: 30px 20px; text-align: center;">
+                      <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🏛️ New Church Registration</h1>
+                      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">A new tenant has joined the platform</p>
+                    </div>
+                    <div style="padding: 30px;">
+                      <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
+                        <h2 style="margin: 0 0 15px 0; color: #166534;">Church Details</h2>
+                        <p style="margin: 0 0 8px 0;"><strong>Name:</strong> ${church_name}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Contact:</strong> ${contact_name}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${contact_email}</p>
+                        ${contact_phone ? `<p style="margin: 0 0 8px 0;"><strong>Phone:</strong> ${contact_phone}</p>` : ''}
+                        ${address ? `<p style="margin: 0 0 8px 0;"><strong>Address:</strong> ${address}</p>` : ''}
+                        <p style="margin: 0 0 8px 0;"><strong>Plan:</strong> ${planLabels[plan] || plan} (14-day trial)</p>
+                        <p style="margin: 0;"><strong>Slug:</strong> ${slug}</p>
+                      </div>
+                      <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                        <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                          <strong>📊 Trial ends:</strong> ${new Date(trialEndsAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <p style="color: #6b7280; font-size: 13px; margin-top: 20px; text-align: center;">
+                        This is an automated notification from Church Manager Pro.
+                      </p>
+                    </div>
+                  </div>
+                </body>
+                </html>
+              `,
+            });
+            logStep("Super admin notification sent", { adminCount: superAdminEmails.length });
+          }
+        } catch (adminNotifyErr) {
+          logStep("Failed to notify super admins", { error: String(adminNotifyErr) });
+        }
+
       } catch (emailErr) {
         logStep("Failed to send email", { error: String(emailErr) });
       }
