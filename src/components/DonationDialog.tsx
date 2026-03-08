@@ -274,7 +274,7 @@ export default function DonationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editDonation ? "Modifier la Recette" : t("donations.addDonation")}</DialogTitle>
+          <DialogTitle>{editDonation ? t("donations.editIncome") : t("donations.addDonation")}</DialogTitle>
           <DialogDescription>
             {t("donations.subtitle")}
           </DialogDescription>
