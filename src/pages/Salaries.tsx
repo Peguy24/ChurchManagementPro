@@ -234,9 +234,9 @@ export default function Salaries() {
     mutationFn: async (data: any) => {
       const amount = parseFloat(data.amount);
       const employee = employees.find(e => e.id === data.employee_id);
-      const employeeName = employee ? `${employee.first_name} ${employee.last_name}` : "Employé";
+      const employeeName = employee ? `${employee.first_name} ${employee.last_name}` : t("salariesPage.employee");
       const periodLabel = `${format(new Date(data.period_start), "dd/MM/yyyy")} - ${format(new Date(data.period_end), "dd/MM/yyyy")}`;
-      const expenseDescription = `Salaire - ${employeeName} - ${periodLabel}`;
+      const expenseDescription = `${t("salariesPage.salary")} - ${employeeName} - ${periodLabel}`;
 
       // 1. Insert salary payment
       const { error: salaryError } = await supabase
