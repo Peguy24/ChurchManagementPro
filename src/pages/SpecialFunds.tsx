@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Plus, PiggyBank, ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -23,6 +24,7 @@ const SpecialFunds = () => {
   const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
+  const { formatAmount } = useCurrency();
   const queryClient = useQueryClient();
   const [fundDialogOpen, setFundDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -70,7 +72,8 @@ const SpecialFunds = () => {
         .from("fund_transactions")
         .select("*")
         .eq("fund_id", selectedFund)
-        .order("transaction_date", { ascending: false });
+        .order("transaction_date", { ascending: false })
+        .limit(50);
       if (error) throw error;
       return data;
     },
@@ -94,10 +97,10 @@ const SpecialFunds = () => {
       queryClient.invalidateQueries({ queryKey: ["special-funds"] });
       setFundDialogOpen(false);
       setFundForm({ name: "", description: "", target_amount: "", start_date: "", end_date: "", branch_id: "" });
-      toast({ title: t("common.save"), description: language === "fr" ? "Fonds créé avec succès" : "Fund created successfully" });
+      toast({ title: t("common.save"), description: t("specialFundsPage.successCreate") });
     },
     onError: () => {
-      toast({ title: language === "fr" ? "Erreur" : "Error", description: language === "fr" ? "Impossible de créer le fonds" : "Unable to create fund", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("specialFundsPage.errorCreate"), variant: "destructive" });
     },
   });
 
@@ -114,7 +117,6 @@ const SpecialFunds = () => {
       });
       if (error) throw error;
 
-      // Update fund current_amount
       const fund = funds?.find((f) => f.id === selectedFund);
       if (fund) {
         const newAmount = Number(fund.current_amount) + 
@@ -127,20 +129,12 @@ const SpecialFunds = () => {
       queryClient.invalidateQueries({ queryKey: ["fund-transactions"] });
       setTransactionDialogOpen(false);
       setTransactionForm({ transaction_type: "income", amount: "", description: "", transaction_date: format(new Date(), "yyyy-MM-dd") });
-      toast({ title: t("common.save"), description: language === "fr" ? "Transaction enregistrée" : "Transaction recorded" });
+      toast({ title: t("common.save"), description: t("specialFundsPage.successTransaction") });
     },
     onError: () => {
-      toast({ title: language === "fr" ? "Erreur" : "Error", description: language === "fr" ? "Impossible d'enregistrer la transaction" : "Unable to record transaction", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("specialFundsPage.errorTransaction"), variant: "destructive" });
     },
   });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
@@ -149,9 +143,9 @@ const SpecialFunds = () => {
       suspended: "destructive",
     };
     const labels: Record<string, string> = {
-      active: language === "fr" ? "Actif" : "Active",
-      completed: language === "fr" ? "Complété" : "Completed",
-      suspended: language === "fr" ? "Suspendu" : "Suspended",
+      active: t("specialFundsPage.active"),
+      completed: t("specialFundsPage.completed"),
+      suspended: t("specialFundsPage.suspended"),
     };
     return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
@@ -161,37 +155,35 @@ const SpecialFunds = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">{t("finance.specialFunds")}</h1>
-            <p className="text-muted-foreground">
-              {language === "fr" ? "Gérez les fonds spéciaux de l'église" : "Manage the church's special funds"}
-            </p>
+            <h1 className="text-3xl font-bold">{t("specialFundsPage.title")}</h1>
+            <p className="text-muted-foreground">{t("specialFundsPage.subtitle")}</p>
           </div>
           <Dialog open={fundDialogOpen} onOpenChange={setFundDialogOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="mr-2 h-4 w-4" />{language === "fr" ? "Nouveau Fonds" : "New Fund"}</Button>
+              <Button><Plus className="mr-2 h-4 w-4" />{t("specialFundsPage.newFund")}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{language === "fr" ? "Créer un Fonds Spécial" : "Create a Special Fund"}</DialogTitle>
+                <DialogTitle>{t("specialFundsPage.createFund")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>{language === "fr" ? "Nom du fonds *" : "Fund name *"}</Label>
+                  <Label>{t("specialFundsPage.fundName")} *</Label>
                   <Input
                     value={fundForm.name}
                     onChange={(e) => setFundForm({ ...fundForm, name: e.target.value })}
-                    placeholder={language === "fr" ? "Ex: Fonds Mission 2024" : "E.g.: Mission Fund 2024"}
+                    placeholder={t("specialFundsPage.fundNamePlaceholder")}
                   />
                 </div>
                 <div>
-                  <Label>{language === "fr" ? "Description" : "Description"}</Label>
+                  <Label>{t("specialFundsPage.description")}</Label>
                   <Textarea
                     value={fundForm.description}
                     onChange={(e) => setFundForm({ ...fundForm, description: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label>{language === "fr" ? "Objectif ($)" : "Target ($)"}</Label>
+                  <Label>{t("specialFundsPage.target")}</Label>
                   <Input
                     type="number"
                     value={fundForm.target_amount}
@@ -200,28 +192,20 @@ const SpecialFunds = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>{language === "fr" ? "Date début" : "Start date"}</Label>
-                    <Input
-                      type="date"
-                      value={fundForm.start_date}
-                      onChange={(e) => setFundForm({ ...fundForm, start_date: e.target.value })}
-                    />
+                    <Label>{t("specialFundsPage.startDate")}</Label>
+                    <Input type="date" value={fundForm.start_date} onChange={(e) => setFundForm({ ...fundForm, start_date: e.target.value })} />
                   </div>
                   <div>
-                    <Label>{language === "fr" ? "Date fin" : "End date"}</Label>
-                    <Input
-                      type="date"
-                      value={fundForm.end_date}
-                      onChange={(e) => setFundForm({ ...fundForm, end_date: e.target.value })}
-                    />
+                    <Label>{t("specialFundsPage.endDate")}</Label>
+                    <Input type="date" value={fundForm.end_date} onChange={(e) => setFundForm({ ...fundForm, end_date: e.target.value })} />
                   </div>
                 </div>
                 <div>
-                  <Label>{language === "fr" ? "Branche" : "Branch"}</Label>
+                  <Label>{t("specialFundsPage.branch")}</Label>
                   <Select value={fundForm.branch_id} onValueChange={(v) => setFundForm({ ...fundForm, branch_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={language === "fr" ? "Toutes les branches" : "All branches"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("specialFundsPage.allBranches")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">{language === "fr" ? "Toutes les branches" : "All branches"}</SelectItem>
+                      <SelectItem value="none">{t("specialFundsPage.allBranches")}</SelectItem>
                       {branches?.map((b) => (
                         <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                       ))}
@@ -229,23 +213,18 @@ const SpecialFunds = () => {
                   </Select>
                 </div>
                 <Button onClick={() => createFund.mutate()} disabled={!fundForm.name || createFund.isPending}>
-                  {createFund.isPending
-                    ? (language === "fr" ? "Création..." : "Creating...")
-                    : (language === "fr" ? "Créer le Fonds" : "Create Fund")}
+                  {createFund.isPending ? t("specialFundsPage.creating") : t("specialFundsPage.createButton")}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Funds Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            <p>{language === "fr" ? "Chargement..." : "Loading..."}</p>
+            <p>{t("specialFundsPage.loading")}</p>
           ) : funds?.length === 0 ? (
-            <p className="text-muted-foreground col-span-full text-center py-8">
-              {language === "fr" ? "Aucun fonds spécial créé" : "No special funds created"}
-            </p>
+            <p className="text-muted-foreground col-span-full text-center py-8">{t("specialFundsPage.noFunds")}</p>
           ) : (
             funds?.map((fund) => {
               const progress = fund.target_amount > 0 ? (Number(fund.current_amount) / Number(fund.target_amount)) * 100 : 0;
@@ -264,8 +243,8 @@ const SpecialFunds = () => {
                     <p className="text-sm text-muted-foreground mb-3">{fund.description}</p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{language === "fr" ? "Collecté" : "Collected"}</span>
-                        <span className="font-bold text-green-600">{formatCurrency(Number(fund.current_amount))}</span>
+                        <span>{t("specialFundsPage.collected")}</span>
+                        <span className="font-bold text-green-600">{formatAmount(Number(fund.current_amount))}</span>
                       </div>
                       {fund.target_amount > 0 && (
                         <>
@@ -274,7 +253,7 @@ const SpecialFunds = () => {
                             <span>{progress.toFixed(0)}%</span>
                             <span className="flex items-center gap-1">
                               <Target className="h-3 w-3" />
-                              {formatCurrency(Number(fund.target_amount))}
+                              {formatAmount(Number(fund.target_amount))}
                             </span>
                           </div>
                         </>
@@ -287,32 +266,31 @@ const SpecialFunds = () => {
           )}
         </div>
 
-        {/* Selected Fund Details */}
         {selectedFund && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{language === "fr" ? "Transactions" : "Transactions"} - {funds?.find((f) => f.id === selectedFund)?.name}</CardTitle>
+              <CardTitle>{t("specialFundsPage.transactions")} - {funds?.find((f) => f.id === selectedFund)?.name}</CardTitle>
               <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="mr-2 h-4 w-4" />{language === "fr" ? "Ajouter Transaction" : "Add Transaction"}</Button>
+                  <Button size="sm"><Plus className="mr-2 h-4 w-4" />{t("specialFundsPage.addTransaction")}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{language === "fr" ? "Nouvelle Transaction" : "New Transaction"}</DialogTitle>
+                    <DialogTitle>{t("specialFundsPage.newTransaction")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>{language === "fr" ? "Type" : "Type"}</Label>
+                      <Label>{t("specialFundsPage.type")}</Label>
                       <Select value={transactionForm.transaction_type} onValueChange={(v) => setTransactionForm({ ...transactionForm, transaction_type: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="income">{language === "fr" ? "Entrée" : "Income"}</SelectItem>
-                          <SelectItem value="expense">{language === "fr" ? "Sortie" : "Expense"}</SelectItem>
+                          <SelectItem value="income">{t("specialFundsPage.income")}</SelectItem>
+                          <SelectItem value="expense">{t("specialFundsPage.expense")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>{language === "fr" ? "Montant ($) *" : "Amount ($) *"}</Label>
+                      <Label>{t("specialFundsPage.amount")} *</Label>
                       <Input
                         type="number"
                         value={transactionForm.amount}
@@ -320,14 +298,14 @@ const SpecialFunds = () => {
                       />
                     </div>
                     <div>
-                      <Label>{language === "fr" ? "Description" : "Description"}</Label>
+                      <Label>{t("specialFundsPage.description")}</Label>
                       <Input
                         value={transactionForm.description}
                         onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
                       />
                     </div>
                     <div>
-                      <Label>{language === "fr" ? "Date" : "Date"}</Label>
+                      <Label>{t("specialFundsPage.date")}</Label>
                       <Input
                         type="date"
                         value={transactionForm.transaction_date}
@@ -335,7 +313,7 @@ const SpecialFunds = () => {
                       />
                     </div>
                     <Button onClick={() => createTransaction.mutate()} disabled={!transactionForm.amount || createTransaction.isPending}>
-                      {language === "fr" ? "Enregistrer" : "Save"}
+                      {t("specialFundsPage.save")}
                     </Button>
                   </div>
                 </DialogContent>
@@ -345,33 +323,31 @@ const SpecialFunds = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{language === "fr" ? "Date" : "Date"}</TableHead>
-                    <TableHead>{language === "fr" ? "Type" : "Type"}</TableHead>
-                    <TableHead>{language === "fr" ? "Description" : "Description"}</TableHead>
-                    <TableHead className="text-right">{language === "fr" ? "Montant" : "Amount"}</TableHead>
+                    <TableHead>{t("specialFundsPage.date")}</TableHead>
+                    <TableHead>{t("specialFundsPage.type")}</TableHead>
+                    <TableHead>{t("specialFundsPage.description")}</TableHead>
+                    <TableHead className="text-right">{t("specialFundsPage.amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {fundTransactions?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        {language === "fr" ? "Aucune transaction" : "No transactions"}
-                      </TableCell>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">{t("specialFundsPage.noTransactions")}</TableCell>
                     </TableRow>
                   ) : (
                     fundTransactions?.map((tx) => (
                       <TableRow key={tx.id}>
-                        <TableCell>{format(new Date(tx.transaction_date), "dd/MM/yyyy", { locale: fr })}</TableCell>
+                        <TableCell>{format(new Date(tx.transaction_date), "dd/MM/yyyy", { locale: language === "fr" ? fr : undefined })}</TableCell>
                         <TableCell>
                           {tx.transaction_type === "income" ? (
-                            <span className="flex items-center text-green-600"><ArrowUpRight className="h-4 w-4 mr-1" />{language === "fr" ? "Entrée" : "Income"}</span>
+                            <span className="flex items-center text-green-600"><ArrowUpRight className="h-4 w-4 mr-1" />{t("specialFundsPage.income")}</span>
                           ) : (
-                            <span className="flex items-center text-red-600"><ArrowDownRight className="h-4 w-4 mr-1" />{language === "fr" ? "Sortie" : "Expense"}</span>
+                            <span className="flex items-center text-red-600"><ArrowDownRight className="h-4 w-4 mr-1" />{t("specialFundsPage.expense")}</span>
                           )}
                         </TableCell>
                         <TableCell>{tx.description || "-"}</TableCell>
                         <TableCell className={`text-right font-medium ${Number(tx.amount) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                          {formatCurrency(Math.abs(Number(tx.amount)))}
+                          {formatAmount(Math.abs(Number(tx.amount)))}
                         </TableCell>
                       </TableRow>
                     ))
