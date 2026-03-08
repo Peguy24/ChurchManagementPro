@@ -55,6 +55,7 @@ import SmartInsights from "./pages/SmartInsights";
 import SystemGuide from "./pages/SystemGuide";
 import Support from "./pages/Support";
 import PlatformActivityLog from "./pages/PlatformActivityLog";
+import RevenueAnalytics from "./pages/RevenueAnalytics";
 import SupportManagement from "./pages/SupportManagement";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
               <Route path="/super-admin/accounting" element={<ProtectedRoute requireSuperAdmin><PlatformAccounting /></ProtectedRoute>} />
               <Route path="/super-admin/activity" element={<ProtectedRoute requireSuperAdmin><PlatformActivityLog /></ProtectedRoute>} />
+              <Route path="/super-admin/revenue" element={<ProtectedRoute requireSuperAdmin><RevenueAnalytics /></ProtectedRoute>} />
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/support-management" element={<ProtectedRoute requireSuperAdmin><SupportManagement /></ProtectedRoute>} />

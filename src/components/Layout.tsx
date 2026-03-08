@@ -188,6 +188,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
     items: [
       { to: "/super-admin", icon: LayoutDashboard, label: t("nav.dashboard") },
       { to: "/super-admin/accounting", icon: PiggyBank, label: t("platformAccounting.accounting") },
+      { to: "/super-admin/revenue", icon: BarChart3, label: t("superAdmin.revenue.title") },
       { to: "/super-admin/explore", icon: FolderOpen, label: t("layout.exploreData") },
       { to: "/settings/tenants", icon: Building2, label: t("layout.churchManagement") },
       { to: "/settings/invitations", icon: Mail, label: t("layout.adminInvitations") },

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -320,6 +320,14 @@ export default function SuperAdminDashboard() {
               >
                 <Activity className="mr-2 h-4 w-4" />
                 {t("superAdmin.activityLog.title")}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/revenue")}
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                {t("superAdmin.revenue.title")}
               </Button>
             </CardContent>
           </Card>
