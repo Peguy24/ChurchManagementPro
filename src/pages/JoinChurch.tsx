@@ -106,6 +106,7 @@ export default function JoinChurch() {
         marriage_date: formData.marriageDate || null,
         number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : 0,
         children_names: formData.childrenNames || null, message: formData.message || null,
+        desired_ministry_id: formData.desiredMinistryId || null,
       });
 
       if (error) throw error;
