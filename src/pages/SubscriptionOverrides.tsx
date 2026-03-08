@@ -149,14 +149,52 @@ export default function SubscriptionOverrides() {
 
   const addDiscount = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("subscription_discounts").insert({
+      // 1. Insert the discount record
+      const { data: inserted, error } = await supabase.from("subscription_discounts").insert({
         tenant_id: form.tenant_id,
         discount_type: form.discount_type,
-        discount_value: parseFloat(form.discount_value),
+        discount_value: parseFloat(form.discount_value) || 0,
         reason: form.reason || null,
         valid_until: form.valid_until || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // 2. Apply discount to existing Stripe subscription (if any)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && inserted) {
+        try {
+          const { data: result, error: applyError } = await supabase.functions.invoke('apply-discount', {
+            body: {
+              tenant_id: form.tenant_id,
+              discount_id: inserted.id,
+              discount_type: form.discount_type,
+              discount_value: parseFloat(form.discount_value) || 0,
+              valid_until: form.valid_until || null,
+            },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (applyError) {
+            console.error("Apply discount error:", applyError);
+          } else if (result?.applied) {
+            toast.success(result.method === "free_access" 
+              ? "Free access activated — Stripe subscription cancelled" 
+              : "Discount will apply at next renewal");
+          } else if (result?.reason) {
+            const reasons: Record<string, string> = {
+              no_users: "No users found for this church",
+              no_email: "No email found for tenant users",
+              no_stripe_customer: "Church has no Stripe account — discount saved for future checkout",
+              no_active_subscription: "No active subscription — discount saved for future checkout",
+            };
+            toast.info(reasons[result.reason] || "Discount saved");
+          }
+        } catch (e) {
+          console.error("Failed to apply discount to Stripe:", e);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-discounts"] });
