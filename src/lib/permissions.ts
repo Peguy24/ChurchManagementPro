@@ -121,7 +121,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
 
 // Map nav groups to route groups (using internal keys, not translated labels)
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
-  "members": ["members", "attendance", "branches", "ministries"],
+  "members": ["members", "attendance", "branches", "ministries", "visitors"],
   "finances": ["finances"],
   "reports": ["dashboard", "reports", "finances"],
   "communication": ["communication"],
