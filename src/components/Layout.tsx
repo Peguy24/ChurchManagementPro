@@ -294,9 +294,18 @@ export default function Layout({ children }: LayoutProps) {
 
   // Determine if user is a super admin (admin without tenant)
   const isSuperAdmin = isAdmin && !tenantId && !tenantLoading;
+  
+  // While tenant is loading for admin users, use route to predict which nav to show
+  // This prevents the church menu from flashing before super admin menu appears
+  const isSuperAdminRoute = location.pathname.startsWith("/super-admin") || 
+    location.pathname === "/settings/tenants" || 
+    location.pathname === "/settings/invitations" ||
+    location.pathname === "/settings/users" ||
+    location.pathname === "/support-management";
+  const showAsSuperAdmin = isSuperAdmin || (isAdmin && tenantLoading && isSuperAdminRoute);
 
   // Get appropriate navigation based on user type
-  const allNavGroups = isSuperAdmin 
+  const allNavGroups = showAsSuperAdmin 
     ? getSuperAdminNavGroups(t, language) 
     : getChurchNavGroups(t, isTenantAdmin);
   
