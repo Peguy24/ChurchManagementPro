@@ -40,6 +40,7 @@ export default function MinistryDialog({
   const [loading, setLoading] = useState(false);
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const m = (key: string) => t(`ministries.${key}`);
 
   const [formData, setFormData] = useState({
