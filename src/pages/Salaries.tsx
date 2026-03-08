@@ -74,6 +74,7 @@ export default function Salaries() {
   const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
