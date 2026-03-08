@@ -44,7 +44,7 @@ export default function AttendanceKiosk() {
     if (!match) {
       setFeedback("error");
       setFeedbackMessage(t("kiosk.invalidQR"));
-      playErrorSound(80);
+      playErrorSound(0.8);
       resetFeedback();
       return;
     }
