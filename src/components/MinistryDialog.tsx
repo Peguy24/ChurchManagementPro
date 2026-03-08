@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ export default function MinistryDialog({
   const [loading, setLoading] = useState(false);
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const m = (key: string) => t(`ministries.${key}`);
 
   const [formData, setFormData] = useState({
@@ -131,6 +132,7 @@ export default function MinistryDialog({
         toast.success(m("createSuccess"));
       }
       onSuccess();
+      queryClient.invalidateQueries({ queryKey: ["ministries-active", tenantId] });
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || m("errorOccurred"));
