@@ -114,7 +114,7 @@ export default function IncomeCategories() {
       queryClient.invalidateQueries({ queryKey: ["income-categories-all"] });
       setDialogOpen(false);
       setForm(initialForm);
-      toast({ title: t("common.success"), description: t("nav.newCategory") });
+      toast({ title: t("common.success"), description: t("layout.newCategory") });
     },
     onError: (error: any) => {
       toast({ 
