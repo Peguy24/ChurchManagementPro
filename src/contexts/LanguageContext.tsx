@@ -2639,6 +2639,7 @@ const translations = {
       kioskMode: "Kiosk Mode",
       automations: "Automations",
       visitors: "Visitor Management",
+      volunteers: "Volunteer Planning",
       logout: "Logout",
     },
     visitors: {
