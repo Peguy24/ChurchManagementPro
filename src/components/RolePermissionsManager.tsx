@@ -158,7 +158,7 @@ export default function RolePermissionsManager() {
   };
 
   if (isLoading) {
-    return <div className="text-muted-foreground">{t("common.loading")}</div>;
+    return <div className="text-muted-foreground">{t("rolePermissions.loadingPermissions")}</div>;
   }
 
   return (
