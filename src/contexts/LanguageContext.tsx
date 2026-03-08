@@ -8782,6 +8782,9 @@ const translations = {
       errorPrefix: "Erè: ",
       successToast: "Demann voye avèk siksè!",
       required: "*",
+      desiredMinistry: "Ministè Ou Vle",
+      selectMinistry: "Chwazi yon ministè",
+      noMinistry: "Okenn",
     },
     eventRegistration: {
       title: "Enskripsyon nan Evènman",
