@@ -98,6 +98,10 @@ export default function MinistryDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tenantId) {
+      toast.error(m("errorOccurred"));
+      return;
+    }
     setLoading(true);
 
     try {

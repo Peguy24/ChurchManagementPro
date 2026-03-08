@@ -91,31 +91,37 @@ export default function MemberDialog({
   });
 
   const { data: branches } = useQuery({
-    queryKey: ["branches-active"],
+    queryKey: ["branches-active", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("branches")
         .select("id, name")
         .eq("status", "active")
+        .eq("tenant_id", tenantId)
         .order("name");
       
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const { data: ministries } = useQuery({
-    queryKey: ["ministries-active"],
+    queryKey: ["ministries-active", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("ministries")
         .select("id, name")
         .eq("status", "active")
+        .eq("tenant_id", tenantId)
         .order("name");
       
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   useEffect(() => {
