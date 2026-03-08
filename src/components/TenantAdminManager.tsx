@@ -239,7 +239,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           role: role.role,
           is_approved: role.is_approved,
           created_at: role.created_at,
-          user_email: matchingInvitation?.email || "Email non disponible",
+          user_email: matchingInvitation?.email || lt("emailNotAvailable"),
           user_first_name: profile?.first_name || null,
           user_last_name: profile?.last_name || null,
         };
