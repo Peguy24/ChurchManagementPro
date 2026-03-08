@@ -894,7 +894,7 @@ function AttendanceContent() {
             <Button size="sm" onClick={() => setDialogOpen(true)} className="flex-1 sm:flex-none">
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">{t("attendance.recordAttendance")}</span>
-              <span className="sm:hidden">Ajouter</span>
+              <span className="sm:hidden">{t("common.add")}</span>
             </Button>
           </div>
         </div>
