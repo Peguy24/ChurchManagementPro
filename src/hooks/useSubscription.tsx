@@ -101,6 +101,14 @@ export function useSubscription() {
 
       if (error) throw error;
 
+      if (data?.free_access) {
+        toast({
+          title: "✅ " + (data.message || "Free access activated"),
+        });
+        await checkSubscription();
+        return;
+      }
+
       if (data?.updated) {
         toast({
           title: t("sub.subscriptionUpdated"),

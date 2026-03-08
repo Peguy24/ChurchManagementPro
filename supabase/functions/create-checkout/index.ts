@@ -19,6 +19,13 @@ const PRICE_IDS = {
   entreprise: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
 };
 
+// Plan limits for direct DB activation (free access)
+const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number; branches: number; users: number; storage: number }> = {
+  essentiel: { plan: "basic", price: 49, members: 200, branches: 1, users: 5, storage: 500 },
+  professionnel: { plan: "standard", price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
+  entreprise: { plan: "premium", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,7 +40,8 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -56,7 +64,122 @@ serve(async (req) => {
     const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
     logStep("Plan selected", { plan, priceId });
 
+    // Get user's tenant_id
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .single();
+
+    const tenantId = profile?.tenant_id;
+    logStep("User tenant", { tenantId });
+
+    // Look up active discount for this tenant
+    let discount: { discount_type: string; discount_value: number; id: string; valid_until: string | null } | null = null;
+    if (tenantId) {
+      const { data: discounts } = await supabaseClient
+        .from("subscription_discounts")
+        .select("id, discount_type, discount_value, valid_until")
+        .eq("tenant_id", tenantId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (discounts && discounts.length > 0) {
+        const d = discounts[0];
+        // Check if not expired
+        if (!d.valid_until || new Date(d.valid_until) > new Date()) {
+          discount = d;
+          logStep("Active discount found", { type: d.discount_type, value: d.discount_value });
+        } else {
+          logStep("Discount expired", { valid_until: d.valid_until });
+        }
+      }
+    }
+
+    // Handle FREE ACCESS discount: bypass Stripe entirely
+    if (discount && discount.discount_type === "free") {
+      logStep("Free access discount - activating plan directly in DB");
+      const dbPlan = PLAN_TO_DB[plan];
+      if (dbPlan && tenantId) {
+        const periodEnd = new Date();
+        // If discount has valid_until, use that; otherwise grant 1 year
+        if (discount.valid_until) {
+          periodEnd.setTime(new Date(discount.valid_until).getTime());
+        } else {
+          periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+        }
+
+        const { error: syncError } = await supabaseClient
+          .from("tenant_subscriptions")
+          .update({
+            plan: dbPlan.plan,
+            status: "active",
+            price_monthly: 0,
+            max_members: dbPlan.members,
+            max_branches: dbPlan.branches,
+            max_users: dbPlan.users,
+            max_storage_mb: dbPlan.storage,
+            current_period_end: periodEnd.toISOString(),
+            trial_ends_at: null,
+          })
+          .eq("tenant_id", tenantId);
+
+        if (syncError) {
+          logStep("Failed to activate free plan", { error: syncError.message });
+          throw new Error("Failed to activate free access plan");
+        }
+
+        logStep("Free plan activated successfully", { tenantId, plan: dbPlan.plan, until: periodEnd.toISOString() });
+        return new Response(JSON.stringify({ 
+          free_access: true, 
+          message: "Accès gratuit activé avec succès." 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+
+    // Create or find Stripe coupon if there's a discount
+    let stripeCouponId: string | undefined;
+    if (discount && (discount.discount_type === "percentage" || discount.discount_type === "fixed")) {
+      try {
+        // Create a unique coupon for this discount
+        const couponId = `discount_${discount.id}`;
+        
+        // Try to retrieve existing coupon first
+        try {
+          await stripe.coupons.retrieve(couponId);
+          stripeCouponId = couponId;
+          logStep("Existing Stripe coupon found", { couponId });
+        } catch {
+          // Coupon doesn't exist, create it
+          const couponParams: Stripe.CouponCreateParams = {
+            id: couponId,
+            duration: discount.valid_until ? "once" : "forever",
+          };
+
+          if (discount.discount_type === "percentage") {
+            couponParams.percent_off = discount.discount_value;
+          } else {
+            // Fixed amount discount (in cents)
+            couponParams.amount_off = Math.round(discount.discount_value * 100);
+            couponParams.currency = "usd";
+          }
+
+          await stripe.coupons.create(couponParams);
+          stripeCouponId = couponId;
+          logStep("Stripe coupon created", { couponId, type: discount.discount_type, value: discount.discount_value });
+        }
+      } catch (couponError) {
+        logStep("Warning: Could not create coupon, proceeding without discount", { 
+          error: couponError instanceof Error ? couponError.message : String(couponError) 
+        });
+      }
+    }
 
     // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -73,24 +196,29 @@ serve(async (req) => {
       });
 
       if (existingSubs.data.length > 0) {
-        const currentProductId = existingSubs.data[0].items.data[0].price.product as string;
         const currentPriceId = existingSubs.data[0].items.data[0].price.id;
-        logStep("User already has active subscription", { currentPriceId, currentProductId });
+        logStep("User already has active subscription", { currentPriceId });
 
         if (currentPriceId === priceId) {
           throw new Error("Vous êtes déjà abonné à ce plan.");
         }
 
-        // Different plan: update the existing subscription instead of creating a new one
+        // Different plan: update the existing subscription
         const subscriptionId = existingSubs.data[0].id;
         const subscriptionItemId = existingSubs.data[0].items.data[0].id;
         
-        await stripe.subscriptions.update(subscriptionId, {
-          items: [
-            { id: subscriptionItemId, price: priceId },
-          ],
+        const updateParams: Stripe.SubscriptionUpdateParams = {
+          items: [{ id: subscriptionItemId, price: priceId }],
           proration_behavior: "create_prorations",
-        });
+        };
+
+        // Apply coupon to subscription update if available
+        if (stripeCouponId) {
+          updateParams.coupon = stripeCouponId;
+          logStep("Applying coupon to subscription update", { couponId: stripeCouponId });
+        }
+
+        await stripe.subscriptions.update(subscriptionId, updateParams);
 
         logStep("Subscription updated to new plan", { subscriptionId, newPriceId: priceId });
 
@@ -105,7 +233,7 @@ serve(async (req) => {
 
     const origin = "https://churchmanagementpro.com";
     
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -121,7 +249,15 @@ serve(async (req) => {
         user_id: user.id,
         plan: plan,
       },
-    });
+    };
+
+    // Apply discount coupon to checkout session
+    if (stripeCouponId) {
+      sessionParams.discounts = [{ coupon: stripeCouponId }];
+      logStep("Applying coupon to checkout session", { couponId: stripeCouponId });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 

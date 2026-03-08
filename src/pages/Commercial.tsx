@@ -181,6 +181,16 @@ const Commercial = () => {
 
         if (error) throw error;
 
+        if (data?.free_access) {
+          toast({ title: "✅ " + (data.message || "Free access activated") });
+          return;
+        }
+
+        if (data?.updated) {
+          toast({ title: data.message || "Subscription updated" });
+          return;
+        }
+
         if (data?.url) {
           window.open(data.url, '_blank');
         }
