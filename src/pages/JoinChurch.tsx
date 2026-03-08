@@ -31,6 +31,7 @@ export default function JoinChurch() {
   const [submitted, setSubmitted] = useState(false);
   const [churchName, setChurchName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [ministries, setMinistries] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", gender: "", dateOfBirth: "",
     phone: "", email: "", emergencyPhone: "",
@@ -38,7 +39,7 @@ export default function JoinChurch() {
     academicFormation: "", professionalFormation: "",
     baptismStatus: "", baptismDate: "", originChurch: "", conversionDate: "", christianExperience: "",
     maritalStatus: "", spouseName: "", marriageDate: "", numberOfChildren: "", childrenNames: "",
-    message: "",
+    message: "", desiredMinistryId: "",
   });
 
   useEffect(() => {
