@@ -690,12 +690,12 @@ export default function Salaries() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Poste</TableHead>
-                    <TableHead>Salaire</TableHead>
-                    <TableHead>Fréquence</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("salariesPage.name")}</TableHead>
+                    <TableHead>{t("salariesPage.position")}</TableHead>
+                    <TableHead>{t("salariesPage.salaryAmount")}</TableHead>
+                    <TableHead>{t("salariesPage.frequency")}</TableHead>
+                    <TableHead>{t("salariesPage.status")}</TableHead>
+                    <TableHead className="text-right">{t("salariesPage.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
