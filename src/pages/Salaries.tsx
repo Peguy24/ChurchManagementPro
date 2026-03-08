@@ -39,6 +39,7 @@ import { fr } from "date-fns/locale";
 import { Plus, Users, History, Edit, Trash2, Banknote, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Employee {
   id: string;
