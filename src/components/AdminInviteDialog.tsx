@@ -29,6 +29,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Error",
     linkCopied: "Link copied to clipboard",
     copyError: "Unable to copy link",
+    emailAlreadyRegistered: "This email is already registered as",
+    approvedStatus: "approved",
+    pendingStatus: "pending approval",
   },
   fr: {
     inviteAdmin: "Inviter un administrateur",
