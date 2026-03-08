@@ -217,7 +217,7 @@ export default function RolePermissionsManager() {
             disabled={!hasChanges || saveMutation.isPending}
           >
             <Save className="h-4 w-4 mr-2" />
-            {saveMutation.isPending ? t("common.saving") : t("common.save")}
+            {saveMutation.isPending ? t("rolePermissions.saving") : t("rolePermissions.save")}
           </Button>
         </div>
       </CardContent>
