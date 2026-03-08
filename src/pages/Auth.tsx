@@ -16,6 +16,9 @@ export default function Auth() {
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
   
   // Get tenant info from URL params (from invitation link)
   const tenantId = searchParams.get('tenant');
@@ -137,6 +140,23 @@ export default function Auth() {
     }
 
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Email envoyé', description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.' });
+      setShowForgotPassword(false);
+      setForgotEmail('');
+    }
+    setForgotLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -435,10 +455,25 @@ export default function Auth() {
                         required
                       />
                     </div>
+                    <div className="flex justify-end">
+                      <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
+                        Mot de passe oublié ?
+                      </button>
+                    </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? 'Chargement...' : 'Se connecter'}
                     </Button>
                   </form>
+                  {showForgotPassword && (
+                    <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
+                      <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation</p>
+                      <Input type="email" placeholder="nom@exemple.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
+                      <div className="flex gap-2">
+                        <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? 'Envoi...' : 'Envoyer le lien'}</Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>Annuler</Button>
+                      </div>
+                    </form>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -566,10 +601,25 @@ export default function Auth() {
                     required
                   />
                 </div>
+                <div className="flex justify-end">
+                  <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
+                    Mot de passe oublié ?
+                  </button>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Chargement...' : 'Se connecter'}
                 </Button>
               </form>
+              {showForgotPassword && (
+                <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
+                  <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation</p>
+                  <Input type="email" placeholder="nom@exemple.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? 'Envoi...' : 'Envoyer le lien'}</Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>Annuler</Button>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
         )}

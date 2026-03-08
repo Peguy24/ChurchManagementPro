@@ -60,6 +60,7 @@ import MemberRequests from "./pages/MemberRequests";
 import EventRegister from "./pages/EventRegister";
 import EventRegistrations from "./pages/EventRegistrations";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/join/:tenantId" element={<JoinChurch />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
