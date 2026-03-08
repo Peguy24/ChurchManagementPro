@@ -331,8 +331,8 @@ export default function Salaries() {
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du paiement.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.paymentError"),
         variant: "destructive",
       });
       console.error(error);
