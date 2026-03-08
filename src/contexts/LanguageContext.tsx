@@ -145,6 +145,7 @@ const translations = {
       kioskMode: "Mode Kiosque",
       automations: "Automatisations",
       visitors: "Gestion Visiteurs",
+      volunteers: "Planification Bénévoles",
       logout: "Déconnexion",
     },
     visitors: {
