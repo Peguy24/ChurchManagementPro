@@ -378,8 +378,8 @@ export default function AttendanceKiosk() {
           <Card className="w-full">
             <CardContent className="flex flex-col items-center py-8">
               <Clock className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-lg font-semibold">Aucun événement aujourd'hui</p>
-              <p className="text-sm text-muted-foreground">Créez un événement pour activer le scan.</p>
+              <p className="text-lg font-semibold">{t("kiosk.noEventsToday")}</p>
+              <p className="text-sm text-muted-foreground">{t("kiosk.createEventToActivate")}</p>
             </CardContent>
           </Card>
         )}
