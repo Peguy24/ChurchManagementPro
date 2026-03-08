@@ -290,7 +290,7 @@ export default function IncomeCategories() {
                 {(form.name || form.code) && checkDuplicate(form.name, form.code, form.id) && (
                   <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {t("nav.categoryDuplicate")}
+                    {t("layout.categoryDuplicate")}
                   </p>
                 )}
                 <div className="space-y-2">
