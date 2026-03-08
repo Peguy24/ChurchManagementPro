@@ -342,9 +342,15 @@ export default function TenantManagement() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       toast.success(t("superAdmin.churchDeleted"));
+      logPlatformActivity({
+        eventType: "tenant_deleted",
+        eventCategory: "tenant",
+        description: `Église supprimée (ID: ${id})`,
+        metadata: { tenant_id: id },
+      });
     },
     onError: (error) => {
       toast.error(t("superAdmin.deleteError") + ": " + error.message);
