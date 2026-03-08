@@ -6266,6 +6266,11 @@ const translations = {
       noEventScheduled: "Pa gen evènman pwograme pou jodi a",
       eventRequiredToScan: "Tanpri chwazi yon evènman anvan ou eskane",
       selectEventToStart: "Chwazi yon evènman pou kòmanse eskane",
+      deleteConfirmTitle: "Efase prezans sa a?",
+      deleteConfirmDesc: "Èske ou sèten ou vle efase anrejistreman prezans {name}? Aksyon sa a pa ka defèt.",
+      deleteSuccess: "Prezans efase",
+      deleteSuccessDesc: "Anrejistreman prezans {name} efase.",
+      deleteError: "Erè pandan efase prezans",
     },
     attendanceAlerts: {
       title: "Alèt Prezans",
