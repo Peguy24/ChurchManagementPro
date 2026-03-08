@@ -45,6 +45,7 @@ const statusColors: Record<string, string> = {
 export default function Ministries() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMinistry, setSelectedMinistry] = useState<any>();
@@ -54,8 +55,9 @@ export default function Ministries() {
   });
 
   const { data: ministries = [], refetch } = useQuery({
-    queryKey: ["ministries"],
+    queryKey: ["ministries", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("ministries")
         .select(`
@@ -63,11 +65,13 @@ export default function Ministries() {
           leader:members!ministries_leader_id_fkey(first_name, last_name),
           ministry_members(count)
         `)
+        .eq("tenant_id", tenantId)
         .order("name");
       
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const filteredMinistries = ministries.filter(
