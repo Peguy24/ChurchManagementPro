@@ -310,7 +310,7 @@ export default function Layout({ children }: LayoutProps) {
     : getChurchNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions (only for church users)
-  const navGroups = isSuperAdmin 
+  const navGroups = showAsSuperAdmin 
     ? allNavGroups 
     : allNavGroups
         .filter(group => canSeeNav(group.key))
