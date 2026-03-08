@@ -5648,6 +5648,8 @@ const translations = {
         noHistory: "Pa gen anons voye ankò",
       },
     },
+    platform: {
+      superAdminManagement: "Jesyon Super Administratè",
       superAdminManagementDesc: "Jere aksè administratè platfòm nan",
       inviteSuperAdmin: "Envite Super Admin",
       usersTab: "Itilizatè",
