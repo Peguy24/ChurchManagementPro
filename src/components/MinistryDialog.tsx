@@ -51,29 +51,35 @@ export default function MinistryDialog({
   });
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-active"],
+    queryKey: ["members-active", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("members")
         .select("id, first_name, last_name")
         .eq("status", "active")
+        .eq("tenant_id", tenantId)
         .order("first_name");
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const { data: branches = [] } = useQuery({
-    queryKey: ["branches-active"],
+    queryKey: ["branches-active", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("branches")
         .select("id, name")
         .eq("status", "active")
+        .eq("tenant_id", tenantId)
         .order("name");
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   useEffect(() => {
@@ -92,6 +98,10 @@ export default function MinistryDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tenantId) {
+      toast.error(m("errorOccurred"));
+      return;
+    }
     setLoading(true);
 
     try {
