@@ -1465,6 +1465,18 @@ const translations = {
         noScores: "Aucun score calculé. Cliquez sur Recalculer pour commencer.",
         noResults: "Aucun résultat trouvé",
       },
+      notifications: {
+        title: "Alertes Plateforme",
+        markAllRead: "Tout marquer lu",
+        empty: "Aucune alerte",
+        checked: "Alertes vérifiées",
+        newAlerts: "nouvelles alertes",
+        checkError: "Erreur de vérification",
+        trialExpiring: "Essai expire bientôt",
+        trialExpired: "Essai expiré",
+        paymentIssue: "Problème de paiement",
+        tenantInactive: "Église inactive",
+      },
     },
     platform: {
       superAdminManagement: "Gestion des Super Administrateurs",
