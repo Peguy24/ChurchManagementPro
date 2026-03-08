@@ -316,8 +316,12 @@ export default function AttendanceKiosk() {
             <CardContent className="flex items-center gap-3 py-4">
               <AlertTriangle className="h-6 w-6 text-yellow-500 shrink-0" />
               <div>
-                <p className="font-semibold text-sm">Scan non disponible</p>
-                <p className="text-sm text-muted-foreground">{windowStatus.reason}</p>
+                <p className="font-semibold text-sm">{t("kiosk.scanUnavailable")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {windowStatus.reasonParams
+                    ? t(windowStatus.reasonKey).replace(/\{(\w+)\}/g, (_, k) => windowStatus.reasonParams?.[k] || "")
+                    : t(windowStatus.reasonKey)}
+                </p>
               </div>
             </CardContent>
           </Card>
