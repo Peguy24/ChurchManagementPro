@@ -129,7 +129,7 @@ const translations = {
       attendanceAlerts: "Alertes Présence",
       groupComparison: "Comparaison Groupes",
       donations: "Recettes",
-      financialReports: "Rapports Financiers",
+      financialReports: "Rapport Général",
       budgets: "Budgets",
       expenses: "Dépenses",
       bankReconciliation: "Rapprochement Bancaire",
