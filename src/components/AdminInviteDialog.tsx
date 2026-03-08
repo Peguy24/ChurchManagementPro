@@ -77,6 +77,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     error: "Erè",
     linkCopied: "Lyen kopye nan pres-papye",
     copyError: "Enposib kopye lyen nan",
+    emailAlreadyRegistered: "Imèl sa a deja anrejistre kòm",
+    approvedStatus: "apwouve",
+    pendingStatus: "ap tann apwobasyon",
   },
 };
 
