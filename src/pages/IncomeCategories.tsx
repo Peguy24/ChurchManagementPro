@@ -209,7 +209,7 @@ export default function IncomeCategories() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.code.trim()) {
-      toast({ title: t("common.error"), description: t("nav.categoryName") + " & " + t("nav.categoryCode"), variant: "destructive" });
+      toast({ title: t("common.error"), description: t("layout.categoryName") + " & " + t("layout.categoryCode"), variant: "destructive" });
       return;
     }
 
