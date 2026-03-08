@@ -496,26 +496,31 @@ export default function MemberDialog({
               console.error("Error sending welcome email:", emailError);
             }
           }
+          // Handle ministry for new member
+          if (selectedMinistryId) {
+            await supabase.from("ministry_members").insert({
+              ministry_id: selectedMinistryId,
+              member_id: data.id,
+              role: "member",
+              joined_date: new Date().toISOString().split("T")[0],
+            });
+          }
         }
       }
 
-      // Handle ministry assignment
-      const finalMemberId = member?.id || (member ? undefined : undefined);
-      // For new members, get the ID from the insert result
-      const targetMemberId = member?.id;
-      
-      if (targetMemberId) {
+      // Handle ministry assignment for existing members
+      if (member?.id && selectedMinistryId !== undefined) {
         // Remove existing ministry assignments
         await supabase
           .from("ministry_members")
           .delete()
-          .eq("member_id", targetMemberId);
+          .eq("member_id", member.id);
 
         // Add new ministry assignment if selected
         if (selectedMinistryId) {
           await supabase.from("ministry_members").insert({
             ministry_id: selectedMinistryId,
-            member_id: targetMemberId,
+            member_id: member.id,
             role: "member",
             joined_date: new Date().toISOString().split("T")[0],
           });
