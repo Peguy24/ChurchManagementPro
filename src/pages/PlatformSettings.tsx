@@ -153,12 +153,21 @@ function TrialSettings({
   saving: boolean;
   t: (k: string) => string;
 }) {
-  const [days, setDays] = useState<number>(typeof trialDays === "number" ? trialDays : parseInt(trialDays) || 14);
+  const parsedDays = typeof trialDays === "number" ? trialDays : parseInt(trialDays) || 14;
   const limits = typeof trialLimits === "object" ? trialLimits : {};
+  const [days, setDays] = useState<number>(parsedDays);
   const [maxMembers, setMaxMembers] = useState(limits.max_members ?? 50);
   const [maxBranches, setMaxBranches] = useState(limits.max_branches ?? 1);
   const [maxUsers, setMaxUsers] = useState(limits.max_users ?? 2);
   const [maxStorage, setMaxStorage] = useState(limits.max_storage_mb ?? 100);
+
+  useEffect(() => { setDays(parsedDays); }, [parsedDays]);
+  useEffect(() => {
+    setMaxMembers(limits.max_members ?? 50);
+    setMaxBranches(limits.max_branches ?? 1);
+    setMaxUsers(limits.max_users ?? 2);
+    setMaxStorage(limits.max_storage_mb ?? 100);
+  }, [trialLimits]);
 
   return (
     <Card>
