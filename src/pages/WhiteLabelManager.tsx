@@ -123,22 +123,12 @@ export default function WhiteLabelManager() {
                       <TableRow key={tenant.id}>
                         <TableCell>
                           {tenant.logo_url ? (
-                            <div className="h-8 w-8 rounded overflow-hidden">
-                              <SignedImage
-                                path={tenant.logo_url}
-                                bucket="tenant-logos"
-                                alt={tenant.name}
-                                className="h-full w-full object-contain"
-                                fallback={
-                                  <div
-                                    className="h-8 w-8 rounded flex items-center justify-center text-white text-sm font-bold"
-                                    style={{ backgroundColor: tenant.primary_color || "#6366f1" }}
-                                  >
-                                    {tenant.name?.charAt(0) || "?"}
-                                  </div>
-                                }
-                              />
-                            </div>
+                            <img
+                              src={tenant.logo_url}
+                              alt={tenant.name}
+                              className="h-8 w-8 rounded object-contain"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
                           ) : (
                             <div
                               className="h-8 w-8 rounded flex items-center justify-center text-white text-sm font-bold"
