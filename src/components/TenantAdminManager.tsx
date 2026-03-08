@@ -75,7 +75,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Error sending",
     importantInfo: "Important information",
     hello: "Hello",
-  },
+    emailNotAvailable: "Email unavailable",
+    defaultAdminName: "Admin",
   fr: {
     adminsOf: "Administrateurs de",
     manageAdmins: "Gérez les administrateurs de cette église. Vous pouvez les supprimer ou leur envoyer un email.",

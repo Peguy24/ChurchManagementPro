@@ -231,8 +231,8 @@ export default function TenantUserManagement() {
       if (skipEmail && data?.invitationLink) {
         setInvitationLink(data.invitationLink);
         toast({
-          title: t('tenant.linkGenerated') || "Lien généré",
-          description: t('tenant.linkGeneratedDesc') || "Le lien d'invitation a été généré avec succès",
+          title: t('tenant.linkGenerated'),
+          description: t('tenant.linkGeneratedDesc'),
         });
       } else if (!skipEmail) {
         toast({
