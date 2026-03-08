@@ -105,6 +105,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/inventory": "inventory",
   "/finance/salaries": "finances",
   "/insights": "reports",
+  "/automations": "communication",
   "/support": "communication",
   "/support-management": "tenants",
 };
