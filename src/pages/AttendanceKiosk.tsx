@@ -32,7 +32,7 @@ interface EventOption {
 
 function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: string } {
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  const today = getLocalToday();
 
   // Check date range
   const eventStartDate = event.event_date;
