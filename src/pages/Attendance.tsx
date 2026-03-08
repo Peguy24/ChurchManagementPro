@@ -472,7 +472,8 @@ function AttendanceContent() {
       setScannedMembers(prev => [{
         ...member,
         time: new Date().toLocaleTimeString("fr-FR"),
-        status: 'success' as const
+        status: 'success' as const,
+        attendance_record_id: insertedRecord?.id,
       }, ...prev].slice(0, 10));
 
       await loadAttendanceRecords();
