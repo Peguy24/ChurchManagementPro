@@ -288,7 +288,7 @@ export default function Layout({ children }: LayoutProps) {
   const { isTenantAdmin } = useTenantRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
