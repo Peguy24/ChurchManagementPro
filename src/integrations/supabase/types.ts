@@ -2739,6 +2739,59 @@ export type Database = {
           },
         ]
       }
+      tenant_onboarding_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          step_admin_invited: boolean
+          step_first_branch_created: boolean
+          step_first_donation_recorded: boolean
+          step_first_event_created: boolean
+          step_first_member_added: boolean
+          step_logo_uploaded: boolean
+          step_profile_completed: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          step_admin_invited?: boolean
+          step_first_branch_created?: boolean
+          step_first_donation_recorded?: boolean
+          step_first_event_created?: boolean
+          step_first_member_added?: boolean
+          step_logo_uploaded?: boolean
+          step_profile_completed?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          step_admin_invited?: boolean
+          step_first_branch_created?: boolean
+          step_first_donation_recorded?: boolean
+          step_first_event_created?: boolean
+          step_first_member_added?: boolean
+          step_logo_uploaded?: boolean
+          step_profile_completed?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_onboarding_progress_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_requests: {
         Row: {
           address: string | null
