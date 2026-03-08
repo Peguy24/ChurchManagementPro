@@ -155,7 +155,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Erè nan anvwa",
     importantInfo: "Enfòmasyon enpòtan",
     hello: "Bonjou",
-  },
+    emailNotAvailable: "Imèl pa disponib",
+    defaultAdminName: "Administratè",
 };
 
 interface TenantAdmin {
