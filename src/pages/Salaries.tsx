@@ -979,7 +979,7 @@ export default function Salaries() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_notes">Notes</Label>
+                <Label htmlFor="payment_notes">{t("salariesPage.notes")}</Label>
                 <Input
                   id="payment_notes"
                   value={paymentForm.notes}
