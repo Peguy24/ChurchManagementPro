@@ -461,12 +461,18 @@ export default function TenantAuth() {
           .update({ tenant_id: tenant.id })
           .eq('id', data.user.id);
         
-        // Determine role based on invitation
-        const isAdminInvite = hasValidInvitation;
+        // Determine role + approval behavior based on invitation source
+        const isInvitedSignup = hasValidInvitation;
+        const isTokenInvite = Boolean(inviteToken && invitation?.id);
         const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
-        const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as any) ? inviteRoleParam : 'admin';
-        const roleToAssign = isAdminInvite ? roleFromParam : 'user';
-        const isAutoApproved = isAdminInvite; // Invited users are auto-approved
+        const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as typeof validRoles[number])
+          ? inviteRoleParam
+          : 'admin';
+
+        const roleToAssign = isInvitedSignup ? roleFromParam : 'user';
+        // Token-based admin invitation = trusted, auto-approved.
+        // Email+role invitation (tenant user invite) = requires manual approval.
+        const isAutoApproved = isTokenInvite;
         
         await supabase
           .from('tenant_user_roles')
@@ -477,15 +483,15 @@ export default function TenantAuth() {
             is_approved: isAutoApproved,
           });
 
-        // Mark invitation as used if applicable
-        if (isAdminInvite && invitation) {
+        // Mark token invitation as used when applicable
+        if (isTokenInvite && invitation?.id) {
           await supabase
             .from('admin_invitations')
             .update({ used_at: new Date().toISOString() })
             .eq('id', invitation.id);
         }
 
-        if (isAdminInvite) {
+        if (isInvitedSignup && isAutoApproved) {
           toast({
             title: lt('congratulations'),
             description: lt('adminCreatedDesc', { name: tenant.name }),
