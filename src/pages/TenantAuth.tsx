@@ -463,7 +463,9 @@ export default function TenantAuth() {
         
         // Determine role based on invitation
         const isAdminInvite = hasValidInvitation;
-        const roleToAssign = isAdminInvite ? (inviteRoleParam || 'admin') : 'user';
+        const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+        const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as any) ? inviteRoleParam : 'admin';
+        const roleToAssign = isAdminInvite ? roleFromParam : 'user';
         const isAutoApproved = isAdminInvite; // Invited users are auto-approved
         
         await supabase
@@ -471,7 +473,7 @@ export default function TenantAuth() {
           .insert({
             tenant_id: tenant.id,
             user_id: data.user.id,
-            role: roleToAssign,
+            role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
             is_approved: isAutoApproved,
           });
 
