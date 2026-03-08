@@ -429,7 +429,7 @@ export default function DonationDialog({
 
           {/* Member - Optional */}
           <div className="space-y-2">
-            <Label>{t("attendance.selectMember")} (Optionnel)</Label>
+            <Label>{t("attendance.selectMember")} ({t("donations.optional")})</Label>
             <Select
               value={formData.memberId}
               onValueChange={(value) => setFormData({ ...formData, memberId: value })}
