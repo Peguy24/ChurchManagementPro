@@ -26,6 +26,7 @@ import { TenantAdminManager } from "@/components/TenantAdminManager";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { logPlatformActivity } from "@/lib/activityLogger";
 
 type SubscriptionPlan = "free" | "basic" | "standard" | "premium" | "enterprise";
 type TenantStatus = "active" | "suspended" | "trial" | "cancelled";
