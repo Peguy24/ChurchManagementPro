@@ -6253,7 +6253,6 @@ const translations = {
       markedPresentToast: "{name} make prezan.",
       information: "Enfòmasyon",
       noEventToday: "Pa gen evènman jodi a",
-      selectAnEvent: "Chwazi yon evènman",
       noEventScheduled: "Pa gen evènman pwograme pou jodi a",
       eventRequiredToScan: "Tanpri chwazi yon evènman anvan ou eskane",
       selectEventToStart: "Chwazi yon evènman pou kòmanse eskane",
