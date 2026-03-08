@@ -47,6 +47,7 @@ import Inventory from "./pages/Inventory";
 import TenantManagement from "./pages/TenantManagement";
 import TenantUserManagement from "./pages/TenantUserManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import PlatformAccounting from "./pages/PlatformAccounting";
 import AdminInvitations from "./pages/AdminInvitations";
 import Subscription from "./pages/Subscription";
 import TenantDataViewer from "./pages/TenantDataViewer";
@@ -120,6 +121,7 @@ const App = () => (
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
+              <Route path="/super-admin/accounting" element={<ProtectedRoute requireSuperAdmin><PlatformAccounting /></ProtectedRoute>} />
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/support-management" element={<ProtectedRoute requireSuperAdmin><SupportManagement /></ProtectedRoute>} />
