@@ -386,6 +386,14 @@ export default function SuperAdminDashboard() {
                 <GitCompareArrows className="mr-2 h-4 w-4" />
                 {t("superAdmin.comparison.navTitle")}
               </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/branding")}
+              >
+                <Palette className="mr-2 h-4 w-4" />
+                {t("superAdmin.whiteLabel.navTitle")}
+              </Button>
             </CardContent>
           </Card>
         </div>
