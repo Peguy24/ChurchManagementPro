@@ -273,7 +273,7 @@ export default function Salaries() {
           approved_by: user?.id,
           created_by: user?.id,
           tenant_id: tenantId,
-          notes: `Paiement automatique - ${data.notes || ""}`.trim(),
+          notes: `${t("salariesPage.autoPayment")} - ${data.notes || ""}`.trim(),
         });
       if (expenseError) throw expenseError;
 
