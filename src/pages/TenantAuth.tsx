@@ -299,6 +299,12 @@ export default function TenantAuth() {
           // Pre-fill email from invitation
           setSignupForm(prev => ({ ...prev, email: inviteData.email }));
         }
+      } else if (inviteEmailParam) {
+        // Handle direct email+role invitation (from tenant admin invite)
+        console.log('Direct email invite detected:', inviteEmailParam, 'role:', inviteRoleParam);
+        setInvitation({ id: '', email: inviteEmailParam, tenant_id: data.id, expires_at: '', used_at: null });
+        setInvitationValid(true);
+        setSignupForm(prev => ({ ...prev, email: inviteEmailParam }));
       } else {
         console.log('No invite token in URL');
       }
