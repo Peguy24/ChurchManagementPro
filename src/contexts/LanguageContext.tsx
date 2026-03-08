@@ -145,6 +145,7 @@ const translations = {
       kioskMode: "Mode Kiosque",
       automations: "Automatisations",
       visitors: "Gestion Visiteurs",
+      volunteers: "Planification Bénévoles",
       logout: "Déconnexion",
     },
     visitors: {
@@ -2638,6 +2639,7 @@ const translations = {
       kioskMode: "Kiosk Mode",
       automations: "Automations",
       visitors: "Visitor Management",
+      volunteers: "Volunteer Planning",
       logout: "Logout",
     },
     visitors: {
@@ -5129,6 +5131,7 @@ const translations = {
       kioskMode: "Mòd Kiosk",
       automations: "Otomatizasyon",
       visitors: "Jesyon Vizitè",
+      volunteers: "Planifikasyon Volontè",
       logout: "Dekonekte",
     },
     visitors: {
