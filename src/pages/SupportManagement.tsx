@@ -60,6 +60,12 @@ export default function SupportManagement() {
         delete next[variables.ticketId];
         return next;
       });
+      logPlatformActivity({
+        eventType: "support_ticket",
+        eventCategory: "support",
+        description: `Ticket ${variables.ticketId.slice(0, 8)} → ${variables.newStatus}`,
+        metadata: { ticketId: variables.ticketId, newStatus: variables.newStatus },
+      });
       toast({
         title: t("layout.supportResponseSent"),
         description: t("layout.supportResponseSentDesc"),

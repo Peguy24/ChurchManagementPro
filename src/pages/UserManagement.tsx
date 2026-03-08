@@ -118,8 +118,14 @@ export default function UserManagement() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      logPlatformActivity({
+        eventType: "role_changed",
+        eventCategory: "user",
+        description: `Rôle ${variables.role} attribué à l'utilisateur ${variables.userId.slice(0, 8)}`,
+        metadata: { userId: variables.userId, role: variables.role },
+      });
       toast({
         title: t("common.success") || "Success",
         description: t("platform.roleAssigned"),
