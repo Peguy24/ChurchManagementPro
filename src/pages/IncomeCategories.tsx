@@ -269,7 +269,7 @@ export default function IncomeCategories() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>{t("nav.categoryCode")} *</Label>
+                    <Label>{t("layout.categoryCode")} *</Label>
                     <Input
                       value={form.code}
                       onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
