@@ -975,7 +975,7 @@ export default function Salaries() {
                   onChange={(e) =>
                     setPaymentForm({ ...paymentForm, reference_number: e.target.value })
                   }
-                  placeholder="N° de chèque, référence virement..."
+                  placeholder={t("salariesPage.referencePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
