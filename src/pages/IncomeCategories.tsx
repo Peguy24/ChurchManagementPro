@@ -151,7 +151,7 @@ export default function IncomeCategories() {
       setDialogOpen(false);
       setForm(initialForm);
       setEditMode(false);
-      toast({ title: t("common.success"), description: t("nav.editCategory") });
+      toast({ title: t("common.success"), description: t("layout.editCategory") });
     },
     onError: (error: any) => {
       toast({ 
