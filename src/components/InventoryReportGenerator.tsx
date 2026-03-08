@@ -8,6 +8,7 @@ import { FileText, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { generateInventoryReportPDF, downloadPDF } from "@/lib/inventoryReportPDF";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InventoryItem {
   id: string;
@@ -53,6 +54,7 @@ export default function InventoryReportGenerator({
   churchName,
   logoUrl,
 }: InventoryReportGeneratorProps) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -65,7 +67,7 @@ export default function InventoryReportGenerator({
 
   const handleGenerate = async () => {
     if (items.length === 0) {
-      toast.error("Aucun article à inclure dans le rapport");
+      toast.error(t("inventory.noItemsForReport"));
       return;
     }
 
@@ -76,22 +78,18 @@ export default function InventoryReportGenerator({
       const blob = await generateInventoryReportPDF(
         items,
         maintenanceRecords,
-        {
-          ...options,
-          churchName,
-          logoUrl,
-        },
+        { ...options, churchName, logoUrl },
         (p) => setProgress(p)
       );
 
       const filename = `inventaire_${format(new Date(), "yyyy-MM-dd_HHmm")}.pdf`;
       downloadPDF(blob, filename);
       
-      toast.success("Rapport PDF généré avec succès");
+      toast.success(t("inventory.reportSuccess"));
       setIsOpen(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du rapport");
+      toast.error(t("inventory.reportError"));
     } finally {
       setIsGenerating(false);
       setProgress(0);
@@ -105,80 +103,55 @@ export default function InventoryReportGenerator({
       <DialogTrigger asChild>
         <Button variant="outline">
           <FileText className="h-4 w-4 mr-2" />
-          Rapport PDF
+          {t("inventory.pdfReport")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Générer un Rapport d'Inventaire</DialogTitle>
-          <DialogDescription>
-            Créez un rapport PDF complet avec statistiques et photos
-          </DialogDescription>
+          <DialogTitle>{t("inventory.generateReport")}</DialogTitle>
+          <DialogDescription>{t("inventory.generateReportDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="bg-muted/50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Articles à inclure:</span>
+              <span className="text-muted-foreground">{t("inventory.itemsToInclude")}:</span>
               <span className="font-medium">{items.length}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Photos disponibles:</span>
+              <span className="text-muted-foreground">{t("inventory.photosAvailable")}:</span>
               <span className="font-medium">{itemsWithPhotos}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Maintenances:</span>
+              <span className="text-muted-foreground">{t("inventory.maintenancesLabel")}:</span>
               <span className="font-medium">{maintenanceRecords.length}</span>
             </div>
           </div>
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Options du rapport</Label>
+            <Label className="text-base font-medium">{t("inventory.reportOptions")}</Label>
             
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeStatistics"
-                checked={options.includeStatistics}
-                onCheckedChange={(checked) =>
-                  setOptions({ ...options, includeStatistics: checked === true })
-                }
-              />
-              <Label htmlFor="includeStatistics" className="cursor-pointer">
-                Inclure les statistiques
+              <Checkbox id="includeStatistics" checked={options.includeStatistics}
+                onCheckedChange={(checked) => setOptions({ ...options, includeStatistics: checked === true })} />
+              <Label htmlFor="includeStatistics" className="cursor-pointer">{t("inventory.includeStatistics")}</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox id="includePhotos" checked={options.includePhotos}
+                onCheckedChange={(checked) => setOptions({ ...options, includePhotos: checked === true })}
+                disabled={itemsWithPhotos === 0} />
+              <Label htmlFor="includePhotos" className={`cursor-pointer ${itemsWithPhotos === 0 ? "text-muted-foreground" : ""}`}>
+                {t("inventory.includePhotoCatalog")} ({itemsWithPhotos})
               </Label>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includePhotos"
-                checked={options.includePhotos}
-                onCheckedChange={(checked) =>
-                  setOptions({ ...options, includePhotos: checked === true })
-                }
-                disabled={itemsWithPhotos === 0}
-              />
-              <Label 
-                htmlFor="includePhotos" 
-                className={`cursor-pointer ${itemsWithPhotos === 0 ? "text-muted-foreground" : ""}`}
-              >
-                Inclure le catalogue photos ({itemsWithPhotos})
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeMaintenanceHistory"
-                checked={options.includeMaintenanceHistory}
-                onCheckedChange={(checked) =>
-                  setOptions({ ...options, includeMaintenanceHistory: checked === true })
-                }
-                disabled={maintenanceRecords.length === 0}
-              />
-              <Label 
-                htmlFor="includeMaintenanceHistory" 
-                className={`cursor-pointer ${maintenanceRecords.length === 0 ? "text-muted-foreground" : ""}`}
-              >
-                Inclure l'historique de maintenance ({maintenanceRecords.length})
+              <Checkbox id="includeMaintenanceHistory" checked={options.includeMaintenanceHistory}
+                onCheckedChange={(checked) => setOptions({ ...options, includeMaintenanceHistory: checked === true })}
+                disabled={maintenanceRecords.length === 0} />
+              <Label htmlFor="includeMaintenanceHistory" className={`cursor-pointer ${maintenanceRecords.length === 0 ? "text-muted-foreground" : ""}`}>
+                {t("inventory.includeMaintenanceHistory")} ({maintenanceRecords.length})
               </Label>
             </div>
           </div>
@@ -186,7 +159,7 @@ export default function InventoryReportGenerator({
           {isGenerating && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Génération en cours...</span>
+                <span className="text-muted-foreground">{t("inventory.generating")}</span>
                 <span className="font-medium">{progress}%</span>
               </div>
               <Progress value={progress} className="h-2" />
@@ -195,20 +168,12 @@ export default function InventoryReportGenerator({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isGenerating}>
-            Annuler
-          </Button>
+          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isGenerating}>{t("inventory.cancel")}</Button>
           <Button onClick={handleGenerate} disabled={isGenerating || items.length === 0}>
             {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Génération...
-              </>
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("inventory.generatingBtn")}</>
             ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" />
-                Télécharger PDF
-              </>
+              <><Download className="h-4 w-4 mr-2" />{t("inventory.downloadPdf")}</>
             )}
           </Button>
         </DialogFooter>
