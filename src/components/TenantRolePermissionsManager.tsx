@@ -64,8 +64,8 @@ export default function TenantRolePermissionsManager() {
     inventory: t("rolePermissions.groupInventory"),
     users: t("rolePermissions.groupUsers"),
     tenants: t("rolePermissions.groupTenants"),
-    volunteers: "Planification Bénévoles",
-    visitors: "Gestion Visiteurs",
+    volunteers: t("rolePermissions.groupVolunteers"),
+    visitors: t("rolePermissions.groupVisitors"),
   };
 
   // Fetch current permissions from database for this tenant
