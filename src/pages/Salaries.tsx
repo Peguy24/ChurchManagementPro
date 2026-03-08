@@ -988,7 +988,7 @@ export default function Salaries() {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={paymentMutation.isPending}>
-                  {paymentMutation.isPending ? "Enregistrement..." : "Enregistrer le paiement"}
+                  {paymentMutation.isPending ? t("salariesPage.savingPayment") : t("salariesPage.savePayment")}
                 </Button>
               </DialogFooter>
             </form>
