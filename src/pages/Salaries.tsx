@@ -669,9 +669,9 @@ export default function Salaries() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                            <SelectItem value="biweekly">Bimensuel</SelectItem>
-                            <SelectItem value="monthly">Mensuel</SelectItem>
+                            <SelectItem value="weekly">{t("salariesPage.weekly")}</SelectItem>
+                            <SelectItem value="biweekly">{t("salariesPage.biweekly")}</SelectItem>
+                            <SelectItem value="monthly">{t("salariesPage.monthly")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
