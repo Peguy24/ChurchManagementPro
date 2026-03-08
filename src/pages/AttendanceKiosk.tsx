@@ -298,7 +298,7 @@ export default function AttendanceKiosk() {
         <div className="w-full">
           <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={events.length === 0 ? "Aucun événement aujourd'hui" : "Sélectionner l'événement"} />
+              <SelectValue placeholder={events.length === 0 ? t("kiosk.noEventsToday") : t("kiosk.selectEventPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-background">
               {events.map((event) => (
