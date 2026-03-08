@@ -550,7 +550,7 @@ export default function TenantUserManagement() {
                     ) : (
                       <Link2 className="h-4 w-4 mr-2" />
                     )}
-                    {t('tenant.generateLink') || 'Générer le lien'}
+                    {t('tenant.generateLink')}
                   </Button>
                 </div>
 
