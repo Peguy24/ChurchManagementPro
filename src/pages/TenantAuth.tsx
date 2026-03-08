@@ -192,6 +192,8 @@ export default function TenantAuth() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const inviteEmailParam = searchParams.get('invite_email');
+  const inviteRoleParam = searchParams.get('role');
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
