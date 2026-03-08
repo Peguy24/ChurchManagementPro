@@ -214,6 +214,23 @@ function AttendanceContent() {
   const handleQrCodeScan = useCallback(async (qrCode: string) => {
     if (!qrCode.trim()) return;
 
+    // Block scanning if no event is selected
+    if (!selectedEventId) {
+      setScanFeedbackStatus('error');
+      setScanFeedbackMessage(t("attendance.eventRequiredToScan"));
+      setTimeout(() => {
+        setScanFeedbackStatus(null);
+        setScanFeedbackMessage("");
+      }, 2000);
+      toast({
+        title: t("attendance.error"),
+        description: t("attendance.eventRequiredToScan"),
+        variant: "destructive",
+      });
+      setQrCodeInput("");
+      return;
+    }
+
     const scannedCode = qrCode.trim();
 
     // Resolve tenant at scan-time to avoid RLS insert failures when tenant hook isn't ready yet
