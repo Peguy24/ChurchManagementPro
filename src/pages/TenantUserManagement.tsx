@@ -275,8 +275,8 @@ export default function TenantUserManagement() {
     } catch (err) {
       toast({
         title: t('common.error'),
-        description: t('tenant.copyError') || "Impossible de copier le lien",
-        variant: 'destructive',
+          description: t('tenant.copyError'),
+          variant: 'destructive',
       });
     }
   };
