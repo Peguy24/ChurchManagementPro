@@ -53,7 +53,7 @@ export default function MemberRequests() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("member_requests")
-        .select("*")
+        .select("*, desired_ministry:ministries!member_requests_desired_ministry_id_fkey(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
