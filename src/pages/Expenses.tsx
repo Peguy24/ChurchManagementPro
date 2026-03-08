@@ -290,8 +290,8 @@ export default function Expenses() {
                 amount: Number(expense.amount),
                 status,
                 creatorEmail,
-                creatorName: creatorProfile ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim() || "Utilisateur" : "Utilisateur",
-                approverName: approverProfile ? `${approverProfile.first_name || ""} ${approverProfile.last_name || ""}`.trim() || "Administrateur" : "Administrateur",
+                creatorName: creatorProfile ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim() || t("expense.user") : t("expense.user"),
+                approverName: approverProfile ? `${approverProfile.first_name || ""} ${approverProfile.last_name || ""}`.trim() || t("expense.administrator") : t("expense.administrator"),
               },
             });
           } catch (emailError) {
@@ -316,11 +316,11 @@ export default function Expenses() {
     }
     // Validate account selection
     if (formData.accountType === "cash" && !formData.cash_register_id) {
-      toast({ title: t("errors.required"), description: "Sélectionnez une caisse", variant: "destructive" });
+      toast({ title: t("errors.required"), description: t("expense.selectCashRegister"), variant: "destructive" });
       return;
     }
     if (formData.accountType === "bank" && !formData.bank_account_id) {
-      toast({ title: t("errors.required"), description: "Sélectionnez un compte bancaire", variant: "destructive" });
+      toast({ title: t("errors.required"), description: t("expense.selectBankAccount"), variant: "destructive" });
       return;
     }
     createExpense.mutate(formData);
@@ -357,7 +357,7 @@ export default function Expenses() {
 
   const exportData = () => {
     const csv = [
-      ["Date", "Description", "Catégorie", "Montant", "Fournisseur", "Statut"].join(","),
+      [t("expense.csvDate"), t("expense.csvDescription"), t("expense.csvCategory"), t("expense.csvAmount"), t("expense.csvVendor"), t("expense.csvStatus")].join(","),
       ...expenses.map((e) =>
         [
           e.expense_date,
@@ -428,7 +428,7 @@ export default function Expenses() {
                     <Input
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Description de la dépense"
+                      placeholder={t("expense.descriptionPlaceholder")}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -456,7 +456,7 @@ export default function Expenses() {
                       <Input
                         value={formData.vendor}
                         onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                        placeholder="Nom du bénéficiaire"
+                        placeholder={t("expense.vendorPlaceholder")}
                       />
                     </div>
                   </div>

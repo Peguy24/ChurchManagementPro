@@ -232,7 +232,7 @@ export default function DonationDialog({
       queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
       queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast({
-        title: editDonation ? "Recette modifiée" : t("donations.addDonation"),
+        title: editDonation ? t("donations.editIncome") : t("donations.addDonation"),
         description: t("common.save"),
       });
       onOpenChange(false);
@@ -266,15 +266,15 @@ export default function DonationDialog({
     { value: "tithe", label: t("donations.tithe") },
     { value: "offering", label: t("donations.offering") },
     { value: "special", label: t("donations.special") },
-    { value: "activity", label: "Activité" },
-    { value: "other", label: "Autre" },
+    { value: "activity", label: t("donations.activity") },
+    { value: "other", label: t("donations.other") },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editDonation ? "Modifier la Recette" : t("donations.addDonation")}</DialogTitle>
+          <DialogTitle>{editDonation ? t("donations.editIncome") : t("donations.addDonation")}</DialogTitle>
           <DialogDescription>
             {t("donations.subtitle")}
           </DialogDescription>
@@ -315,7 +315,7 @@ export default function DonationDialog({
               onValueChange={(value) => setFormData({ ...formData, donationType: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner le type" />
+                <SelectValue placeholder={t("donations.selectType")} />
               </SelectTrigger>
               <SelectContent>
                 {donationTypes.map((type) => (
@@ -349,7 +349,7 @@ export default function DonationDialog({
 
           {/* Account Type - Required */}
           <div className="space-y-2">
-            <Label>Compte de destination *</Label>
+            <Label>{t("donations.destinationAccount")} *</Label>
             <RadioGroup
               value={formData.accountType}
               onValueChange={(value: "cash" | "bank") => setFormData({ ...formData, accountType: value })}
@@ -359,14 +359,14 @@ export default function DonationDialog({
                 <RadioGroupItem value="cash" id="cash" />
                 <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
                   <Wallet className="h-4 w-4" />
-                  Caisse
+                  {t("donations.cashRegister")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bank" id="bank" />
                 <Label htmlFor="bank" className="flex items-center gap-1 cursor-pointer">
                   <Building2 className="h-4 w-4" />
-                  Banque
+                  {t("donations.bank")}
                 </Label>
               </div>
             </RadioGroup>
@@ -375,16 +375,16 @@ export default function DonationDialog({
           {/* Cash Register or Bank Account Selection */}
           {formData.accountType === "cash" ? (
             <div className="space-y-2">
-              <Label>Caisse *</Label>
+              <Label>{t("donations.cashRegister")} *</Label>
               <Select
                 value={formData.cashRegisterId}
                 onValueChange={(value) => setFormData({ ...formData, cashRegisterId: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner la caisse" />
+                  <SelectValue placeholder={t("donations.selectCashRegister")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Non spécifié</SelectItem>
+                  <SelectItem value="none">{t("donations.notSpecified")}</SelectItem>
                   {cashRegisters?.map((register) => (
                     <SelectItem key={register.id} value={register.id}>
                       {register.name} (Solde: {Number(register.current_balance).toLocaleString()} {currencyCode})
@@ -395,16 +395,16 @@ export default function DonationDialog({
             </div>
           ) : (
             <div className="space-y-2">
-              <Label>Compte bancaire *</Label>
+              <Label>{t("donations.bankAccount")} *</Label>
               <Select
                 value={formData.bankAccountId}
                 onValueChange={(value) => setFormData({ ...formData, bankAccountId: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner le compte" />
+                  <SelectValue placeholder={t("donations.selectBankAccount")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Non spécifié</SelectItem>
+                  <SelectItem value="none">{t("donations.notSpecified")}</SelectItem>
                   {bankAccounts?.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.name} - {account.bank_name} (Solde: {Number(account.current_balance).toLocaleString()} {currencyCode})
@@ -417,19 +417,19 @@ export default function DonationDialog({
 
           {/* Description - Required */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">{t("expense.description")} *</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Ex: Offrande culte dominical"
+              placeholder={t("donations.descriptionPlaceholder")}
               required
             />
           </div>
 
           {/* Member - Optional */}
           <div className="space-y-2">
-            <Label>{t("attendance.selectMember")} (Optionnel)</Label>
+            <Label>{t("attendance.selectMember")} ({t("donations.optional")})</Label>
             <Select
               value={formData.memberId}
               onValueChange={(value) => setFormData({ ...formData, memberId: value })}
@@ -438,7 +438,7 @@ export default function DonationDialog({
                 <SelectValue placeholder={t("attendance.selectMember")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Anonyme</SelectItem>
+                <SelectItem value="none">{t("donations.anonymous")}</SelectItem>
                 {members?.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.first_name} {member.last_name}
@@ -459,7 +459,7 @@ export default function DonationDialog({
                 <SelectValue placeholder={t("branches.branchName")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Toutes les branches</SelectItem>
+                <SelectItem value="none">{t("donations.allBranches")}</SelectItem>
                 {branches?.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
@@ -476,7 +476,7 @@ export default function DonationDialog({
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Notes additionnelles..."
+              placeholder={t("donations.additionalNotes")}
               rows={2}
             />
           </div>

@@ -227,8 +227,8 @@ export default function MemberDialog({
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "Fichier trop volumineux",
-          description: "La photo ne doit pas dépasser 5 Mo.",
+          title: t("members.photoTooLarge"),
+          description: t("members.photoTooLargeDesc"),
           variant: "destructive",
         });
         return;
@@ -237,8 +237,8 @@ export default function MemberDialog({
       // Validate file type
       if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
         toast({
-          title: "Format non supporté",
-          description: "Veuillez utiliser un format JPEG, PNG, WebP ou GIF.",
+          title: t("members.photoFormatError"),
+          description: t("members.photoFormatErrorDesc"),
           variant: "destructive",
         });
         return;
@@ -286,8 +286,8 @@ export default function MemberDialog({
     } catch (error: any) {
       console.error('Error uploading photo:', error);
       toast({
-        title: "Erreur d'upload",
-        description: error.message || "Impossible de télécharger la photo.",
+        title: t("members.photoUploadError"),
+        description: error.message || t("members.photoUploadErrorDesc"),
         variant: "destructive",
       });
       return null;
