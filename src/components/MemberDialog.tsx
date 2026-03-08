@@ -237,8 +237,8 @@ export default function MemberDialog({
       // Validate file type
       if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
         toast({
-          title: "Format non supporté",
-          description: "Veuillez utiliser un format JPEG, PNG, WebP ou GIF.",
+          title: t("members.photoFormatError"),
+          description: t("members.photoFormatErrorDesc"),
           variant: "destructive",
         });
         return;
