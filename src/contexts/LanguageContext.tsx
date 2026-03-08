@@ -5553,6 +5553,18 @@ const translations = {
         noScores: "Pa gen nòt kalkile ankò. Klike Rekalkile pou kòmanse.",
         noResults: "Pa gen rezilta jwenn",
       },
+      notifications: {
+        title: "Alèt Platfòm",
+        markAllRead: "Make tout li",
+        empty: "Pa gen alèt",
+        checked: "Alèt verifye",
+        newAlerts: "nouvo alèt",
+        checkError: "Erè nan verifikasyon",
+        trialExpiring: "Esè ap ekspire byento",
+        trialExpired: "Esè ekspire",
+        paymentIssue: "Pwoblèm peman",
+        tenantInactive: "Legliz inaktif",
+      },
     },
     platform: {
       superAdminManagement: "Jesyon Super Administratè",
