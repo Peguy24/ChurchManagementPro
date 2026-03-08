@@ -96,23 +96,24 @@ export default function Ministries() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">{t("ministries.title")}</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("ministries.title")}</h2>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 {t("ministries.subtitle")}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
+              className="flex-1 sm:flex-none"
               onClick={() => navigate("/ministries/stats")}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
@@ -120,6 +121,7 @@ export default function Ministries() {
             </Button>
             <Button
               size="sm"
+              className="flex-1 sm:flex-none"
               onClick={() => {
                 setSelectedMinistry(undefined);
                 setDialogOpen(true);
@@ -151,7 +153,7 @@ export default function Ministries() {
               </div>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
