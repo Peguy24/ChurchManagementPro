@@ -81,7 +81,6 @@ export default function MinistryDialog({
     },
     enabled: !!tenantId,
   });
-  });
 
   useEffect(() => {
     if (ministry) {
