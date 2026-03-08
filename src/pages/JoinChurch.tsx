@@ -330,6 +330,20 @@ export default function JoinChurch() {
                     <Label>{t("joinForm.christianExperience")}</Label>
                     <Textarea value={formData.christianExperience} onChange={(e) => updateField("christianExperience", e.target.value)} placeholder={t("joinForm.christianExperiencePlaceholder")} rows={3} />
                   </div>
+                  {ministries.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>{t("joinForm.desiredMinistry")}</Label>
+                      <Select value={formData.desiredMinistryId || "none"} onValueChange={(v) => updateField("desiredMinistryId", v === "none" ? "" : v)}>
+                        <SelectTrigger><SelectValue placeholder={t("joinForm.selectMinistry")} /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t("joinForm.noMinistry")}</SelectItem>
+                          {ministries.map((m: any) => (
+                            <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="family" className="space-y-4 mt-4">
