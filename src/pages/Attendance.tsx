@@ -695,6 +695,13 @@ function AttendanceContent() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
+          {!selectedEventId ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <CalendarDays className="h-32 w-32 text-muted-foreground/20 mb-6" />
+              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">{t("attendance.selectEventToStart")}</h2>
+              <p className="text-xl text-muted-foreground">{t("attendance.eventRequiredToScan")}</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
             {/* Camera Scanner Section */}
             {kioskCameraActive && (
