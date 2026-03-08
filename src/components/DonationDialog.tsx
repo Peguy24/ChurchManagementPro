@@ -232,7 +232,7 @@ export default function DonationDialog({
       queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
       queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast({
-        title: editDonation ? "Recette modifiée" : t("donations.addDonation"),
+        title: editDonation ? t("donations.editIncome") : t("donations.addDonation"),
         description: t("common.save"),
       });
       onOpenChange(false);
