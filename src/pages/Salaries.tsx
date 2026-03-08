@@ -484,9 +484,9 @@ export default function Salaries() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Gestion des Salaires</h1>
+            <h1 className="text-2xl font-bold">{t("salariesPage.title")}</h1>
             <p className="text-muted-foreground">
-              Gérez le personnel rémunéré et l'historique des paiements
+              {t("salariesPage.subtitle")}
             </p>
           </div>
         </div>
