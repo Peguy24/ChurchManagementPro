@@ -43,6 +43,7 @@ interface EventOption {
   id: string;
   name: string;
   event_time: string | null;
+  end_time: string | null;
   event_date: string;
 }
 
