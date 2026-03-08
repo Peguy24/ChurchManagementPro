@@ -39,7 +39,7 @@ export default function PlatformSettings() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: any }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("platform_settings")
         .update({ setting_value: value, updated_at: new Date().toISOString() })
         .eq("setting_key", key);
