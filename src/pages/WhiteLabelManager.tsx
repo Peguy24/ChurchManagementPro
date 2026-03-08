@@ -13,9 +13,78 @@ import { toast } from "sonner";
 import { Palette, Search, Save, Loader2, Eye } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "White-Label Management",
+    subtitle: "Manage visual branding for each church",
+    allChurches: "All Churches",
+    desc: "Edit name, logo, and colors for each church",
+    search: "Search a church...",
+    logo: "Logo",
+    color: "Color",
+    primaryColor: "Primary Color",
+    editBranding: "Edit Branding",
+    saved: "Branding updated successfully",
+    error: "Error updating branding",
+    noResults: "No churches found",
+    churchName: "Church Name",
+    slug: "Slug (URL)",
+    actions: "Actions",
+    edit: "Edit",
+    cancel: "Cancel",
+    save: "Save",
+    preview: "Preview",
+    primaryButton: "Primary Button",
+  },
+  fr: {
+    title: "Gestion White-Label",
+    subtitle: "Gérez la personnalisation visuelle de chaque église",
+    allChurches: "Toutes les Églises",
+    desc: "Modifier le nom, le logo et les couleurs de chaque église",
+    search: "Rechercher une église...",
+    logo: "Logo",
+    color: "Couleur",
+    primaryColor: "Couleur Principale",
+    editBranding: "Modifier le Branding",
+    saved: "Branding mis à jour avec succès",
+    error: "Erreur lors de la mise à jour",
+    noResults: "Aucune église trouvée",
+    churchName: "Nom de l'église",
+    slug: "Slug (URL)",
+    actions: "Actions",
+    edit: "Modifier",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    preview: "Aperçu",
+    primaryButton: "Bouton Principal",
+  },
+  ht: {
+    title: "Jesyon White-Label",
+    subtitle: "Jere pèsonalizasyon vizyèl chak legliz",
+    allChurches: "Tout Legliz",
+    desc: "Modifye non, logo ak koulè chak legliz",
+    search: "Chèche yon legliz...",
+    logo: "Logo",
+    color: "Koulè",
+    primaryColor: "Koulè Prensipal",
+    editBranding: "Modifye Branding",
+    saved: "Branding mete ajou avèk siksè",
+    error: "Erè pandan miz ajou",
+    noResults: "Pa gen legliz jwenn",
+    churchName: "Non Legliz",
+    slug: "Slug (URL)",
+    actions: "Aksyon",
+    edit: "Modifye",
+    cancel: "Anile",
+    save: "Anrejistre",
+    preview: "Apèsi",
+    primaryButton: "Bouton Prensipal",
+  },
+};
 
 export default function WhiteLabelManager() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editingTenant, setEditingTenant] = useState<any>(null);
