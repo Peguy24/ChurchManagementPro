@@ -476,7 +476,7 @@ export default function DonationDialog({
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Notes additionnelles..."
+              placeholder={t("donations.additionalNotes")}
               rows={2}
             />
           </div>
