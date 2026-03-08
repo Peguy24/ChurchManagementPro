@@ -537,7 +537,7 @@ export default function TenantUserManagement() {
                     ) : (
                       <Send className="h-4 w-4 mr-2" />
                     )}
-                    {t('tenant.sendByEmail') || 'Envoyer par email'}
+                    {t('tenant.sendByEmail')}
                   </Button>
                   <Button
                     className="flex-1"
