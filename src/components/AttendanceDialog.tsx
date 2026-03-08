@@ -126,7 +126,7 @@ export default function AttendanceDialog({
       // Load events for the selected date
       const { data, error } = await supabase
         .from("events")
-        .select("id, name, event_time, event_date")
+        .select("id, name, event_time, end_time, event_date")
         .eq("event_date", date)
         .in("status", ["planned", "confirmed"])
         .order("event_time", { ascending: true });
