@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash, FileDown } from "lucide-react";
 import { SignedImage } from "@/components/SignedImage";
@@ -51,6 +52,7 @@ interface Member {
 export default function MemberCards() {
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { tenant } = useCurrentTenant();
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [generatingQRs, setGeneratingQRs] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,15 +99,28 @@ export default function MemberCards() {
     },
   });
 
+  // Build card customization: use explicit card settings, falling back to tenant branding
+  const tenantLogoUrl = tenant?.logo_url 
+    ? (tenant.logo_url.startsWith('http') ? tenant.logo_url : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/tenant-logos/${tenant.logo_url}`)
+    : '';
+  
   const cardCustomization: CardCustomization | undefined = churchSettings ? {
-    primaryColor: churchSettings.card_primary_color || "#3B82F6",
+    primaryColor: churchSettings.card_primary_color || tenant?.primary_color || "#3B82F6",
     secondaryColor: churchSettings.card_secondary_color || "#1E40AF",
     textColor: churchSettings.card_text_color || "#FFFFFF",
-    showLogo: churchSettings.card_show_logo === "true",
-    churchNameOnCard: churchSettings.card_church_name_on_card === "true",
-    churchName: churchSettings.church_name || "",
-    logoUrl: churchSettings.church_logo_url || "",
-  } : undefined;
+    showLogo: churchSettings.card_show_logo ? churchSettings.card_show_logo === "true" : !!tenant?.logo_url,
+    churchNameOnCard: churchSettings.card_church_name_on_card ? churchSettings.card_church_name_on_card === "true" : true,
+    churchName: churchSettings.church_name || tenant?.name || "",
+    logoUrl: churchSettings.church_logo_url || tenantLogoUrl,
+  } : (tenant ? {
+    primaryColor: tenant.primary_color || "#3B82F6",
+    secondaryColor: "#1E40AF",
+    textColor: "#FFFFFF",
+    showLogo: !!tenant.logo_url,
+    churchNameOnCard: true,
+    churchName: tenant.name || "",
+    logoUrl: tenantLogoUrl,
+  } : undefined);
 
   // Filter members based on search and filters
   const members = allMembers.filter((member) => {
