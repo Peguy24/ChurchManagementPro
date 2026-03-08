@@ -2511,6 +2511,47 @@ export type Database = {
           },
         ]
       }
+      service_roles: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_funds: {
         Row: {
           branch_id: string | null
@@ -3155,6 +3196,197 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visitor_follow_ups: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          follow_up_date: string
+          follow_up_type: string
+          id: string
+          is_completed: boolean | null
+          notes: string | null
+          tenant_id: string
+          visitor_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          follow_up_date?: string
+          follow_up_type?: string
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          tenant_id: string
+          visitor_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          follow_up_date?: string
+          follow_up_type?: string
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          tenant_id?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_follow_ups_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_follow_ups_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitors: {
+        Row: {
+          assigned_to: string | null
+          converted_to_member_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          follow_up_status: string
+          how_heard: string | null
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+          visit_date: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          converted_to_member_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          follow_up_status?: string
+          how_heard?: string | null
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+          visit_date?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          converted_to_member_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          follow_up_status?: string
+          how_heard?: string | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitors_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitors_converted_to_member_id_fkey"
+            columns: ["converted_to_member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_schedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          member_id: string
+          notes: string | null
+          service_date: string
+          service_role_id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          member_id: string
+          notes?: string | null
+          service_date: string
+          service_role_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          member_id?: string
+          notes?: string | null
+          service_date?: string
+          service_role_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_schedules_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedules_service_role_id_fkey"
+            columns: ["service_role_id"]
+            isOneToOne: false
+            referencedRelation: "service_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
