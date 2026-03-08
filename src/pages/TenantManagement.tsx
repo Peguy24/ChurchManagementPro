@@ -265,9 +265,16 @@ export default function TenantManagement() {
 
       return tenant;
     },
-    onSuccess: () => {
+    onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       toast.success(t("superAdmin.churchCreated"));
+      logPlatformActivity({
+        eventType: "tenant_created",
+        eventCategory: "tenant",
+        description: `Église créée: ${tenant.name}`,
+        tenantId: tenant.id,
+        metadata: { name: tenant.name, slug: tenant.slug },
+      });
       resetForm();
       setIsDialogOpen(false);
     },
