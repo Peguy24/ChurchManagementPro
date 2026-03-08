@@ -354,8 +354,8 @@ export default function Salaries() {
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'employé.",
+        title: t("salariesPage.error"),
+        description: t("salariesPage.employeeDeleteError"),
         variant: "destructive",
       });
       console.error(error);
