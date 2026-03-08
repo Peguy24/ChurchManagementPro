@@ -1132,6 +1132,7 @@ export type Database = {
           ip_address: string | null
           new_values: Json | null
           old_values: Json | null
+          tenant_id: string | null
           user_email: string | null
           user_id: string | null
         }
@@ -1144,6 +1145,7 @@ export type Database = {
           ip_address?: string | null
           new_values?: Json | null
           old_values?: Json | null
+          tenant_id?: string | null
           user_email?: string | null
           user_id?: string | null
         }
@@ -1156,10 +1158,19 @@ export type Database = {
           ip_address?: string | null
           new_values?: Json | null
           old_values?: Json | null
+          tenant_id?: string | null
           user_email?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "financial_audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fund_transactions: {
         Row: {
