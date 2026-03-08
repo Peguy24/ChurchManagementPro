@@ -1340,6 +1340,11 @@ const translations = {
       errorUpdate: "Impossible de modifier l'événement.",
       errorDelete: "Impossible de supprimer l'événement.",
       noTenant: "Aucun tenant associé à cet utilisateur",
+      viewReport: "Voir le Rapport",
+      eventReport: "Rapport de l'Événement",
+      eventReportDesc: "Résumé de l'événement terminé/annulé.",
+      eventDetails: "Détails de l'Événement",
+      close: "Fermer",
     },
     financialReports: {
       title: "Rapports Financiers",
