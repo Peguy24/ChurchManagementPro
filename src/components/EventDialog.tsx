@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalToday } from "@/lib/utils";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -97,7 +98,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         eventCategory: event.event_category || "general",
       });
     } else {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalToday();
       setFormData({
         name: "",
         date: today,

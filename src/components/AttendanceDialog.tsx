@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalToday } from "@/lib/utils";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
 
@@ -57,7 +58,7 @@ export default function AttendanceDialog({
   const [eventType, setEventType] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [events, setEvents] = useState<EventOption[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getLocalToday());
   const [checkedMembers, setCheckedMembers] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);

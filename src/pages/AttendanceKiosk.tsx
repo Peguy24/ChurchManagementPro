@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Maximize, Minimize, CheckCircle, XCircle, Scan, Church, Clock, AlertTriangle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getLocalToday } from "@/lib/utils";
 import CameraScanner from "@/components/CameraScanner";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
 
@@ -32,7 +32,7 @@ interface EventOption {
 
 function isWithinEventWindow(event: EventOption): { allowed: boolean; reason: string } {
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  const today = getLocalToday();
 
   // Check date range
   const eventStartDate = event.event_date;
@@ -98,7 +98,7 @@ export default function AttendanceKiosk() {
   // Load today's events
   useEffect(() => {
     if (!tenantId) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalToday();
 
     supabase
       .from("events")
@@ -208,7 +208,7 @@ export default function AttendanceKiosk() {
       }
 
       const fullName = `${member.first_name} ${member.last_name}`;
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalToday();
 
       const { error } = await supabase.from("attendance_records").insert({
         member_id: memberId,
