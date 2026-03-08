@@ -297,7 +297,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Get appropriate navigation based on user type
   const allNavGroups = isSuperAdmin 
-    ? getSuperAdminNavGroups(t) 
+    ? getSuperAdminNavGroups(t, language) 
     : getChurchNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions (only for church users)
