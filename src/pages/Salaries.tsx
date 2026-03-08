@@ -850,7 +850,7 @@ export default function Salaries() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un employé" />
+                    <SelectValue placeholder={t("salariesPage.selectEmployee")} />
                   </SelectTrigger>
                   <SelectContent>
                     {employees
