@@ -875,7 +875,7 @@ export default function Salaries() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_date">Date de paiement *</Label>
+                <Label htmlFor="payment_date">{t("salariesPage.paymentDate")} *</Label>
                 <Input
                   id="payment_date"
                   type="date"
