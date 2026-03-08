@@ -16,6 +16,9 @@ export default function Auth() {
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
   
   // Get tenant info from URL params (from invitation link)
   const tenantId = searchParams.get('tenant');
