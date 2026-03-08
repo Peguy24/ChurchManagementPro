@@ -214,6 +214,23 @@ function AttendanceContent() {
   const handleQrCodeScan = useCallback(async (qrCode: string) => {
     if (!qrCode.trim()) return;
 
+    // Block scanning if no event is selected
+    if (!selectedEventId) {
+      setScanFeedbackStatus('error');
+      setScanFeedbackMessage(t("attendance.eventRequiredToScan"));
+      setTimeout(() => {
+        setScanFeedbackStatus(null);
+        setScanFeedbackMessage("");
+      }, 2000);
+      toast({
+        title: t("attendance.error"),
+        description: t("attendance.eventRequiredToScan"),
+        variant: "destructive",
+      });
+      setQrCodeInput("");
+      return;
+    }
+
     const scannedCode = qrCode.trim();
 
     // Resolve tenant at scan-time to avoid RLS insert failures when tenant hook isn't ready yet
@@ -625,15 +642,38 @@ function AttendanceContent() {
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-card">
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl font-bold">{t("attendance.kioskMode")} - {t("nav.attendance")}</h1>
             <p className="text-xl text-muted-foreground mt-1">{t("attendance.scanQrToMarkAttendance")}</p>
+            {/* Event selector in kiosk */}
+            <div className="mt-3">
+              <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
+                <SelectTrigger className="w-full max-w-md text-lg">
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  <SelectValue placeholder={todayEvents.length === 0 ? t("attendance.noEventToday") : t("attendance.selectAnEvent")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {todayEvents.length === 0 ? (
+                    <SelectItem value="none" disabled>
+                      {t("attendance.noEventScheduled")}
+                    </SelectItem>
+                  ) : (
+                    todayEvents.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.name} {event.event_time ? `(${event.event_time.substring(0, 5)})` : ""}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button 
               size="lg"
               variant={kioskCameraActive ? "default" : "outline"}
               onClick={() => setKioskCameraActive(!kioskCameraActive)}
+              disabled={!selectedEventId}
             >
               <Camera className="mr-2 h-5 w-5" />
               {kioskCameraActive ? t("attendance.stopCamera") : t("attendance.startCamera")}
@@ -655,6 +695,13 @@ function AttendanceContent() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
+          {!selectedEventId ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <CalendarDays className="h-32 w-32 text-muted-foreground/20 mb-6" />
+              <h2 className="text-3xl font-semibold text-muted-foreground mb-2">{t("attendance.selectEventToStart")}</h2>
+              <p className="text-xl text-muted-foreground">{t("attendance.eventRequiredToScan")}</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
             {/* Camera Scanner Section */}
             {kioskCameraActive && (
@@ -753,6 +800,7 @@ function AttendanceContent() {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* Footer Stats */}
@@ -798,12 +846,12 @@ function AttendanceContent() {
             <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
               <SelectTrigger className="w-full sm:w-[300px]">
                 <CalendarDays className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={todayEvents.length === 0 ? "Aucun événement aujourd'hui" : "Sélectionner un événement"} />
+                <SelectValue placeholder={todayEvents.length === 0 ? t("attendance.noEventToday") : t("attendance.selectAnEvent")} />
               </SelectTrigger>
               <SelectContent>
                 {todayEvents.length === 0 ? (
                   <SelectItem value="none" disabled>
-                    Aucun événement programmé pour aujourd'hui
+                    {t("attendance.noEventScheduled")}
                   </SelectItem>
                 ) : (
                   todayEvents.map((event) => (
@@ -846,13 +894,24 @@ function AttendanceContent() {
             <Button size="sm" onClick={() => setDialogOpen(true)} className="flex-1 sm:flex-none">
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">{t("attendance.recordAttendance")}</span>
-              <span className="sm:hidden">Ajouter</span>
+              <span className="sm:hidden">{t("common.add")}</span>
             </Button>
           </div>
         </div>
 
         {/* QR Scanner Section */}
-        {scannerMode && (
+        {scannerMode && !selectedEventId && (
+          <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+            <CardContent className="flex items-center gap-3 py-6">
+              <CalendarDays className="h-8 w-8 text-yellow-600 shrink-0" />
+              <div>
+                <p className="font-semibold text-lg">{t("attendance.selectEventToStart")}</p>
+                <p className="text-sm text-muted-foreground">{t("attendance.eventRequiredToScan")}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {scannerMode && selectedEventId && (
           <Card className="border-primary bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

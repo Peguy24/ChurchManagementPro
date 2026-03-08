@@ -848,6 +848,10 @@ const translations = {
       alreadyMarkedInList: "{name} est déjà marqué présent.",
       markedPresentToast: "{name} marqué présent.",
       information: "Information",
+      noEventToday: "Aucun événement aujourd'hui",
+      noEventScheduled: "Aucun événement programmé pour aujourd'hui",
+      eventRequiredToScan: "Veuillez sélectionner un événement avant de scanner",
+      selectEventToStart: "Sélectionnez un événement pour commencer le scan",
     },
     attendanceAlerts: {
       title: "Alertes de Présence",
@@ -3547,6 +3551,10 @@ const translations = {
       alreadyMarkedInList: "{name} is already marked present.",
       markedPresentToast: "{name} marked present.",
       information: "Information",
+      noEventToday: "No events today",
+      noEventScheduled: "No events scheduled for today",
+      eventRequiredToScan: "Please select an event before scanning",
+      selectEventToStart: "Select an event to start scanning",
     },
     attendanceAlerts: {
       title: "Attendance Alerts",
@@ -6244,6 +6252,10 @@ const translations = {
       alreadyMarkedInList: "{name} deja make prezan.",
       markedPresentToast: "{name} make prezan.",
       information: "Enfòmasyon",
+      noEventToday: "Pa gen evènman jodi a",
+      noEventScheduled: "Pa gen evènman pwograme pou jodi a",
+      eventRequiredToScan: "Tanpri chwazi yon evènman anvan ou eskane",
+      selectEventToStart: "Chwazi yon evènman pou kòmanse eskane",
     },
     attendanceAlerts: {
       title: "Alèt Prezans",
