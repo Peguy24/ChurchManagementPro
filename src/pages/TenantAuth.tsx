@@ -192,6 +192,8 @@ export default function TenantAuth() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const inviteEmailParam = searchParams.get('invite_email');
+  const inviteRoleParam = searchParams.get('role');
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -297,6 +299,12 @@ export default function TenantAuth() {
           // Pre-fill email from invitation
           setSignupForm(prev => ({ ...prev, email: inviteData.email }));
         }
+      } else if (inviteEmailParam) {
+        // Handle direct email+role invitation (from tenant admin invite)
+        console.log('Direct email invite detected:', inviteEmailParam, 'role:', inviteRoleParam);
+        setInvitation({ id: '', email: inviteEmailParam, tenant_id: data.id, expires_at: '', used_at: null });
+        setInvitationValid(true);
+        setSignupForm(prev => ({ ...prev, email: inviteEmailParam }));
       } else {
         console.log('No invite token in URL');
       }
@@ -455,15 +463,17 @@ export default function TenantAuth() {
         
         // Determine role based on invitation
         const isAdminInvite = hasValidInvitation;
-        const roleToAssign = isAdminInvite ? 'admin' : 'user';
-        const isAutoApproved = isAdminInvite; // Only invited admins are auto-approved
+        const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+        const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as any) ? inviteRoleParam : 'admin';
+        const roleToAssign = isAdminInvite ? roleFromParam : 'user';
+        const isAutoApproved = isAdminInvite; // Invited users are auto-approved
         
         await supabase
           .from('tenant_user_roles')
           .insert({
             tenant_id: tenant.id,
             user_id: data.user.id,
-            role: roleToAssign,
+            role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
             is_approved: isAutoApproved,
           });
 
