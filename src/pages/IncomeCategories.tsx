@@ -368,7 +368,7 @@ export default function IncomeCategories() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderOpen className="h-5 w-5" />
-              {t("nav.categoryList")}
+              {t("layout.categoryList")}
             </CardTitle>
           </CardHeader>
           <CardContent>
