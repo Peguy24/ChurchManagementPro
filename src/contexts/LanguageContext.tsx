@@ -1287,6 +1287,8 @@ const translations = {
       groupInventory: "Inventaire",
       groupUsers: "Gestion utilisateurs",
       groupTenants: "Gestion Multi-Tenant",
+      groupVolunteers: "Planification Bénévoles",
+      groupVisitors: "Gestion Visiteurs",
     },
     errors: {
       required: "Ce champ est requis",
