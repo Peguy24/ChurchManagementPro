@@ -30,8 +30,8 @@ export default function FinancialReports() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName="Rapports Avancés"
-          featureDescription="Accédez à des analyses complètes, des statistiques détaillées et des exports personnalisés pour votre église."
+          featureName={t("financialReports.advancedReports")}
+          featureDescription={t("financialReports.advancedReportsDesc")}
           requiredPlan="professionnel"
         />
       </Layout>
