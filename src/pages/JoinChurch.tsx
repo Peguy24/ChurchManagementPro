@@ -31,6 +31,7 @@ export default function JoinChurch() {
   const [submitted, setSubmitted] = useState(false);
   const [churchName, setChurchName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [ministries, setMinistries] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", gender: "", dateOfBirth: "",
     phone: "", email: "", emergencyPhone: "",
@@ -38,7 +39,7 @@ export default function JoinChurch() {
     academicFormation: "", professionalFormation: "",
     baptismStatus: "", baptismDate: "", originChurch: "", conversionDate: "", christianExperience: "",
     maritalStatus: "", spouseName: "", marriageDate: "", numberOfChildren: "", childrenNames: "",
-    message: "",
+    message: "", desiredMinistryId: "",
   });
 
   useEffect(() => {
@@ -53,6 +54,17 @@ export default function JoinChurch() {
             setChurchName(data.name);
             setLogoUrl(data.logo_url);
           }
+        });
+
+      // Fetch active ministries for this tenant
+      supabase
+        .from("ministries")
+        .select("id, name")
+        .eq("tenant_id", tenantId)
+        .eq("status", "active")
+        .order("name")
+        .then(({ data }) => {
+          if (data) setMinistries(data);
         });
     }
   }, [tenantId]);
@@ -94,6 +106,7 @@ export default function JoinChurch() {
         marriage_date: formData.marriageDate || null,
         number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : 0,
         children_names: formData.childrenNames || null, message: formData.message || null,
+        desired_ministry_id: formData.desiredMinistryId || null,
       });
 
       if (error) throw error;
@@ -317,6 +330,20 @@ export default function JoinChurch() {
                     <Label>{t("joinForm.christianExperience")}</Label>
                     <Textarea value={formData.christianExperience} onChange={(e) => updateField("christianExperience", e.target.value)} placeholder={t("joinForm.christianExperiencePlaceholder")} rows={3} />
                   </div>
+                  {ministries.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>{t("joinForm.desiredMinistry")}</Label>
+                      <Select value={formData.desiredMinistryId || "none"} onValueChange={(v) => updateField("desiredMinistryId", v === "none" ? "" : v)}>
+                        <SelectTrigger><SelectValue placeholder={t("joinForm.selectMinistry")} /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t("joinForm.noMinistry")}</SelectItem>
+                          {ministries.map((m: any) => (
+                            <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="family" className="space-y-4 mt-4">

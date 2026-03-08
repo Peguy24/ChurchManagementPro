@@ -1602,6 +1602,7 @@ export type Database = {
           conversion_date: string | null
           created_at: string
           date_of_birth: string | null
+          desired_ministry_id: string | null
           email: string | null
           emergency_phone: string | null
           first_name: string
@@ -1633,6 +1634,7 @@ export type Database = {
           conversion_date?: string | null
           created_at?: string
           date_of_birth?: string | null
+          desired_ministry_id?: string | null
           email?: string | null
           emergency_phone?: string | null
           first_name: string
@@ -1664,6 +1666,7 @@ export type Database = {
           conversion_date?: string | null
           created_at?: string
           date_of_birth?: string | null
+          desired_ministry_id?: string | null
           email?: string | null
           emergency_phone?: string | null
           first_name?: string
@@ -1686,6 +1689,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "member_requests_desired_ministry_id_fkey"
+            columns: ["desired_ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "member_requests_tenant_id_fkey"
             columns: ["tenant_id"]

@@ -53,7 +53,7 @@ export default function MemberRequests() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("member_requests")
-        .select("*")
+        .select("*, desired_ministry:ministries!member_requests_desired_ministry_id_fkey(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -64,7 +64,7 @@ export default function MemberRequests() {
   const approveMutation = useMutation({
     mutationFn: async (request: any) => {
       const address = request.address || {};
-      const { error: memberError } = await supabase.from("members").insert({
+      const { data: memberData, error: memberError } = await supabase.from("members").insert({
         tenant_id: request.tenant_id,
         first_name: request.first_name,
         last_name: request.last_name,
@@ -88,8 +88,18 @@ export default function MemberRequests() {
         children_names: request.children_names,
         status: "active",
         join_date: new Date().toISOString().split("T")[0],
-      });
+      }).select("id").single();
       if (memberError) throw memberError;
+
+      // If member requested a ministry, add them to it
+      if (request.desired_ministry_id && memberData?.id) {
+        await supabase.from("ministry_members").insert({
+          ministry_id: request.desired_ministry_id,
+          member_id: memberData.id,
+          role: "member",
+          tenant_id: request.tenant_id,
+        });
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       const { error: updateError } = await supabase

@@ -2893,6 +2893,9 @@ const translations = {
       errorPrefix: "Erreur: ",
       successToast: "Demande envoyée avec succès!",
       required: "*",
+      desiredMinistry: "Ministère souhaité",
+      selectMinistry: "Choisir un ministère",
+      noMinistry: "Aucun",
     },
     eventRegistration: {
       title: "Inscription à l'événement",
@@ -5835,6 +5838,9 @@ const translations = {
       errorPrefix: "Error: ",
       successToast: "Application sent successfully!",
       required: "*",
+      desiredMinistry: "Desired Ministry",
+      selectMinistry: "Choose a ministry",
+      noMinistry: "None",
     },
     eventRegistration: {
       title: "Event Registration",
@@ -8776,6 +8782,9 @@ const translations = {
       errorPrefix: "Erè: ",
       successToast: "Demann voye avèk siksè!",
       required: "*",
+      desiredMinistry: "Ministè Ou Vle",
+      selectMinistry: "Chwazi yon ministè",
+      noMinistry: "Okenn",
     },
     eventRegistration: {
       title: "Enskripsyon nan Evènman",

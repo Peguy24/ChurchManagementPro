@@ -1,0 +1,1 @@
+ALTER TABLE public.member_requests ADD COLUMN desired_ministry_id uuid REFERENCES public.ministries(id) ON DELETE SET NULL DEFAULT NULL;
