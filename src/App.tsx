@@ -47,6 +47,7 @@ import Inventory from "./pages/Inventory";
 import TenantManagement from "./pages/TenantManagement";
 import TenantUserManagement from "./pages/TenantUserManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import PlatformAccounting from "./pages/PlatformAccounting";
 import AdminInvitations from "./pages/AdminInvitations";
 import Subscription from "./pages/Subscription";
 import TenantDataViewer from "./pages/TenantDataViewer";
