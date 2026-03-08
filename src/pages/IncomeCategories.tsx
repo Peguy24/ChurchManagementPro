@@ -337,7 +337,7 @@ export default function IncomeCategories() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t("nav.actives")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("layout.actives")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">{activeCount}</p>
