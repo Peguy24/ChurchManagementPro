@@ -5838,6 +5838,9 @@ const translations = {
       errorPrefix: "Error: ",
       successToast: "Application sent successfully!",
       required: "*",
+      desiredMinistry: "Desired Ministry",
+      selectMinistry: "Choose a ministry",
+      noMinistry: "None",
     },
     eventRegistration: {
       title: "Event Registration",
