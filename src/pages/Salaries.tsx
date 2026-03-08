@@ -526,7 +526,7 @@ export default function Salaries() {
                     new Date(p.payment_date).getFullYear() === new Date().getFullYear()
                 ).length}
               </div>
-              <p className="text-xs text-muted-foreground">paiement(s) effectué(s)</p>
+              <p className="text-xs text-muted-foreground">{t("salariesPage.paymentsMade")}</p>
             </CardContent>
           </Card>
         </div>
