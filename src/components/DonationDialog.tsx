@@ -417,12 +417,12 @@ export default function DonationDialog({
 
           {/* Description - Required */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">{t("expense.description")} *</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Ex: Offrande culte dominical"
+              placeholder={t("donations.descriptionPlaceholder")}
               required
             />
           </div>
