@@ -438,7 +438,7 @@ export default function DonationDialog({
                 <SelectValue placeholder={t("attendance.selectMember")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Anonyme</SelectItem>
+                <SelectItem value="none">{t("donations.anonymous")}</SelectItem>
                 {members?.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.first_name} {member.last_name}
