@@ -115,7 +115,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Erreur lors de l'envoi",
     importantInfo: "Information importante",
     hello: "Bonjour",
-  },
+    emailNotAvailable: "Email non disponible",
+    defaultAdminName: "Administrateur",
   ht: {
     adminsOf: "Administratè pou",
     manageAdmins: "Jere administratè legliz sa a. Ou ka retire yo oswa voye yo yon imèl.",
