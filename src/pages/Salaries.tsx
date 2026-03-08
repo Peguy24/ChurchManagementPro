@@ -864,7 +864,7 @@ export default function Salaries() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_amount">Montant *</Label>
+                <Label htmlFor="payment_amount">{t("salariesPage.amount")} *</Label>
                 <Input
                   id="payment_amount"
                   type="number"
