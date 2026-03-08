@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Users, Shield, Clock, CheckCircle, XCircle, UserPlus, UserCog } from "lucide-react";
 import { PlatformInviteDialog } from "@/components/PlatformInviteDialog";
+import { logPlatformActivity } from "@/lib/activityLogger";
 import PlatformRolesManager from "@/components/PlatformRolesManager";
 import type { Database } from "@/integrations/supabase/types";
 
