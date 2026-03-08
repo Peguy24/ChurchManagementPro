@@ -79,6 +79,7 @@ interface ScannedMember {
   photo_url: string | null;
   time: string;
   status: 'success' | 'error';
+  attendance_record_id?: string;
 }
 
 export default function Attendance() {
