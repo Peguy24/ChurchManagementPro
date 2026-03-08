@@ -210,9 +210,18 @@ export default function PlatformActivityLog() {
                         )}
 
                         {isExpanded && hasMetadata && (
-                          <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto max-h-48">
-                            {JSON.stringify(log.metadata, null, 2)}
-                          </pre>
+                          <div className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto max-h-48 space-y-1">
+                            {Object.entries(log.metadata).map(([key, value]) => (
+                              <div key={key} className="flex gap-2">
+                                <span className="font-medium text-muted-foreground capitalize min-w-[120px]">
+                                  {key.replace(/_/g, " ")}:
+                                </span>
+                                <span className="text-foreground break-all">
+                                  {typeof value === "object" ? JSON.stringify(value) : String(value)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>
