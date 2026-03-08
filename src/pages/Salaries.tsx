@@ -539,7 +539,7 @@ export default function Salaries() {
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <History className="h-4 w-4" />
-              Historique des paiements
+              {t("salariesPage.paymentHistory")}
             </TabsTrigger>
           </TabsList>
 
