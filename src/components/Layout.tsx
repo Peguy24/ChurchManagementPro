@@ -206,6 +206,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
       { to: "/super-admin/subscriptions", icon: CreditCard, label: t("superAdmin.overrides.navTitle") },
       { to: "/super-admin/churn", icon: ShieldAlertIcon, label: t("superAdmin.churn.navTitle") },
       { to: "/super-admin/comparison", icon: GitCompareArrows, label: t("superAdmin.comparison.navTitle") },
+      { to: "/super-admin/branding", icon: Palette, label: t("superAdmin.whiteLabel.navTitle") },
       { to: "/super-admin/settings", icon: Settings, label: t("platformSettings.title") },
     ],
   },

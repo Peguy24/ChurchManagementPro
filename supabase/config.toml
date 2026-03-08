@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.auto-provision-tenant]
 verify_jwt = false
+
+[functions.send-weekly-digest]
+verify_jwt = false
