@@ -399,10 +399,17 @@ export default function TenantManagement() {
 
       return newTrialEnd;
     },
-    onSuccess: (newTrialEnd) => {
+    onSuccess: (newTrialEnd, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-audit-logs"] });
       toast.success(`${t("superAdmin.trialExtended")} ${format(newTrialEnd, "dd MMM yyyy", { locale: dateLocale })}`);
+      logPlatformActivity({
+        eventType: "trial_extended",
+        eventCategory: "subscription",
+        description: `Essai prolongé pour ${variables.tenantName}`,
+        tenantId: variables.tenantId,
+        metadata: { new_trial_end: newTrialEnd.toISOString(), duration: variables.duration },
+      });
       setExtendTrialDialogOpen(false);
       setSelectedTenantForExtend(null);
     },
