@@ -164,6 +164,37 @@ export default function TenantUserManagement() {
     }
   }
 
+  async function handleDeleteUser(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('tenant_user_roles')
+        .delete()
+        .eq('tenant_id', tenantId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await supabase
+        .from('profiles')
+        .update({ tenant_id: null })
+        .eq('id', userId);
+
+      toast({
+        title: t('tenant.userDeleted'),
+        description: t('tenant.userRemoved'),
+      });
+      
+      fetchTenantUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      toast({
+        title: t('common.error'),
+        description: t('tenant.deleteUserError'),
+        variant: 'destructive',
+      });
+    }
+  }
+
   async function handleUpdateRole() {
     if (!editingUser || !selectedRole) return;
 
