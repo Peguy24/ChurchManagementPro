@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Palette, Search, Save, Loader2, Eye } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { SignedImage } from "@/components/SignedImage";
+
 
 export default function WhiteLabelManager() {
   const { t } = useLanguage();
