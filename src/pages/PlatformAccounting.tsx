@@ -511,6 +511,7 @@ export default function PlatformAccounting() {
             ) : filteredExpenses.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("platformAccounting.noExpenses")}</p>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
