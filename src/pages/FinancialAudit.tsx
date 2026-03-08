@@ -19,19 +19,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const FinancialAudit = () => {
   const { t, language } = useLanguage();
+  const { tenantId } = useCurrentTenant();
+  const { isSuperAdmin } = useUserRole();
   const [entityFilter, setEntityFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLog, setSelectedLog] = useState<any>(null);
 
   const { data: auditLogs, isLoading } = useQuery({
-    queryKey: ["financial-audit-logs", entityFilter, actionFilter],
+    queryKey: ["financial-audit-logs", entityFilter, actionFilter, tenantId, isSuperAdmin],
     queryFn: async () => {
       let query = supabase
         .from("financial_audit_logs")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(200);
+
+      // Tenant admins only see their own tenant's audit logs
+      if (!isSuperAdmin && tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
 
       if (entityFilter !== "all") {
         query = query.eq("entity_type", entityFilter);
