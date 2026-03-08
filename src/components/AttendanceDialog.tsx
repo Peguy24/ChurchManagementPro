@@ -43,6 +43,7 @@ interface EventOption {
   id: string;
   name: string;
   event_time: string | null;
+  end_time: string | null;
   event_date: string;
 }
 
@@ -125,7 +126,7 @@ export default function AttendanceDialog({
       // Load events for the selected date
       const { data, error } = await supabase
         .from("events")
-        .select("id, name, event_time, event_date")
+        .select("id, name, event_time, end_time, event_date")
         .eq("event_date", date)
         .in("status", ["planned", "confirmed"])
         .order("event_time", { ascending: true });
@@ -168,6 +169,47 @@ export default function AttendanceDialog({
         variant: "destructive",
       });
       return;
+    }
+
+    // Time window validation for selected event
+    if (selectedEventId) {
+      const selectedEvent = events.find(e => e.id === selectedEventId);
+      if (selectedEvent) {
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+
+        if (date === today && selectedEvent.event_time) {
+          const [h, m] = selectedEvent.event_time.split(":").map(Number);
+          const eventStart = new Date(now);
+          eventStart.setHours(h, m, 0, 0);
+          const windowOpen = new Date(eventStart.getTime() - 30 * 60 * 1000);
+
+          if (now < windowOpen) {
+            const openTime = windowOpen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            toast({
+              title: "Trop tôt",
+              description: `Le scan ouvrira à ${openTime} (30 min avant le début).`,
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
+        if (date === today && (selectedEvent as any).end_time) {
+          const [eh, em] = (selectedEvent as any).end_time.split(":").map(Number);
+          const eventEnd = new Date(now);
+          eventEnd.setHours(eh, em, 0, 0);
+
+          if (now > eventEnd) {
+            toast({
+              title: "Événement terminé",
+              description: "L'événement est terminé. La présence ne peut plus être enregistrée.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      }
     }
 
     setLoading(true);
