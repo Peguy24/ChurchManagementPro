@@ -121,6 +121,7 @@ const App = () => (
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
+              <Route path="/super-admin/accounting" element={<ProtectedRoute requireSuperAdmin><PlatformAccounting /></ProtectedRoute>} />
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/support-management" element={<ProtectedRoute requireSuperAdmin><SupportManagement /></ProtectedRoute>} />
