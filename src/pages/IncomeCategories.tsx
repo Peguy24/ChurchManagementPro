@@ -278,7 +278,7 @@ export default function IncomeCategories() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{t("nav.displayOrder")}</Label>
+                    <Label>{t("layout.displayOrder")}</Label>
                     <Input
                       type="number"
                       value={form.display_order}
