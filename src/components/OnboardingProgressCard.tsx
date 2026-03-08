@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 interface OnboardingStep {
   key: string;
@@ -19,7 +20,8 @@ export function OnboardingProgressCard() {
   const { tenantId } = useCurrentTenant();
   const navigate = useNavigate();
 
-  const { data: progress, isLoading } = useQuery({
+  // Fetch existing progress record
+  const { data: progress, isLoading, refetch: refetchProgress } = useQuery({
     queryKey: ["onboarding-progress", tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
@@ -34,40 +36,92 @@ export function OnboardingProgressCard() {
     enabled: !!tenantId,
   });
 
-  // Auto-create progress record if it doesn't exist
-  const { data: autoCreated } = useQuery({
-    queryKey: ["onboarding-progress-init", tenantId, progress],
+  // Check actual data state from all relevant tables
+  const { data: liveState } = useQuery({
+    queryKey: ["onboarding-live-check", tenantId],
     queryFn: async () => {
-      if (!tenantId || progress !== null) return null;
-      // Check actual data to set initial state
-      const [members, events, donations, branches] = await Promise.all([
+      if (!tenantId) return null;
+
+      const [members, events, donations, branches, adminInvites, settings] = await Promise.all([
         supabase.from("members").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
         supabase.from("events").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
         supabase.from("donations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
         supabase.from("branches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        (supabase as any).from("admin_invitations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        (supabase as any).from("church_settings").select("setting_key, setting_value").eq("tenant_id", tenantId),
       ]);
 
-      const record = {
-        tenant_id: tenantId,
+      // Check profile: church_name setting exists and is non-empty
+      const settingsData = settings.data || [];
+      const churchName = settingsData.find((s: any) => s.setting_key === "church_name");
+      const profileCompleted = !!(churchName && churchName.setting_value && churchName.setting_value.trim() !== "");
+
+      // Check logo
+      const logoSetting = settingsData.find((s: any) => s.setting_key === "church_logo");
+      const logoUploaded = !!(logoSetting && logoSetting.setting_value && logoSetting.setting_value.trim() !== "");
+
+      return {
+        step_profile_completed: profileCompleted,
+        step_logo_uploaded: logoUploaded,
         step_first_member_added: (members.count || 0) > 0,
         step_first_event_created: (events.count || 0) > 0,
         step_first_donation_recorded: (donations.count || 0) > 0,
         step_first_branch_created: (branches.count || 0) > 0,
+        step_admin_invited: (adminInvites.count || 0) > 0,
       };
-
-      const { data, error } = await (supabase as any)
-        .from("tenant_onboarding_progress")
-        .insert(record)
-        .select()
-        .single();
-      if (error) return null;
-      return data;
     },
-    enabled: !!tenantId && progress === null && !isLoading,
+    enabled: !!tenantId,
+    refetchInterval: 30000, // re-check every 30 seconds
   });
 
-  const currentProgress = progress || autoCreated;
-  if (!currentProgress) return null;
+  // Sync live state to the database
+  useEffect(() => {
+    if (!tenantId || !liveState) return;
+
+    const syncProgress = async () => {
+      // Check if record exists
+      const { data: existing } = await (supabase as any)
+        .from("tenant_onboarding_progress")
+        .select("id, step_profile_completed, step_logo_uploaded, step_first_member_added, step_first_event_created, step_first_donation_recorded, step_first_branch_created, step_admin_invited, completed_at")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+
+      const allCompleted = Object.values(liveState).every(Boolean);
+
+      if (!existing) {
+        // Create new record
+        await (supabase as any)
+          .from("tenant_onboarding_progress")
+          .insert({
+            tenant_id: tenantId,
+            ...liveState,
+            completed_at: allCompleted ? new Date().toISOString() : null,
+          });
+      } else {
+        // Check if any values changed
+        const needsUpdate = Object.keys(liveState).some(
+          (key) => (liveState as any)[key] !== existing[key]
+        ) || (allCompleted && !existing.completed_at);
+
+        if (needsUpdate) {
+          await (supabase as any)
+            .from("tenant_onboarding_progress")
+            .update({
+              ...liveState,
+              completed_at: allCompleted ? new Date().toISOString() : null,
+            })
+            .eq("id", existing.id);
+        }
+      }
+
+      refetchProgress();
+    };
+
+    syncProgress();
+  }, [tenantId, liveState, refetchProgress]);
+
+  const currentProgress = liveState || progress;
+  if (!currentProgress || isLoading) return null;
 
   const steps: OnboardingStep[] = [
     { key: "step_profile_completed", label: t("onboarding.stepProfile"), completed: currentProgress.step_profile_completed, link: "/settings" },
@@ -83,7 +137,7 @@ export function OnboardingProgressCard() {
   const percentage = Math.round((completedCount / steps.length) * 100);
 
   // Don't show if fully completed
-  if (percentage === 100 && currentProgress.completed_at) return null;
+  if (percentage === 100) return null;
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
