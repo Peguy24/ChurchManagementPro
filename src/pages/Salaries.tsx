@@ -920,9 +920,9 @@ export default function Salaries() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bank_transfer">Virement bancaire</SelectItem>
-                    <SelectItem value="cash">Espèces</SelectItem>
-                    <SelectItem value="check">Chèque</SelectItem>
+                    <SelectItem value="bank_transfer">{t("salariesPage.bankTransfer")}</SelectItem>
+                    <SelectItem value="cash">{t("salariesPage.cash")}</SelectItem>
+                    <SelectItem value="check">{t("salariesPage.check")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
