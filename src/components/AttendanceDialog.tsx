@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalToday } from "@/lib/utils";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
 
