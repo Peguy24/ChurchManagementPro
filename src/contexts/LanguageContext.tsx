@@ -4141,6 +4141,11 @@ const translations = {
       errorUpdate: "Unable to update the event.",
       errorDelete: "Unable to delete the event.",
       noTenant: "No tenant associated with this user",
+      viewReport: "View Report",
+      eventReport: "Event Report",
+      eventReportDesc: "Summary of the completed/cancelled event.",
+      eventDetails: "Event Details",
+      close: "Close",
     },
     financialReports: {
       title: "Financial Reports",
