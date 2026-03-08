@@ -375,16 +375,16 @@ export default function DonationDialog({
           {/* Cash Register or Bank Account Selection */}
           {formData.accountType === "cash" ? (
             <div className="space-y-2">
-              <Label>Caisse *</Label>
+              <Label>{t("donations.cashRegister")} *</Label>
               <Select
                 value={formData.cashRegisterId}
                 onValueChange={(value) => setFormData({ ...formData, cashRegisterId: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner la caisse" />
+                  <SelectValue placeholder={t("donations.selectCashRegister")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Non spécifié</SelectItem>
+                  <SelectItem value="none">{t("donations.notSpecified")}</SelectItem>
                   {cashRegisters?.map((register) => (
                     <SelectItem key={register.id} value={register.id}>
                       {register.name} (Solde: {Number(register.current_balance).toLocaleString()} {currencyCode})
