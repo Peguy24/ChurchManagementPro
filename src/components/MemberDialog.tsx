@@ -52,6 +52,7 @@ export default function MemberDialog({
   const [cropperOpen, setCropperOpen] = useState(false);
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedMinistryId, setSelectedMinistryId] = useState("");
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
