@@ -1012,6 +1012,7 @@ export default function TenantManagement() {
                   </div>
                 ) : auditLogs && auditLogs.length > 0 ? (
                   <ScrollArea className="h-[500px]">
+                    <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
