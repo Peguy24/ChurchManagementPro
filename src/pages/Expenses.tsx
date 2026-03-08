@@ -456,7 +456,7 @@ export default function Expenses() {
                       <Input
                         value={formData.vendor}
                         onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                        placeholder="Nom du bénéficiaire"
+                        placeholder={t("expense.vendorPlaceholder")}
                       />
                     </div>
                   </div>
