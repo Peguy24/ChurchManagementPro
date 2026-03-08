@@ -1007,17 +1007,28 @@ export default function MemberDialog({
                 />
               </div>
 
-              {/* Ministries info (readonly for display) */}
-              {ministries && ministries.length > 0 && (
-                <div className="border rounded-lg p-4 bg-muted/30">
-                  <Label className="text-sm font-semibold text-muted-foreground">
-                    {t("members.availableMinistries")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("members.ministriesNote")}
-                  </p>
-                </div>
-              )}
+              {/* Ministry Selection */}
+              <div className="grid gap-2">
+                <Label htmlFor="ministry">{t("members.ministry") || "Ministère"}</Label>
+                <Select
+                  value={selectedMinistryId || "none"}
+                  onValueChange={(value) =>
+                    setSelectedMinistryId(value === "none" ? "" : value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("members.selectMinistry") || "Sélectionner un ministère"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("common.none") || "Aucun"}</SelectItem>
+                    {ministries?.map((ministry) => (
+                      <SelectItem key={ministry.id} value={ministry.id}>
+                        {ministry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </TabsContent>
 
             {/* Family Information Tab */}
