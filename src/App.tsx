@@ -64,7 +64,7 @@ import AnnouncementBanners from "./pages/AnnouncementBanners";
 import SubscriptionOverrides from "./pages/SubscriptionOverrides";
 import ChurnPrevention from "./pages/ChurnPrevention";
 import TenantComparison from "./pages/TenantComparison";
-import WhiteLabelManager from "./pages/WhiteLabelManager";
+
 import EventCalendar from "./pages/EventCalendar";
 import AttendanceKiosk from "./pages/AttendanceKiosk";
 import EngagementAutomations from "./pages/EngagementAutomations";
