@@ -121,19 +121,19 @@ export default function AttendanceKiosk() {
   useEffect(() => {
     const checkWindow = () => {
       if (!selectedEventId) {
-        setWindowStatus({ allowed: false, reason: "Sélectionnez un événement." });
+        setWindowStatus({ allowed: false, reasonKey: "kiosk.selectEvent" });
         return;
       }
       const event = events.find(e => e.id === selectedEventId);
       if (!event) {
-        setWindowStatus({ allowed: false, reason: "Événement introuvable." });
+        setWindowStatus({ allowed: false, reasonKey: "kiosk.eventNotFound" });
         return;
       }
       setWindowStatus(isWithinEventWindow(event));
     };
 
     checkWindow();
-    const interval = setInterval(checkWindow, 15000); // re-check every 15s
+    const interval = setInterval(checkWindow, 15000);
     return () => clearInterval(interval);
   }, [selectedEventId, events]);
 
