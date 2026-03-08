@@ -14,6 +14,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
+import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -587,6 +588,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Onboarding Progress */}
+        <OnboardingProgressCard />
 
         {/* Trial Countdown - show prominently if in trial */}
         <TrialCountdownCard />
