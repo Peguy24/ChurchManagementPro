@@ -98,7 +98,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         eventCategory: event.event_category || "general",
       });
     } else {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalToday();
       setFormData({
         name: "",
         date: today,
