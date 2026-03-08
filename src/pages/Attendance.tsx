@@ -642,15 +642,38 @@ function AttendanceContent() {
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-card">
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl font-bold">{t("attendance.kioskMode")} - {t("nav.attendance")}</h1>
             <p className="text-xl text-muted-foreground mt-1">{t("attendance.scanQrToMarkAttendance")}</p>
+            {/* Event selector in kiosk */}
+            <div className="mt-3">
+              <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
+                <SelectTrigger className="w-full max-w-md text-lg">
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  <SelectValue placeholder={todayEvents.length === 0 ? t("attendance.noEventToday") : t("attendance.selectAnEvent")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {todayEvents.length === 0 ? (
+                    <SelectItem value="none" disabled>
+                      {t("attendance.noEventScheduled")}
+                    </SelectItem>
+                  ) : (
+                    todayEvents.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.name} {event.event_time ? `(${event.event_time.substring(0, 5)})` : ""}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button 
               size="lg"
               variant={kioskCameraActive ? "default" : "outline"}
               onClick={() => setKioskCameraActive(!kioskCameraActive)}
+              disabled={!selectedEventId}
             >
               <Camera className="mr-2 h-5 w-5" />
               {kioskCameraActive ? t("attendance.stopCamera") : t("attendance.startCamera")}
