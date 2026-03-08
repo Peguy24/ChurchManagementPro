@@ -246,6 +246,7 @@ export default function MemberDialog({
         numberOfChildren: "",
         childrenNames: "",
       });
+      setSelectedMinistryId("");
       setPhotoPreview("");
       setPhotoFile(null);
     }
