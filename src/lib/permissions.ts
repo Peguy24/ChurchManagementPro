@@ -78,6 +78,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/attendance": "attendance",
   "/attendance/stats": "attendance",
   "/attendance/alerts": "attendance",
+  "/attendance/kiosk": "attendance",
   "/attendance/comparison": "reports",
   "/donations": "finances",
   "/donations/categories": "finances",
