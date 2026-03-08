@@ -791,7 +791,7 @@ export default function Salaries() {
                     ) : payments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          Aucun paiement enregistré
+                          {t("salariesPage.noPayments")}
                         </TableCell>
                       </TableRow>
                     ) : (
