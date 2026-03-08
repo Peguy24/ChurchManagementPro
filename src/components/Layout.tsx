@@ -189,33 +189,97 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
   return groups;
 };
 
-// Navigation for super admins (platform-level)
-const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
-  {
-    key: "administration",
-    label: t("layout.administration"),
-    icon: ShieldAlert,
-    items: [
-      { to: "/super-admin", icon: LayoutDashboard, label: t("nav.dashboard") },
-      { to: "/super-admin/accounting", icon: PiggyBank, label: t("platformAccounting.accounting") },
-      { to: "/super-admin/revenue", icon: BarChart3, label: t("superAdmin.revenue.title") },
-      { to: "/super-admin/health", icon: Sparkles, label: t("superAdmin.health.title") },
-      { to: "/super-admin/explore", icon: FolderOpen, label: t("layout.exploreData") },
-      { to: "/settings/tenants", icon: Building2, label: t("layout.churchManagement") },
-      { to: "/settings/invitations", icon: Mail, label: t("layout.adminInvitations") },
-      { to: "/settings/users", icon: Users, label: t("layout.userManagement") },
-      { to: "/support-management", icon: MessageSquare, label: t("layout.supportManagement") },
-      { to: "/super-admin/communication", icon: Mail, label: t("superAdmin.communication.title") },
-      { to: "/super-admin/activity", icon: History, label: t("superAdmin.activityLog.title") },
-      { to: "/super-admin/banners", icon: Megaphone, label: t("superAdmin.banners.navTitle") },
-      { to: "/super-admin/subscriptions", icon: CreditCard, label: t("superAdmin.overrides.navTitle") },
-      { to: "/super-admin/churn", icon: ShieldAlertIcon, label: t("superAdmin.churn.navTitle") },
-      { to: "/super-admin/comparison", icon: GitCompareArrows, label: t("superAdmin.comparison.navTitle") },
-      { to: "/super-admin/branding", icon: Palette, label: t("superAdmin.whiteLabel.navTitle") },
-      { to: "/super-admin/settings", icon: Settings, label: t("platformSettings.title") },
-    ],
+// Local translations for super admin nav to avoid nested key resolution issues
+const superAdminNavLabels: Record<string, Record<string, string>> = {
+  en: {
+    dashboard: "Dashboard",
+    accounting: "Accounting",
+    revenue: "Revenue Analytics",
+    health: "Church Health",
+    explore: "Explore Data",
+    churches: "Church Management",
+    invitations: "Admin Invitations",
+    users: "User Management",
+    support: "Support Management",
+    communication: "Communication",
+    activity: "Activity Log",
+    banners: "Banners",
+    subscriptions: "Subscription Overrides",
+    churn: "Churn Prevention",
+    comparison: "Comparison",
+    branding: "White-Label",
+    settings: "Platform Settings",
   },
-];
+  fr: {
+    dashboard: "Tableau de bord",
+    accounting: "Comptabilité",
+    revenue: "Analyse des Revenus",
+    health: "Santé des Églises",
+    explore: "Explorer les Données",
+    churches: "Gestion des Églises",
+    invitations: "Invitations Admin",
+    users: "Gestion des Utilisateurs",
+    support: "Gestion du Support",
+    communication: "Communication",
+    activity: "Journal d'Activité",
+    banners: "Bannières",
+    subscriptions: "Abonnements",
+    churn: "Prévention Attrition",
+    comparison: "Comparaison",
+    branding: "White-Label",
+    settings: "Configuration Plateforme",
+  },
+  ht: {
+    dashboard: "Tablo Debò",
+    accounting: "Kontabilite",
+    revenue: "Analiz Revni",
+    health: "Sante Legliz",
+    explore: "Eksplore Done",
+    churches: "Jesyon Legliz",
+    invitations: "Envitasyon Admin",
+    users: "Jesyon Itilizatè",
+    support: "Jesyon Sipò",
+    communication: "Kominikasyon",
+    activity: "Jounal Aktivite",
+    banners: "Bannyè",
+    subscriptions: "Abònman",
+    churn: "Prevansyon Atrisyon",
+    comparison: "Konparezon",
+    branding: "White-Label",
+    settings: "Konfigirasyon Platfòm",
+  },
+};
+
+// Navigation for super admins (platform-level)
+const getSuperAdminNavGroups = (t: (key: string) => string, language: string): NavGroup[] => {
+  const sl = (key: string) => superAdminNavLabels[language]?.[key] || superAdminNavLabels.en[key] || key;
+  return [
+    {
+      key: "administration",
+      label: t("layout.administration"),
+      icon: ShieldAlert,
+      items: [
+        { to: "/super-admin", icon: LayoutDashboard, label: sl("dashboard") },
+        { to: "/super-admin/accounting", icon: PiggyBank, label: sl("accounting") },
+        { to: "/super-admin/revenue", icon: BarChart3, label: sl("revenue") },
+        { to: "/super-admin/health", icon: Sparkles, label: sl("health") },
+        { to: "/super-admin/explore", icon: FolderOpen, label: sl("explore") },
+        { to: "/settings/tenants", icon: Building2, label: sl("churches") },
+        { to: "/settings/invitations", icon: Mail, label: sl("invitations") },
+        { to: "/settings/users", icon: Users, label: sl("users") },
+        { to: "/support-management", icon: MessageSquare, label: sl("support") },
+        { to: "/super-admin/communication", icon: Mail, label: sl("communication") },
+        { to: "/super-admin/activity", icon: History, label: sl("activity") },
+        { to: "/super-admin/banners", icon: Megaphone, label: sl("banners") },
+        { to: "/super-admin/subscriptions", icon: CreditCard, label: sl("subscriptions") },
+        { to: "/super-admin/churn", icon: ShieldAlertIcon, label: sl("churn") },
+        { to: "/super-admin/comparison", icon: GitCompareArrows, label: sl("comparison") },
+        { to: "/super-admin/branding", icon: Palette, label: sl("branding") },
+        { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
+      ],
+    },
+  ];
+};
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
@@ -224,7 +288,7 @@ export default function Layout({ children }: LayoutProps) {
   const { isTenantAdmin } = useTenantRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -233,7 +297,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Get appropriate navigation based on user type
   const allNavGroups = isSuperAdmin 
-    ? getSuperAdminNavGroups(t) 
+    ? getSuperAdminNavGroups(t, language) 
     : getChurchNavGroups(t, isTenantAdmin);
   
   // Filter nav groups and items based on user permissions (only for church users)
