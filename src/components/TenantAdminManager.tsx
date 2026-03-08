@@ -310,7 +310,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     onSuccess: (admin) => {
       queryClient.invalidateQueries({ queryKey: ["tenant-admins", tenant?.id] });
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success(`Admin ${admin.user_first_name || ""} ${lt("adminRemoved")}`);
+      toast.success(`${lt("defaultAdminName")} ${admin.user_first_name || ""} ${lt("adminRemoved")}`);
       setDeleteDialogOpen(false);
       setAdminToDelete(null);
     },
