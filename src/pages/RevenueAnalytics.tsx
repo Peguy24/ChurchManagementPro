@@ -7,8 +7,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
 import {
   DollarSign, TrendingUp, TrendingDown, Users, BarChart3,
-  ArrowUpRight, ArrowDownRight, PieChart, RefreshCw
+  ArrowUpRight, ArrowDownRight, PieChart, RefreshCw, Download
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportToCsv, CsvColumn } from "@/lib/csvExport";
+import { toast } from "sonner";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart as RePieChart, Pie, Cell,
