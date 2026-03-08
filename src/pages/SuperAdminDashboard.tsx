@@ -321,6 +321,14 @@ export default function SuperAdminDashboard() {
                 <Activity className="mr-2 h-4 w-4" />
                 {t("superAdmin.activityLog.title")}
               </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin/revenue")}
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                {t("superAdmin.revenue.title")}
+              </Button>
             </CardContent>
           </Card>
         </div>
