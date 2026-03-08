@@ -91,11 +91,40 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("id", tenantId)
         .single();
 
-      // Send notification email to platform (best effort)
+      // Gather all super admin emails
+      const superAdminEmails: string[] = ["support@churchmanager.pro"];
+      try {
+        // Get admins from user_roles (old system)
+        const { data: adminRoles } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+
+        // Get super_admins from platform_user_roles
+        const { data: platformRoles } = await supabase
+          .from("platform_user_roles")
+          .select("user_id")
+          .eq("role", "super_admin");
+
+        const allAdminUserIds = new Set<string>();
+        adminRoles?.forEach((r) => allAdminUserIds.add(r.user_id));
+        platformRoles?.forEach((r) => allAdminUserIds.add(r.user_id));
+
+        for (const adminId of allAdminUserIds) {
+          const { data: adminUser } = await supabase.auth.admin.getUserById(adminId);
+          if (adminUser?.user?.email && !superAdminEmails.includes(adminUser.user.email)) {
+            superAdminEmails.push(adminUser.user.email);
+          }
+        }
+      } catch (fetchErr) {
+        console.error("Failed to fetch super admin emails:", fetchErr);
+      }
+
+      // Send notification email to all super admins (best effort)
       try {
         await resend.emails.send({
           from: "Church Manager Pro <noreply@churchmanagementpro.com>",
-          to: ["support@churchmanager.pro"],
+          to: superAdminEmails,
           subject: `[Support] ${priority.toUpperCase()} - ${subject}`,
           html: `
             <h2>Nouveau ticket de support</h2>
