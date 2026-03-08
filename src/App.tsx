@@ -128,6 +128,8 @@ const App = () => (
               <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
               <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
               <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
+              <Route path="/volunteers" element={<ProtectedRoute><VolunteerScheduling /></ProtectedRoute>} />
+              <Route path="/visitors" element={<ProtectedRoute><Visitors /></ProtectedRoute>} />
               <Route path="/insights" element={<ProtectedRoute><SmartInsights /></ProtectedRoute>} />
               <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
               <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />

@@ -206,4 +206,6 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   users: "Gestion utilisateurs",
   inventory: "Inventaire",
   tenants: "Gestion Multi-Tenant",
+  volunteers: "Planification Bénévoles",
+  visitors: "Gestion Visiteurs",
 };
