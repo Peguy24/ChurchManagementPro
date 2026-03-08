@@ -7120,7 +7120,7 @@ const translations = {
       actualAttendees: "Patisipan ki te prezan",
     },
     financialReports: {
-      title: "Rapò Finans",
+      title: "Rapò Jeneral",
       subtitle: "Analiz detaye kontribisyon yo",
       allBranches: "Tout branch yo",
       lastMonths: "dènye mwa",
