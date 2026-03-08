@@ -852,6 +852,11 @@ const translations = {
       noEventScheduled: "Aucun événement programmé pour aujourd'hui",
       eventRequiredToScan: "Veuillez sélectionner un événement avant de scanner",
       selectEventToStart: "Sélectionnez un événement pour commencer le scan",
+      deleteConfirmTitle: "Supprimer cette présence ?",
+      deleteConfirmDesc: "Êtes-vous sûr de vouloir supprimer l'enregistrement de présence de {name} ? Cette action est irréversible.",
+      deleteSuccess: "Présence supprimée",
+      deleteSuccessDesc: "L'enregistrement de présence de {name} a été supprimé.",
+      deleteError: "Erreur lors de la suppression de la présence",
     },
     attendanceAlerts: {
       title: "Alertes de Présence",
