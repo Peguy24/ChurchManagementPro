@@ -605,7 +605,7 @@ export default function Salaries() {
                         onChange={(e) =>
                           setEmployeeForm({ ...employeeForm, position: e.target.value })
                         }
-                        placeholder="Ex: Pasteur, Secrétaire, Agent d'entretien..."
+                        placeholder={t("salariesPage.positionPlaceholder")}
                         required
                       />
                     </div>
