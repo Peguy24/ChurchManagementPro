@@ -502,7 +502,7 @@ export default function TenantUserManagement() {
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="email@example.com"
+                placeholder={t('tenant.emailExample')}
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 disabled={!!invitationLink}
