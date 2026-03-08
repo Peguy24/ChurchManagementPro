@@ -118,6 +118,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     hello: "Bonjour",
     emailNotAvailable: "Email non disponible",
     defaultAdminName: "Administrateur",
+  },
   ht: {
     adminsOf: "Administratè pou",
     manageAdmins: "Jere administratè legliz sa a. Ou ka retire yo oswa voye yo yon imèl.",
