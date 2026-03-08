@@ -354,6 +354,9 @@ function FeatureFlagsSettings({
   const [localFlags, setLocalFlags] = useState<Record<string, boolean>>(featureFlags);
   const [maintenance, setMaintenance] = useState(maintenanceMode === true || maintenanceMode === "true");
 
+  useEffect(() => { setLocalFlags(typeof flags === "object" ? { ...flags } : {}); }, [flags]);
+  useEffect(() => { setMaintenance(maintenanceMode === true || maintenanceMode === "true"); }, [maintenanceMode]);
+
   const featureLabels: Record<string, string> = {
     smart_insights: t("platformSettings.featureSmartInsights"),
     bulk_communication: t("platformSettings.featureBulkComm"),
