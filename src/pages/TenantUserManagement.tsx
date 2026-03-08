@@ -425,17 +425,45 @@ export default function TenantUserManagement() {
                             {format(new Date(approvedUser.created_at), 'PP', { locale: dateLocale })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setEditingUser(approvedUser);
-                                setSelectedRole(approvedUser.role);
-                              }}
-                            >
-                              <Shield className="h-4 w-4 mr-1" />
-                              {t('tenant.modifyRole')}
-                            </Button>
+                            <div className="flex gap-1 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingUser(approvedUser);
+                                  setSelectedRole(approvedUser.role);
+                                }}
+                              >
+                                <Shield className="h-4 w-4 mr-1" />
+                                {t('tenant.modifyRole')}
+                              </Button>
+                              {approvedUser.user_id !== user?.id && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" variant="destructive">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>{t('tenant.deleteUserTitle')}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        {t('tenant.deleteUserConfirm')} {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}?
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        onClick={() => handleDeleteUser(approvedUser.user_id)}
+                                      >
+                                        {t('common.delete')}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
