@@ -668,6 +668,20 @@ export default function MemberCards() {
                   
                   {/* Member Info with icons */}
                   <div className="space-y-2 mb-4">
+                    {member.ministry_members?.[0]?.ministries?.name && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <div 
+                          className="p-1.5 rounded-lg"
+                          style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
+                        >
+                          <Briefcase className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">Ministère</p>
+                          <p className="font-medium text-foreground truncate">{member.ministry_members[0].ministries!.name}</p>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 text-sm">
                       <div 
                         className="p-1.5 rounded-lg"
