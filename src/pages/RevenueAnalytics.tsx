@@ -136,7 +136,7 @@ export default function RevenueAnalytics() {
           </div>
           <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isLoading || !data?.subscriptions?.length}>
             <Download className="h-4 w-4 mr-2" />
-            {t("superAdmin.revenue.exportCsv") || "Export CSV"}
+            Export CSV
           </Button>
         </div>
 
