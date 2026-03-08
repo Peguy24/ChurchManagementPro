@@ -7,8 +7,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
 import {
   DollarSign, TrendingUp, TrendingDown, Users, BarChart3,
-  ArrowUpRight, ArrowDownRight, PieChart, RefreshCw
+  ArrowUpRight, ArrowDownRight, PieChart, RefreshCw, Download
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportToCsv, CsvColumn } from "@/lib/csvExport";
+import { toast } from "sonner";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart as RePieChart, Pie, Cell,
@@ -69,6 +72,24 @@ export default function RevenueAnalytics() {
   // Compute analytics
   const analytics = computeAnalytics(data?.subscriptions || [], data?.auditLogs || []);
 
+  const handleExportCSV = () => {
+    if (!data?.subscriptions?.length) {
+      toast.error(t("superAdmin.revenue.noData") || "No data to export");
+      return;
+    }
+    const subs = data.subscriptions;
+    const columns: CsvColumn<any>[] = [
+      { key: "tenants.created_at", header: t("superAdmin.revenue.tenantCreated") || "Tenant Created", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+      { key: "plan", header: "Plan" },
+      { key: "status", header: "Status" },
+      { key: "price_monthly", header: "MRR ($)", formatter: (v) => (v || 0).toFixed(2) },
+      { key: "trial_ends_at", header: t("superAdmin.revenue.trialEnds") || "Trial Ends", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+      { key: "created_at", header: t("superAdmin.revenue.subscriptionCreated") || "Subscription Created", formatter: (v) => v ? new Date(v).toLocaleDateString() : "" },
+    ];
+    exportToCsv(subs, columns, `revenue-analytics-${format(new Date(), "yyyy-MM-dd")}`);
+    toast.success(t("superAdmin.revenue.exported") || "Export completed");
+  };
+
   const StatCard = ({
     title, value, icon: Icon, description, trend, loading,
   }: {
@@ -104,13 +125,19 @@ export default function RevenueAnalytics() {
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {t("superAdmin.revenue.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("superAdmin.revenue.subtitle")}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              {t("superAdmin.revenue.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t("superAdmin.revenue.subtitle")}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isLoading || !data?.subscriptions?.length}>
+            <Download className="h-4 w-4 mr-2" />
+            {t("superAdmin.revenue.exportCsv") || "Export CSV"}
+          </Button>
         </div>
 
         {/* KPI Cards */}
