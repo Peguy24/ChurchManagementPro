@@ -702,7 +702,7 @@ export default function Salaries() {
                   {loadingEmployees ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        Chargement...
+                        {t("salariesPage.loading")}
                       </TableCell>
                     </TableRow>
                   ) : filteredEmployees.length === 0 ? (
