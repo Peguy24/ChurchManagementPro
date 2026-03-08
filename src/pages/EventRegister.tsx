@@ -128,6 +128,27 @@ export default function EventRegister() {
     );
   }
 
+  // Event is completed or cancelled — registration closed
+  const isEventClosed = event.status === "completed" || event.status === "cancelled";
+  if (isEventClosed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-8 pb-8 space-y-4">
+            <XCircle className="h-16 w-16 text-destructive mx-auto" />
+            <h2 className="text-2xl font-bold">{t("eventRegistration.eventClosedTitle")}</h2>
+            <p className="text-muted-foreground">{t("eventRegistration.eventClosedMessage")}</p>
+            <div className="pt-2 space-y-1">
+              <p className="font-semibold text-lg">{event.name}</p>
+              {churchName && <p className="text-sm text-muted-foreground">{churchName}</p>}
+              <p className="text-sm text-muted-foreground">{event.event_date}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
