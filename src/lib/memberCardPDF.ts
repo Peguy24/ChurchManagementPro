@@ -191,11 +191,11 @@ const drawCard = async (
   const infoX = x + 3;
   let infoY = y + 35;
 
-  // Date of birth
+  // Ministry
   pdf.setFont("helvetica", "bold");
-  pdf.text("Né(e) le:", infoX, infoY);
+  pdf.text("Ministère:", infoX, infoY);
   pdf.setFont("helvetica", "normal");
-  pdf.text(formatDate(member.date_of_birth), infoX + 12, infoY);
+  pdf.text(member.ministry || "Non défini", infoX + 14, infoY);
 
   infoY += 4;
 
