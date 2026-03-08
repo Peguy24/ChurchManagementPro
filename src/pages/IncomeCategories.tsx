@@ -401,7 +401,7 @@ export default function IncomeCategories() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={category.is_active ? "default" : "secondary"}>
-                          {category.is_active ? t("nav.active") : t("nav.inactive")}
+                          {category.is_active ? t("layout.active") : t("layout.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
