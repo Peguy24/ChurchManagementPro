@@ -50,6 +50,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "communication",
     "settings",
     "inventory",
+    "volunteers",
+    "visitors",
   ],
   treasurer: [
     "dashboard",
