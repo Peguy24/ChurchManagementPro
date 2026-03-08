@@ -196,6 +196,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string): NavGroup[] => [
       { to: "/settings/invitations", icon: Mail, label: t("layout.adminInvitations") },
       { to: "/settings/users", icon: Users, label: t("layout.userManagement") },
       { to: "/support-management", icon: MessageSquare, label: t("layout.supportManagement") },
+      { to: "/super-admin/communication", icon: Mail, label: t("superAdmin.communication.title") },
       { to: "/super-admin/activity", icon: History, label: t("superAdmin.activityLog.title") },
     ],
   },
