@@ -117,7 +117,7 @@ export default function Members() {
 
     toast({
       title: t("common.success"),
-      description: `${filteredMembers.length} membres exportés avec succès`,
+      description: t("donations.exportedSuccess").replace("{count}", String(filteredMembers.length)),
     });
   };
 
