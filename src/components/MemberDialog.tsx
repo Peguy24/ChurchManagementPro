@@ -822,28 +822,28 @@ export default function MemberDialog({
 
               {/* Formation Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-                <Label className="text-base font-semibold">Formation</Label>
+                <Label className="text-base font-semibold">{t("members.formationSection")}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="academicFormation">Formation académique</Label>
+                    <Label htmlFor="academicFormation">{t("members.academicFormation")}</Label>
                     <Input
                       id="academicFormation"
                       value={formData.academicFormation}
                       onChange={(e) =>
                         setFormData({ ...formData, academicFormation: e.target.value })
                       }
-                      placeholder="Ex: Licence en informatique, Bac+3..."
+                      placeholder={t("members.academicPlaceholder")}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="professionalFormation">Formation professionnelle</Label>
+                    <Label htmlFor="professionalFormation">{t("members.professionalFormation")}</Label>
                     <Input
                       id="professionalFormation"
                       value={formData.professionalFormation}
                       onChange={(e) =>
                         setFormData({ ...formData, professionalFormation: e.target.value })
                       }
-                      placeholder="Ex: Comptable, Ingénieur..."
+                      placeholder={t("members.professionalPlaceholder")}
                     />
                   </div>
                 </div>
