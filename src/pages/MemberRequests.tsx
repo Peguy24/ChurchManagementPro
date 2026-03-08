@@ -102,7 +102,23 @@ export default function MemberRequests() {
         .eq("id", request.id);
       if (updateError) throw updateError;
     },
-    onSuccess: () => {
+    onSuccess: async (_, request) => {
+      // Send welcome email if the member has an email
+      if (request.email) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          await supabase.functions.invoke("send-welcome-email", {
+            body: {
+              memberId: request.id,
+              firstName: request.first_name,
+              lastName: request.last_name,
+              email: request.email,
+            },
+          });
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+        }
+      }
       toast({ title: t("memberRequests.success"), description: t("memberRequests.approvedSuccess") });
       queryClient.invalidateQueries({ queryKey: ["member-requests"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
