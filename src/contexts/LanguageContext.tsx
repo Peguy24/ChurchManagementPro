@@ -3021,7 +3021,7 @@ const translations = {
       attendanceAlerts: "Attendance Alerts",
       groupComparison: "Group Comparison",
       donations: "Income",
-      financialReports: "Financial Reports",
+      financialReports: "General Report",
       budgets: "Budgets",
       expenses: "Expenses",
       bankReconciliation: "Bank Reconciliation",
