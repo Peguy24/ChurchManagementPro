@@ -76,7 +76,7 @@ export default function AttendanceKiosk() {
       if (!member) {
         setFeedback("error");
         setFeedbackMessage(t("kiosk.memberNotFound"));
-        playErrorSound(80);
+        playErrorSound(0.8);
         resetFeedback();
         return;
       }
