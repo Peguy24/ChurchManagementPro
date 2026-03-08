@@ -724,7 +724,7 @@ export default function Salaries() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={employee.is_active ? "default" : "secondary"}>
-                            {employee.is_active ? "Actif" : "Inactif"}
+                            {employee.is_active ? t("salariesPage.active") : t("salariesPage.inactive")}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
