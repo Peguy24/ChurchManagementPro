@@ -290,8 +290,8 @@ export default function Expenses() {
                 amount: Number(expense.amount),
                 status,
                 creatorEmail,
-                creatorName: creatorProfile ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim() || "Utilisateur" : "Utilisateur",
-                approverName: approverProfile ? `${approverProfile.first_name || ""} ${approverProfile.last_name || ""}`.trim() || "Administrateur" : "Administrateur",
+                creatorName: creatorProfile ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim() || t("expense.user") : t("expense.user"),
+                approverName: approverProfile ? `${approverProfile.first_name || ""} ${approverProfile.last_name || ""}`.trim() || t("expense.administrator") : t("expense.administrator"),
               },
             });
           } catch (emailError) {
