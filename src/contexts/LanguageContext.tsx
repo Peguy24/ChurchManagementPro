@@ -6271,6 +6271,8 @@ const translations = {
       groupInventory: "Envantè",
       groupUsers: "Jesyon Itilizatè",
       groupTenants: "Jesyon Multi-Tenant",
+      groupVolunteers: "Planifikasyon Volontè",
+      groupVisitors: "Jesyon Vizitè",
     },
     errors: {
       required: "Chan sa obligatwa",
