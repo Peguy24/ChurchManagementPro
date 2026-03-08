@@ -3560,6 +3560,11 @@ const translations = {
       noEventScheduled: "No events scheduled for today",
       eventRequiredToScan: "Please select an event before scanning",
       selectEventToStart: "Select an event to start scanning",
+      deleteConfirmTitle: "Delete this attendance?",
+      deleteConfirmDesc: "Are you sure you want to delete the attendance record for {name}? This action cannot be undone.",
+      deleteSuccess: "Attendance deleted",
+      deleteSuccessDesc: "The attendance record for {name} has been deleted.",
+      deleteError: "Error deleting attendance record",
     },
     attendanceAlerts: {
       title: "Attendance Alerts",
