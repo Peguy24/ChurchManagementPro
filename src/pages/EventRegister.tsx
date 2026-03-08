@@ -83,6 +83,27 @@ export default function EventRegister() {
       });
 
       if (error) throw error;
+
+      // Send confirmation email if email provided
+      if (formData.email.trim()) {
+        try {
+          await supabase.functions.invoke("send-event-registration-email", {
+            body: {
+              firstName: formData.firstName.trim(),
+              lastName: formData.lastName.trim(),
+              email: formData.email.trim(),
+              eventName: event.name,
+              eventDate: event.event_date,
+              eventTime: event.event_time ? event.event_time.substring(0, 5) : null,
+              eventLocation: event.location || null,
+              churchName: churchName || undefined,
+            },
+          });
+        } catch (emailErr) {
+          console.error("Failed to send registration email:", emailErr);
+        }
+      }
+
       setSubmitted(true);
     } catch {
       alert(t("eventRegistration.errorSubmit"));
