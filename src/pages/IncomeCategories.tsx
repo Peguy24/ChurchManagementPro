@@ -294,7 +294,7 @@ export default function IncomeCategories() {
                   </p>
                 )}
                 <div className="space-y-2">
-                  <Label>{t("nav.categoryDescription")}</Label>
+                  <Label>{t("layout.categoryDescription")}</Label>
                   <Textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
