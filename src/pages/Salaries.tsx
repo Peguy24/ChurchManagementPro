@@ -764,9 +764,9 @@ export default function Salaries() {
           <TabsContent value="history" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Historique des paiements</CardTitle>
+                <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
                 <CardDescription>
-                  Tous les salaires versés au personnel
+                  {t("salariesPage.allPayments")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
