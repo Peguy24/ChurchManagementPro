@@ -52,6 +52,7 @@ interface Member {
 export default function MemberCards() {
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { tenant } = useCurrentTenant();
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [generatingQRs, setGeneratingQRs] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
