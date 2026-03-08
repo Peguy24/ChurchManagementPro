@@ -589,11 +589,11 @@ export default function TenantUserManagement() {
                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-amber-700 dark:text-amber-300">
-                    <p><strong>{t('tenant.secureLinkTitle') || 'Lien sécurisé et à usage unique'}</strong></p>
+                    <p><strong>{t('tenant.secureLink')}</strong></p>
                     <ul className="list-disc list-inside mt-1 space-y-0.5">
-                      <li>{t('tenant.linkValidity') || 'Valide pendant 7 jours'}</li>
-                      <li>{t('tenant.linkShareWarning') || 'Ne le partagez qu\'avec la personne concernée'}</li>
-                      <li>{t('tenant.linkShareOptions') || 'Peut être partagé via WhatsApp, SMS, etc.'}</li>
+                      <li>{t('tenant.validFor')}</li>
+                      <li>{t('tenant.shareOnly')}</li>
+                      <li>{t('tenant.shareVia')}</li>
                     </ul>
                   </div>
                 </div>
