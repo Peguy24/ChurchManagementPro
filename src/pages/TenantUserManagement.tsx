@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle } from 'lucide-react';
+import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
@@ -158,6 +159,37 @@ export default function TenantUserManagement() {
       toast({
         title: t('common.error'),
         description: t('tenant.rejectError'),
+        variant: 'destructive',
+      });
+    }
+  }
+
+  async function handleDeleteUser(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('tenant_user_roles')
+        .delete()
+        .eq('tenant_id', tenantId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await supabase
+        .from('profiles')
+        .update({ tenant_id: null })
+        .eq('id', userId);
+
+      toast({
+        title: t('tenant.userDeleted'),
+        description: t('tenant.userRemoved'),
+      });
+      
+      fetchTenantUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      toast({
+        title: t('common.error'),
+        description: t('tenant.deleteUserError'),
         variant: 'destructive',
       });
     }
@@ -424,17 +456,45 @@ export default function TenantUserManagement() {
                             {format(new Date(approvedUser.created_at), 'PP', { locale: dateLocale })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setEditingUser(approvedUser);
-                                setSelectedRole(approvedUser.role);
-                              }}
-                            >
-                              <Shield className="h-4 w-4 mr-1" />
-                              {t('tenant.modifyRole')}
-                            </Button>
+                            <div className="flex gap-1 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingUser(approvedUser);
+                                  setSelectedRole(approvedUser.role);
+                                }}
+                              >
+                                <Shield className="h-4 w-4 mr-1" />
+                                {t('tenant.modifyRole')}
+                              </Button>
+                              {approvedUser.user_id !== user?.id && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" variant="destructive">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>{t('tenant.deleteUserTitle')}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        {t('tenant.deleteUserConfirm')} {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}?
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        onClick={() => handleDeleteUser(approvedUser.user_id)}
+                                      >
+                                        {t('common.delete')}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
