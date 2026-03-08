@@ -50,7 +50,14 @@ export default function AttendanceKiosk() {
     }
 
     const memberId = match[1];
-    const resolvedTenantId = await getCurrentUserTenantId();
+    const userId = user?.id;
+    if (!userId) {
+      setFeedback("error");
+      setFeedbackMessage(t("kiosk.noTenant"));
+      resetFeedback();
+      return;
+    }
+    const resolvedTenantId = await getCurrentUserTenantId(userId);
     if (!resolvedTenantId) {
       setFeedback("error");
       setFeedbackMessage(t("kiosk.noTenant"));
