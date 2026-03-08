@@ -169,7 +169,7 @@ export default function RolePermissionsManager() {
           {t("rolePermissions.title")}
         </CardTitle>
         <CardDescription>
-          {t("rolePermissions.description")}
+          {t("rolePermissions.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent>
