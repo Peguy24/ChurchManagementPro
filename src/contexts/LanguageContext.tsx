@@ -3579,6 +3579,8 @@ const translations = {
         noHistory: "No announcements sent yet",
       },
     },
+    platform: {
+      superAdminManagement: "Super Admin Management",
       superAdminManagementDesc: "Manage platform administrator access",
       inviteSuperAdmin: "Invite Super Admin",
       usersTab: "Users",
