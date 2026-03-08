@@ -288,12 +288,31 @@ function PlanCard({
   const [mu, setMu] = useState(limits.max_users ?? 3);
   const [ms, setMs] = useState(limits.max_storage_mb ?? 200);
 
+  const defaultFeatures = {
+    attendance: true, donations: true, advancedReports: false,
+    emailNotifications: false, inventory: false, prioritySupport: false, whiteLabel: false,
+  };
+  const [features, setFeatures] = useState<Record<string, boolean>>(
+    typeof limits.features === "object" ? limits.features : defaultFeatures
+  );
+
   useEffect(() => {
     setMm(limits.max_members ?? 100);
     setMb(limits.max_branches ?? 1);
     setMu(limits.max_users ?? 3);
     setMs(limits.max_storage_mb ?? 200);
-  }, [limits.max_members, limits.max_branches, limits.max_users, limits.max_storage_mb]);
+    if (typeof limits.features === "object") setFeatures(limits.features);
+  }, [limits.max_members, limits.max_branches, limits.max_users, limits.max_storage_mb, limits.features]);
+
+  const featureLabels: Record<string, string> = {
+    attendance: t("platformSettings.featureAttendance"),
+    donations: t("platformSettings.featureDonations"),
+    advancedReports: t("platformSettings.featureAdvancedReports"),
+    emailNotifications: t("platformSettings.featureEmailNotif"),
+    inventory: t("platformSettings.featureInventory"),
+    prioritySupport: t("platformSettings.featurePrioritySupport"),
+    whiteLabel: t("platformSettings.featureWhiteLabel"),
+  };
 
   return (
     <Card>
@@ -320,12 +339,28 @@ function PlanCard({
             <Input type="number" value={ms} onChange={(e) => setMs(parseInt(e.target.value))} className="h-8" />
           </div>
         </div>
+
+        <div className="border-t pt-3 mt-3">
+          <Label className="text-xs font-semibold mb-2 block">{t("platformSettings.includedFeatures")}</Label>
+          <div className="grid gap-2">
+            {Object.entries(featureLabels).map(([key, lbl]) => (
+              <div key={key} className="flex items-center justify-between">
+                <Label className="text-xs">{lbl}</Label>
+                <Switch
+                  checked={features[key] ?? false}
+                  onCheckedChange={(checked) => setFeatures((prev) => ({ ...prev, [key]: checked }))}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
         <p className="text-xs text-muted-foreground">{t("platformSettings.unlimitedHint")}</p>
         <Button
           size="sm"
           className="w-full"
           onClick={() =>
-            onSave(planKey, { max_members: mm, max_branches: mb, max_users: mu, max_storage_mb: ms })
+            onSave(planKey, { max_members: mm, max_branches: mb, max_users: mu, max_storage_mb: ms, features })
           }
           disabled={saving}
         >
