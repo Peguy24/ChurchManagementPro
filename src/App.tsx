@@ -54,6 +54,7 @@ import TenantDataViewer from "./pages/TenantDataViewer";
 import SmartInsights from "./pages/SmartInsights";
 import SystemGuide from "./pages/SystemGuide";
 import Support from "./pages/Support";
+import PlatformActivityLog from "./pages/PlatformActivityLog";
 import SupportManagement from "./pages/SupportManagement";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
