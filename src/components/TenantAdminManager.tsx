@@ -157,6 +157,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     hello: "Bonjou",
     emailNotAvailable: "Imèl pa disponib",
     defaultAdminName: "Administratè",
+  },
 };
 
 interface TenantAdmin {
