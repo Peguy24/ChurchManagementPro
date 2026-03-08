@@ -45,6 +45,7 @@ interface Member {
   date_of_birth: string | null;
   join_date: string | null;
   member_number: string | null;
+  ministry_members: { ministries: { name: string } | null }[] | null;
 }
 
 export default function MemberCards() {
