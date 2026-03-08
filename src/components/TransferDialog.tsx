@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -19,7 +21,9 @@ interface TransferDialogProps {
 }
 
 const TransferDialog = ({ trigger }: TransferDialogProps) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
+  const { formatAmount } = useCurrency();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
   const [open, setOpen] = useState(false);
@@ -59,30 +63,28 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
   const transferMutation = useMutation({
     mutationFn: async () => {
       const amount = Number(form.amount);
-      if (amount <= 0) throw new Error("Montant invalide");
+      if (amount <= 0) throw new Error(t("transferDialog.invalidAmount"));
 
       const referenceNumber = form.reference_number || `TRF-${Date.now()}`;
-      const description = form.description || "Transfert de fonds";
+      const description = form.description || t("transferDialog.defaultDescription");
 
-      // Get source and destination names for description
       let sourceName = "";
       let destName = "";
 
       if (form.sourceType === "cash_register") {
-        sourceName = cashRegisters?.find(r => r.id === form.sourceId)?.name || "Caisse";
+        sourceName = cashRegisters?.find(r => r.id === form.sourceId)?.name || t("transferDialog.defaultCashRegister");
       } else {
-        sourceName = bankAccounts?.find(a => a.id === form.sourceId)?.name || "Compte";
+        sourceName = bankAccounts?.find(a => a.id === form.sourceId)?.name || t("transferDialog.defaultBankAccount");
       }
 
       if (form.destinationType === "cash_register") {
-        destName = cashRegisters?.find(r => r.id === form.destinationId)?.name || "Caisse";
+        destName = cashRegisters?.find(r => r.id === form.destinationId)?.name || t("transferDialog.defaultCashRegister");
       } else {
-        destName = bankAccounts?.find(a => a.id === form.destinationId)?.name || "Compte";
+        destName = bankAccounts?.find(a => a.id === form.destinationId)?.name || t("transferDialog.defaultBankAccount");
       }
 
-      const fullDescription = `${description} - De: ${sourceName} → Vers: ${destName}`;
+      const fullDescription = `${description} - ${t("transferDialog.from")}: ${sourceName} → ${t("transferDialog.to")}: ${destName}`;
 
-      // 1. Record outgoing transaction from source
       if (form.sourceType === "cash_register") {
         const { error } = await supabase.from("cash_transactions").insert({
           cash_register_id: form.sourceId,
@@ -95,7 +97,6 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         });
         if (error) throw error;
 
-        // Update cash register balance
         const register = cashRegisters?.find(r => r.id === form.sourceId);
         if (register) {
           await supabase
@@ -114,7 +115,6 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         });
         if (error) throw error;
 
-        // Update bank account balance
         const account = bankAccounts?.find(a => a.id === form.sourceId);
         if (account) {
           await supabase
@@ -124,7 +124,6 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         }
       }
 
-      // 2. Record incoming transaction to destination
       if (form.destinationType === "cash_register") {
         const { error } = await supabase.from("cash_transactions").insert({
           cash_register_id: form.destinationId,
@@ -137,7 +136,6 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         });
         if (error) throw error;
 
-        // Update cash register balance
         const register = cashRegisters?.find(r => r.id === form.destinationId);
         if (register) {
           await supabase
@@ -156,7 +154,6 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         });
         if (error) throw error;
 
-        // Update bank account balance
         const account = bankAccounts?.find(a => a.id === form.destinationId);
         if (account) {
           await supabase
@@ -184,12 +181,12 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         reference_number: "",
         transfer_date: format(new Date(), "yyyy-MM-dd"),
       });
-      toast({ title: "Succès", description: "Transfert effectué avec succès" });
+      toast({ title: t("transferDialog.success"), description: t("transferDialog.successDesc") });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Erreur", 
-        description: error.message || "Impossible d'effectuer le transfert", 
+        title: t("transferDialog.error"), 
+        description: error.message || t("transferDialog.errorDesc"), 
         variant: "destructive" 
       });
     },
@@ -236,7 +233,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         {trigger || (
           <Button variant="outline">
             <ArrowLeftRight className="mr-2 h-4 w-4" />
-            Transfert
+            {t("transferDialog.button")}
           </Button>
         )}
       </DialogTrigger>
@@ -244,24 +241,22 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowLeftRight className="h-5 w-5" />
-            Transfert entre comptes
+            {t("transferDialog.title")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {/* Source */}
           <div className="p-4 border rounded-lg bg-red-50/50 space-y-3">
-            <Label className="text-sm font-medium text-red-700">Source (débit)</Label>
+            <Label className="text-sm font-medium text-red-700">{t("transferDialog.sourceDebit")}</Label>
             <div className="grid grid-cols-2 gap-2">
               <Select 
                 value={form.sourceType} 
                 onValueChange={(v: AccountType) => setForm({ ...form, sourceType: v, sourceId: "" })}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash_register">Caisse</SelectItem>
-                  <SelectItem value="bank_account">Compte bancaire</SelectItem>
+                  <SelectItem value="cash_register">{t("transferDialog.cashRegister")}</SelectItem>
+                  <SelectItem value="bank_account">{t("transferDialog.bankAccount")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select 
@@ -269,12 +264,12 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
                 onValueChange={(v) => setForm({ ...form, sourceId: v })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner..." />
+                  <SelectValue placeholder={t("transferDialog.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   {getSourceAccounts().map((account: any) => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.name} (${Number(account.current_balance).toFixed(2)})
+                      {account.name} ({formatAmount(Number(account.current_balance))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -282,7 +277,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
             </div>
             {sourceBalance !== null && (
               <p className="text-xs text-muted-foreground">
-                Solde disponible: <span className="font-medium">${Number(sourceBalance).toFixed(2)}</span>
+                {t("transferDialog.availableBalance")}: <span className="font-medium">{formatAmount(Number(sourceBalance))}</span>
               </p>
             )}
           </div>
@@ -296,18 +291,16 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
 
           {/* Destination */}
           <div className="p-4 border rounded-lg bg-green-50/50 space-y-3">
-            <Label className="text-sm font-medium text-green-700">Destination (crédit)</Label>
+            <Label className="text-sm font-medium text-green-700">{t("transferDialog.destinationCredit")}</Label>
             <div className="grid grid-cols-2 gap-2">
               <Select 
                 value={form.destinationType} 
                 onValueChange={(v: AccountType) => setForm({ ...form, destinationType: v, destinationId: "" })}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash_register">Caisse</SelectItem>
-                  <SelectItem value="bank_account">Compte bancaire</SelectItem>
+                  <SelectItem value="cash_register">{t("transferDialog.cashRegister")}</SelectItem>
+                  <SelectItem value="bank_account">{t("transferDialog.bankAccount")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select 
@@ -315,12 +308,12 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
                 onValueChange={(v) => setForm({ ...form, destinationId: v })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner..." />
+                  <SelectValue placeholder={t("transferDialog.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   {getDestinationAccounts().map((account: any) => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.name} (${Number(account.current_balance).toFixed(2)})
+                      {account.name} ({formatAmount(Number(account.current_balance))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -330,7 +323,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
 
           {/* Amount */}
           <div>
-            <Label>Montant ($) *</Label>
+            <Label>{t("transferDialog.amount")} *</Label>
             <Input
               type="number"
               value={form.amount}
@@ -340,17 +333,17 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
               step="0.01"
             />
             {Number(form.amount) > Number(sourceBalance || 0) && sourceBalance !== null && (
-              <p className="text-xs text-destructive mt-1">Le montant dépasse le solde disponible</p>
+              <p className="text-xs text-destructive mt-1">{t("transferDialog.amountExceedsBalance")}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <Label>Motif du transfert</Label>
+            <Label>{t("transferDialog.transferReason")}</Label>
             <Textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Ex: Dépôt en banque, approvisionnement caisse..."
+              placeholder={t("transferDialog.reasonPlaceholder")}
               rows={2}
             />
           </div>
@@ -358,15 +351,15 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
           {/* Reference */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Référence</Label>
+              <Label>{t("transferDialog.reference")}</Label>
               <Input
                 value={form.reference_number}
                 onChange={(e) => setForm({ ...form, reference_number: e.target.value })}
-                placeholder="N° bordereau..."
+                placeholder={t("transferDialog.referencePlaceholder")}
               />
             </div>
             <div>
-              <Label>Date</Label>
+              <Label>{t("transferDialog.date")}</Label>
               <Input
                 type="date"
                 value={form.transfer_date}
@@ -380,7 +373,7 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
             disabled={!isValidTransfer || transferMutation.isPending}
             className="w-full"
           >
-            {transferMutation.isPending ? "Transfert en cours..." : "Effectuer le transfert"}
+            {transferMutation.isPending ? t("transferDialog.transferring") : t("transferDialog.transferButton")}
           </Button>
         </div>
       </DialogContent>
