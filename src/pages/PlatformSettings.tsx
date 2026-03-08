@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -153,12 +153,21 @@ function TrialSettings({
   saving: boolean;
   t: (k: string) => string;
 }) {
-  const [days, setDays] = useState<number>(typeof trialDays === "number" ? trialDays : parseInt(trialDays) || 14);
+  const parsedDays = typeof trialDays === "number" ? trialDays : parseInt(trialDays) || 14;
   const limits = typeof trialLimits === "object" ? trialLimits : {};
+  const [days, setDays] = useState<number>(parsedDays);
   const [maxMembers, setMaxMembers] = useState(limits.max_members ?? 50);
   const [maxBranches, setMaxBranches] = useState(limits.max_branches ?? 1);
   const [maxUsers, setMaxUsers] = useState(limits.max_users ?? 2);
   const [maxStorage, setMaxStorage] = useState(limits.max_storage_mb ?? 100);
+
+  useEffect(() => { setDays(parsedDays); }, [parsedDays]);
+  useEffect(() => {
+    setMaxMembers(limits.max_members ?? 50);
+    setMaxBranches(limits.max_branches ?? 1);
+    setMaxUsers(limits.max_users ?? 2);
+    setMaxStorage(limits.max_storage_mb ?? 100);
+  }, [trialLimits]);
 
   return (
     <Card>
@@ -279,6 +288,13 @@ function PlanCard({
   const [mu, setMu] = useState(limits.max_users ?? 3);
   const [ms, setMs] = useState(limits.max_storage_mb ?? 200);
 
+  useEffect(() => {
+    setMm(limits.max_members ?? 100);
+    setMb(limits.max_branches ?? 1);
+    setMu(limits.max_users ?? 3);
+    setMs(limits.max_storage_mb ?? 200);
+  }, [limits.max_members, limits.max_branches, limits.max_users, limits.max_storage_mb]);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -337,6 +353,9 @@ function FeatureFlagsSettings({
   const featureFlags = typeof flags === "object" ? { ...flags } : {};
   const [localFlags, setLocalFlags] = useState<Record<string, boolean>>(featureFlags);
   const [maintenance, setMaintenance] = useState(maintenanceMode === true || maintenanceMode === "true");
+
+  useEffect(() => { setLocalFlags(typeof flags === "object" ? { ...flags } : {}); }, [flags]);
+  useEffect(() => { setMaintenance(maintenanceMode === true || maintenanceMode === "true"); }, [maintenanceMode]);
 
   const featureLabels: Record<string, string> = {
     smart_insights: t("platformSettings.featureSmartInsights"),
@@ -422,6 +441,10 @@ function EmailSettings({
   const [name, setName] = useState(typeof senderName === "string" ? senderName : "Church Management Pro");
   const [address, setAddress] = useState(typeof senderAddress === "string" ? senderAddress : "noreply@churchmanagementpro.com");
   const [welcome, setWelcome] = useState(typeof welcomeMessage === "string" ? welcomeMessage : "");
+
+  useEffect(() => { if (typeof senderName === "string") setName(senderName); }, [senderName]);
+  useEffect(() => { if (typeof senderAddress === "string") setAddress(senderAddress); }, [senderAddress]);
+  useEffect(() => { if (typeof welcomeMessage === "string") setWelcome(welcomeMessage); }, [welcomeMessage]);
 
   return (
     <Card>
