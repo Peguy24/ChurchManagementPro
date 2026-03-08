@@ -636,8 +636,47 @@ function AttendanceContent() {
       setLoading(false);
     }
   };
+  const handleDeleteAttendance = async (member: ScannedMember, index: number) => {
+    try {
+      if (member.attendance_record_id) {
+        const { error } = await supabase
+          .from("attendance_records")
+          .delete()
+          .eq("id", member.attendance_record_id);
+        if (error) throw error;
+      } else {
+        // Fallback: delete by member_id + today's date + event
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        let query = supabase
+          .from("attendance_records")
+          .delete()
+          .eq("member_id", member.id)
+          .eq("event_date", today);
+        if (selectedEventId) {
+          query = query.eq("event_id", selectedEventId);
+        }
+        const { error } = await query;
+        if (error) throw error;
+      }
 
-  // Kiosk Mode Full Screen View
+      setScannedMembers(prev => prev.filter((_, i) => i !== index));
+      await loadAttendanceRecords();
+      toast({
+        title: t("attendance.deleteSuccess"),
+        description: t("attendance.deleteSuccessDesc").replace("{name}", `${member.first_name} ${member.last_name}`),
+      });
+    } catch (error) {
+      console.error("Error deleting attendance:", error);
+      toast({
+        title: t("common.error"),
+        description: t("attendance.deleteError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+
   if (kioskMode) {
     return (
       <div className="fixed inset-0 bg-background z-50 flex flex-col">
