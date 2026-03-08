@@ -255,7 +255,7 @@ export default function IncomeCategories() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editMode ? t("nav.editCategory") : t("nav.newCategory")}
+                  {editMode ? t("layout.editCategory") : t("layout.newCategory")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
