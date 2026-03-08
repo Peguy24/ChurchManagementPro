@@ -45,6 +45,7 @@ interface Member {
   date_of_birth: string | null;
   join_date: string | null;
   member_number: string | null;
+  ministry_members: { ministries: { name: string } | null }[] | null;
 }
 
 export default function MemberCards() {
@@ -68,7 +69,7 @@ export default function MemberCards() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status, date_of_birth, join_date, member_number")
+        .select("id, first_name, last_name, qr_code, photo_url, phone, email, role, baptism_status, date_of_birth, join_date, member_number, ministry_members(ministries(name))")
         .eq("status", "active")
         .order("first_name");
 
@@ -248,7 +249,11 @@ export default function MemberCards() {
         description: `${t("memberCards.creatingCards")} ${selectedMembersList.length} ${t("memberCards.membersText")}`,
       });
 
-      const pdfBlob = await generateMemberCardsPDF(selectedMembersList, (progress) => {
+      const cardData = selectedMembersList.map(m => ({
+        ...m,
+        ministry: m.ministry_members?.[0]?.ministries?.name || null,
+      }));
+      const pdfBlob = await generateMemberCardsPDF(cardData, (progress) => {
         setPdfProgress(progress);
       }, cardCustomization);
 
