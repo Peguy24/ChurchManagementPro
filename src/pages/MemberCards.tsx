@@ -249,7 +249,11 @@ export default function MemberCards() {
         description: `${t("memberCards.creatingCards")} ${selectedMembersList.length} ${t("memberCards.membersText")}`,
       });
 
-      const pdfBlob = await generateMemberCardsPDF(selectedMembersList, (progress) => {
+      const cardData = selectedMembersList.map(m => ({
+        ...m,
+        ministry: m.ministry_members?.[0]?.ministries?.name || null,
+      }));
+      const pdfBlob = await generateMemberCardsPDF(cardData, (progress) => {
         setPdfProgress(progress);
       }, cardCustomization);
 
