@@ -2791,6 +2791,8 @@ const translations = {
       back: "Retour",
       registerAnother: "Inscrire une autre personne",
       eventOn: "le",
+      eventClosedTitle: "Inscription fermée",
+      eventClosedMessage: "Cet événement est déjà terminé. Les inscriptions ne sont plus possibles.",
     },
   onboarding: {
     title: "Progression d'intégration",
