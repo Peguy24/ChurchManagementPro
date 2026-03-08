@@ -380,10 +380,10 @@ export default function IncomeCategories() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("nav.displayOrder")}</TableHead>
-                    <TableHead>{t("nav.categoryCode")}</TableHead>
-                    <TableHead>{t("nav.categoryName")}</TableHead>
-                    <TableHead>{t("nav.categoryDescription")}</TableHead>
+                    <TableHead>{t("layout.displayOrder")}</TableHead>
+                    <TableHead>{t("layout.categoryCode")}</TableHead>
+                    <TableHead>{t("layout.categoryName")}</TableHead>
+                    <TableHead>{t("layout.categoryDescription")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
                     <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
