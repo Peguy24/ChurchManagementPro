@@ -1290,6 +1290,12 @@ const translations = {
       groupTenants: "Gestion Multi-Tenant",
       groupVolunteers: "Planification Bénévoles",
       groupVisitors: "Gestion Visiteurs",
+      title: "Permissions par Rôle",
+      description: "Personnalisez les accès pour chaque rôle. L'administrateur a toujours accès complet.",
+      feature: "Fonctionnalité",
+      dashboardNote: "Note: Le tableau de bord est toujours accessible à tous les utilisateurs approuvés.",
+      permissionsSaved: "Permissions mises à jour avec succès",
+      permissionsSaveError: "Impossible de sauvegarder les permissions",
     },
     errors: {
       required: "Ce champ est requis",
