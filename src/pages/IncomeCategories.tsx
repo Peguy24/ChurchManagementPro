@@ -360,7 +360,7 @@ export default function IncomeCategories() {
             onCheckedChange={setShowInactive}
           />
           <Label htmlFor="show-inactive" className="text-sm cursor-pointer">
-            {t("nav.showInactive")}
+            {t("layout.showInactive")}
           </Label>
         </div>
 
