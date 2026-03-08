@@ -37,6 +37,8 @@ import {
   Megaphone,
   GitCompareArrows,
   ShieldAlert as ShieldAlertIcon,
+  Zap,
+  Monitor,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
