@@ -935,7 +935,7 @@ export default function Salaries() {
                     onValueChange={(value) => setPaymentForm({ ...paymentForm, bank_account_id: value, cash_register_id: "" })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un compte" />
+                      <SelectValue placeholder={t("salariesPage.selectAccount")} />
                     </SelectTrigger>
                     <SelectContent>
                       {bankAccounts.map((account: any) => (
