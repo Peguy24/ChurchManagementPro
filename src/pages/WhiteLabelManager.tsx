@@ -116,15 +116,15 @@ export default function WhiteLabelManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-tenants-branding"] });
-      toast.success(t("superAdmin.whiteLabel.saved"));
+      toast.success(lt("saved"));
       setEditingTenant(null);
     },
-    onError: () => toast.error(t("superAdmin.whiteLabel.error")),
+    onError: () => toast.error(lt("error")),
   });
 
-  const filtered = tenants?.filter(t =>
-    t.name?.toLowerCase().includes(search.toLowerCase()) ||
-    t.slug?.toLowerCase().includes(search.toLowerCase())
+  const filtered = tenants?.filter(tenant =>
+    tenant.name?.toLowerCase().includes(search.toLowerCase()) ||
+    tenant.slug?.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   const openEdit = (tenant: any) => {
@@ -140,24 +140,24 @@ export default function WhiteLabelManager() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("superAdmin.whiteLabel.title")}</h1>
-          <p className="text-sm md:text-base text-muted-foreground">{t("superAdmin.whiteLabel.subtitle")}</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{lt("title")}</h1>
+          <p className="text-sm md:text-base text-muted-foreground">{lt("subtitle")}</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
-              {t("superAdmin.whiteLabel.allChurches")}
+              {lt("allChurches")}
             </CardTitle>
-            <CardDescription>{t("superAdmin.whiteLabel.desc")}</CardDescription>
+            <CardDescription>{lt("desc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t("superAdmin.whiteLabel.search")}
+                  placeholder={lt("search")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -174,18 +174,18 @@ export default function WhiteLabelManager() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("superAdmin.whiteLabel.logo")}</TableHead>
-                      <TableHead>{t("superAdmin.churchName")}</TableHead>
-                      <TableHead>{t("superAdmin.whiteLabel.color")}</TableHead>
-                      <TableHead>{t("superAdmin.slug")}</TableHead>
-                      <TableHead className="text-right">{t("common.actions")}</TableHead>
+                      <TableHead>{lt("logo")}</TableHead>
+                      <TableHead>{lt("churchName")}</TableHead>
+                      <TableHead>{lt("color")}</TableHead>
+                      <TableHead>{lt("slug")}</TableHead>
+                      <TableHead className="text-right">{lt("actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                          {t("superAdmin.whiteLabel.noResults")}
+                          {lt("noResults")}
                         </TableCell>
                       </TableRow>
                     ) : filtered.map((tenant) => (
@@ -221,7 +221,7 @@ export default function WhiteLabelManager() {
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => openEdit(tenant)}>
                             <Palette className="mr-1 h-3 w-3" />
-                            {t("common.edit")}
+                            {lt("edit")}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -237,18 +237,18 @@ export default function WhiteLabelManager() {
         <Dialog open={!!editingTenant} onOpenChange={() => setEditingTenant(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>{t("superAdmin.whiteLabel.editBranding")}: {editingTenant?.name}</DialogTitle>
+              <DialogTitle>{lt("editBranding")}: {editingTenant?.name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>{t("superAdmin.churchName")}</Label>
+                <Label>{lt("churchName")}</Label>
                 <Input
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>{t("superAdmin.whiteLabel.primaryColor")}</Label>
+                <Label>{lt("primaryColor")}</Label>
                 <div className="flex gap-2">
                   <Input
                     type="color"
@@ -266,7 +266,7 @@ export default function WhiteLabelManager() {
 
               {/* Preview */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-1"><Eye className="h-3 w-3" />{t("tenant.preview")}</Label>
+                <Label className="flex items-center gap-1"><Eye className="h-3 w-3" />{lt("preview")}</Label>
                 <div className="rounded-lg border p-4" style={{ backgroundColor: editForm.primary_color + "10" }}>
                   <div className="flex items-center gap-3">
                     <div
@@ -282,20 +282,20 @@ export default function WhiteLabelManager() {
                       className="px-3 py-1.5 rounded text-xs font-medium text-white inline-block"
                       style={{ backgroundColor: editForm.primary_color }}
                     >
-                      {t("tenant.primaryButton")}
+                      {lt("primaryButton")}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingTenant(null)}>{t("common.cancel")}</Button>
+              <Button variant="outline" onClick={() => setEditingTenant(null)}>{lt("cancel")}</Button>
               <Button
                 onClick={() => updateBranding.mutate({ id: editingTenant.id, ...editForm })}
                 disabled={updateBranding.isPending}
               >
                 {updateBranding.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                {t("common.save")}
+                {lt("save")}
               </Button>
             </DialogFooter>
           </DialogContent>
