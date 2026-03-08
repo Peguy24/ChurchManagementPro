@@ -72,6 +72,8 @@ import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
 import EventRegister from "./pages/EventRegister";
 import EventRegistrations from "./pages/EventRegistrations";
+import VolunteerScheduling from "./pages/VolunteerScheduling";
+import Visitors from "./pages/Visitors";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
