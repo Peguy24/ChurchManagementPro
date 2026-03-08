@@ -813,7 +813,7 @@ export default function Salaries() {
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === "paid" ? "default" : "secondary"}>
-                              {payment.status === "paid" ? "Payé" : payment.status}
+                              {payment.status === "paid" ? t("salariesPage.paid") : payment.status}
                             </Badge>
                           </TableCell>
                         </TableRow>
