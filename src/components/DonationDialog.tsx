@@ -459,7 +459,7 @@ export default function DonationDialog({
                 <SelectValue placeholder={t("branches.branchName")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Toutes les branches</SelectItem>
+                <SelectItem value="none">{t("donations.allBranches")}</SelectItem>
                 {branches?.map((branch) => (
                   <SelectItem key={branch.id} value={branch.id}>
                     {branch.name}
