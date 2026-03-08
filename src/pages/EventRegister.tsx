@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, MapPin, Loader2, CheckCircle, Globe } from "lucide-react";
+import { Calendar, Clock, MapPin, Loader2, CheckCircle, Globe, XCircle } from "lucide-react";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import {
   DropdownMenu,
