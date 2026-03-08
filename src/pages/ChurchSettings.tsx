@@ -342,21 +342,21 @@ export default function ChurchSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Coins className="h-5 w-5" />
-                Devise monétaire
+                {t("churchSettings.currencyTitle")}
               </CardTitle>
               <CardDescription>
-                Choisissez la devise utilisée pour toutes les transactions financières de votre église.
+                {t("churchSettings.currencyDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="currency_code">Devise *</Label>
+                <Label htmlFor="currency_code">{t("churchSettings.currencyLabel")} *</Label>
                 <Select
                   value={settings.currency_code}
                   onValueChange={(value) => setSettings({ ...settings, currency_code: value })}
                 >
                   <SelectTrigger className="w-full max-w-xs">
-                    <SelectValue placeholder="Sélectionner une devise" />
+                    <SelectValue placeholder={t("churchSettings.currencyPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover z-50">
                     {SUPPORTED_CURRENCIES.map((currency) => (
