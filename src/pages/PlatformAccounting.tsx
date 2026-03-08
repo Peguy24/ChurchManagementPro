@@ -554,6 +554,7 @@ export default function PlatformAccounting() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
