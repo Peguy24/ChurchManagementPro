@@ -601,10 +601,25 @@ export default function Auth() {
                     required
                   />
                 </div>
+                <div className="flex justify-end">
+                  <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
+                    Mot de passe oublié ?
+                  </button>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Chargement...' : 'Se connecter'}
                 </Button>
               </form>
+              {showForgotPassword && (
+                <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
+                  <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation</p>
+                  <Input type="email" placeholder="nom@exemple.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? 'Envoi...' : 'Envoyer le lien'}</Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>Annuler</Button>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
         )}
