@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
 
 interface Event {
