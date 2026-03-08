@@ -428,7 +428,7 @@ export default function Expenses() {
                     <Input
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Description de la dépense"
+                      placeholder={t("expense.descriptionPlaceholder")}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
