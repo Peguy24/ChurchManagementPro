@@ -57,6 +57,7 @@ import Support from "./pages/Support";
 import PlatformActivityLog from "./pages/PlatformActivityLog";
 import RevenueAnalytics from "./pages/RevenueAnalytics";
 import ChurchHealthScores from "./pages/ChurchHealthScores";
+import BulkCommunication from "./pages/BulkCommunication";
 import SupportManagement from "./pages/SupportManagement";
 import JoinChurch from "./pages/JoinChurch";
 import MemberRequests from "./pages/MemberRequests";
