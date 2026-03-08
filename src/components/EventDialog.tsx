@@ -207,6 +207,21 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
 
   const formatTime = (time: string) => time.substring(0, 5);
 
+  // Fetch actual attendance count for completed/cancelled events
+  const { data: actualAttendees = 0 } = useQuery({
+    queryKey: ["event-attendance-count", event?.id],
+    queryFn: async () => {
+      if (!event) return 0;
+      const { count, error } = await supabase
+        .from("attendance_records")
+        .select("*", { count: "exact", head: true })
+        .eq("event_id", event.id);
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: isReadOnly && !!event,
+  });
+
   // Read-only report view for completed/cancelled events
   if (isReadOnly && event) {
     return (
@@ -265,6 +280,10 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
                   <span className="font-medium">{event.expected_attendees}</span>
                 </div>
               )}
+              <div className="flex items-center justify-between text-sm border-t pt-3">
+                <span className="text-muted-foreground font-medium">{t("events.actualAttendees")}</span>
+                <span className="text-lg font-bold text-primary">{actualAttendees}</span>
+              </div>
             </div>
 
             {event.description && (
