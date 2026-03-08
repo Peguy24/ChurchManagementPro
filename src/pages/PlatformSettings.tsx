@@ -442,6 +442,10 @@ function EmailSettings({
   const [address, setAddress] = useState(typeof senderAddress === "string" ? senderAddress : "noreply@churchmanagementpro.com");
   const [welcome, setWelcome] = useState(typeof welcomeMessage === "string" ? welcomeMessage : "");
 
+  useEffect(() => { if (typeof senderName === "string") setName(senderName); }, [senderName]);
+  useEffect(() => { if (typeof senderAddress === "string") setAddress(senderAddress); }, [senderAddress]);
+  useEffect(() => { if (typeof welcomeMessage === "string") setWelcome(welcomeMessage); }, [welcomeMessage]);
+
   return (
     <Card>
       <CardHeader>
