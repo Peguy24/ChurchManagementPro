@@ -929,7 +929,7 @@ export default function Salaries() {
               {/* Source account selection */}
               {(paymentForm.payment_method === "bank_transfer" || paymentForm.payment_method === "check") && (
                 <div className="space-y-2">
-                  <Label>Compte bancaire source *</Label>
+                  <Label>{t("salariesPage.sourceBankAccount")} *</Label>
                   <Select
                     value={paymentForm.bank_account_id}
                     onValueChange={(value) => setPaymentForm({ ...paymentForm, bank_account_id: value, cash_register_id: "" })}
