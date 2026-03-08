@@ -36,9 +36,6 @@ export default function PlatformSettings() {
       return data as PlatformSetting[];
     },
   });
-      return data as PlatformSetting[];
-    },
-  });
 
   const updateMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: any }) => {
