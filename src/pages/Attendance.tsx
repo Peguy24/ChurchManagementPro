@@ -800,6 +800,7 @@ function AttendanceContent() {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* Footer Stats */}
