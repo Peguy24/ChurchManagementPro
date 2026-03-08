@@ -83,7 +83,7 @@ export default function AttendanceKiosk() {
   const [events, setEvents] = useState<EventOption[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reason: string }>({ allowed: false, reason: "Sélectionnez un événement." });
+  const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> }>({ allowed: false, reasonKey: "kiosk.selectEvent" });
 
   // Resolve tenant
   useEffect(() => {
