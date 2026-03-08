@@ -286,8 +286,8 @@ export default function MemberDialog({
     } catch (error: any) {
       console.error('Error uploading photo:', error);
       toast({
-        title: "Erreur d'upload",
-        description: error.message || "Impossible de télécharger la photo.",
+        title: t("members.photoUploadError"),
+        description: error.message || t("members.photoUploadErrorDesc"),
         variant: "destructive",
       });
       return null;
