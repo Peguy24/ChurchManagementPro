@@ -598,7 +598,7 @@ export default function Salaries() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="position">Poste *</Label>
+                      <Label htmlFor="position">{t("salariesPage.position")} *</Label>
                       <Input
                         id="position"
                         value={employeeForm.position}
