@@ -5906,7 +5906,7 @@ const translations = {
       attendanceAlerts: "Alèt Prezans",
       groupComparison: "Konparezon Gwoup",
       donations: "Resèt",
-      financialReports: "Rapò Finans",
+      financialReports: "Rapò Jeneral",
       budgets: "Bidjè",
       expenses: "Depans",
       bankReconciliation: "Rekonsilyasyon Bank",
