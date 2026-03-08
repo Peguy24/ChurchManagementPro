@@ -955,7 +955,7 @@ export default function TenantManagement() {
                                 {PLAN_CONFIG[tenant.subscription.plan]?.label}
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-xs">N/A</Badge>
+                              <Badge variant="outline" className="text-xs">{t("common.none")}</Badge>
                             )}
                           </TableCell>
                           <TableCell>

@@ -231,8 +231,8 @@ export default function TenantUserManagement() {
       if (skipEmail && data?.invitationLink) {
         setInvitationLink(data.invitationLink);
         toast({
-          title: t('tenant.linkGenerated') || "Lien généré",
-          description: t('tenant.linkGeneratedDesc') || "Le lien d'invitation a été généré avec succès",
+          title: t('tenant.linkGenerated'),
+          description: t('tenant.linkGeneratedDesc'),
         });
       } else if (!skipEmail) {
         toast({
@@ -246,7 +246,7 @@ export default function TenantUserManagement() {
       if (!skipEmail) {
         toast({
           title: t('common.error'),
-          description: t('tenant.inviteErrorTryLink') || "Erreur d'envoi email. Essayez 'Générer le lien' à la place.",
+          description: t('tenant.inviteErrorTryLink'),
           variant: 'destructive',
         });
       } else {
@@ -268,15 +268,15 @@ export default function TenantUserManagement() {
       await navigator.clipboard.writeText(invitationLink);
       setCopied(true);
       toast({
-        title: t('tenant.linkCopied') || "Lien copié",
-        description: t('tenant.linkCopiedDesc') || "Le lien a été copié dans le presse-papiers",
+        title: t('tenant.linkCopied'),
+        description: t('tenant.linkCopiedDesc'),
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast({
         title: t('common.error'),
-        description: t('tenant.copyError') || "Impossible de copier le lien",
-        variant: 'destructive',
+          description: t('tenant.copyError'),
+          variant: 'destructive',
       });
     }
   };
@@ -502,7 +502,7 @@ export default function TenantUserManagement() {
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="email@example.com"
+                placeholder={t('tenant.emailExample')}
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 disabled={!!invitationLink}
@@ -537,7 +537,7 @@ export default function TenantUserManagement() {
                     ) : (
                       <Send className="h-4 w-4 mr-2" />
                     )}
-                    {t('tenant.sendByEmail') || 'Envoyer par email'}
+                    {t('tenant.sendByEmail')}
                   </Button>
                   <Button
                     className="flex-1"
@@ -550,21 +550,21 @@ export default function TenantUserManagement() {
                     ) : (
                       <Link2 className="h-4 w-4 mr-2" />
                     )}
-                    {t('tenant.generateLink') || 'Générer le lien'}
+                    {t('tenant.generateLink')}
                   </Button>
                 </div>
 
                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-700 dark:text-amber-300">
-                    <strong>{t('tenant.tip') || 'Conseil'} :</strong> {t('tenant.tipEmailFallback') || "Si l'envoi d'email échoue, utilisez \"Générer le lien\" pour obtenir un lien que vous pouvez partager via WhatsApp, SMS, etc."}
+                    <strong>{t('tenant.tip')} :</strong> {t('tenant.tipText')}
                   </p>
                 </div>
               </>
             ) : (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label>{t('tenant.invitationLink') || "Lien d'invitation"}</Label>
+                  <Label>{t('tenant.invitationLink')}</Label>
                   <div className="flex gap-2">
                     <Input
                       value={invitationLink}
@@ -589,18 +589,18 @@ export default function TenantUserManagement() {
                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-amber-700 dark:text-amber-300">
-                    <p><strong>{t('tenant.secureLinkTitle') || 'Lien sécurisé et à usage unique'}</strong></p>
+                    <p><strong>{t('tenant.secureLink')}</strong></p>
                     <ul className="list-disc list-inside mt-1 space-y-0.5">
-                      <li>{t('tenant.linkValidity') || 'Valide pendant 7 jours'}</li>
-                      <li>{t('tenant.linkShareWarning') || 'Ne le partagez qu\'avec la personne concernée'}</li>
-                      <li>{t('tenant.linkShareOptions') || 'Peut être partagé via WhatsApp, SMS, etc.'}</li>
+                      <li>{t('tenant.validFor')}</li>
+                      <li>{t('tenant.shareOnly')}</li>
+                      <li>{t('tenant.shareVia')}</li>
                     </ul>
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => handleInviteDialogClose(false)}>
-                    {t('common.close') || 'Fermer'}
+                    {t('common.close')}
                   </Button>
                 </div>
               </div>

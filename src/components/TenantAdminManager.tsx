@@ -75,6 +75,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Error sending",
     importantInfo: "Important information",
     hello: "Hello",
+    emailNotAvailable: "Email unavailable",
+    defaultAdminName: "Admin",
   },
   fr: {
     adminsOf: "Administrateurs de",
@@ -114,6 +116,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Erreur lors de l'envoi",
     importantInfo: "Information importante",
     hello: "Bonjour",
+    emailNotAvailable: "Email non disponible",
+    defaultAdminName: "Administrateur",
   },
   ht: {
     adminsOf: "Administratè pou",
@@ -153,6 +157,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     sendError: "Erè nan anvwa",
     importantInfo: "Enfòmasyon enpòtan",
     hello: "Bonjou",
+    emailNotAvailable: "Imèl pa disponib",
+    defaultAdminName: "Administratè",
   },
 };
 
@@ -236,7 +242,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           role: role.role,
           is_approved: role.is_approved,
           created_at: role.created_at,
-          user_email: matchingInvitation?.email || "Email non disponible",
+          user_email: matchingInvitation?.email || lt("emailNotAvailable"),
           user_first_name: profile?.first_name || null,
           user_last_name: profile?.last_name || null,
         };
@@ -304,7 +310,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     onSuccess: (admin) => {
       queryClient.invalidateQueries({ queryKey: ["tenant-admins", tenant?.id] });
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success(`Admin ${admin.user_first_name || ""} ${lt("adminRemoved")}`);
+      toast.success(`${lt("defaultAdminName")} ${admin.user_first_name || ""} ${lt("adminRemoved")}`);
       setDeleteDialogOpen(false);
       setAdminToDelete(null);
     },
@@ -397,7 +403,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
     if (admin.user_first_name || admin.user_last_name) {
       return `${admin.user_first_name || ""} ${admin.user_last_name || ""}`.trim();
     }
-    return "Admin";
+    return lt("defaultAdminName");
   };
 
   return (
