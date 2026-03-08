@@ -34,6 +34,9 @@ import {
   UserCog,
   Sparkles,
   UserPlus,
+  Megaphone,
+  GitCompareArrows,
+  ShieldAlert as ShieldAlertIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
