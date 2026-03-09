@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface CustomFieldDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface CustomFieldDialogProps {
 
 export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: CustomFieldDialogProps) {
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const [formData, setFormData] = useState<{
     entity_type: "member" | "branch" | "ministry" | "event" | "donation";
     field_name: string;
@@ -83,6 +85,7 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
         formData.field_type === "select"
           ? { options: formData.field_options }
           : null,
+      ...(field ? {} : { tenant_id: tenantId }),
     };
 
     try {

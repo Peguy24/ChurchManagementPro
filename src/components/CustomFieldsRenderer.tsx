@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface CustomFieldsRendererProps {
   entityType: "member" | "branch" | "ministry" | "event" | "donation";
@@ -17,19 +18,22 @@ interface CustomFieldsRendererProps {
 
 export function CustomFieldsRenderer({ entityType, entityId, values, onChange }: CustomFieldsRendererProps) {
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
 
   const { data: fields } = useQuery({
-    queryKey: ["custom-fields", entityType],
+    queryKey: ["custom-fields", entityType, tenantId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("custom_fields")
         .select("*")
         .eq("entity_type", entityType)
         .eq("is_active", true)
+        .eq("tenant_id", tenantId)
         .order("display_order");
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const { data: existingValues } = useQuery({
