@@ -477,8 +477,8 @@ const FinancialDashboard = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Dépensé: {formatCurrency(alert.spent)}</span>
-                        <span>Budget: {formatCurrency(alert.planned)}</span>
+                        <span>{t("finance.spent")}: {formatCurrency(alert.spent)}</span>
+                        <span>{t("finance.budget")}: {formatCurrency(alert.planned)}</span>
                       </div>
                       <Progress 
                         value={Math.min(alert.percentage, 100)} 
