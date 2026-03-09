@@ -783,59 +783,59 @@ export default function MemberCards() {
         }
       `}</style>
 
-      {/* Attendance Dialog */}
-      <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+      {/* Preview Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={(open) => {
+        setPreviewDialogOpen(open);
+        if (!open && previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>{t("memberCards.attendanceDialog.title")}</DialogTitle>
+            <DialogTitle>{t("memberCards.preview") || "Aperçu"}</DialogTitle>
             <DialogDescription>
-              {t("memberCards.attendanceDialog.description")} {selectedCount} {t("memberCards.attendanceDialog.membersSelected")}
+              {selectedCount} {t("memberCards.cardsSelected")}
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="event-type">{t("memberCards.attendanceDialog.eventType")}</Label>
-              <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger id="event-type">
-                  <SelectValue placeholder={t("memberCards.attendanceDialog.chooseEvent")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Service Dimanche">{t("memberCards.attendanceDialog.sundayService")}</SelectItem>
-                  <SelectItem value="Etude Biblique">{t("memberCards.attendanceDialog.bibleStudy")}</SelectItem>
-                  <SelectItem value="Reunion Priere">{t("memberCards.attendanceDialog.prayerMeeting")}</SelectItem>
-                  <SelectItem value="Groupe Jeunesse">{t("memberCards.attendanceDialog.youthGroup")}</SelectItem>
-                  <SelectItem value="Autre">{t("memberCards.attendanceDialog.other")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="event-date">{t("memberCards.attendanceDialog.date")}</Label>
-              <Input
-                id="event-date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
+          <div className="flex-1 min-h-0">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg border"
+                title="Card Preview"
               />
-            </div>
+            )}
           </div>
-
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAttendanceDialogOpen(false)}
-              disabled={submittingAttendance}
-              className="w-full sm:w-auto"
-            >
-              {t("memberCards.attendanceDialog.cancel")}
+            <Button variant="outline" onClick={() => setPreviewDialogOpen(false)} className="w-full sm:w-auto">
+              {t("common.close") || "Fermer"}
             </Button>
-            <Button
-              onClick={handleMarkAttendance}
-              disabled={submittingAttendance || !eventType}
-              className="w-full sm:w-auto"
-            >
-              {submittingAttendance ? t("memberCards.attendanceDialog.saving") : t("memberCards.attendanceDialog.confirm")}
+            <Button onClick={() => {
+              if (previewUrl) {
+                const link = document.createElement("a");
+                link.href = previewUrl;
+                link.download = `cartes-membres-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+                link.click();
+              }
+            }} className="w-full sm:w-auto">
+              <FileDown className="mr-2 h-4 w-4" />
+              {t("memberCards.downloadPdf")}
+            </Button>
+            <Button onClick={() => {
+              if (previewUrl) {
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                iframe.src = previewUrl;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                  iframe.contentWindow?.print();
+                  setTimeout(() => document.body.removeChild(iframe), 1000);
+                };
+              }
+            }} className="w-full sm:w-auto">
+              <Printer className="mr-2 h-4 w-4" />
+              {t("memberCards.print")}
             </Button>
           </DialogFooter>
         </DialogContent>
