@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, addDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
 import { useState, useMemo } from "react";
@@ -15,6 +16,7 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
+
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -148,7 +150,8 @@ export default function Dashboard() {
       let query = supabase
         .from("attendance_records")
         .select("id, event_date, member_id")
-        .gte("event_date", sixMonthsAgo.toISOString().split('T')[0]);
+        .gte("event_date", formatDateInputValue(sixMonthsAgo));
+
       
       if (tenantId) {
         query = query.eq("tenant_id", tenantId);
@@ -175,13 +178,16 @@ export default function Dashboard() {
   const firstDayOfWeek = new Date(today);
   firstDayOfWeek.setDate(today.getDate() - today.getDay());
 
-  const monthlyDonations = donations?.filter(d => 
-    new Date(d.donation_date) >= firstDayOfMonth
-  ) || [];
+  const monthlyDonations = donations?.filter((d) => {
+    const donationDate = toSafeDate(d.donation_date);
+    return donationDate ? donationDate >= firstDayOfMonth : false;
+  }) || [];
   
-  const weeklyDonations = donations?.filter(d => 
-    new Date(d.donation_date) >= firstDayOfWeek
-  ) || [];
+  const weeklyDonations = donations?.filter((d) => {
+    const donationDate = toSafeDate(d.donation_date);
+    return donationDate ? donationDate >= firstDayOfWeek : false;
+  }) || [];
+
 
   const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
   

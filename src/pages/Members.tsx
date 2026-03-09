@@ -25,10 +25,12 @@ import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateForDisplay, todayInputValue } from "@/lib/date";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 import { exportToCsv, CsvColumn, formatDateForCsv } from "@/lib/csvExport";
 import { useToast } from "@/hooks/use-toast";
+
 const statusColors: Record<string, string> = {
   Actif: "bg-success/10 text-success border-success/20",
   Inactif: "bg-muted text-muted-foreground border-border",
@@ -39,16 +41,20 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Members() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   
+  const dateLocale = language === "en" ? "en-US" : "fr-FR";
+  
   const { canAddMember, usage, limits, plan } = usePlanLimits();
+
 
   // Format address for export
   const formatAddressForExport = (addressData: string | null): string => {
@@ -112,8 +118,9 @@ export default function Members() {
       { key: "created_at", header: t("members.csvCreatedAt"), formatter: (v) => formatDateForCsv(v) },
     ];
 
-    const filename = `membres_export_${new Date().toISOString().split('T')[0]}`;
+    const filename = `membres_export_${todayInputValue()}`;
     exportToCsv(filteredMembers, columns, filename);
+
 
     toast({
       title: t("common.success"),
@@ -241,11 +248,12 @@ export default function Members() {
                       </TableCell>
                       <TableCell>
                         {member.join_date 
-                          ? new Date(member.join_date).toLocaleDateString() 
+                          ? formatDateForDisplay(member.join_date, dateLocale)
                           : member.created_at 
-                            ? new Date(member.created_at).toLocaleDateString() 
+                            ? formatDateForDisplay(member.created_at, dateLocale)
                             : "-"}
                       </TableCell>
+
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <Button

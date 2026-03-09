@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import QRCode from "qrcode";
 import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X, Crop } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 

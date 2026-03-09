@@ -14,7 +14,9 @@ import {
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { exportToCsv, formatDateForCsv } from "@/lib/csvExport";
+import { todayInputValue } from "@/lib/date";
 import { toast } from "sonner";
+
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   auth: UserPlus,
@@ -98,9 +100,10 @@ export default function PlatformActivityLog() {
       { key: "user_email" as const, header: t("superAdmin.activityLog.userEmail") },
       { key: "tenants" as const, header: t("superAdmin.activityLog.church"), formatter: (v: any) => v?.name || "—" },
     ];
-    exportToCsv(data.logs, columns, `activity-log_${new Date().toISOString().split("T")[0]}`);
+    exportToCsv(data.logs, columns, `activity-log_${todayInputValue()}`);
     toast.success(t("superAdmin.csvExported"));
   };
+
 
   const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
 

@@ -39,7 +39,9 @@ import MemberDonationStats from "@/components/MemberDonationStats";
 import MemberDocuments from "@/components/MemberDocuments";
 import MemberTimeline from "@/components/MemberTimeline";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateForDisplay, todayInputValue } from "@/lib/date";
 import QRCode from "qrcode";
+
 
 interface MemberSimple {
   id: string;
@@ -100,7 +102,7 @@ export default function MemberDetails() {
   const [addMinistryDialog, setAddMinistryDialog] = useState(false);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
   const [ministryRole, setMinistryRole] = useState("member");
-  const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [addingMinistry, setAddingMinistry] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
@@ -430,9 +432,10 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.address")} value={formatAddress(member.address)} icon={MapPin} />
               <InfoRow 
                 label={t("memberDetails.dateOfBirth")} 
-                value={member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString(locale) : null} 
+                value={member.date_of_birth ? formatDateForDisplay(member.date_of_birth, locale) : null} 
                 icon={Calendar} 
               />
+
               <InfoRow label={t("memberDetails.civilStatus")} value={member.civic_status} />
             </CardContent>
           </Card>
@@ -450,8 +453,9 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.spouseName")} value={member.spouse_name} />
               <InfoRow 
                 label={t("memberDetails.marriageDate")} 
-                value={member.marriage_date ? new Date(member.marriage_date).toLocaleDateString(locale) : null} 
+                value={member.marriage_date ? formatDateForDisplay(member.marriage_date, locale) : null} 
               />
+
               <InfoRow 
                 label={t("memberDetails.numberOfChildren")} 
                 value={member.number_of_children?.toString()} 
@@ -472,12 +476,14 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.baptismStatus")} value={member.baptism_status} />
               <InfoRow 
                 label={t("memberDetails.baptismDate")} 
-                value={member.baptism_date ? new Date(member.baptism_date).toLocaleDateString(locale) : null} 
+                value={member.baptism_date ? formatDateForDisplay(member.baptism_date, locale) : null} 
               />
+
               <InfoRow 
                 label={t("memberDetails.conversionDate")} 
-                value={member.conversion_date ? new Date(member.conversion_date).toLocaleDateString(locale) : null} 
+                value={member.conversion_date ? formatDateForDisplay(member.conversion_date, locale) : null} 
               />
+
               {member.christian_experience && (
                 <div className="py-2">
                   <p className="text-sm font-medium text-muted-foreground mb-1">{t("memberDetails.christianExperience")}</p>
@@ -645,9 +651,10 @@ export default function MemberDetails() {
                           <span>•</span>
                           <span>
                             {t("memberDetails.membershipLabel")}: {mm.joined_date
-                              ? new Date(mm.joined_date).toLocaleDateString(locale)
+                              ? formatDateForDisplay(mm.joined_date, locale)
                               : "-"}
                           </span>
+
                         </div>
                       </div>
                     </div>

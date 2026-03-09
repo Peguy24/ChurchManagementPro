@@ -2,11 +2,14 @@
  * Utility functions for CSV export
  */
 
+import { formatDateForDisplay } from "./date";
+
 export interface CsvColumn<T> {
   key: keyof T | string;
   header: string;
   formatter?: (value: any, row: T) => string;
 }
+
 
 /**
  * Convert data array to CSV string
@@ -130,9 +133,7 @@ export function formatCurrencyForCsv(amount: number | null | undefined): string 
  */
 export function formatDateForCsv(date: string | null | undefined): string {
   if (!date) return "";
-  try {
-    return new Date(date).toLocaleDateString("fr-FR");
-  } catch {
-    return date;
-  }
+  const formatted = formatDateForDisplay(date, "fr-FR");
+  return formatted || date;
 }
+

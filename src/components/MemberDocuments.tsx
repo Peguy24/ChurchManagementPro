@@ -32,8 +32,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { FileText, Plus, Upload, Download, Trash2, Eye, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { todayInputValue, parseDateOnly } from "@/lib/date";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+
 
 interface MemberDocumentsProps {
   memberId: string;
@@ -71,9 +73,10 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const [formData, setFormData] = useState({
     documentType: "",
     documentName: "",
-    documentDate: new Date().toISOString().split("T")[0],
+    documentDate: todayInputValue(),
     notes: "",
   });
+
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["member-documents", memberId],
@@ -165,9 +168,10 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       setFormData({
         documentType: "",
         documentName: "",
-        documentDate: new Date().toISOString().split("T")[0],
+        documentDate: todayInputValue(),
         notes: "",
       });
+
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setAddDialogOpen(false);
@@ -286,8 +290,9 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                   <TableCell>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {format(new Date(doc.document_date), "dd MMM yyyy", { locale: fr })}
+                      {format(parseDateOnly(doc.document_date) ?? new Date(doc.document_date), "dd MMM yyyy", { locale: fr })}
                     </div>
+
                   </TableCell>
                   <TableCell className="max-w-[200px] truncate">
                     {doc.notes || "-"}

@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateInputValue, toSafeDate } from '@/lib/date';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+
 
 interface GroupStats {
   group: string;
@@ -93,15 +95,16 @@ const GroupComparisonDashboard = () => {
           .from('attendance_records')
           .select('event_date, member_id')
           .in('member_id', memberIds)
-          .gte('event_date', startDate.toISOString().split('T')[0])
+          .gte('event_date', formatDateInputValue(startDate))
           .order('event_date');
+
 
         if (attendanceError) throw attendanceError;
 
         const monthlyMap = new Map<string, { present: Set<string>; total: number }>();
         
         attendance?.forEach(record => {
-          const date = new Date(record.event_date);
+          const date = toSafeDate(record.event_date) ?? new Date(record.event_date);
           const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           
           if (!monthlyMap.has(monthKey)) {
@@ -113,13 +116,19 @@ const GroupComparisonDashboard = () => {
           monthData.total++;
         });
 
+
         const monthlyData = Array.from(monthlyMap.entries())
-          .map(([month, data]) => ({
-            month: new Date(month + '-01').toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
-            rate: (data.present.size / memberIds.length) * 100,
-            total: data.total
-          }))
+          .map(([month, data]) => {
+            const [y, m] = month.split('-').map(Number);
+            const monthDate = new Date(y, (m || 1) - 1, 1);
+            return {
+              month: monthDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+              rate: (data.present.size / memberIds.length) * 100,
+              total: data.total,
+            };
+          })
           .sort((a, b) => a.month.localeCompare(b.month));
+
 
         const overallRate = monthlyData.length > 0
           ? monthlyData.reduce((sum, m) => sum + m.rate, 0) / monthlyData.length

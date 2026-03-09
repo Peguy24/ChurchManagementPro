@@ -38,6 +38,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
+import { formatDateForDisplay } from "@/lib/date";
+
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -1143,8 +1145,9 @@ function AttendanceContent() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {attendanceRecords.length > 0
-                  ? new Date(attendanceRecords[0].event_date).toLocaleDateString("fr-FR")
+                  ? formatDateForDisplay(attendanceRecords[0].event_date, "fr-FR")
                   : t("attendance.noMeetings")}
+
               </p>
             </CardContent>
           </Card>

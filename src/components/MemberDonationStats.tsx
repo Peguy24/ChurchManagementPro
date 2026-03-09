@@ -10,6 +10,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { generateFiscalReceiptPDF, downloadFiscalReceiptPDF, FiscalReceiptData } from "@/lib/fiscalReceiptPDF";
+import { formatDateInputValue } from "@/lib/date";
+
 
 interface MemberDonationStatsProps {
   memberId: string;
@@ -32,8 +34,9 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         .from("donations")
         .select("*")
         .eq("member_id", memberId)
-        .gte("donation_date", sixMonthsAgo.toISOString().split("T")[0])
+        .gte("donation_date", formatDateInputValue(sixMonthsAgo))
         .order("donation_date", { ascending: false });
+
 
       if (error) throw error;
       return data || [];

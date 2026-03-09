@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { formatDateForDisplay, todayInputValue } from "@/lib/date";
+
 
 export default function MinistryDetails() {
   const [searchParams] = useSearchParams();
@@ -57,7 +59,7 @@ export default function MinistryDetails() {
   const [addMemberDialog, setAddMemberDialog] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [memberRole, setMemberRole] = useState("member");
-  const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [loading, setLoading] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({
     open: false,
@@ -153,7 +155,7 @@ export default function MinistryDetails() {
       setAddMemberDialog(false);
       setSelectedMemberId("");
       setMemberRole("member");
-      setJoinedDate(new Date().toISOString().split('T')[0]);
+      setJoinedDate(todayInputValue());
       refetchMembers();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de l'ajout");
@@ -324,8 +326,9 @@ export default function MinistryDetails() {
                         </TableCell>
                         <TableCell>
                           {mm.joined_date
-                            ? new Date(mm.joined_date).toLocaleDateString("fr-FR")
+                            ? formatDateForDisplay(mm.joined_date, "fr-FR")
                             : "-"}
+
                         </TableCell>
                         <TableCell className="text-right">
                           <Button

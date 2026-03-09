@@ -14,7 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { todayInputValue } from "@/lib/date";
 import QRCodeLib from "qrcode";
+
 
 export default function MemberRequests() {
   const { t } = useLanguage();
@@ -87,8 +89,9 @@ export default function MemberRequests() {
         number_of_children: request.number_of_children,
         children_names: request.children_names,
         status: "active",
-        join_date: new Date().toISOString().split("T")[0],
+        join_date: todayInputValue(),
       }).select("id").single();
+
       if (memberError) throw memberError;
 
       // If member requested a ministry, add them to it

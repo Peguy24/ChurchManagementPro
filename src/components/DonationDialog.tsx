@@ -26,6 +26,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, Building2 } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useCurrency } from "@/hooks/useCurrency";
+import { todayInputValue } from "@/lib/date";
 
 interface DonationDialogProps {
   open: boolean;
@@ -48,7 +49,7 @@ export default function DonationDialog({
     amount: "",
     donationType: "",
     paymentMethod: "",
-    donationDate: new Date().toISOString().split("T")[0],
+    donationDate: todayInputValue(),
     notes: "",
     branchId: "none",
     description: "",

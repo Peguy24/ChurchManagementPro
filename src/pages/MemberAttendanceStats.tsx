@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -127,9 +129,10 @@ export default function MemberAttendanceStats() {
         .from("attendance_records")
         .select("event_date, event_type")
         .eq("member_id", id)
-        .gte("event_date", startDate.toISOString().split("T")[0])
-        .lte("event_date", endDate.toISOString().split("T")[0])
+        .gte("event_date", formatDateInputValue(startDate))
+        .lte("event_date", formatDateInputValue(endDate))
         .order("event_date");
+
 
       if (attendanceError) throw attendanceError;
       setAttendanceRecords(attendanceData || []);
@@ -155,12 +158,13 @@ export default function MemberAttendanceStats() {
       });
 
       const monthRecords = records.filter((r) => {
-        const recordDate = new Date(r.event_date);
+        const recordDate = toSafeDate(r.event_date) ?? new Date(r.event_date);
         return (
           recordDate.getMonth() === current.getMonth() &&
           recordDate.getFullYear() === current.getFullYear()
         );
       });
+
 
       months.push({
         month: monthStr,

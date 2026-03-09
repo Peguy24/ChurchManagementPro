@@ -16,9 +16,11 @@ import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Cal
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateInputValue, formatDateForDisplay, todayInputValue } from "@/lib/date";
 import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
+
 
 const CATEGORIES = [
   "hosting",
@@ -93,7 +95,7 @@ export default function PlatformAccounting() {
   // Form state
   const [formData, setFormData] = useState({
     amount: "",
-    expense_date: new Date().toISOString().split("T")[0],
+    expense_date: todayInputValue(),
     category: "general" as string,
     description: "",
     vendor: "",
@@ -102,10 +104,11 @@ export default function PlatformAccounting() {
     recurring_frequency: "",
   });
 
+
   const resetForm = () => {
     setFormData({
       amount: "",
-      expense_date: new Date().toISOString().split("T")[0],
+      expense_date: todayInputValue(),
       category: "general",
       description: "",
       vendor: "",
@@ -115,6 +118,7 @@ export default function PlatformAccounting() {
     });
     setEditingExpense(null);
   };
+
 
   const { data: expenses, isLoading } = useQuery({
     queryKey: ["platform-expenses"],
@@ -526,7 +530,7 @@ export default function PlatformAccounting() {
                 <TableBody>
                   {filteredExpenses.map((expense) => (
                     <TableRow key={expense.id}>
-                      <TableCell>{new Date(expense.expense_date).toLocaleDateString(dateLocale)}</TableCell>
+                      <TableCell>{formatDateForDisplay(expense.expense_date, dateLocale)}</TableCell>
                       <TableCell>
                         <div>
                           <span className="font-medium">{expense.description}</span>

@@ -20,6 +20,7 @@ import { ArrowLeft, Users, TrendingUp, Briefcase, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import {
   BarChart,
   Bar,
@@ -136,9 +137,10 @@ export default function MinistriesStats() {
       const { data, error } = await supabase
         .from("ministry_members")
         .select("joined_date")
-        .gte("joined_date", startDate.toISOString().split("T")[0])
-        .lte("joined_date", endDate.toISOString().split("T")[0])
+        .gte("joined_date", formatDateInputValue(startDate))
+        .lte("joined_date", formatDateInputValue(endDate))
         .order("joined_date");
+
 
       if (error) throw error;
 
@@ -155,7 +157,7 @@ export default function MinistriesStats() {
       }
 
       data.forEach((item) => {
-        const date = new Date(item.joined_date);
+        const date = toSafeDate(item.joined_date) ?? new Date(item.joined_date);
         const monthStr = date.toLocaleDateString(locale, {
           month: "short",
           year: "numeric",
@@ -164,6 +166,7 @@ export default function MinistriesStats() {
           monthCounts[monthStr]++;
         }
       });
+
 
       return Object.entries(monthCounts).map(([month, new_members]) => ({
         month,

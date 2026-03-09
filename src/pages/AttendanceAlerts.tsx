@@ -8,6 +8,8 @@ import { AlertTriangle, TrendingDown, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
+
 
 interface AttendanceAlert {
   member_id: string;
@@ -43,7 +45,8 @@ export default function AttendanceAlerts() {
       const { data: attendanceData, error } = await supabase
         .from("attendance_records")
         .select("member_id, event_date, members(first_name, last_name)")
-        .gte("event_date", twoMonthsAgo.toISOString().split("T")[0]);
+        .gte("event_date", formatDateInputValue(twoMonthsAgo));
+
 
       if (error) throw error;
 
@@ -56,7 +59,7 @@ export default function AttendanceAlerts() {
 
       attendanceData?.forEach((record: any) => {
         const memberId = record.member_id;
-        const eventDate = new Date(record.event_date);
+        const eventDate = toSafeDate(record.event_date) ?? new Date(record.event_date);
         const memberName = `${record.members.first_name} ${record.members.last_name}`;
 
         if (!memberStats.has(memberId)) {
@@ -76,10 +79,12 @@ export default function AttendanceAlerts() {
           stats.previousMonth++;
         }
 
-        if (!stats.lastAttendance || eventDate > new Date(stats.lastAttendance)) {
+        const last = toSafeDate(stats.lastAttendance);
+        if (!last || eventDate > last) {
           stats.lastAttendance = record.event_date;
         }
       });
+
 
       const alertsList: AttendanceAlert[] = [];
 
@@ -90,8 +95,9 @@ export default function AttendanceAlerts() {
           const decline = ((previousRate - currentRate) / previousRate) * 100;
 
           if (decline > 30 || (currentRate === 0 && previousRate > 0)) {
-            const daysSinceLastAttendance = stats.lastAttendance
-              ? Math.floor((Date.now() - new Date(stats.lastAttendance).getTime()) / (1000 * 60 * 60 * 24))
+            const last = toSafeDate(stats.lastAttendance);
+            const daysSinceLastAttendance = last
+              ? Math.floor((Date.now() - last.getTime()) / (1000 * 60 * 60 * 24))
               : null;
 
             alertsList.push({
@@ -103,6 +109,7 @@ export default function AttendanceAlerts() {
               last_attendance: stats.lastAttendance,
               total_absences: daysSinceLastAttendance || 0,
             });
+
           }
         }
       });

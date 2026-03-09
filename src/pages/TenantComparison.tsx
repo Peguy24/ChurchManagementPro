@@ -10,6 +10,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { GitCompareArrows, Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateInputValue } from "@/lib/date";
+
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -93,13 +95,16 @@ export default function TenantComparison() {
   });
 
   const fetchTenantMetrics = async (tenantId: string) => {
+    const since90Days = formatDateInputValue(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000));
+
     const [members, donations, attendance, events, healthScore] = await Promise.all([
       supabase.from("members").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("status", "active"),
-      supabase.from("donations").select("amount").eq("tenant_id", tenantId).gte("donation_date", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]),
-      supabase.from("attendance_records").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("event_date", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]),
+      supabase.from("donations").select("amount").eq("tenant_id", tenantId).gte("donation_date", since90Days),
+      supabase.from("attendance_records").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("event_date", since90Days),
       supabase.from("events").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
       supabase.from("tenant_health_scores").select("*").eq("tenant_id", tenantId).order("calculated_at", { ascending: false }).limit(1),
     ]);
+
 
     const totalDonations = (donations.data || []).reduce((sum, d) => sum + d.amount, 0);
     const health = healthScore.data?.[0];
