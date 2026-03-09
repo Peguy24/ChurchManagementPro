@@ -284,7 +284,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
       primary: d.donation_type,
       secondary: d.payment_method,
       date: formatDate(d.donation_date),
-      amount: `${Number(d.amount).toLocaleString("fr-FR")} €`,
+      amount: fmtCurrency(Number(d.amount)),
     }))
   );
 
