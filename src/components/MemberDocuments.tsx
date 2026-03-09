@@ -73,9 +73,10 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const [formData, setFormData] = useState({
     documentType: "",
     documentName: "",
-    documentDate: new Date().toISOString().split("T")[0],
+    documentDate: todayInputValue(),
     notes: "",
   });
+
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["member-documents", memberId],
