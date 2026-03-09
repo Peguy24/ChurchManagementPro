@@ -561,6 +561,7 @@ export type Database = {
           entity_id: string
           field_value: string | null
           id: string
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -569,6 +570,7 @@ export type Database = {
           entity_id: string
           field_value?: string | null
           id?: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -577,6 +579,7 @@ export type Database = {
           entity_id?: string
           field_value?: string | null
           id?: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -585,6 +588,13 @@ export type Database = {
             columns: ["custom_field_id"]
             isOneToOne: false
             referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -601,6 +611,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_required: boolean | null
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -614,6 +625,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_required?: boolean | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -627,9 +639,18 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_required?: boolean | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       donations: {
         Row: {
