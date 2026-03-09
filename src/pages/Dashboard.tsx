@@ -150,7 +150,8 @@ export default function Dashboard() {
       let query = supabase
         .from("attendance_records")
         .select("id, event_date, member_id")
-        .gte("event_date", sixMonthsAgo.toISOString().split('T')[0]);
+        .gte("event_date", formatDateInputValue(sixMonthsAgo));
+
       
       if (tenantId) {
         query = query.eq("tenant_id", tenantId);
