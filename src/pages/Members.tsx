@@ -51,7 +51,10 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any>();
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   
+  const dateLocale = language === "en" ? "en-US" : "fr-FR";
+  
   const { canAddMember, usage, limits, plan } = usePlanLimits();
+
 
   // Format address for export
   const formatAddressForExport = (addressData: string | null): string => {
