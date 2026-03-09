@@ -4,7 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Wrench, AlertTriangle, Download, TrendingUp } from "lucide-react";
+import { Package, Wrench, AlertTriangle, Download, TrendingUp, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
