@@ -100,6 +100,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
         status: "active",
       });
     }
+    setCustomFieldValues({});
   }, [branch, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
