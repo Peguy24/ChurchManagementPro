@@ -272,14 +272,22 @@ export default function DataBackup() {
 
       if (exportFormat === "xlsx") {
         const wb = XLSX.utils.book_new();
+        let hasSheets = false;
 
         for (const mod of modulesToExport) {
           const data = allData[mod.key];
           if (data.length > 0) {
             const ws = XLSX.utils.json_to_sheet(data);
-            const sheetName = lt(mod.labelKey).substring(0, 31); // Excel sheet name limit
+            const sheetName = lt(mod.labelKey).substring(0, 31);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            hasSheets = true;
           }
+        }
+
+        if (!hasSheets) {
+          // Add an empty info sheet so the workbook is valid
+          const ws = XLSX.utils.aoa_to_sheet([[language === "fr" ? "Aucune donnée trouvée" : language === "ht" ? "Pa gen done jwenn" : "No data found"]]);
+          XLSX.utils.book_append_sheet(wb, ws, "Info");
         }
 
         const filename = `backup-${format(new Date(), "yyyy-MM-dd-HHmm")}.xlsx`;
