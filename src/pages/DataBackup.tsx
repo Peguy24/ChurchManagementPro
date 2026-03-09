@@ -13,7 +13,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
-import { exportToCsv, downloadCsv, arrayToCsv } from "@/lib/csvExport";
+import { downloadCsv, arrayToCsv } from "@/lib/csvExport";
+import { flattenRow, transformForExport } from "@/lib/backupExportConfig";
 
 type ExportFormat = "xlsx" | "csv";
 
