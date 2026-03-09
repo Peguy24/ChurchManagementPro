@@ -112,6 +112,7 @@ export const generateInventoryReportPDF = async (
   options: ReportOptions,
   onProgress?: (progress: number) => void
 ): Promise<Blob> => {
+  _currencyCode = options.currencyCode || "USD";
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",

@@ -50,7 +50,8 @@ function maskAccountNumber(accountNumber: string | null): string {
 
 export async function generateBankReconciliationPDF(
   data: BankReconciliationReportData,
-  language: string = "fr"
+  language: string = "fr",
+  currencyCode: string = "USD"
 ): Promise<void> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
