@@ -666,6 +666,7 @@ const translations = {
       membersText: "membres...",
       pdfGenerated: "PDF généré avec succès",
       cardsDownloaded: "carte(s) téléchargée(s).",
+      preview: "Aperçu",
       errorGeneratingPdf: "Impossible de générer le PDF. Veuillez réessayer.",
       attendanceDialog: {
         title: "Marquer la Présence",
@@ -3676,6 +3677,7 @@ const translations = {
       membersText: "members...",
       pdfGenerated: "PDF generated successfully",
       cardsDownloaded: "card(s) downloaded.",
+      preview: "Preview",
       errorGeneratingPdf: "Unable to generate PDF. Please try again.",
       attendanceDialog: {
         title: "Mark Attendance",
@@ -6678,6 +6680,7 @@ const translations = {
       membersText: "manm...",
       pdfGenerated: "PDF jenere avèk siksè",
       cardsDownloaded: "kat telechaje.",
+      preview: "Apèsi",
       errorGeneratingPdf: "Pa kapab jenere PDF. Tanpri eseye ankò.",
       attendanceDialog: {
         title: "Make Prezans",
