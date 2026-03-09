@@ -587,9 +587,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={budgetVsActualData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis type="number" tickFormatter={(value) => `$${value}`} />
+                        <XAxis type="number" tickFormatter={(value) => formatAmount(value)} />
                         <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
-                        <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                        <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                         <Legend />
                         <Bar dataKey="planned" name={r("planned")} fill="hsl(var(--primary))" />
                         <Bar dataKey="actual" name={r("actual")} fill="hsl(var(--secondary))" />
