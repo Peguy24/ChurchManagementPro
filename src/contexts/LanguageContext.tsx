@@ -3008,6 +3008,17 @@ const translations = {
     saveAddress: "Sauver Adresse",
     saveWelcome: "Sauver Message",
   },
+  tenantNotifications: {
+    title: "Notifications",
+    markAllRead: "Tout lire",
+    clearAll: "Tout effacer",
+    empty: "Aucune notification",
+    newMember: "Nouveau membre",
+    newDonation: "Nouveau don",
+    newEvent: "Nouvel événement",
+    newExpense: "Nouvelle dépense",
+    memberRequest: "Demande d'adhésion",
+  },
   },
   en: {
     common: {
@@ -5954,6 +5965,17 @@ const translations = {
     saveAddress: "Save Address",
     saveWelcome: "Save Message",
   },
+  tenantNotifications: {
+    title: "Notifications",
+    markAllRead: "Mark all read",
+    clearAll: "Clear all",
+    empty: "No notifications",
+    newMember: "New member",
+    newDonation: "New donation",
+    newEvent: "New event",
+    newExpense: "New expense",
+    memberRequest: "Membership request",
+  },
   },
   ht: {
     common: {
@@ -8898,6 +8920,17 @@ const translations = {
     saveSender: "Sove Non",
     saveAddress: "Sove Adrès",
     saveWelcome: "Sove Mesaj",
+  },
+  tenantNotifications: {
+    title: "Notifikasyon",
+    markAllRead: "Make tout li",
+    clearAll: "Efase tout",
+    empty: "Pa gen notifikasyon",
+    newMember: "Nouvo manm",
+    newDonation: "Nouvo don",
+    newEvent: "Nouvo evènman",
+    newExpense: "Nouvo depans",
+    memberRequest: "Demann adhesyon",
   },
   },
 };

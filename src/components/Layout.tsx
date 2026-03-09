@@ -56,6 +56,7 @@ import {
 } from "./ui/collapsible";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import SuperAdminNotifications from "./SuperAdminNotifications";
+import TenantNotifications from "./TenantNotifications";
 
 interface LayoutProps {
   children: ReactNode;
@@ -495,6 +496,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSelector />
             {showAsSuperAdmin && <SuperAdminNotifications />}
+            {!showAsSuperAdmin && <TenantNotifications />}
             <div className="hidden sm:flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground hidden lg:block max-w-[150px] truncate">
