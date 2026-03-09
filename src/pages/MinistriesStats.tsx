@@ -20,6 +20,7 @@ import { ArrowLeft, Users, TrendingUp, Briefcase, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import {
   BarChart,
   Bar,

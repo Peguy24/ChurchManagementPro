@@ -63,7 +63,7 @@ export default function MemberCards() {
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [eventType, setEventType] = useState("");
-  const [eventDate, setEventDate] = useState(new Date().toISOString().split("T")[0]);
+  const [eventDate, setEventDate] = useState(todayInputValue());
   const [submittingAttendance, setSubmittingAttendance] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);

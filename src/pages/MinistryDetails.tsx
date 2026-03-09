@@ -326,8 +326,9 @@ export default function MinistryDetails() {
                         </TableCell>
                         <TableCell>
                           {mm.joined_date
-                            ? new Date(mm.joined_date).toLocaleDateString("fr-FR")
+                            ? formatDateForDisplay(mm.joined_date, "fr-FR")
                             : "-"}
+
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
