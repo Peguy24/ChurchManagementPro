@@ -16,11 +16,13 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
+import { useCurrency } from "@/hooks/useCurrency";
 
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
+  const { formatAmount } = useCurrency();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -231,7 +233,7 @@ export default function Dashboard() {
     },
     {
       title: t("dashboard.monthlyOfferings"),
-      value: `$${totalMonthlyAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: formatAmount(totalMonthlyAmount),
       detail: `${monthlyDonations.length} ${t("donations.donationCount").toLowerCase()}`,
       icon: DollarSign,
       bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",

@@ -62,6 +62,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))", "hsl(var(--warning))"];
 
@@ -72,6 +73,7 @@ interface FinancialReportsTabProps {
 
 export default function FinancialReportsTab({ selectedBranch, branches }: FinancialReportsTabProps) {
   const { t, language } = useLanguage();
+  const { formatAmount, currencySymbol } = useCurrency();
   const r = (key: string) => t(`financialReports.${key}`);
   const [period, setPeriod] = useState("12");
   const [reportType, setReportType] = useState("monthly");
@@ -331,18 +333,18 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     doc.setFontSize(14);
     doc.text(r("pdfSummary"), 14, 48);
     doc.setFontSize(11);
-    doc.text(`${r("totalRevenue")}: $${stats.totalRevenue.toFixed(2)}`, 14, 56);
-    doc.text(`${r("totalExpenses")}: $${stats.totalExpenses.toFixed(2)}`, 14, 62);
-    doc.text(`${r("netIncome")}: $${stats.netIncome.toFixed(2)}`, 14, 68);
+    doc.text(`${r("totalRevenue")}: ${formatAmount(stats.totalRevenue)}`, 14, 56);
+    doc.text(`${r("totalExpenses")}: ${formatAmount(stats.totalExpenses)}`, 14, 62);
+    doc.text(`${r("netIncome")}: ${formatAmount(stats.netIncome)}`, 14, 68);
 
     autoTable(doc, {
       startY: 80,
       head: [[r("month"), r("revenue"), r("expenses"), r("net")]],
       body: revenueVsExpensesData.map(m => [
         m.month,
-        `$${m.revenue.toFixed(2)}`,
-        `$${m.expenses.toFixed(2)}`,
-        `$${m.net.toFixed(2)}`,
+        formatAmount(m.revenue),
+        formatAmount(m.expenses),
+        formatAmount(m.net),
       ]),
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
@@ -413,7 +415,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                 <TrendingUp className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatAmount(stats.totalRevenue)}</div>
               </CardContent>
             </Card>
             <Card>
@@ -422,7 +424,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                 <TrendingDown className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatAmount(stats.totalExpenses)}</div>
               </CardContent>
             </Card>
             <Card>
@@ -432,7 +434,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${stats.netIncome >= 0 ? "text-success" : "text-destructive"}`}>
-                  ${stats.netIncome.toFixed(2)}
+                  {formatAmount(stats.netIncome)}
                 </div>
               </CardContent>
             </Card>
@@ -442,7 +444,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.budgetRemaining.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatAmount(stats.budgetRemaining)}</div>
               </CardContent>
             </Card>
           </div>
@@ -470,7 +472,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, r("amount")]} />
+                    <Tooltip formatter={(value: number) => [formatAmount(value), r("amount")]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -489,16 +491,16 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 <div className="text-center p-4 bg-success/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalRevenue")}</p>
-                  <p className="text-2xl font-bold text-success">${stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-success">{formatAmount(stats.totalRevenue)}</p>
                 </div>
                 <div className="text-center p-4 bg-destructive/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalExpenses")}</p>
-                  <p className="text-2xl font-bold text-destructive">${stats.totalExpenses.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-destructive">{formatAmount(stats.totalExpenses)}</p>
                 </div>
                 <div className={`text-center p-4 rounded-lg ${stats.netIncome >= 0 ? "bg-success/10" : "bg-destructive/10"}`}>
                   <p className="text-sm text-muted-foreground">{r("netResult")}</p>
                   <p className={`text-2xl font-bold ${stats.netIncome >= 0 ? "text-success" : "text-destructive"}`}>
-                    ${stats.netIncome.toFixed(2)}
+                    {formatAmount(stats.netIncome)}
                   </p>
                 </div>
               </div>
@@ -508,8 +510,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   <BarChart data={revenueVsExpensesData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tickFormatter={(value) => `$${value}`} />
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                    <YAxis tickFormatter={(value) => formatAmount(value)} />
+                    <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                     <Legend />
                     <Bar dataKey="revenue" name={r("revenue")} fill="hsl(var(--success))" />
                     <Bar dataKey="expenses" name={r("expenses")} fill="hsl(var(--destructive))" />
@@ -533,8 +535,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   <LineChart data={revenueVsExpensesData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tickFormatter={(value) => `$${value}`} />
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                    <YAxis tickFormatter={(value) => formatAmount(value)} />
+                    <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" name={r("revenue")} stroke="hsl(var(--success))" strokeWidth={2} />
                     <Line type="monotone" dataKey="expenses" name={r("expenses")} stroke="hsl(var(--destructive))" strokeWidth={2} />
@@ -557,10 +559,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   {revenueVsExpensesData.map((row) => (
                     <TableRow key={row.month}>
                       <TableCell>{row.month}</TableCell>
-                      <TableCell className="text-right text-success">${row.revenue.toFixed(2)}</TableCell>
-                      <TableCell className="text-right text-destructive">${row.expenses.toFixed(2)}</TableCell>
+                      <TableCell className="text-right text-success">{formatAmount(row.revenue)}</TableCell>
+                      <TableCell className="text-right text-destructive">{formatAmount(row.expenses)}</TableCell>
                       <TableCell className={`text-right font-semibold ${row.net >= 0 ? "text-success" : "text-destructive"}`}>
-                        ${row.net.toFixed(2)}
+                        {formatAmount(row.net)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -585,9 +587,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={budgetVsActualData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis type="number" tickFormatter={(value) => `$${value}`} />
+                        <XAxis type="number" tickFormatter={(value) => formatAmount(value)} />
                         <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
-                        <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                        <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                         <Legend />
                         <Bar dataKey="planned" name={r("planned")} fill="hsl(var(--primary))" />
                         <Bar dataKey="actual" name={r("actual")} fill="hsl(var(--secondary))" />
@@ -610,10 +612,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       {budgetVsActualData.map((row) => (
                         <TableRow key={row.name}>
                           <TableCell>{row.name}</TableCell>
-                          <TableCell className="text-right">${row.planned.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.actual.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.planned)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.actual)}</TableCell>
                           <TableCell className={`text-right ${row.variance >= 0 ? "text-success" : "text-destructive"}`}>
-                            ${row.variance.toFixed(2)}
+                            {formatAmount(row.variance)}
                           </TableCell>
                           <TableCell className={`text-right font-semibold ${row.percentUsed > 100 ? "text-destructive" : "text-success"}`}>
                             {row.percentUsed.toFixed(1)}%
@@ -646,8 +648,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       <BarChart data={fundsData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                         <XAxis dataKey="name" />
-                        <YAxis tickFormatter={(value) => `$${value}`} />
-                        <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                        <YAxis tickFormatter={(value) => formatAmount(value)} />
+                        <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                         <Legend />
                         <Bar dataKey="target" name={r("target")} fill="hsl(var(--muted-foreground))" />
                         <Bar dataKey="current" name={r("collected")} fill="hsl(var(--primary))" />
@@ -669,8 +671,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       {fundsData.map((row) => (
                         <TableRow key={row.name}>
                           <TableCell>{row.name}</TableCell>
-                          <TableCell className="text-right">${row.target.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.current.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.target)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.current)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">

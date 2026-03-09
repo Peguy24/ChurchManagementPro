@@ -22,6 +22,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BankReconciliation() {
   const { t, language } = useLanguage();
+  const { formatAmount } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenant, tenantId } = useCurrentTenant();
@@ -402,7 +403,7 @@ export default function BankReconciliation() {
                   {account.is_active && <Badge variant="outline">{t("common.active")}</Badge>}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${Number(account.current_balance).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{formatAmount(Number(account.current_balance))}</p>
                   <p className="text-sm text-muted-foreground">
                     {account.bank_name || t("bank.notSpecified")}
                     {account.account_number && ` • ${account.account_number.slice(-4)}`}
@@ -596,11 +597,11 @@ export default function BankReconciliation() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalIncome")}</p>
-                  <p className="text-xl font-bold text-primary">${totalIncome.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-primary">{formatAmount(totalIncome)}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalExpense")}</p>
-                  <p className="text-xl font-bold text-destructive">${totalExpense.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-destructive">{formatAmount(totalExpense)}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.reconciled")}</p>
@@ -624,6 +625,7 @@ export default function BankReconciliation() {
                     transactions={transactions}
                     language={language}
                     t={t}
+                    formatAmount={formatAmount}
                     onToggleReconcile={(id, reconciled) => toggleReconciliation.mutate({ id, reconciled })}
                   />
                 </TabsContent>
@@ -632,6 +634,7 @@ export default function BankReconciliation() {
                     transactions={unreconciledTransactions}
                     language={language}
                     t={t}
+                    formatAmount={formatAmount}
                     onToggleReconcile={(id, reconciled) => toggleReconciliation.mutate({ id, reconciled })}
                   />
                 </TabsContent>
@@ -640,6 +643,7 @@ export default function BankReconciliation() {
                     transactions={reconciledTransactions}
                     language={language}
                     t={t}
+                    formatAmount={formatAmount}
                     onToggleReconcile={(id, reconciled) => toggleReconciliation.mutate({ id, reconciled })}
                   />
                 </TabsContent>
@@ -657,9 +661,10 @@ interface TransactionTableProps {
   language: string;
   t: (key: string) => string;
   onToggleReconcile: (id: string, reconciled: boolean) => void;
+  formatAmount: (amount: number) => string;
 }
 
-function TransactionTable({ transactions, language, t, onToggleReconcile }: TransactionTableProps) {
+function TransactionTable({ transactions, language, t, onToggleReconcile, formatAmount }: TransactionTableProps) {
   if (transactions.length === 0) {
     return <p className="text-center py-8 text-muted-foreground">{t("bank.noTransactions")}</p>;
   }
@@ -698,7 +703,7 @@ function TransactionTable({ transactions, language, t, onToggleReconcile }: Tran
             <TableCell className="text-right font-medium">
               <span className={tx.transaction_type === "income" ? "text-primary" : "text-destructive"}>
                 {tx.transaction_type === "income" ? "+" : "-"}
-                ${Number(tx.amount).toLocaleString()}
+                {formatAmount(Number(tx.amount))}
               </span>
             </TableCell>
             <TableCell>

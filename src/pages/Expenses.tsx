@@ -17,10 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Expenses() {
   const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const { formatAmount: formatCurrencyFn } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -158,9 +160,7 @@ export default function Expenses() {
     return "-";
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(amount);
-  };
+  const formatCurrency = (amount: number) => formatCurrencyFn(amount);
 
   const createExpense = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -601,7 +601,7 @@ export default function Expenses() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.total.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(stats.total)}</div>
               <p className="text-xs text-muted-foreground">{stats.count} {t("expense.transactions")}</p>
             </CardContent>
           </Card>
@@ -611,7 +611,7 @@ export default function Expenses() {
               <Clock className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">${stats.pending.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-warning">{formatCurrency(stats.pending)}</div>
               <p className="text-xs text-muted-foreground">{t("expense.awaitingReview")}</p>
             </CardContent>
           </Card>
@@ -621,7 +621,7 @@ export default function Expenses() {
               <Check className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">${stats.approved.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-primary">{formatCurrency(stats.approved)}</div>
               <p className="text-xs text-muted-foreground">{t("expense.confirmedExpenses")}</p>
             </CardContent>
           </Card>
@@ -631,7 +631,7 @@ export default function Expenses() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${stats.count > 0 ? (stats.total / stats.count).toLocaleString(undefined, { maximumFractionDigits: 0 }) : 0}
+                {formatCurrency(stats.count > 0 ? stats.total / stats.count : 0)}
               </div>
               <p className="text-xs text-muted-foreground">{t("expense.perTransaction")}</p>
             </CardContent>

@@ -57,7 +57,8 @@ const formatDateLong = (dateStr: string | null): string => {
   }
 };
 
-export async function generateMemberHistoryPDF(data: MemberHistoryData): Promise<Blob> {
+export async function generateMemberHistoryPDF(data: MemberHistoryData, currencyFormatter?: (amount: number) => string): Promise<Blob> {
+  const fmtCurrency = currencyFormatter || ((amount: number) => `${amount.toLocaleString("fr-FR")} €`);
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -152,7 +153,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData): Promise
   const statWidth = contentWidth / 4;
   
   pdf.text(`${data.attendance.length}`, margin + statWidth * 0.5, statsY - 3, { align: "center" });
-  pdf.text(`${totalDonations.toLocaleString("fr-FR")} €`, margin + statWidth * 1.5, statsY - 3, { align: "center" });
+  pdf.text(fmtCurrency(totalDonations), margin + statWidth * 1.5, statsY - 3, { align: "center" });
   pdf.text(`${data.ministries.length}`, margin + statWidth * 2.5, statsY - 3, { align: "center" });
   pdf.text(`${data.documents.length}`, margin + statWidth * 3.5, statsY - 3, { align: "center" });
   
@@ -283,7 +284,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData): Promise
       primary: d.donation_type,
       secondary: d.payment_method,
       date: formatDate(d.donation_date),
-      amount: `${Number(d.amount).toLocaleString("fr-FR")} €`,
+      amount: fmtCurrency(Number(d.amount)),
     }))
   );
 

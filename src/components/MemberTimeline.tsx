@@ -18,6 +18,7 @@ import {
   Download,
   Loader2
 } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ interface TimelineEvent {
 
 export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const { formatAmount } = useCurrency();
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
@@ -168,7 +170,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         })),
       };
 
-      const blob = await generateMemberHistoryPDF(historyData);
+      const blob = await generateMemberHistoryPDF(historyData, formatAmount);
       downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
       toast.success("PDF généré avec succès");
     } catch (error) {
@@ -311,7 +313,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">
-                  {totalDonations.toLocaleString("fr-FR")} €
+                  {formatAmount(totalDonations)}
                 </p>
                 <p className="text-muted-foreground">Cotisations</p>
               </div>
@@ -367,7 +369,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
                               <p className="font-medium truncate">{event.title}</p>
                               {event.amount && (
                                 <Badge variant="secondary" className="shrink-0">
-                                  {event.amount.toLocaleString("fr-FR")} €
+                                  {formatAmount(event.amount)}
                                 </Badge>
                               )}
                             </div>

@@ -17,12 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Budgets() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
+  const { formatAmount } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -286,7 +288,7 @@ export default function Budgets() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalPlanned.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatAmount(totalPlanned)}</div>
               <p className="text-xs text-muted-foreground">{t("budget.fiscalYear")} {selectedYear}</p>
             </CardContent>
           </Card>
@@ -296,7 +298,7 @@ export default function Budgets() {
               <TrendingDown className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">${totalSpent.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-destructive">{formatAmount(totalSpent)}</div>
               <p className="text-xs text-muted-foreground">{t("budget.expensesApproved")}</p>
             </CardContent>
           </Card>
@@ -307,7 +309,7 @@ export default function Budgets() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">
-                ${(totalPlanned - totalSpent).toLocaleString()}
+                {formatAmount(totalPlanned - totalSpent)}
               </div>
               <p className="text-xs text-muted-foreground">{t("budget.available")}</p>
             </CardContent>
@@ -359,11 +361,11 @@ export default function Budgets() {
                         <TableCell className="font-medium">{budget.name}</TableCell>
                         <TableCell>{budget.category?.name || "-"}</TableCell>
                         <TableCell>{budget.branch?.name || t("common.all")}</TableCell>
-                        <TableCell className="text-right">${planned.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-destructive">${spent.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{formatAmount(planned)}</TableCell>
+                        <TableCell className="text-right text-destructive">{formatAmount(spent)}</TableCell>
                         <TableCell className="text-right">
                           <span className={remaining < 0 ? "text-destructive" : "text-primary"}>
-                            ${remaining.toLocaleString()}
+                            {formatAmount(remaining)}
                           </span>
                         </TableCell>
                         <TableCell>
