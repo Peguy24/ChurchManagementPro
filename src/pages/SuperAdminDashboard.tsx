@@ -305,95 +305,32 @@ export default function SuperAdminDashboard() {
                 {t("superAdmin.quickActions")}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/settings/tenants")}
-              >
-                <Building2 className="mr-2 h-4 w-4" />
-                {t("superAdmin.manageChurches")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/explore")}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                {t("superAdmin.exploreChurchData")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/settings/users")}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                {t("superAdmin.userManagement")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/activity")}
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                {t("superAdmin.activityLog.title")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/revenue")}
-              >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                {t("superAdmin.revenue.title")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/health")}
-              >
-                <Heart className="mr-2 h-4 w-4" />
-                {t("superAdmin.health.title")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/banners")}
-              >
-                <Megaphone className="mr-2 h-4 w-4" />
-                {t("superAdmin.banners.navTitle")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/subscriptions")}
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                {t("superAdmin.overrides.navTitle")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/churn")}
-              >
-                <ShieldAlert className="mr-2 h-4 w-4" />
-                {t("superAdmin.churn.navTitle")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/comparison")}
-              >
-                <GitCompareArrows className="mr-2 h-4 w-4" />
-                {t("superAdmin.comparison.navTitle")}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/super-admin/branding")}
-              >
-                <Palette className="mr-2 h-4 w-4" />
-                {t("superAdmin.whiteLabel.navTitle")}
-              </Button>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { icon: Building2, label: t("superAdmin.manageChurches"), path: "/settings/tenants" },
+                  { icon: Eye, label: t("superAdmin.exploreChurchData"), path: "/super-admin/explore" },
+                  { icon: Users, label: t("superAdmin.userManagement"), path: "/settings/users" },
+                  { icon: Activity, label: t("superAdmin.activityLog.title"), path: "/super-admin/activity" },
+                  { icon: BarChart3, label: t("superAdmin.revenue.title"), path: "/super-admin/revenue" },
+                  { icon: Heart, label: t("superAdmin.health.title"), path: "/super-admin/health" },
+                  { icon: Megaphone, label: t("superAdmin.banners.navTitle"), path: "/super-admin/banners" },
+                  { icon: CreditCard, label: t("superAdmin.overrides.navTitle"), path: "/super-admin/subscriptions" },
+                  { icon: ShieldAlert, label: t("superAdmin.churn.navTitle"), path: "/super-admin/churn" },
+                  { icon: GitCompareArrows, label: t("superAdmin.comparison.navTitle"), path: "/super-admin/comparison" },
+                  { icon: Palette, label: t("superAdmin.whiteLabel.navTitle"), path: "/super-admin/branding" },
+                ].map((item) => (
+                  <Button
+                    key={item.path}
+                    variant="outline"
+                    className="w-full justify-start text-left truncate"
+                    onClick={() => navigate(item.path)}
+                  >
+                    <item.icon className="mr-2 h-4 w-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </Button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
