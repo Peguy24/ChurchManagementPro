@@ -858,6 +858,11 @@ const translations = {
       deleteSuccess: "Présence supprimée",
       deleteSuccessDesc: "L'enregistrement de présence de {name} a été supprimé.",
       deleteError: "Erreur lors de la suppression de la présence",
+      scanTime: "Heure du scan",
+      early: "En avance",
+      onTime: "À l'heure",
+      late: "En retard",
+      arrivalStatus: "Statut d'arrivée",
     },
     attendanceAlerts: {
       title: "Alertes de Présence",
