@@ -209,7 +209,7 @@ function ScoreGauge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' 
   );
 }
 
-function AlertCard({ alert, onResolve, onView, lt, dateLocale }: { alert: PastoralAlert; onResolve: () => void; onView: () => void; lt: (key: string) => string; dateLocale: Locale }) {
+function AlertCard({ alert, onResolve, onView, lt, dateLocale }: { alert: PastoralAlert; onResolve: () => void; onView: () => void; lt: (key: string) => string; dateLocale: typeof fr }) {
   const config = ALERT_TYPE_CONFIG[alert.alert_type] || { icon: <Bell className="h-4 w-4" />, color: 'text-gray-500' };
   
   const priorityLabels: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; key: string }> = {
