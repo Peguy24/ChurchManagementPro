@@ -213,6 +213,26 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
     XLSX.writeFile(wb, `rapport_inventaire_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      items,
+      [
+        { key: "name", header: "Nom" },
+        { key: "category", header: "Catégorie", formatter: (v) => getCategoryLabel(v) },
+        { key: "serial_number", header: "N° Série", formatter: (v) => v || "-" },
+        { key: "quantity", header: "Quantité" },
+        { key: "min_quantity", header: "Stock Min" },
+        { key: "condition", header: "État", formatter: (v) => getConditionLabel(v) || "-" },
+        { key: "status", header: "Statut", formatter: (v) => getStatusLabel(v) },
+        { key: "location", header: "Emplacement", formatter: (v) => v || "-" },
+        { key: "purchase_price", header: "Prix d'achat", formatter: (v) => v?.toFixed(2) || "0" },
+        { key: "current_value", header: "Valeur actuelle", formatter: (v) => v?.toFixed(2) || "0" },
+        { key: "purchase_date", header: "Date d'achat", formatter: (v) => v ? format(new Date(v), "dd/MM/yyyy") : "-" },
+      ],
+      `rapport_inventaire_${format(new Date(), "yyyy-MM-dd")}`
+    );
+  };
+
   if (itemsLoading) {
     return <div className="flex items-center justify-center p-8">Chargement...</div>;
   }
