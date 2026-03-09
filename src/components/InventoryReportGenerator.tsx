@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { generateInventoryReportPDF, downloadPDF } from "@/lib/inventoryReportPDF";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface InventoryItem {
   id: string;
