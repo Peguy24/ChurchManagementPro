@@ -17,7 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash, FileDown, Briefcase } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, Calendar, Church, Hash, FileDown, Briefcase, Eye } from "lucide-react";
 import { SignedImage } from "@/components/SignedImage";
 import {
   Dialog,
