@@ -84,13 +84,11 @@ const formatDate = (dateStr: string | null): string => {
   }
 };
 
+let _currencyCode = "USD";
+
 const formatCurrency = (value: number | null): string => {
   if (value === null || value === undefined) return "-";
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "HTG",
-    minimumFractionDigits: 0,
-  }).format(value);
+  return formatCurrencyLib(value, _currencyCode);
 };
 
 const loadImageAsBase64 = async (url: string): Promise<string | null> => {
