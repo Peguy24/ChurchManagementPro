@@ -63,6 +63,7 @@ const getPaymentMethodLabel = (method: string): string => {
 };
 
 export async function generateFiscalReceiptPDF(data: FiscalReceiptData): Promise<Blob> {
+  const formatCurrency = createFormatCurrency(data.currencyCode);
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
