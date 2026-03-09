@@ -26,6 +26,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, Building2 } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useCurrency } from "@/hooks/useCurrency";
+import { todayInputValue } from "@/lib/date";
 
 interface DonationDialogProps {
   open: boolean;
