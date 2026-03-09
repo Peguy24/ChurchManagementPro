@@ -15,6 +15,7 @@ import MemberDetails from "./pages/MemberDetails";
 import Attendance from "./pages/Attendance";
 import MemberAttendanceStats from "./pages/MemberAttendanceStats";
 import AttendanceAlerts from "./pages/AttendanceAlerts";
+import AttendanceArrivalReport from "./pages/AttendanceArrivalReport";
 import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import IncomeCategories from "./pages/IncomeCategories";
