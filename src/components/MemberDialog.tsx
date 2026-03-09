@@ -535,12 +535,9 @@ export default function MemberDialog({
       }
 
       // Save custom field values
-      const entityId = member?.id || null;
-      // For new members, data.id was set during insert above
-      const finalMemberId = entityId || ((() => {
-        // We need to find the data variable from the insert block
-        return null;
-      })());
+      if (savedMemberId) {
+        await saveCustomFieldValues(savedMemberId, customFieldValues, "member", tenantId);
+      }
 
       toast({
         title: member ? t("members.memberUpdated") : t("members.memberAdded"),
