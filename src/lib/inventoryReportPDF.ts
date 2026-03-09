@@ -42,6 +42,7 @@ interface ReportOptions {
   includeMaintenanceHistory: boolean;
   churchName?: string;
   logoUrl?: string;
+  currencyCode?: string;
 }
 
 const categories: Record<string, string> = {
