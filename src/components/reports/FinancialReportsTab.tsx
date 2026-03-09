@@ -472,7 +472,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, r("amount")]} />
+                    <Tooltip formatter={(value: number) => [formatAmount(value), r("amount")]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
