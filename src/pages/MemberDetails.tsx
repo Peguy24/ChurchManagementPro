@@ -432,9 +432,10 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.address")} value={formatAddress(member.address)} icon={MapPin} />
               <InfoRow 
                 label={t("memberDetails.dateOfBirth")} 
-                value={member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString(locale) : null} 
+                value={member.date_of_birth ? formatDateForDisplay(member.date_of_birth, locale) : null} 
                 icon={Calendar} 
               />
+
               <InfoRow label={t("memberDetails.civilStatus")} value={member.civic_status} />
             </CardContent>
           </Card>
