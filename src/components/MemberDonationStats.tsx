@@ -119,7 +119,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   // Handle fiscal receipt generation
   const handleGenerateFiscalReceipt = async () => {
     if (!memberInfo || !yearDonations || yearDonations.length === 0) {
-      toast.error("Aucune donation trouvée pour cette année");
+      toast.error(t("memberDetails.fiscalReceiptNoDonations"));
       return;
     }
 
@@ -153,10 +153,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
 
       const blob = await generateFiscalReceiptPDF(receiptData);
       downloadFiscalReceiptPDF(blob, `${memberInfo.first_name}_${memberInfo.last_name}`, selectedYear);
-      toast.success("Relevé fiscal généré avec succès");
+      toast.success(t("memberDetails.fiscalReceiptSuccess"));
     } catch (error) {
-      console.error("Erreur lors de la génération:", error);
-      toast.error("Erreur lors de la génération du relevé");
+      console.error("Error generating fiscal receipt:", error);
+      toast.error(t("memberDetails.fiscalReceiptError"));
     } finally {
       setGeneratingReceipt(false);
     }
@@ -273,10 +273,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                 {generatingReceipt ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Génération...
+                    {t("memberDetails.fiscalReceiptGenerating")}
                   </>
                 ) : (
-                  "Relevé Fiscal"
+                  t("memberDetails.fiscalReceiptTitle")
                 )}
               </Button>
             </div>
@@ -287,7 +287,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {yearDonations && yearDonations.length > 0 && (
           <div className="mt-3 p-2 bg-primary/10 rounded-md text-sm">
             <span className="font-medium">{selectedYear}:</span>{" "}
-            {yearDonations.length} contributions | Total: {formatCurrency(yearTotal)} | Dîmes: {formatCurrency(yearTitheTotal)}
+            {yearDonations.length} {t("memberDetails.fiscalReceiptContributions")} | {t("memberDetails.fiscalReceiptTotal")}: {formatCurrency(yearTotal)} | {t("memberDetails.fiscalReceiptTithes")}: {formatCurrency(yearTitheTotal)}
           </div>
         )}
       </CardHeader>
