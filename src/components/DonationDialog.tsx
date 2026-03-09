@@ -46,6 +46,7 @@ export default function DonationDialog({
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
   const { currencyCode, currencySymbol } = useCurrency();
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     memberId: "none",
     amount: "",

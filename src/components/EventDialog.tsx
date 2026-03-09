@@ -74,6 +74,8 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const isEditing = !!event;
   const isReadOnly = isEditing && (event.status === "completed" || event.status === "cancelled");
 
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     name: "",
     date: "",

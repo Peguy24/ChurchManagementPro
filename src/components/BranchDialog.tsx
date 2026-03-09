@@ -271,6 +271,17 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             </div>
           </div>
 
+
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="branch"
+            entityId={branch?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("branches.cancel")}
