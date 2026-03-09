@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Maximize, Minimize, CheckCircle, XCircle, Scan, Church, Clock, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { getArrivalStatus, formatScanTime, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import { cn, getLocalToday } from "@/lib/utils";
 import CameraScanner from "@/components/CameraScanner";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
