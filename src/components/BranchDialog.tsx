@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface Branch {
   id: string;

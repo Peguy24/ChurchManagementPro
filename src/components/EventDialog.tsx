@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getLocalToday } from "@/lib/utils";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import {
   Dialog,
   DialogContent,

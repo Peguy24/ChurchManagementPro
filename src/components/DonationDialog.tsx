@@ -27,6 +27,8 @@ import { Wallet, Building2 } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useCurrency } from "@/hooks/useCurrency";
 import { todayInputValue } from "@/lib/date";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface DonationDialogProps {
   open: boolean;
