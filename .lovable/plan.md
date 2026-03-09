@@ -1,32 +1,27 @@
 
 
-## Current Situation
+## Problem
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+The RichTextEditor toolbar tooltips and the "htmlContent" label are hardcoded in English. Users see untranslated labels like "Bold", "Italic", "Bullet list", "Visual", etc. regardless of their language setting. The label "HTML Content" on the email templates page is also too technical.
 
-## What Needs to Be Done
+## Plan
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### 1. Add `richTextEditor` translations to all 3 languages in `LanguageContext.tsx`
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+Add a new `richTextEditor` block under each language (FR, EN, HT) with keys for all toolbar labels:
+- `bold`, `italic`, `underline`, `h1`, `h2`, `bulletList`, `numberedList`, `alignLeft`, `center`, `alignRight`, `link`, `undo`, `redo`, `visual`, `html`, `urlPrompt`
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+Also rename `htmlContent` → update translation values to "Message Content" / "Contenu du message" / "Kontni mesaj la" to be less technical.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### 2. Update `RichTextEditor.tsx` to use `t()` for all labels
+
+Replace all hardcoded English strings in the toolbar buttons array and the source toggle tooltip with `t("richTextEditor.xxx")` calls. Also translate the `prompt("URL:")` to use `t("richTextEditor.urlPrompt")`.
+
+### 3. Update `EmailTemplates.tsx` label
+
+Change the `htmlContent` translation values in all 3 languages to say "Message Content" instead of "HTML Content" / "Contenu HTML".
+
+### Files to modify
+- `src/contexts/LanguageContext.tsx` -- add `richTextEditor` translations (FR/EN/HT) + update `htmlContent` values
+- `src/components/RichTextEditor.tsx` -- replace hardcoded labels with `t()` calls
 
