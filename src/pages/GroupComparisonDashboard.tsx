@@ -9,7 +9,61 @@ import { formatDateInputValue, toSafeDate } from '@/lib/date';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useLanguage } from '@/contexts/LanguageContext';
 
+const localTranslations: Record<string, Record<string, string>> = {
+  fr: {
+    loading: "Chargement...",
+    title: "Comparaison des Groupes",
+    subtitle: "Analysez les tendances de présence entre différents groupes",
+    last3Months: "3 derniers mois",
+    last6Months: "6 derniers mois",
+    last12Months: "12 derniers mois",
+    selectGroups: "Sélectionner les groupes à comparer",
+    selectGroupsDesc: "Choisissez jusqu'à 6 groupes pour la comparaison",
+    selectAtLeastOne: "Sélectionnez au moins un groupe pour voir les statistiques",
+    avgAttendanceRate: "Taux de présence moyen",
+    attendanceTrend: "Évolution du taux de présence",
+    trendComparison: "Comparaison des tendances au fil du temps",
+    avgRateComparison: "Comparaison des taux moyens",
+    performanceOverview: "Vue d'ensemble des performances par groupe",
+    avgRate: "Taux moyen (%)",
+  },
+  en: {
+    loading: "Loading...",
+    title: "Group Comparison",
+    subtitle: "Analyze attendance trends across different groups",
+    last3Months: "Last 3 months",
+    last6Months: "Last 6 months",
+    last12Months: "Last 12 months",
+    selectGroups: "Select groups to compare",
+    selectGroupsDesc: "Choose up to 6 groups for comparison",
+    selectAtLeastOne: "Select at least one group to view statistics",
+    avgAttendanceRate: "Average attendance rate",
+    attendanceTrend: "Attendance Rate Trend",
+    trendComparison: "Trend comparison over time",
+    avgRateComparison: "Average Rate Comparison",
+    performanceOverview: "Performance overview by group",
+    avgRate: "Avg. rate (%)",
+  },
+  ht: {
+    loading: "Chajman...",
+    title: "Konparezon Gwoup",
+    subtitle: "Analize tandans prezans nan diferan gwoup yo",
+    last3Months: "3 dènye mwa",
+    last6Months: "6 dènye mwa",
+    last12Months: "12 dènye mwa",
+    selectGroups: "Chwazi gwoup pou konpare",
+    selectGroupsDesc: "Chwazi jiska 6 gwoup pou konparezon",
+    selectAtLeastOne: "Chwazi omwen yon gwoup pou wè estatistik yo",
+    avgAttendanceRate: "To prezans mwayèn",
+    attendanceTrend: "Evolisyon to prezans",
+    trendComparison: "Konparezon tandans nan tan",
+    avgRateComparison: "Konparezon to mwayèn",
+    performanceOverview: "Apèsi pèfòmans pa gwoup",
+    avgRate: "To mwayèn (%)",
+  },
+};
 
 interface GroupStats {
   group: string;
@@ -20,12 +74,20 @@ interface GroupStats {
 
 const GroupComparisonDashboard = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [period, setPeriod] = useState<'3' | '6' | '12'>('6');
   const [groupStats, setGroupStats] = useState<GroupStats[]>([]);
   const [comparisonData, setComparisonData] = useState<any[]>([]);
+
+  const lt = (key: string) => {
+    const lang = localTranslations[language] || localTranslations.en;
+    return lang[key] || localTranslations.en[key] || key;
+  };
+
+  const dateLocaleStr = language === 'fr' || language === 'ht' ? 'fr-FR' : 'en-US';
 
   useEffect(() => {
     loadAvailableGroups();
@@ -98,7 +160,6 @@ const GroupComparisonDashboard = () => {
           .gte('event_date', formatDateInputValue(startDate))
           .order('event_date');
 
-
         if (attendanceError) throw attendanceError;
 
         const monthlyMap = new Map<string, { present: Set<string>; total: number }>();
@@ -116,19 +177,17 @@ const GroupComparisonDashboard = () => {
           monthData.total++;
         });
 
-
         const monthlyData = Array.from(monthlyMap.entries())
           .map(([month, data]) => {
             const [y, m] = month.split('-').map(Number);
             const monthDate = new Date(y, (m || 1) - 1, 1);
             return {
-              month: monthDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+              month: monthDate.toLocaleDateString(dateLocaleStr, { month: 'short', year: '2-digit' }),
               rate: (data.present.size / memberIds.length) * 100,
               total: data.total,
             };
           })
           .sort((a, b) => a.month.localeCompare(b.month));
-
 
         const overallRate = monthlyData.length > 0
           ? monthlyData.reduce((sum, m) => sum + m.rate, 0) / monthlyData.length
@@ -185,7 +244,7 @@ const GroupComparisonDashboard = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Chargement...</p>
+            <p className="mt-4 text-muted-foreground">{lt("loading")}</p>
           </div>
         </div>
       </Layout>
@@ -202,8 +261,8 @@ const GroupComparisonDashboard = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Comparaison des Groupes</h1>
-              <p className="text-xs md:text-sm text-muted-foreground">Analysez les tendances de présence entre différents groupes</p>
+              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">{lt("title")}</h1>
+              <p className="text-xs md:text-sm text-muted-foreground">{lt("subtitle")}</p>
             </div>
           </div>
           <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
@@ -211,9 +270,9 @@ const GroupComparisonDashboard = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="3">3 derniers mois</SelectItem>
-              <SelectItem value="6">6 derniers mois</SelectItem>
-              <SelectItem value="12">12 derniers mois</SelectItem>
+              <SelectItem value="3">{lt("last3Months")}</SelectItem>
+              <SelectItem value="6">{lt("last6Months")}</SelectItem>
+              <SelectItem value="12">{lt("last12Months")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -221,8 +280,8 @@ const GroupComparisonDashboard = () => {
         {/* Group Selection */}
         <Card>
           <CardHeader className="pb-3 md:pb-6">
-            <CardTitle className="text-sm sm:text-base md:text-lg">Sélectionner les groupes à comparer</CardTitle>
-            <CardDescription className="text-xs md:text-sm">Choisissez jusqu'à 6 groupes pour la comparaison</CardDescription>
+            <CardTitle className="text-sm sm:text-base md:text-lg">{lt("selectGroups")}</CardTitle>
+            <CardDescription className="text-xs md:text-sm">{lt("selectGroupsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
@@ -249,7 +308,7 @@ const GroupComparisonDashboard = () => {
         {selectedGroups.length === 0 && (
           <Card>
             <CardContent className="p-8 sm:p-12 text-center">
-              <p className="text-sm sm:text-base text-muted-foreground">Sélectionnez au moins un groupe pour voir les statistiques</p>
+              <p className="text-sm sm:text-base text-muted-foreground">{lt("selectAtLeastOne")}</p>
             </CardContent>
           </Card>
         )}
@@ -273,7 +332,7 @@ const GroupComparisonDashboard = () => {
                         </span>
                       </div>
                     </div>
-                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Taux de présence moyen</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">{lt("avgAttendanceRate")}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -282,8 +341,8 @@ const GroupComparisonDashboard = () => {
             {/* Line Chart */}
             <Card>
               <CardHeader className="pb-2 md:pb-6">
-                <CardTitle className="text-sm sm:text-base md:text-lg">Évolution du taux de présence</CardTitle>
-                <CardDescription className="text-xs md:text-sm">Comparaison des tendances au fil du temps</CardDescription>
+                <CardTitle className="text-sm sm:text-base md:text-lg">{lt("attendanceTrend")}</CardTitle>
+                <CardDescription className="text-xs md:text-sm">{lt("trendComparison")}</CardDescription>
               </CardHeader>
               <CardContent className="px-2 md:px-6">
                 <div className="h-[220px] sm:h-[260px] md:h-[320px] lg:h-[350px]">
@@ -313,8 +372,8 @@ const GroupComparisonDashboard = () => {
             {/* Bar Chart */}
             <Card>
               <CardHeader className="pb-2 md:pb-6">
-                <CardTitle className="text-sm sm:text-base md:text-lg">Comparaison des taux moyens</CardTitle>
-                <CardDescription className="text-xs md:text-sm">Vue d'ensemble des performances par groupe</CardDescription>
+                <CardTitle className="text-sm sm:text-base md:text-lg">{lt("avgRateComparison")}</CardTitle>
+                <CardDescription className="text-xs md:text-sm">{lt("performanceOverview")}</CardDescription>
               </CardHeader>
               <CardContent className="px-2 md:px-6">
                 <div className="h-[200px] sm:h-[240px] md:h-[280px] lg:h-[300px]">
@@ -324,7 +383,7 @@ const GroupComparisonDashboard = () => {
                       <XAxis dataKey="group" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} width={35} />
                       <Tooltip contentStyle={{ fontSize: 12 }} />
-                      <Bar dataKey="overallRate" name="Taux moyen (%)" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="overallRate" name={lt("avgRate")} fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
