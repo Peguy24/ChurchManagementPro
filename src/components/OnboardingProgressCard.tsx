@@ -56,9 +56,20 @@ export function OnboardingProgressCard() {
       const churchName = settingsData.find((s: any) => s.setting_key === "church_name");
       const profileCompleted = !!(churchName && churchName.setting_value && churchName.setting_value.trim() !== "");
 
-      // Check logo
-      const logoSetting = settingsData.find((s: any) => s.setting_key === "church_logo");
-      const logoUploaded = !!(logoSetting && logoSetting.setting_value && logoSetting.setting_value.trim() !== "");
+      // Check logo: church_logo_url in settings OR logo_url on tenants table
+      const logoSetting = settingsData.find((s: any) => s.setting_key === "church_logo_url") 
+        || settingsData.find((s: any) => s.setting_key === "church_logo");
+      let logoUploaded = !!(logoSetting && logoSetting.setting_value && logoSetting.setting_value.trim() !== "");
+      
+      // Also check tenants.logo_url as fallback (TenantBranding saves there)
+      if (!logoUploaded) {
+        const { data: tenantData } = await supabase
+          .from("tenants")
+          .select("logo_url")
+          .eq("id", tenantId)
+          .maybeSingle();
+        logoUploaded = !!(tenantData?.logo_url && tenantData.logo_url.trim() !== "");
+      }
 
       return {
         step_profile_completed: profileCompleted,
