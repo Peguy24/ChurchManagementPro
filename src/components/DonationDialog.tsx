@@ -179,15 +179,22 @@ export default function DonationDialog({
         tenant_id: tenantId,
       };
 
+      let donationId: string | null = editDonation?.id || null;
+
       if (editDonation) {
         const { error } = await supabase
           .from("donations")
           .update(donationData)
           .eq("id", editDonation.id);
         if (error) throw error;
+        await saveCustomFieldValues(editDonation.id, customFieldValues, "donation", tenantId);
       } else {
-        const { error } = await supabase.from("donations").insert(donationData);
+        const { data: inserted, error } = await supabase.from("donations").insert(donationData).select("id").single();
         if (error) throw error;
+        if (inserted) {
+          donationId = inserted.id;
+          await saveCustomFieldValues(inserted.id, customFieldValues, "donation", tenantId);
+        }
       }
 
       // Update account balance
