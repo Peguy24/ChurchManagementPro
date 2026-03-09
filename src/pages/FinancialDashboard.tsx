@@ -504,9 +504,9 @@ const FinancialDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Banknote className="h-5 w-5 text-green-600" />
-                Caisses
+                {t("finance.cashRegisters")}
               </CardTitle>
-              <CardDescription>Solde total: {formatCurrency(totalCashBalance)}</CardDescription>
+              <CardDescription>{t("finance.totalBalance")}: {formatCurrency(totalCashBalance)}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
