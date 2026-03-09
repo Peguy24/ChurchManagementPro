@@ -491,7 +491,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 <div className="text-center p-4 bg-success/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalRevenue")}</p>
-                  <p className="text-2xl font-bold text-success">${stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-success">{formatAmount(stats.totalRevenue)}</p>
                 </div>
                 <div className="text-center p-4 bg-destructive/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalExpenses")}</p>
