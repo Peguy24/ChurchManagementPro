@@ -85,6 +85,7 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
         formData.field_type === "select"
           ? { options: formData.field_options }
           : null,
+      ...(field ? {} : { tenant_id: tenantId }),
     };
 
     try {
