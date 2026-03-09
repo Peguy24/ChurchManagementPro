@@ -127,6 +127,7 @@ const translations = {
       memberCards: "Cartes Membres",
       attendance: "Présence",
       attendanceAlerts: "Alertes Présence",
+      arrivalReport: "Rapport d'Arrivées",
       groupComparison: "Comparaison Groupes",
       donations: "Recettes",
       financialReports: "Rapport Général",
