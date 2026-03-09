@@ -361,11 +361,11 @@ export default function Budgets() {
                         <TableCell className="font-medium">{budget.name}</TableCell>
                         <TableCell>{budget.category?.name || "-"}</TableCell>
                         <TableCell>{budget.branch?.name || t("common.all")}</TableCell>
-                        <TableCell className="text-right">${planned.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-destructive">${spent.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{formatAmount(planned)}</TableCell>
+                        <TableCell className="text-right text-destructive">{formatAmount(spent)}</TableCell>
                         <TableCell className="text-right">
                           <span className={remaining < 0 ? "text-destructive" : "text-primary"}>
-                            ${remaining.toLocaleString()}
+                            {formatAmount(remaining)}
                           </span>
                         </TableCell>
                         <TableCell>
