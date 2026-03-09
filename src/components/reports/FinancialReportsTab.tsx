@@ -342,9 +342,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
       head: [[r("month"), r("revenue"), r("expenses"), r("net")]],
       body: revenueVsExpensesData.map(m => [
         m.month,
-        `$${m.revenue.toFixed(2)}`,
-        `$${m.expenses.toFixed(2)}`,
-        `$${m.net.toFixed(2)}`,
+        formatAmount(m.revenue),
+        formatAmount(m.expenses),
+        formatAmount(m.net),
       ]),
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
