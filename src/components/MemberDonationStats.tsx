@@ -287,7 +287,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {yearDonations && yearDonations.length > 0 && (
           <div className="mt-3 p-2 bg-primary/10 rounded-md text-sm">
             <span className="font-medium">{selectedYear}:</span>{" "}
-            {yearDonations.length} contributions | Total: {formatCurrency(yearTotal)} | Dîmes: {formatCurrency(yearTitheTotal)}
+            {yearDonations.length} {t("memberDetails.fiscalReceiptContributions")} | {t("memberDetails.fiscalReceiptTotal")}: {formatCurrency(yearTotal)} | {t("memberDetails.fiscalReceiptTithes")}: {formatCurrency(yearTitheTotal)}
           </div>
         )}
       </CardHeader>
