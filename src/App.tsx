@@ -15,6 +15,7 @@ import MemberDetails from "./pages/MemberDetails";
 import Attendance from "./pages/Attendance";
 import MemberAttendanceStats from "./pages/MemberAttendanceStats";
 import AttendanceAlerts from "./pages/AttendanceAlerts";
+import AttendanceArrivalReport from "./pages/AttendanceArrivalReport";
 import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
 import Donations from "./pages/Donations";
 import IncomeCategories from "./pages/IncomeCategories";
@@ -107,6 +108,7 @@ const App = () => (
               <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
               <Route path="/attendance/alerts" element={<ProtectedRoute><AttendanceAlerts /></ProtectedRoute>} />
               <Route path="/attendance/comparison" element={<ProtectedRoute><GroupComparisonDashboard /></ProtectedRoute>} />
+              <Route path="/attendance/arrivals" element={<ProtectedRoute><AttendanceArrivalReport /></ProtectedRoute>} />
               <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
               <Route path="/donations/categories" element={<ProtectedRoute><IncomeCategories /></ProtectedRoute>} />
               <Route path="/donations/reports" element={<ProtectedRoute><FinancialReports /></ProtectedRoute>} />

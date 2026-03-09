@@ -39,6 +39,7 @@ import {
   ShieldAlert as ShieldAlertIcon,
   Zap,
   Monitor,
+  Clock,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -89,6 +90,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
         { to: "/attendance/kiosk", icon: Monitor, label: t("nav.kioskMode") },
         { to: "/attendance/alerts", icon: Bell, label: t("nav.attendanceAlerts") },
+        { to: "/attendance/arrivals", icon: Clock, label: t("nav.arrivalReport") },
         { to: "/branches", icon: Church, label: t("nav.branches") },
         { to: "/ministries", icon: Briefcase, label: t("nav.ministries") },
         { to: "/visitors", icon: UserPlus, label: t("nav.visitors") },
