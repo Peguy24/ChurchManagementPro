@@ -87,7 +87,10 @@ export const MODULE_COLUMNS: Record<string, ExportColumn[]> = {
     { key: "member_first_name", fr: "Prénom", en: "First Name", ht: "Prenon" },
     { key: "member_last_name", fr: "Nom", en: "Last Name", ht: "Non" },
     { key: "scan_method", fr: "Méthode", en: "Method", ht: "Metòd" },
-    { key: "marked_at", fr: "Marqué à", en: "Marked At", ht: "Make a", formatter: formatDate },
+    { key: "marked_at", fr: "Heure du scan", en: "Scan Time", ht: "Lè eskanaj", formatter: (v: any) => {
+      if (!v) return "";
+      try { const d = new Date(v); return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); } catch { return String(v); }
+    }},
   ],
   events: [
     { key: "name", fr: "Nom", en: "Name", ht: "Non" },

@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2 } from "lucide-react";
+import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2, Clock } from "lucide-react";
+import { getArrivalStatus, formatScanTime, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +83,8 @@ interface ScannedMember {
   time: string;
   status: 'success' | 'error';
   attendance_record_id?: string;
+  markedAt?: string;
+  arrivalStatus?: 'early' | 'onTime' | 'late' | null;
 }
 
 export default function Attendance() {
@@ -421,6 +424,7 @@ function AttendanceContent() {
 
       // Insert attendance record
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const scanTimestamp = new Date().toISOString();
       const { data: insertedRecord, error: insertError } = await supabase
         .from("attendance_records")
         .insert({
@@ -431,6 +435,7 @@ function AttendanceContent() {
           scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
           marked_by: currentUser?.id || null,
+          marked_at: scanTimestamp,
         })
         .select("id")
         .single();
@@ -471,11 +476,15 @@ function AttendanceContent() {
 
       playSound("success");
 
+      const currentEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
+      const arrivalSt = getArrivalStatus(scanTimestamp, currentEvent?.event_time);
       setScannedMembers(prev => [{
         ...member,
-        time: new Date().toLocaleTimeString("fr-FR"),
+        time: formatScanTime(scanTimestamp),
         status: 'success' as const,
         attendance_record_id: insertedRecord?.id,
+        markedAt: scanTimestamp,
+        arrivalStatus: arrivalSt,
       }, ...prev].slice(0, 10));
 
       await loadAttendanceRecords();
@@ -825,8 +834,13 @@ function AttendanceContent() {
                               {member.first_name} {member.last_name}
                             </CardTitle>
                             <p className="text-lg text-muted-foreground">{member.time}</p>
+                            {member.arrivalStatus && (
+                              <Badge variant={getStatusBadgeVariant(member.arrivalStatus)} className="mt-1 text-xs">
+                                {t(getStatusTranslationKey(member.arrivalStatus))}
+                              </Badge>
+                            )}
                             {member.status === 'error' && (
-                              <p className="text-sm text-red-600 dark:text-red-400 font-medium mt-1">
+                              <p className="text-sm text-destructive font-medium mt-1">
                                 {t("attendance.duplicateScan")}
                               </p>
                             )}

@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance_records ALTER COLUMN marked_at SET DEFAULT now();
