@@ -247,7 +247,8 @@ export default function BankReconciliation() {
             reconciled_at: tx.reconciled_at,
           })),
         },
-        language
+        language,
+        currencyCode
       );
 
       toast({
