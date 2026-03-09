@@ -1,32 +1,37 @@
 
 
-## Current Situation
+## Plan: Record scan time and show early/late attendance status
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### Database
+- Add migration: `ALTER TABLE attendance_records ALTER COLUMN marked_at SET DEFAULT now();`
 
-## What Needs to Be Done
+### Code changes
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+**1. Record `marked_at` on insert**
+- `src/pages/Attendance.tsx`: Add `marked_at: new Date().toISOString()` to attendance insert
+- `src/pages/AttendanceKiosk.tsx`: Same
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+**2. Early/Late logic (helper function)**
+Compare `marked_at` against event `event_time`:
+- **Early**: arrived > 5 min before event start
+- **On time**: arrived within 5 min before to 15 min after event start
+- **Late**: arrived > 15 min after event start
+- No `event_time` → show scan time only, no status badge
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+**3. UI — Attendance page & Kiosk**
+- Show scan time and colored badge (green=early, blue=on-time, red=late) in scanned members list
+- Kiosk feedback card: show arrival time + status after successful scan
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+**4. UI — MemberAttendanceStats**
+- Fetch `marked_at` in query, display scan time in stats
+
+**5. Translations (FR/EN/HT)**
+- `attendance.scanTime`: "Heure du scan" / "Scan Time" / "Lè eskanaj"
+- `attendance.early`: "En avance" / "Early" / "Bonè"
+- `attendance.onTime`: "À l'heure" / "On Time" / "Alè"
+- `attendance.late`: "En retard" / "Late" / "An reta"
+- `attendance.arrivalStatus`: "Statut d'arrivée" / "Arrival Status" / "Estati arive"
+
+**6. Backup export**
+- Update `src/lib/backupExportConfig.ts` to include and format `marked_at` as HH:MM:SS
 
