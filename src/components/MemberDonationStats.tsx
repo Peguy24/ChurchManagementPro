@@ -22,6 +22,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning
 
 export default function MemberDonationStats({ memberId }: MemberDonationStatsProps) {
   const { t } = useLanguage();
+  const { currencyCode } = useCurrency();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
 
