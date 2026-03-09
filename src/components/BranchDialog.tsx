@@ -44,6 +44,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
     status: "active",
   });
   const [loading, setLoading] = useState(false);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
 
