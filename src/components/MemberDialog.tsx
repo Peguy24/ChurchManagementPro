@@ -465,6 +465,7 @@ export default function MemberDialog({
 
         // Upload photo and update member with photo_url and qr_code
         if (data) {
+          savedMemberId = data.id;
           const qrCodeData = `MEMBER-${data.id}`;
           
           // Upload photo if selected
