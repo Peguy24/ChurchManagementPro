@@ -621,7 +621,7 @@ export default function Expenses() {
               <Check className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">${stats.approved.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-primary">{formatCurrency(stats.approved)}</div>
               <p className="text-xs text-muted-foreground">{t("expense.confirmedExpenses")}</p>
             </CardContent>
           </Card>
