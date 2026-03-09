@@ -288,7 +288,7 @@ export default function Budgets() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatAmount(totalPlanned)}</)}</div>
+              <div className="text-2xl font-bold">{formatAmount(totalPlanned)}</div>
               <p className="text-xs text-muted-foreground">{t("budget.fiscalYear")} {selectedYear}</p>
             </CardContent>
           </Card>
