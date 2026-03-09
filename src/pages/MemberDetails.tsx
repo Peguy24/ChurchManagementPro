@@ -651,9 +651,10 @@ export default function MemberDetails() {
                           <span>•</span>
                           <span>
                             {t("memberDetails.membershipLabel")}: {mm.joined_date
-                              ? new Date(mm.joined_date).toLocaleDateString(locale)
+                              ? formatDateForDisplay(mm.joined_date, locale)
                               : "-"}
                           </span>
+
                         </div>
                       </div>
                     </div>

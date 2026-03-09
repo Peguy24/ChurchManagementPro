@@ -178,13 +178,16 @@ export default function Dashboard() {
   const firstDayOfWeek = new Date(today);
   firstDayOfWeek.setDate(today.getDate() - today.getDay());
 
-  const monthlyDonations = donations?.filter(d => 
-    new Date(d.donation_date) >= firstDayOfMonth
-  ) || [];
+  const monthlyDonations = donations?.filter((d) => {
+    const donationDate = toSafeDate(d.donation_date);
+    return donationDate ? donationDate >= firstDayOfMonth : false;
+  }) || [];
   
-  const weeklyDonations = donations?.filter(d => 
-    new Date(d.donation_date) >= firstDayOfWeek
-  ) || [];
+  const weeklyDonations = donations?.filter((d) => {
+    const donationDate = toSafeDate(d.donation_date);
+    return donationDate ? donationDate >= firstDayOfWeek : false;
+  }) || [];
+
 
   const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
   

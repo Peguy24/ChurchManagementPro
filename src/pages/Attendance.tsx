@@ -1145,8 +1145,9 @@ function AttendanceContent() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {attendanceRecords.length > 0
-                  ? new Date(attendanceRecords[0].event_date).toLocaleDateString("fr-FR")
+                  ? formatDateForDisplay(attendanceRecords[0].event_date, "fr-FR")
                   : t("attendance.noMeetings")}
+
               </p>
             </CardContent>
           </Card>

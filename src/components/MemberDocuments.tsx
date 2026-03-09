@@ -290,8 +290,9 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                   <TableCell>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {format(new Date(doc.document_date), "dd MMM yyyy", { locale: fr })}
+                      {format(parseDateOnly(doc.document_date) ?? new Date(doc.document_date), "dd MMM yyyy", { locale: fr })}
                     </div>
+
                   </TableCell>
                   <TableCell className="max-w-[200px] truncate">
                     {doc.notes || "-"}

@@ -89,8 +89,9 @@ export default function MemberRequests() {
         number_of_children: request.number_of_children,
         children_names: request.children_names,
         status: "active",
-        join_date: new Date().toISOString().split("T")[0],
+        join_date: todayInputValue(),
       }).select("id").single();
+
       if (memberError) throw memberError;
 
       // If member requested a ministry, add them to it

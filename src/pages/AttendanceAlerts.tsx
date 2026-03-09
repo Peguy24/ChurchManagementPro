@@ -95,8 +95,9 @@ export default function AttendanceAlerts() {
           const decline = ((previousRate - currentRate) / previousRate) * 100;
 
           if (decline > 30 || (currentRate === 0 && previousRate > 0)) {
-            const daysSinceLastAttendance = stats.lastAttendance
-              ? Math.floor((Date.now() - new Date(stats.lastAttendance).getTime()) / (1000 * 60 * 60 * 24))
+            const last = toSafeDate(stats.lastAttendance);
+            const daysSinceLastAttendance = last
+              ? Math.floor((Date.now() - last.getTime()) / (1000 * 60 * 60 * 24))
               : null;
 
             alertsList.push({
@@ -108,6 +109,7 @@ export default function AttendanceAlerts() {
               last_attendance: stats.lastAttendance,
               total_absences: daysSinceLastAttendance || 0,
             });
+
           }
         }
       });

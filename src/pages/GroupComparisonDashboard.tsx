@@ -118,12 +118,17 @@ const GroupComparisonDashboard = () => {
 
 
         const monthlyData = Array.from(monthlyMap.entries())
-          .map(([month, data]) => ({
-            month: new Date(month + '-01').toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
-            rate: (data.present.size / memberIds.length) * 100,
-            total: data.total
-          }))
+          .map(([month, data]) => {
+            const [y, m] = month.split('-').map(Number);
+            const monthDate = new Date(y, (m || 1) - 1, 1);
+            return {
+              month: monthDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+              rate: (data.present.size / memberIds.length) * 100,
+              total: data.total,
+            };
+          })
           .sort((a, b) => a.month.localeCompare(b.month));
+
 
         const overallRate = monthlyData.length > 0
           ? monthlyData.reduce((sum, m) => sum + m.rate, 0) / monthlyData.length

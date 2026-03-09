@@ -530,7 +530,7 @@ export default function PlatformAccounting() {
                 <TableBody>
                   {filteredExpenses.map((expense) => (
                     <TableRow key={expense.id}>
-                      <TableCell>{new Date(expense.expense_date).toLocaleDateString(dateLocale)}</TableCell>
+                      <TableCell>{formatDateForDisplay(expense.expense_date, dateLocale)}</TableCell>
                       <TableCell>
                         <div>
                           <span className="font-medium">{expense.description}</span>

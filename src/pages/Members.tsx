@@ -248,11 +248,12 @@ export default function Members() {
                       </TableCell>
                       <TableCell>
                         {member.join_date 
-                          ? new Date(member.join_date).toLocaleDateString() 
+                          ? formatDateForDisplay(member.join_date, dateLocale)
                           : member.created_at 
-                            ? new Date(member.created_at).toLocaleDateString() 
+                            ? formatDateForDisplay(member.created_at, dateLocale)
                             : "-"}
                       </TableCell>
+
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <Button

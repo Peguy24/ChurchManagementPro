@@ -156,7 +156,7 @@ export default function MinistriesStats() {
       }
 
       data.forEach((item) => {
-        const date = new Date(item.joined_date);
+        const date = toSafeDate(item.joined_date) ?? new Date(item.joined_date);
         const monthStr = date.toLocaleDateString(locale, {
           month: "short",
           year: "numeric",
@@ -165,6 +165,7 @@ export default function MinistriesStats() {
           monthCounts[monthStr]++;
         }
       });
+
 
       return Object.entries(monthCounts).map(([month, new_members]) => ({
         month,

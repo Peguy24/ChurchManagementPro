@@ -133,9 +133,7 @@ export function formatCurrencyForCsv(amount: number | null | undefined): string 
  */
 export function formatDateForCsv(date: string | null | undefined): string {
   if (!date) return "";
-  try {
-    return new Date(date).toLocaleDateString("fr-FR");
-  } catch {
-    return date;
-  }
+  const formatted = formatDateForDisplay(date, "fr-FR");
+  return formatted || date;
 }
+

@@ -158,12 +158,13 @@ export default function MemberAttendanceStats() {
       });
 
       const monthRecords = records.filter((r) => {
-        const recordDate = new Date(r.event_date);
+        const recordDate = toSafeDate(r.event_date) ?? new Date(r.event_date);
         return (
           recordDate.getMonth() === current.getMonth() &&
           recordDate.getFullYear() === current.getFullYear()
         );
       });
+
 
       months.push({
         month: monthStr,
