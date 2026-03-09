@@ -1,32 +1,40 @@
 
 
-## Current Situation
+## Problem
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+The receipt download button in the Income (Donations) page does nothing — it only logs to console (`console.log("Generate receipt for:", donation)`). It needs to actually generate and download a PDF receipt for the individual donation.
 
-## What Needs to Be Done
+## Plan
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### 1. Create a donation receipt PDF generator (`src/lib/donationReceiptPDF.ts`)
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+Create a new file that generates a single-donation receipt PDF using jsPDF. It will include:
+- Church header (name, address, phone, email)
+- Receipt title ("Reçu de don" / "Donation Receipt" / "Resi don")
+- Donor info (name, from the joined member data)
+- Donation details: date, type, amount, payment method, description, reference number
+- A certification line and signature placeholder
+- Receipt number (using donation ID or reference_number)
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+Will follow the same styling patterns as `fiscalReceiptPDF.ts` and respect the ASCII-safe PDF constraint from project memory.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### 2. Update `src/pages/Donations.tsx`
+
+- Import the new `generateDonationReceiptPDF` and `downloadDonationReceiptPDF` functions
+- Replace the `console.log` on line 450 with an async handler that:
+  1. Fetches the church settings (tenant settings) for church info
+  2. Calls `generateDonationReceiptPDF` with the donation data
+  3. Downloads the PDF
+
+### 3. Add translations in `src/contexts/LanguageContext.tsx`
+
+Add a `receipt` block with keys for:
+- `receiptTitle`, `receiptNumber`, `donorInfo`, `donationDetails`, `certification`, `generatedBy`
+
+All in FR, EN, and HT.
+
+### Files to modify/create
+- **Create**: `src/lib/donationReceiptPDF.ts`
+- **Modify**: `src/pages/Donations.tsx` (replace console.log with actual receipt generation)
+- **Modify**: `src/contexts/LanguageContext.tsx` (add receipt translations)
 
