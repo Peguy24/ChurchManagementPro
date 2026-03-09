@@ -421,6 +421,7 @@ function AttendanceContent() {
 
       // Insert attendance record
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const scanTimestamp = new Date().toISOString();
       const { data: insertedRecord, error: insertError } = await supabase
         .from("attendance_records")
         .insert({
@@ -431,6 +432,7 @@ function AttendanceContent() {
           scan_method: "qr_scan",
           tenant_id: effectiveTenantId,
           marked_by: currentUser?.id || null,
+          marked_at: scanTimestamp,
         })
         .select("id")
         .single();

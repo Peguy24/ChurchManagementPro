@@ -210,6 +210,7 @@ export default function AttendanceKiosk() {
       const fullName = `${member.first_name} ${member.last_name}`;
       const today = getLocalToday();
 
+      const scanTimestamp = new Date().toISOString();
       const { error } = await supabase.from("attendance_records").insert({
         member_id: memberId,
         event_type: selectedEvent.name,
@@ -217,6 +218,7 @@ export default function AttendanceKiosk() {
         event_id: selectedEvent.id,
         scan_method: "qr_scan",
         marked_by: user?.id || null,
+        marked_at: scanTimestamp,
         tenant_id: tenantId,
       });
 

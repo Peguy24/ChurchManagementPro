@@ -6882,6 +6882,11 @@ const translations = {
       deleteSuccess: "Prezans efase",
       deleteSuccessDesc: "Anrejistreman prezans {name} efase.",
       deleteError: "Erè pandan efase prezans",
+      scanTime: "Lè eskanaj",
+      early: "Bonè",
+      onTime: "Alè",
+      late: "An reta",
+      arrivalStatus: "Estati arive",
     },
     attendanceAlerts: {
       title: "Alèt Prezans",
