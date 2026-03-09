@@ -1739,6 +1739,7 @@ const translations = {
       smartInsights: "Insights Intelligents",
       support: "Support",
       systemGuide: "Guide du Système",
+      dataBackup: "Sauvegarde des Données",
       incomeCategoriesTitle: "Catégories de Recettes",
       incomeCategoriesDesc: "Gérez les catégories pour classifier les revenus",
       newCategory: "Nouvelle Catégorie",
