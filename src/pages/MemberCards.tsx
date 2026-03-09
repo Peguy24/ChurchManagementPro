@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { generateMemberCardsPDF, downloadPDF, CardCustomization } from "@/lib/memberCardPDF";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { todayInputValue } from "@/lib/date";
+
 
 
 interface Member {
