@@ -486,8 +486,8 @@ const FinancialDashboard = () => {
                       />
                       <p className={`text-sm font-medium ${alert.remaining < 0 ? "text-destructive" : "text-muted-foreground"}`}>
                         {alert.remaining < 0 
-                          ? `Dépassement: ${formatCurrency(Math.abs(alert.remaining))}` 
-                          : `Restant: ${formatCurrency(alert.remaining)}`}
+                          ? `${t("finance.overage")}: ${formatCurrency(Math.abs(alert.remaining))}` 
+                          : `${t("finance.remaining")}: ${formatCurrency(alert.remaining)}`}
                       </p>
                     </div>
                   </div>
