@@ -114,6 +114,7 @@ export default function MemberCards() {
     churchNameOnCard: churchSettings.card_church_name_on_card ? churchSettings.card_church_name_on_card === "true" : true,
     churchName: churchSettings.church_name || tenant?.name || "",
     logoUrl: churchSettings.church_logo_url || tenantLogoUrl,
+    language,
   } : (tenant ? {
     primaryColor: tenant.primary_color || "#3B82F6",
     secondaryColor: "#1E40AF",
