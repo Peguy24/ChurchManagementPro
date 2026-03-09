@@ -95,8 +95,9 @@ const GroupComparisonDashboard = () => {
           .from('attendance_records')
           .select('event_date, member_id')
           .in('member_id', memberIds)
-          .gte('event_date', startDate.toISOString().split('T')[0])
+          .gte('event_date', formatDateInputValue(startDate))
           .order('event_date');
+
 
         if (attendanceError) throw attendanceError;
 
