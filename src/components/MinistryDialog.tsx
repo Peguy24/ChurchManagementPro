@@ -23,6 +23,8 @@ import {
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface MinistryDialogProps {
   open: boolean;
@@ -42,6 +44,7 @@ export default function MinistryDialog({
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const m = (key: string) => t(`ministries.${key}`);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: "",
