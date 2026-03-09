@@ -491,16 +491,16 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 <div className="text-center p-4 bg-success/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalRevenue")}</p>
-                  <p className="text-2xl font-bold text-success">{formatAmount(stats.totalRevenueueue)}</p>
+                  <p className="text-2xl font-bold text-success">{formatAmount(stats.totalRevenue)}</p>
                 </div>
                 <div className="text-center p-4 bg-destructive/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">{r("totalExpenses")}</p>
-                  <p className="text-2xl font-bold text-destructive">{formatAmount(stats.totalExpenses</p>
+                  <p className="text-2xl font-bold text-destructive">{formatAmount(stats.totalExpenses)}</p>
                 </div>
                 <div className={`text-center p-4 rounded-lg ${stats.netIncome >= 0 ? "bg-success/10" : "bg-destructive/10"}`}>
                   <p className="text-sm text-muted-foreground">{r("netResult")}</p>
                   <p className={`text-2xl font-bold ${stats.netIncome >= 0 ? "text-success" : "text-destructive"}`}>
-                {formatAmount(stats.netIncomeed
+                    {formatAmount(stats.netIncome)}
                   </p>
                 </div>
               </div>
