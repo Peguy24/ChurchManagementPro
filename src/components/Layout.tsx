@@ -56,6 +56,7 @@ import {
 } from "./ui/collapsible";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import SuperAdminNotifications from "./SuperAdminNotifications";
+import TenantNotifications from "./TenantNotifications";
 
 interface LayoutProps {
   children: ReactNode;
