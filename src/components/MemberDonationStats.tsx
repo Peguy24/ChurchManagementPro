@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { generateFiscalReceiptPDF, downloadFiscalReceiptPDF, FiscalReceiptData } from "@/lib/fiscalReceiptPDF";
+import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateInputValue } from "@/lib/date";
 
 

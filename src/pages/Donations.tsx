@@ -394,7 +394,7 @@ function DonationsContent() {
                       {categoryLabels[type] || type}
                     </span>
                   </div>
-                  <span className="font-bold">${amount.toFixed(2)}</span>
+                  <span className="font-bold">{formatCurrency(amount)}</span>
                 </div>
               ))}
             </div>
