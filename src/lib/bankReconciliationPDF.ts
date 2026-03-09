@@ -53,6 +53,7 @@ export async function generateBankReconciliationPDF(
   language: string = "fr",
   currencyCode: string = "USD"
 ): Promise<void> {
+  const formatCurrency = (amount: number) => formatCurrencyLib(amount, currencyCode);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
