@@ -1160,6 +1160,16 @@ export default function MemberDialog({
             </div>
           )}
           
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="member"
+            entityId={member?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <DialogFooter className="mt-6">
             <Button
               type="button"
