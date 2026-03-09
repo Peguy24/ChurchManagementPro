@@ -71,29 +71,29 @@ export function RichTextEditor({
   );
 
   const handleLink = useCallback(() => {
-    const url = prompt("URL:");
+    const url = prompt(t("richTextEditor.urlPrompt"));
     if (url) exec("createLink", url);
-  }, [exec]);
+  }, [exec, t]);
 
   const toolbarButtons = [
-    { icon: Bold, action: () => exec("bold"), label: "Bold" },
-    { icon: Italic, action: () => exec("italic"), label: "Italic" },
-    { icon: Underline, action: () => exec("underline"), label: "Underline" },
+    { icon: Bold, action: () => exec("bold"), label: t("richTextEditor.bold") },
+    { icon: Italic, action: () => exec("italic"), label: t("richTextEditor.italic") },
+    { icon: Underline, action: () => exec("underline"), label: t("richTextEditor.underline") },
     { type: "separator" as const },
-    { icon: Heading1, action: () => exec("formatBlock", "h1"), label: "H1" },
-    { icon: Heading2, action: () => exec("formatBlock", "h2"), label: "H2" },
+    { icon: Heading1, action: () => exec("formatBlock", "h1"), label: t("richTextEditor.h1") },
+    { icon: Heading2, action: () => exec("formatBlock", "h2"), label: t("richTextEditor.h2") },
     { type: "separator" as const },
-    { icon: List, action: () => exec("insertUnorderedList"), label: "Bullet list" },
-    { icon: ListOrdered, action: () => exec("insertOrderedList"), label: "Numbered list" },
+    { icon: List, action: () => exec("insertUnorderedList"), label: t("richTextEditor.bulletList") },
+    { icon: ListOrdered, action: () => exec("insertOrderedList"), label: t("richTextEditor.numberedList") },
     { type: "separator" as const },
-    { icon: AlignLeft, action: () => exec("justifyLeft"), label: "Align left" },
-    { icon: AlignCenter, action: () => exec("justifyCenter"), label: "Center" },
-    { icon: AlignRight, action: () => exec("justifyRight"), label: "Align right" },
+    { icon: AlignLeft, action: () => exec("justifyLeft"), label: t("richTextEditor.alignLeft") },
+    { icon: AlignCenter, action: () => exec("justifyCenter"), label: t("richTextEditor.center") },
+    { icon: AlignRight, action: () => exec("justifyRight"), label: t("richTextEditor.alignRight") },
     { type: "separator" as const },
-    { icon: Link, action: handleLink, label: "Link" },
+    { icon: Link, action: handleLink, label: t("richTextEditor.link") },
     { type: "separator" as const },
-    { icon: Undo, action: () => exec("undo"), label: "Undo" },
-    { icon: Redo, action: () => exec("redo"), label: "Redo" },
+    { icon: Undo, action: () => exec("undo"), label: t("richTextEditor.undo") },
+    { icon: Redo, action: () => exec("redo"), label: t("richTextEditor.redo") },
   ];
 
   return (
@@ -148,7 +148,7 @@ export function RichTextEditor({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
-                {showSource ? "Visual" : "HTML"}
+                {showSource ? t("richTextEditor.visual") : t("richTextEditor.html")}
               </TooltipContent>
             </Tooltip>
           </div>
