@@ -351,6 +351,19 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     doc.save(`${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      revenueVsExpensesData,
+      [
+        { key: "month", header: r("month") },
+        { key: "revenue", header: r("revenue"), formatter: (v) => v.toFixed(2) },
+        { key: "expenses", header: r("expenses"), formatter: (v) => v.toFixed(2) },
+        { key: "net", header: r("net"), formatter: (v) => v.toFixed(2) },
+      ],
+      `${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
