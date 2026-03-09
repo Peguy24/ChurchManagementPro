@@ -313,7 +313,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">
-                  {totalDonations.toLocaleString("fr-FR")} €
+                  {formatAmount(totalDonations)}
                 </p>
                 <p className="text-muted-foreground">Cotisations</p>
               </div>
