@@ -532,6 +532,12 @@ export default function MemberDialog({
         }
       }
 
+      // Save custom field values
+      const memberId = member?.id || undefined;
+      if (memberId) {
+        await saveCustomFieldValues(memberId, customFieldValues, "member", tenantId);
+      }
+
       toast({
         title: member ? t("members.memberUpdated") : t("members.memberAdded"),
         description: `${formData.firstName} ${formData.lastName}`,
