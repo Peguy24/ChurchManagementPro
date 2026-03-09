@@ -56,6 +56,7 @@ export default function InventoryReportGenerator({
   logoUrl,
 }: InventoryReportGeneratorProps) {
   const { t } = useLanguage();
+  const { currencyCode } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
