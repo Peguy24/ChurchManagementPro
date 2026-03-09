@@ -47,21 +47,169 @@ import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subMonths } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--destructive))", "hsl(var(--warning))"];
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    totalActions: "Total Actions",
+    creations: "Creations",
+    modifications: "Modifications",
+    deletions: "Deletions",
+    users: "Users",
+    dailyActivity: "Daily Activity",
+    actionsLast30Days: "Actions over the last 30 days",
+    byActionType: "By Action Type",
+    auditLog: "Audit Log",
+    financialDataHistory: "History of actions on financial data",
+    dateTime: "Date/Time",
+    user: "User",
+    entity: "Entity",
+    action: "Action",
+    details: "Details",
+    loading: "Loading...",
+    noAuditRecords: "No audit records",
+    actionDetails: "Action Details",
+    oldValues: "Old values",
+    newValues: "New values",
+    search: "Search...",
+    entityType: "Entity type",
+    allEntities: "All entities",
+    donations: "Donations",
+    expenses: "Expenses",
+    budgets: "Budgets",
+    bankTransactions: "Bank Trans.",
+    cashTransactions: "Cash Trans.",
+    specialFunds: "Special Funds",
+    fundTransactions: "Fund Trans.",
+    allActions: "All",
+    create: "Creation",
+    update: "Modification",
+    delete: "Deletion",
+    auditReport: "Audit Report",
+    date: "Date",
+    statistics: "Statistics",
+    activeUsers: "Active Users",
+    entityId: "Entity ID",
+    actions: "Actions",
+  },
+  fr: {
+    totalActions: "Total Actions",
+    creations: "Créations",
+    modifications: "Modifications",
+    deletions: "Suppressions",
+    users: "Utilisateurs",
+    dailyActivity: "Activité Journalière",
+    actionsLast30Days: "Actions sur les 30 derniers jours",
+    byActionType: "Par Type d'Action",
+    auditLog: "Journal d'Audit",
+    financialDataHistory: "Historique des actions sur les données financières",
+    dateTime: "Date/Heure",
+    user: "Utilisateur",
+    entity: "Entité",
+    action: "Action",
+    details: "Détails",
+    loading: "Chargement...",
+    noAuditRecords: "Aucun enregistrement d'audit",
+    actionDetails: "Détails de l'action",
+    oldValues: "Anciennes valeurs",
+    newValues: "Nouvelles valeurs",
+    search: "Rechercher...",
+    entityType: "Type d'entité",
+    allEntities: "Toutes les entités",
+    donations: "Dons",
+    expenses: "Dépenses",
+    budgets: "Budgets",
+    bankTransactions: "Trans. Bancaires",
+    cashTransactions: "Trans. Caisse",
+    specialFunds: "Fonds Spéciaux",
+    fundTransactions: "Trans. Fonds",
+    allActions: "Toutes",
+    create: "Création",
+    update: "Modification",
+    delete: "Suppression",
+    auditReport: "Rapport d'Audit",
+    date: "Date",
+    statistics: "Statistiques",
+    activeUsers: "Utilisateurs Actifs",
+    entityId: "ID Entité",
+    actions: "Actions",
+  },
+  ht: {
+    totalActions: "Total Aksyon",
+    creations: "Kreyasyon",
+    modifications: "Modifikasyon",
+    deletions: "Sipresyon",
+    users: "Itilizatè",
+    dailyActivity: "Aktivite Jounen",
+    actionsLast30Days: "Aksyon sou 30 dènye jou yo",
+    byActionType: "Pa Tip Aksyon",
+    auditLog: "Jounal Odit",
+    financialDataHistory: "Istwa aksyon sou done finansye yo",
+    dateTime: "Dat/Lè",
+    user: "Itilizatè",
+    entity: "Antite",
+    action: "Aksyon",
+    details: "Detay",
+    loading: "Chajman...",
+    noAuditRecords: "Pa gen anrejistreman odit",
+    actionDetails: "Detay aksyon an",
+    oldValues: "Ansyen valè",
+    newValues: "Nouvo valè",
+    search: "Chèche...",
+    entityType: "Tip antite",
+    allEntities: "Tout antite",
+    donations: "Don",
+    expenses: "Depans",
+    budgets: "Bidjè",
+    bankTransactions: "Trans. Bank",
+    cashTransactions: "Trans. Kès",
+    specialFunds: "Fon Espesyal",
+    fundTransactions: "Trans. Fon",
+    allActions: "Tout",
+    create: "Kreyasyon",
+    update: "Modifikasyon",
+    delete: "Sipresyon",
+    auditReport: "Rapò Odit",
+    date: "Dat",
+    statistics: "Estatistik",
+    activeUsers: "Itilizatè Aktif",
+    entityId: "ID Antite",
+    actions: "Aksyon",
+  },
+};
+
 export default function AuditReportTab() {
+  const { language } = useLanguage();
+  const lt = localTranslations[language] || localTranslations.en;
   const currentDate = new Date();
   const [searchTerm, setSearchTerm] = useState("");
   const [entityFilter, setEntityFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [selectedLog, setSelectedLog] = useState<any>(null);
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
-  // Fetch audit logs
+  const entityLabels: Record<string, string> = {
+    donations: lt.donations,
+    expenses: lt.expenses,
+    budgets: lt.budgets,
+    bank_transactions: lt.bankTransactions,
+    cash_transactions: lt.cashTransactions,
+    special_funds: lt.specialFunds,
+    fund_transactions: lt.fundTransactions,
+  };
+
+  const actionLabels: Record<string, string> = {
+    create: lt.create,
+    update: lt.update,
+    delete: lt.delete,
+  };
+
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ["audit-report", entityFilter, actionFilter],
     queryFn: async () => {
@@ -84,10 +232,8 @@ export default function AuditReportTab() {
     },
   });
 
-  // Filter logs
   const filteredLogs = useMemo(() => {
     if (!searchTerm) return auditLogs;
-    
     const term = searchTerm.toLowerCase();
     return auditLogs.filter(log => 
       log.user_email?.toLowerCase().includes(term) ||
@@ -96,18 +242,15 @@ export default function AuditReportTab() {
     );
   }, [auditLogs, searchTerm]);
 
-  // Stats
   const stats = useMemo(() => {
     const total = auditLogs.length;
     const creates = auditLogs.filter(l => l.action === "create").length;
     const updates = auditLogs.filter(l => l.action === "update").length;
     const deletes = auditLogs.filter(l => l.action === "delete").length;
     const uniqueUsers = new Set(auditLogs.map(l => l.user_email)).size;
-
     return { total, creates, updates, deletes, uniqueUsers };
   }, [auditLogs]);
 
-  // Actions breakdown
   const actionsData = useMemo(() => {
     const breakdown: Record<string, number> = {};
     auditLogs.forEach(log => {
@@ -115,51 +258,17 @@ export default function AuditReportTab() {
       if (!breakdown[action]) breakdown[action] = 0;
       breakdown[action]++;
     });
-    
-    const labels: Record<string, string> = {
-      create: "Création",
-      update: "Modification",
-      delete: "Suppression",
-    };
-
     return Object.entries(breakdown).map(([name, value], index) => ({
-      name: labels[name] || name,
+      name: actionLabels[name] || name,
       value,
       color: COLORS[index % COLORS.length],
     }));
-  }, [auditLogs]);
+  }, [auditLogs, lt]);
 
-  // Entity breakdown
-  const entityData = useMemo(() => {
-    const breakdown: Record<string, number> = {};
-    auditLogs.forEach(log => {
-      const entity = log.entity_type || "unknown";
-      if (!breakdown[entity]) breakdown[entity] = 0;
-      breakdown[entity]++;
-    });
-
-    const labels: Record<string, string> = {
-      donations: "Dons",
-      expenses: "Dépenses",
-      budgets: "Budgets",
-      bank_transactions: "Transactions Bancaires",
-      cash_transactions: "Transactions Caisse",
-      special_funds: "Fonds Spéciaux",
-    };
-
-    return Object.entries(breakdown).map(([name, value], index) => ({
-      name: labels[name] || name,
-      value,
-      color: COLORS[index % COLORS.length],
-    })).sort((a, b) => b.value - a.value);
-  }, [auditLogs]);
-
-  // Daily activity
   const dailyActivity = useMemo(() => {
     const days: Record<string, number> = {};
-    
     for (let i = 29; i >= 0; i--) {
-      const date = subMonths(currentDate, 0);
+      const date = new Date();
       date.setDate(date.getDate() - i);
       const dayKey = format(date, "yyyy-MM-dd");
       days[dayKey] = 0;
@@ -175,37 +284,25 @@ export default function AuditReportTab() {
     });
 
     return Object.entries(days).map(([key, value]) => ({
-      date: format(parseISO(key), "dd/MM", { locale: fr }),
+      date: format(parseISO(key), "dd/MM", { locale: dateLocale }),
       actions: value,
     }));
-  }, [auditLogs]);
+  }, [auditLogs, dateLocale]);
 
-  // Helper functions
   const getActionBadge = (action: string) => {
     switch (action) {
       case "create":
-        return <Badge className="bg-success text-success-foreground">Création</Badge>;
+        return <Badge className="bg-success text-success-foreground">{lt.create}</Badge>;
       case "update":
-        return <Badge className="bg-info text-info-foreground">Modification</Badge>;
+        return <Badge className="bg-info text-info-foreground">{lt.update}</Badge>;
       case "delete":
-        return <Badge variant="destructive">Suppression</Badge>;
+        return <Badge variant="destructive">{lt.delete}</Badge>;
       default:
         return <Badge variant="secondary">{action}</Badge>;
     }
   };
 
-  const getEntityLabel = (entity: string) => {
-    const labels: Record<string, string> = {
-      donations: "Dons",
-      expenses: "Dépenses",
-      budgets: "Budgets",
-      bank_transactions: "Transactions Bancaires",
-      cash_transactions: "Transactions Caisse",
-      special_funds: "Fonds Spéciaux",
-      fund_transactions: "Transactions Fonds",
-    };
-    return labels[entity] || entity;
-  };
+  const getEntityLabel = (entity: string) => entityLabels[entity] || entity;
 
   const formatValue = (val: any) => {
     if (val === null || val === undefined) return "-";
@@ -213,44 +310,38 @@ export default function AuditReportTab() {
     return String(val);
   };
 
-  // Export functions
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
-
     const logsSheet = XLSX.utils.json_to_sheet(filteredLogs.map(log => ({
-      "Date/Heure": format(parseISO(log.created_at), "dd/MM/yyyy HH:mm"),
-      Utilisateur: log.user_email || "-",
-      Entité: getEntityLabel(log.entity_type),
-      Action: log.action,
-      "ID Entité": log.entity_id,
+      [lt.dateTime]: format(parseISO(log.created_at), "dd/MM/yyyy HH:mm"),
+      [lt.user]: log.user_email || "-",
+      [lt.entity]: getEntityLabel(log.entity_type),
+      [lt.action]: log.action,
+      [lt.entityId]: log.entity_id,
     })));
-    XLSX.utils.book_append_sheet(wb, logsSheet, "Journal d'Audit");
-
-    XLSX.writeFile(wb, `rapport-audit-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, logsSheet, lt.auditLog);
+    XLSX.writeFile(wb, `audit-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-
     doc.setFontSize(20);
-    doc.text("Rapport d'Audit", 14, 22);
+    doc.text(lt.auditReport, 14, 22);
     doc.setFontSize(12);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
+    doc.text(`${lt.date}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
 
-    // Stats
     doc.setFontSize(14);
-    doc.text("Statistiques", 14, 42);
+    doc.text(lt.statistics, 14, 42);
     doc.setFontSize(11);
-    doc.text(`Total Actions: ${stats.total}`, 14, 50);
-    doc.text(`Créations: ${stats.creates}`, 14, 56);
-    doc.text(`Modifications: ${stats.updates}`, 14, 62);
-    doc.text(`Suppressions: ${stats.deletes}`, 14, 68);
-    doc.text(`Utilisateurs Actifs: ${stats.uniqueUsers}`, 14, 74);
+    doc.text(`${lt.totalActions}: ${stats.total}`, 14, 50);
+    doc.text(`${lt.creations}: ${stats.creates}`, 14, 56);
+    doc.text(`${lt.modifications}: ${stats.updates}`, 14, 62);
+    doc.text(`${lt.deletions}: ${stats.deletes}`, 14, 68);
+    doc.text(`${lt.activeUsers}: ${stats.uniqueUsers}`, 14, 74);
 
-    // Table
     autoTable(doc, {
       startY: 86,
-      head: [["Date/Heure", "Utilisateur", "Entité", "Action"]],
+      head: [[lt.dateTime, lt.user, lt.entity, lt.action]],
       body: filteredLogs.slice(0, 50).map(log => [
         format(parseISO(log.created_at), "dd/MM/yyyy HH:mm"),
         log.user_email || "-",
@@ -261,20 +352,20 @@ export default function AuditReportTab() {
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-audit-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`audit-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   const exportToCSV = () => {
     exportToCsv(
       filteredLogs,
       [
-        { key: "created_at", header: "Date/Heure", formatter: (v) => format(parseISO(v), "dd/MM/yyyy HH:mm") },
-        { key: "user_email", header: "Utilisateur", formatter: (v) => v || "-" },
-        { key: "entity_type", header: "Entité", formatter: (v) => getEntityLabel(v) },
-        { key: "action", header: "Action" },
-        { key: "entity_id", header: "ID Entité" },
+        { key: "created_at", header: lt.dateTime, formatter: (v) => format(parseISO(v), "dd/MM/yyyy HH:mm") },
+        { key: "user_email", header: lt.user, formatter: (v) => v || "-" },
+        { key: "entity_type", header: lt.entity, formatter: (v) => getEntityLabel(v) },
+        { key: "action", header: lt.action },
+        { key: "entity_id", header: lt.entityId },
       ],
-      `rapport-audit-${format(currentDate, "yyyy-MM-dd")}`
+      `audit-report-${format(currentDate, "yyyy-MM-dd")}`
     );
   };
 
@@ -285,7 +376,7 @@ export default function AuditReportTab() {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Rechercher..."
+            placeholder={lt.search}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -293,26 +384,26 @@ export default function AuditReportTab() {
         </div>
         <Select value={entityFilter} onValueChange={setEntityFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Type d'entité" />
+            <SelectValue placeholder={lt.entityType} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Toutes les entités</SelectItem>
-            <SelectItem value="donations">Dons</SelectItem>
-            <SelectItem value="expenses">Dépenses</SelectItem>
-            <SelectItem value="budgets">Budgets</SelectItem>
-            <SelectItem value="bank_transactions">Trans. Bancaires</SelectItem>
-            <SelectItem value="cash_transactions">Trans. Caisse</SelectItem>
+            <SelectItem value="all">{lt.allEntities}</SelectItem>
+            <SelectItem value="donations">{lt.donations}</SelectItem>
+            <SelectItem value="expenses">{lt.expenses}</SelectItem>
+            <SelectItem value="budgets">{lt.budgets}</SelectItem>
+            <SelectItem value="bank_transactions">{lt.bankTransactions}</SelectItem>
+            <SelectItem value="cash_transactions">{lt.cashTransactions}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Action" />
+            <SelectValue placeholder={lt.action} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Toutes</SelectItem>
-            <SelectItem value="create">Création</SelectItem>
-            <SelectItem value="update">Modification</SelectItem>
-            <SelectItem value="delete">Suppression</SelectItem>
+            <SelectItem value="all">{lt.allActions}</SelectItem>
+            <SelectItem value="create">{lt.create}</SelectItem>
+            <SelectItem value="update">{lt.update}</SelectItem>
+            <SelectItem value="delete">{lt.delete}</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={exportToExcel}>
@@ -333,7 +424,7 @@ export default function AuditReportTab() {
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Actions</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.totalActions}</CardTitle>
             <Activity className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -342,7 +433,7 @@ export default function AuditReportTab() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Créations</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.creations}</CardTitle>
             <Shield className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
@@ -351,7 +442,7 @@ export default function AuditReportTab() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Modifications</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.modifications}</CardTitle>
             <Shield className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
@@ -360,7 +451,7 @@ export default function AuditReportTab() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Suppressions</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.deletions}</CardTitle>
             <Shield className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
@@ -369,7 +460,7 @@ export default function AuditReportTab() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.users}</CardTitle>
             <Shield className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
@@ -382,8 +473,8 @@ export default function AuditReportTab() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Activité Journalière</CardTitle>
-            <CardDescription>Actions sur les 30 derniers jours</CardDescription>
+            <CardTitle>{lt.dailyActivity}</CardTitle>
+            <CardDescription>{lt.actionsLast30Days}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
@@ -393,7 +484,7 @@ export default function AuditReportTab() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="actions" name="Actions" fill="hsl(var(--primary))" />
+                  <Bar dataKey="actions" name={lt.actions} fill="hsl(var(--primary))" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -402,7 +493,7 @@ export default function AuditReportTab() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Par Type d'Action</CardTitle>
+            <CardTitle>{lt.byActionType}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
@@ -424,22 +515,22 @@ export default function AuditReportTab() {
       {/* Audit Logs Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Journal d'Audit</CardTitle>
-          <CardDescription>Historique des actions sur les données financières</CardDescription>
+          <CardTitle>{lt.auditLog}</CardTitle>
+          <CardDescription>{lt.financialDataHistory}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-center py-8">Chargement...</p>
+            <p className="text-center py-8">{lt.loading}</p>
           ) : filteredLogs.length > 0 ? (
           <div className="overflow-x-auto">
           <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date/Heure</TableHead>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Entité</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead className="text-right">Détails</TableHead>
+                  <TableHead>{lt.dateTime}</TableHead>
+                  <TableHead>{lt.user}</TableHead>
+                  <TableHead>{lt.entity}</TableHead>
+                  <TableHead>{lt.action}</TableHead>
+                  <TableHead className="text-right">{lt.details}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -462,7 +553,7 @@ export default function AuditReportTab() {
             </Table>
           </div>
           ) : (
-            <p className="text-center py-8 text-muted-foreground">Aucun enregistrement d'audit</p>
+            <p className="text-center py-8 text-muted-foreground">{lt.noAuditRecords}</p>
           )}
         </CardContent>
       </Card>
@@ -471,32 +562,32 @@ export default function AuditReportTab() {
       <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détails de l'action</DialogTitle>
+            <DialogTitle>{lt.actionDetails}</DialogTitle>
           </DialogHeader>
           {selectedLog && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Date/Heure</p>
+                  <p className="text-muted-foreground">{lt.dateTime}</p>
                   <p className="font-medium">{format(parseISO(selectedLog.created_at), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Utilisateur</p>
+                  <p className="text-muted-foreground">{lt.user}</p>
                   <p className="font-medium">{selectedLog.user_email || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Entité</p>
+                  <p className="text-muted-foreground">{lt.entity}</p>
                   <p className="font-medium">{getEntityLabel(selectedLog.entity_type)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Action</p>
+                  <p className="text-muted-foreground">{lt.action}</p>
                   <p>{getActionBadge(selectedLog.action)}</p>
                 </div>
               </div>
 
               {selectedLog.old_values && (
                 <div>
-                  <p className="text-muted-foreground mb-2">Anciennes valeurs</p>
+                  <p className="text-muted-foreground mb-2">{lt.oldValues}</p>
                   <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
                     {formatValue(selectedLog.old_values)}
                   </pre>
@@ -505,7 +596,7 @@ export default function AuditReportTab() {
 
               {selectedLog.new_values && (
                 <div>
-                  <p className="text-muted-foreground mb-2">Nouvelles valeurs</p>
+                  <p className="text-muted-foreground mb-2">{lt.newValues}</p>
                   <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
                     {formatValue(selectedLog.new_values)}
                   </pre>

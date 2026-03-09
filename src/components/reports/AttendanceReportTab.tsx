@@ -42,22 +42,156 @@ import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO, startOfMonth, endOfMonth } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))", "hsl(var(--warning))"];
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    totalAttendance: "Total Attendance",
+    events: "Events",
+    avgPerEvent: "Avg/Event",
+    participationRate: "Participation Rate",
+    onActiveMembers: "on {n} active members",
+    monthlyTrend: "Monthly Trend",
+    attendanceAndEvents: "Attendance and events by month",
+    attendance: "Attendance",
+    avgEvent: "Avg/Event",
+    byEventType: "By Event Type",
+    recentEvents: "Recent Events",
+    lastEventsWithAttendance: "Last events with attendance",
+    date: "Date",
+    type: "Type",
+    present: "Present",
+    topAttendees: "Top Attendees",
+    mostDedicatedMembers: "Most dedicated members",
+    rank: "#",
+    member: "Member",
+    sundayService: "Sunday Service",
+    bibleStudy: "Bible Study",
+    prayerMeeting: "Prayer Meeting",
+    youthGroup: "Youth Group",
+    other: "Other",
+    last3Months: "Last 3 months",
+    last6Months: "Last 6 months",
+    last12Months: "Last 12 months",
+    monthlySummary: "Monthly Summary",
+    month: "Month",
+    byType: "By Type",
+    eventType: "Event type",
+    topParticipants: "Top Participants",
+    attendanceReport: "Attendance Report",
+    period: "Period",
+    lastMonths: "last months",
+    statistics: "Statistics",
+    totalEvents: "Total Events",
+    average: "Average per event",
+  },
+  fr: {
+    totalAttendance: "Total Présences",
+    events: "Événements",
+    avgPerEvent: "Moyenne/Événement",
+    participationRate: "Taux Participation",
+    onActiveMembers: "sur {n} membres actifs",
+    monthlyTrend: "Évolution Mensuelle",
+    attendanceAndEvents: "Présences et événements par mois",
+    attendance: "Présences",
+    avgEvent: "Moy/Événement",
+    byEventType: "Par Type d'Événement",
+    recentEvents: "Événements Récents",
+    lastEventsWithAttendance: "Derniers événements avec présences",
+    date: "Date",
+    type: "Type",
+    present: "Présents",
+    topAttendees: "Top Participants",
+    mostDedicatedMembers: "Membres les plus assidus",
+    rank: "#",
+    member: "Membre",
+    sundayService: "Service Dimanche",
+    bibleStudy: "Étude Biblique",
+    prayerMeeting: "Réunion Prière",
+    youthGroup: "Groupe Jeunesse",
+    other: "Autre",
+    last3Months: "3 derniers mois",
+    last6Months: "6 derniers mois",
+    last12Months: "12 derniers mois",
+    monthlySummary: "Résumé Mensuel",
+    month: "Mois",
+    byType: "Par Type",
+    eventType: "Type d'événement",
+    topParticipants: "Top Participants",
+    attendanceReport: "Rapport de Présence",
+    period: "Période",
+    lastMonths: "derniers mois",
+    statistics: "Statistiques",
+    totalEvents: "Nombre d'Événements",
+    average: "Moyenne par événement",
+  },
+  ht: {
+    totalAttendance: "Total Prezans",
+    events: "Evènman",
+    avgPerEvent: "Mwayèn/Evènman",
+    participationRate: "To Patisipasyon",
+    onActiveMembers: "sou {n} manm aktif",
+    monthlyTrend: "Evolisyon Chak Mwa",
+    attendanceAndEvents: "Prezans ak evènman pa mwa",
+    attendance: "Prezans",
+    avgEvent: "Mwayèn/Evènman",
+    byEventType: "Pa Tip Evènman",
+    recentEvents: "Dènye Evènman",
+    lastEventsWithAttendance: "Dènye evènman ak prezans",
+    date: "Dat",
+    type: "Tip",
+    present: "Prezan",
+    topAttendees: "Top Patisipan",
+    mostDedicatedMembers: "Manm ki pi fidèl",
+    rank: "#",
+    member: "Manm",
+    sundayService: "Sèvis Dimanch",
+    bibleStudy: "Etid Biblik",
+    prayerMeeting: "Reyinyon Lapriyè",
+    youthGroup: "Gwoup Jèn",
+    other: "Lòt",
+    last3Months: "3 dènye mwa",
+    last6Months: "6 dènye mwa",
+    last12Months: "12 dènye mwa",
+    monthlySummary: "Rezime Chak Mwa",
+    month: "Mwa",
+    byType: "Pa Tip",
+    eventType: "Tip evènman",
+    topParticipants: "Top Patisipan",
+    attendanceReport: "Rapò Prezans",
+    period: "Peryòd",
+    lastMonths: "dènye mwa",
+    statistics: "Estatistik",
+    totalEvents: "Kantite Evènman",
+    average: "Mwayèn pa evènman",
+  },
+};
+
 interface AttendanceReportTabProps {
   selectedBranch: string;
 }
 
 export default function AttendanceReportTab({ selectedBranch }: AttendanceReportTabProps) {
+  const { language } = useLanguage();
+  const lt = localTranslations[language] || localTranslations.en;
   const currentDate = new Date();
   const [period, setPeriod] = useState("6");
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
-  // Fetch attendance records
+  const eventTypeLabels: Record<string, string> = {
+    sunday_service: lt.sundayService,
+    bible_study: lt.bibleStudy,
+    prayer_meeting: lt.prayerMeeting,
+    youth_group: lt.youthGroup,
+    other: lt.other,
+  };
+
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["attendance-report", selectedBranch, period],
     queryFn: async () => {
@@ -79,7 +213,6 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     },
   });
 
-  // Fetch active members count
   const { data: activeMembers = [] } = useQuery({
     queryKey: ["active-members-count", selectedBranch],
     queryFn: async () => {
@@ -100,7 +233,6 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
 
   const totalActiveMembers = activeMembers.length;
 
-  // Stats
   const stats = useMemo(() => {
     const totalRecords = attendanceRecords.length;
     const uniqueDates = new Set(attendanceRecords.map(r => r.event_date)).size;
@@ -110,7 +242,6 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     return { totalRecords, uniqueDates, avgPerEvent, avgPercentage };
   }, [attendanceRecords, totalActiveMembers]);
 
-  // Attendance by event type
   const eventTypeData = useMemo(() => {
     const breakdown: Record<string, number> = {};
     attendanceRecords.forEach(r => {
@@ -118,21 +249,13 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       if (!breakdown[type]) breakdown[type] = 0;
       breakdown[type]++;
     });
-    const labels: Record<string, string> = {
-      sunday_service: "Service Dimanche",
-      bible_study: "Étude Biblique",
-      prayer_meeting: "Réunion Prière",
-      youth_group: "Groupe Jeunesse",
-      other: "Autre",
-    };
     return Object.entries(breakdown).map(([name, value], index) => ({
-      name: labels[name] || name,
+      name: eventTypeLabels[name] || name,
       value,
       color: COLORS[index % COLORS.length],
     }));
-  }, [attendanceRecords]);
+  }, [attendanceRecords, lt]);
 
-  // Monthly attendance trend
   const monthlyData = useMemo(() => {
     const months: Record<string, { total: number; events: Set<string> }> = {};
     
@@ -151,14 +274,13 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     });
 
     return Object.entries(months).map(([key, value]) => ({
-      month: format(parseISO(key + "-01"), "MMM yy", { locale: fr }),
+      month: format(parseISO(key + "-01"), "MMM yy", { locale: dateLocale }),
       presences: value.total,
       events: value.events.size,
       avgPerEvent: value.events.size > 0 ? Math.round(value.total / value.events.size) : 0,
     }));
-  }, [attendanceRecords, period]);
+  }, [attendanceRecords, period, dateLocale]);
 
-  // Recent events summary
   const recentEvents = useMemo(() => {
     const eventMap: Record<string, { date: string; type: string; count: number }> = {};
     
@@ -175,7 +297,6 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       .slice(0, 20);
   }, [attendanceRecords]);
 
-  // Top attendees
   const topAttendees = useMemo(() => {
     const memberCount: Record<string, { name: string; count: number }> = {};
     
@@ -194,59 +315,53 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       .slice(0, 10);
   }, [attendanceRecords]);
 
-  // Export functions
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Monthly summary
     const monthlySheet = XLSX.utils.json_to_sheet(monthlyData.map(m => ({
-      Mois: m.month,
-      Présences: m.presences,
-      Événements: m.events,
-      "Moyenne/Événement": m.avgPerEvent,
+      [lt.month]: m.month,
+      [lt.attendance]: m.presences,
+      [lt.events]: m.events,
+      [lt.avgPerEvent]: m.avgPerEvent,
     })));
-    XLSX.utils.book_append_sheet(wb, monthlySheet, "Résumé Mensuel");
+    XLSX.utils.book_append_sheet(wb, monthlySheet, lt.monthlySummary);
 
-    // By event type
     const eventSheet = XLSX.utils.json_to_sheet(eventTypeData.map(e => ({
-      "Type d'événement": e.name,
-      Présences: e.value,
+      [lt.eventType]: e.name,
+      [lt.attendance]: e.value,
     })));
-    XLSX.utils.book_append_sheet(wb, eventSheet, "Par Type");
+    XLSX.utils.book_append_sheet(wb, eventSheet, lt.byType);
 
-    // Top attendees
     const topSheet = XLSX.utils.json_to_sheet(topAttendees.map((a, i) => ({
-      Rang: i + 1,
-      Membre: a.name,
-      Présences: a.count,
+      [lt.rank]: i + 1,
+      [lt.member]: a.name,
+      [lt.attendance]: a.count,
     })));
-    XLSX.utils.book_append_sheet(wb, topSheet, "Top Participants");
+    XLSX.utils.book_append_sheet(wb, topSheet, lt.topParticipants);
 
-    XLSX.writeFile(wb, `rapport-presences-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `attendance-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(20);
-    doc.text("Rapport de Présence", 14, 22);
+    doc.text(lt.attendanceReport, 14, 22);
     doc.setFontSize(12);
-    doc.text(`Période: ${period} derniers mois`, 14, 30);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
+    doc.text(`${lt.period}: ${period} ${lt.lastMonths}`, 14, 30);
+    doc.text(`${lt.date}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 36);
 
-    // Stats
     doc.setFontSize(14);
-    doc.text("Statistiques", 14, 48);
+    doc.text(lt.statistics, 14, 48);
     doc.setFontSize(11);
-    doc.text(`Total Présences: ${stats.totalRecords}`, 14, 56);
-    doc.text(`Nombre d'Événements: ${stats.uniqueDates}`, 14, 62);
-    doc.text(`Moyenne par événement: ${stats.avgPerEvent.toFixed(0)}`, 14, 68);
-    doc.text(`Taux de participation: ${stats.avgPercentage.toFixed(1)}%`, 14, 74);
+    doc.text(`${lt.totalAttendance}: ${stats.totalRecords}`, 14, 56);
+    doc.text(`${lt.totalEvents}: ${stats.uniqueDates}`, 14, 62);
+    doc.text(`${lt.average}: ${stats.avgPerEvent.toFixed(0)}`, 14, 68);
+    doc.text(`${lt.participationRate}: ${stats.avgPercentage.toFixed(1)}%`, 14, 74);
 
-    // Monthly table
     autoTable(doc, {
       startY: 86,
-      head: [["Mois", "Présences", "Événements", "Moy/Événement"]],
+      head: [[lt.month, lt.attendance, lt.events, lt.avgPerEvent]],
       body: monthlyData.map(m => [
         m.month,
         m.presences,
@@ -257,28 +372,20 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-presences-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`attendance-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   const exportToCSV = () => {
     exportToCsv(
       monthlyData,
       [
-        { key: "month", header: "Mois" },
-        { key: "presences", header: "Présences" },
-        { key: "events", header: "Événements" },
-        { key: "avgPerEvent", header: "Moyenne/Événement" },
+        { key: "month", header: lt.month },
+        { key: "presences", header: lt.attendance },
+        { key: "events", header: lt.events },
+        { key: "avgPerEvent", header: lt.avgPerEvent },
       ],
-      `rapport-presences-${format(currentDate, "yyyy-MM-dd")}`
+      `attendance-report-${format(currentDate, "yyyy-MM-dd")}`
     );
-  };
-
-  const eventTypeLabels: Record<string, string> = {
-    sunday_service: "Service Dimanche",
-    bible_study: "Étude Biblique",
-    prayer_meeting: "Réunion Prière",
-    youth_group: "Groupe Jeunesse",
-    other: "Autre",
   };
 
   return (
@@ -291,9 +398,9 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="3">3 derniers mois</SelectItem>
-            <SelectItem value="6">6 derniers mois</SelectItem>
-            <SelectItem value="12">12 derniers mois</SelectItem>
+            <SelectItem value="3">{lt.last3Months}</SelectItem>
+            <SelectItem value="6">{lt.last6Months}</SelectItem>
+            <SelectItem value="12">{lt.last12Months}</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={exportToExcel}>
@@ -314,7 +421,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Présences</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.totalAttendance}</CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -323,7 +430,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Événements</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.events}</CardTitle>
             <Calendar className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
@@ -332,7 +439,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyenne/Événement</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.avgPerEvent}</CardTitle>
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
@@ -341,12 +448,12 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux Participation</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.participationRate}</CardTitle>
             <Percent className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.avgPercentage.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">sur {totalActiveMembers} membres actifs</p>
+            <p className="text-xs text-muted-foreground">{lt.onActiveMembers.replace("{n}", String(totalActiveMembers))}</p>
           </CardContent>
         </Card>
       </div>
@@ -355,8 +462,8 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Évolution Mensuelle</CardTitle>
-            <CardDescription>Présences et événements par mois</CardDescription>
+            <CardTitle>{lt.monthlyTrend}</CardTitle>
+            <CardDescription>{lt.attendanceAndEvents}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -368,8 +475,8 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip />
                   <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="presences" name="Présences" stroke="hsl(var(--primary))" strokeWidth={2} />
-                  <Line yAxisId="right" type="monotone" dataKey="avgPerEvent" name="Moy/Événement" stroke="hsl(var(--secondary))" strokeWidth={2} />
+                  <Line yAxisId="left" type="monotone" dataKey="presences" name={lt.attendance} stroke="hsl(var(--primary))" strokeWidth={2} />
+                  <Line yAxisId="right" type="monotone" dataKey="avgPerEvent" name={lt.avgEvent} stroke="hsl(var(--secondary))" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -378,7 +485,7 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
 
         <Card>
           <CardHeader>
-            <CardTitle>Par Type d'Événement</CardTitle>
+            <CardTitle>{lt.byEventType}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -401,17 +508,17 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Événements Récents</CardTitle>
-            <CardDescription>Derniers événements avec présences</CardDescription>
+            <CardTitle>{lt.recentEvents}</CardTitle>
+            <CardDescription>{lt.lastEventsWithAttendance}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Présents</TableHead>
+                  <TableHead>{lt.date}</TableHead>
+                  <TableHead>{lt.type}</TableHead>
+                  <TableHead className="text-right">{lt.present}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -430,17 +537,17 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Participants</CardTitle>
-            <CardDescription>Membres les plus assidus</CardDescription>
+            <CardTitle>{lt.topAttendees}</CardTitle>
+            <CardDescription>{lt.mostDedicatedMembers}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>Membre</TableHead>
-                  <TableHead className="text-right">Présences</TableHead>
+                  <TableHead>{lt.rank}</TableHead>
+                  <TableHead>{lt.member}</TableHead>
+                  <TableHead className="text-right">{lt.attendance}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

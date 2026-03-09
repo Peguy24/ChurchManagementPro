@@ -35,21 +35,162 @@ import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))", "hsl(var(--warning))"];
 
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    totalMembers: "Total Members",
+    activeMembers: "Active Members",
+    baptized: "Baptized",
+    newThisMonth: "New This Month",
+    ofTotal: "of total",
+    statusDistribution: "Distribution by Status",
+    genderDistribution: "Distribution by Gender",
+    monthlyGrowth: "Monthly Growth",
+    newMembersPerMonth: "New members per month (last 12 months)",
+    membersByBranch: "Members by Branch",
+    membersByMinistry: "Members by Ministry",
+    noMinistryData: "No ministry data",
+    active: "Active",
+    inactive: "Inactive",
+    transferred: "Transferred",
+    men: "Men",
+    women: "Women",
+    other: "Other",
+    single: "Single",
+    married: "Married",
+    divorced: "Divorced",
+    widowed: "Widowed",
+    notSpecified: "Not specified",
+    noBranch: "No branch",
+    noMinistry: "No ministry",
+    newMembers: "New members",
+    members: "Members",
+    memberNumber: "Member #",
+    firstName: "First Name",
+    lastName: "Last Name",
+    status: "Status",
+    branch: "Branch",
+    phone: "Phone",
+    email: "Email",
+    joinDate: "Join Date",
+    membersList: "Members List",
+    statistics: "Statistics",
+    membersReport: "Members Report",
+    date: "Date",
+    statistic: "Statistic",
+    value: "Value",
+    totalBaptized: "Baptized Members",
+    newMonth: "New this month",
+  },
+  fr: {
+    totalMembers: "Total Membres",
+    activeMembers: "Membres Actifs",
+    baptized: "Baptisés",
+    newThisMonth: "Nouveaux ce mois",
+    ofTotal: "du total",
+    statusDistribution: "Répartition par Statut",
+    genderDistribution: "Répartition par Genre",
+    monthlyGrowth: "Croissance Mensuelle",
+    newMembersPerMonth: "Nouveaux membres par mois (12 derniers mois)",
+    membersByBranch: "Membres par Branche",
+    membersByMinistry: "Membres par Ministère",
+    noMinistryData: "Aucune donnée de ministère",
+    active: "Actif",
+    inactive: "Inactif",
+    transferred: "Transféré",
+    men: "Hommes",
+    women: "Femmes",
+    other: "Autre",
+    single: "Célibataire",
+    married: "Marié(e)",
+    divorced: "Divorcé(e)",
+    widowed: "Veuf/Veuve",
+    notSpecified: "Non spécifié",
+    noBranch: "Sans branche",
+    noMinistry: "Sans ministère",
+    newMembers: "Nouveaux membres",
+    members: "Membres",
+    memberNumber: "N° Membre",
+    firstName: "Prénom",
+    lastName: "Nom",
+    status: "Statut",
+    branch: "Branche",
+    phone: "Téléphone",
+    email: "Email",
+    joinDate: "Date d'inscription",
+    membersList: "Liste Membres",
+    statistics: "Statistiques",
+    membersReport: "Rapport des Membres",
+    date: "Date",
+    statistic: "Statistique",
+    value: "Valeur",
+    totalBaptized: "Membres Baptisés",
+    newMonth: "Nouveaux ce mois",
+  },
+  ht: {
+    totalMembers: "Total Manm",
+    activeMembers: "Manm Aktif",
+    baptized: "Batize",
+    newThisMonth: "Nouvo mwa sa a",
+    ofTotal: "nan total",
+    statusDistribution: "Distribisyon pa Estati",
+    genderDistribution: "Distribisyon pa Sèks",
+    monthlyGrowth: "Kwasans Chak Mwa",
+    newMembersPerMonth: "Nouvo manm chak mwa (12 dènye mwa)",
+    membersByBranch: "Manm pa Branch",
+    membersByMinistry: "Manm pa Ministè",
+    noMinistryData: "Pa gen done ministè",
+    active: "Aktif",
+    inactive: "Inaktif",
+    transferred: "Transfere",
+    men: "Gason",
+    women: "Fi",
+    other: "Lòt",
+    single: "Selibatè",
+    married: "Marye",
+    divorced: "Divòse",
+    widowed: "Vèf/Vèv",
+    notSpecified: "Pa presize",
+    noBranch: "San branch",
+    noMinistry: "San ministè",
+    newMembers: "Nouvo manm",
+    members: "Manm",
+    memberNumber: "N° Manm",
+    firstName: "Prenon",
+    lastName: "Non",
+    status: "Estati",
+    branch: "Branch",
+    phone: "Telefòn",
+    email: "Imèl",
+    joinDate: "Dat Enskripsyon",
+    membersList: "Lis Manm",
+    statistics: "Estatistik",
+    membersReport: "Rapò Manm",
+    date: "Dat",
+    statistic: "Estatistik",
+    value: "Valè",
+    totalBaptized: "Manm Batize",
+    newMonth: "Nouvo mwa sa a",
+  },
+};
+
 interface MembersReportTabProps {
   selectedBranch: string;
 }
 
 export default function MembersReportTab({ selectedBranch }: MembersReportTabProps) {
+  const { language } = useLanguage();
+  const lt = localTranslations[language] || localTranslations.en;
   const currentDate = new Date();
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
-  // Fetch all members
   const { data: members = [] } = useQuery({
     queryKey: ["members-report", selectedBranch],
     queryFn: async () => {
@@ -68,7 +209,6 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     },
   });
 
-  // Fetch ministry members
   const { data: ministryMembers = [] } = useQuery({
     queryKey: ["ministry-members-report"],
     queryFn: async () => {
@@ -80,7 +220,6 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     },
   });
 
-  // Stats
   const stats = useMemo(() => {
     const total = members.length;
     const active = members.filter(m => m.status === "active").length;
@@ -94,7 +233,12 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     return { total, active, baptized, newThisMonth };
   }, [members]);
 
-  // Members by status
+  const statusLabels: Record<string, string> = {
+    active: lt.active,
+    inactive: lt.inactive,
+    transferred: lt.transferred,
+  };
+
   const statusData = useMemo(() => {
     const breakdown: Record<string, number> = {};
     members.forEach(m => {
@@ -103,13 +247,12 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       breakdown[status]++;
     });
     return Object.entries(breakdown).map(([name, value], index) => ({
-      name: name === "active" ? "Actif" : name === "inactive" ? "Inactif" : name === "transferred" ? "Transféré" : name,
+      name: statusLabels[name] || name,
       value,
       color: COLORS[index % COLORS.length],
     }));
-  }, [members]);
+  }, [members, lt]);
 
-  // Members by gender
   const genderData = useMemo(() => {
     const breakdown: Record<string, number> = { male: 0, female: 0, other: 0 };
     members.forEach(m => {
@@ -121,34 +264,19 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       }
     });
     return [
-      { name: "Hommes", value: breakdown.male, color: "hsl(var(--primary))" },
-      { name: "Femmes", value: breakdown.female, color: "hsl(var(--secondary))" },
-      { name: "Autre", value: breakdown.other, color: "hsl(var(--muted))" },
+      { name: lt.men, value: breakdown.male, color: "hsl(var(--primary))" },
+      { name: lt.women, value: breakdown.female, color: "hsl(var(--secondary))" },
+      { name: lt.other, value: breakdown.other, color: "hsl(var(--muted))" },
     ].filter(d => d.value > 0);
-  }, [members]);
+  }, [members, lt]);
 
-  // Members by marital status
-  const maritalData = useMemo(() => {
-    const breakdown: Record<string, number> = {};
-    members.forEach(m => {
-      const status = m.marital_status || "Non spécifié";
-      if (!breakdown[status]) breakdown[status] = 0;
-      breakdown[status]++;
-    });
-    const labels: Record<string, string> = {
-      single: "Célibataire",
-      married: "Marié(e)",
-      divorced: "Divorcé(e)",
-      widowed: "Veuf/Veuve",
-    };
-    return Object.entries(breakdown).map(([name, value], index) => ({
-      name: labels[name] || name,
-      value,
-      color: COLORS[index % COLORS.length],
-    }));
-  }, [members]);
+  const maritalLabels: Record<string, string> = {
+    single: lt.single,
+    married: lt.married,
+    divorced: lt.divorced,
+    widowed: lt.widowed,
+  };
 
-  // Monthly growth
   const growthData = useMemo(() => {
     const months: Record<string, number> = {};
     for (let i = 11; i >= 0; i--) {
@@ -167,16 +295,15 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     });
 
     return Object.entries(months).map(([key, value]) => ({
-      month: format(parseISO(key + "-01"), "MMM yy", { locale: fr }),
-      nouveaux: value,
+      month: format(parseISO(key + "-01"), "MMM yy", { locale: dateLocale }),
+      newMembers: value,
     }));
-  }, [members]);
+  }, [members, dateLocale]);
 
-  // Members by branch
   const branchData = useMemo(() => {
     const breakdown: Record<string, number> = {};
     members.forEach(m => {
-      const branchName = m.branch?.name || "Sans branche";
+      const branchName = m.branch?.name || lt.noBranch;
       if (!breakdown[branchName]) breakdown[branchName] = 0;
       breakdown[branchName]++;
     });
@@ -185,13 +312,12 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       value,
       color: COLORS[index % COLORS.length],
     })).sort((a, b) => b.value - a.value);
-  }, [members]);
+  }, [members, lt]);
 
-  // Members by ministry
   const ministryData = useMemo(() => {
     const breakdown: Record<string, number> = {};
     ministryMembers.forEach(mm => {
-      const ministryName = mm.ministry?.name || "Sans ministère";
+      const ministryName = mm.ministry?.name || lt.noMinistry;
       if (!breakdown[ministryName]) breakdown[ministryName] = 0;
       breakdown[ministryName]++;
     });
@@ -200,58 +326,53 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       value,
       color: COLORS[index % COLORS.length],
     })).sort((a, b) => b.value - a.value);
-  }, [ministryMembers]);
+  }, [ministryMembers, lt]);
 
-  // Export functions
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Members list
     const membersSheet = XLSX.utils.json_to_sheet(members.map(m => ({
-      "N° Membre": m.member_number || "",
-      Prénom: m.first_name,
-      Nom: m.last_name,
-      Statut: m.status,
-      Branche: m.branch?.name || "",
-      Téléphone: m.phone || "",
-      Email: m.email || "",
-      "Date d'inscription": m.join_date ? format(parseISO(m.join_date), "dd/MM/yyyy") : "",
+      [lt.memberNumber]: m.member_number || "",
+      [lt.firstName]: m.first_name,
+      [lt.lastName]: m.last_name,
+      [lt.status]: m.status,
+      [lt.branch]: m.branch?.name || "",
+      [lt.phone]: m.phone || "",
+      [lt.email]: m.email || "",
+      [lt.joinDate]: m.join_date ? format(parseISO(m.join_date), "dd/MM/yyyy") : "",
     })));
-    XLSX.utils.book_append_sheet(wb, membersSheet, "Liste Membres");
+    XLSX.utils.book_append_sheet(wb, membersSheet, lt.membersList);
 
-    // Stats
     const statsSheet = XLSX.utils.json_to_sheet([
-      { Statistique: "Total Membres", Valeur: stats.total },
-      { Statistique: "Membres Actifs", Valeur: stats.active },
-      { Statistique: "Membres Baptisés", Valeur: stats.baptized },
-      { Statistique: "Nouveaux ce mois", Valeur: stats.newThisMonth },
+      { [lt.statistic]: lt.totalMembers, [lt.value]: stats.total },
+      { [lt.statistic]: lt.activeMembers, [lt.value]: stats.active },
+      { [lt.statistic]: lt.totalBaptized, [lt.value]: stats.baptized },
+      { [lt.statistic]: lt.newThisMonth, [lt.value]: stats.newThisMonth },
     ]);
-    XLSX.utils.book_append_sheet(wb, statsSheet, "Statistiques");
+    XLSX.utils.book_append_sheet(wb, statsSheet, lt.statistics);
 
-    XLSX.writeFile(wb, `rapport-membres-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `members-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(20);
-    doc.text("Rapport des Membres", 14, 22);
+    doc.text(lt.membersReport, 14, 22);
     doc.setFontSize(12);
-    doc.text(`Date: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
+    doc.text(`${lt.date}: ${format(currentDate, "dd/MM/yyyy")}`, 14, 30);
 
-    // Stats
     doc.setFontSize(14);
-    doc.text("Statistiques", 14, 42);
+    doc.text(lt.statistics, 14, 42);
     doc.setFontSize(11);
-    doc.text(`Total Membres: ${stats.total}`, 14, 50);
-    doc.text(`Membres Actifs: ${stats.active}`, 14, 56);
-    doc.text(`Membres Baptisés: ${stats.baptized}`, 14, 62);
-    doc.text(`Nouveaux ce mois: ${stats.newThisMonth}`, 14, 68);
+    doc.text(`${lt.totalMembers}: ${stats.total}`, 14, 50);
+    doc.text(`${lt.activeMembers}: ${stats.active}`, 14, 56);
+    doc.text(`${lt.totalBaptized}: ${stats.baptized}`, 14, 62);
+    doc.text(`${lt.newThisMonth}: ${stats.newThisMonth}`, 14, 68);
 
-    // Members table
     autoTable(doc, {
       startY: 80,
-      head: [["N°", "Prénom", "Nom", "Statut", "Branche"]],
+      head: [[lt.memberNumber, lt.firstName, lt.lastName, lt.status, lt.branch]],
       body: members.slice(0, 50).map(m => [
         m.member_number || "",
         m.first_name,
@@ -263,23 +384,23 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`rapport-membres-${format(currentDate, "yyyy-MM-dd")}.pdf`);
+    doc.save(`members-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
   const exportToCSV = () => {
     exportToCsv(
       members,
       [
-        { key: "member_number", header: "N° Membre" },
-        { key: "first_name", header: "Prénom" },
-        { key: "last_name", header: "Nom" },
-        { key: "status", header: "Statut" },
-        { key: "branch.name", header: "Branche" },
-        { key: "phone", header: "Téléphone" },
-        { key: "email", header: "Email" },
-        { key: "join_date", header: "Date d'inscription", formatter: (v) => v ? format(parseISO(v), "dd/MM/yyyy") : "" },
+        { key: "member_number", header: lt.memberNumber },
+        { key: "first_name", header: lt.firstName },
+        { key: "last_name", header: lt.lastName },
+        { key: "status", header: lt.status },
+        { key: "branch.name", header: lt.branch },
+        { key: "phone", header: lt.phone },
+        { key: "email", header: lt.email },
+        { key: "join_date", header: lt.joinDate, formatter: (v) => v ? format(parseISO(v), "dd/MM/yyyy") : "" },
       ],
-      `rapport-membres-${format(currentDate, "yyyy-MM-dd")}`
+      `members-report-${format(currentDate, "yyyy-MM-dd")}`
     );
   };
 
@@ -305,7 +426,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Membres</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.totalMembers}</CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -314,31 +435,31 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membres Actifs</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.activeMembers}</CardTitle>
             <UserCheck className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.active}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}% du total
+              {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}% {lt.ofTotal}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Baptisés</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.baptized}</CardTitle>
             <Church className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.baptized}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.total > 0 ? ((stats.baptized / stats.total) * 100).toFixed(1) : 0}% du total
+              {stats.total > 0 ? ((stats.baptized / stats.total) * 100).toFixed(1) : 0}% {lt.ofTotal}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nouveaux ce mois</CardTitle>
+            <CardTitle className="text-sm font-medium">{lt.newThisMonth}</CardTitle>
             <UserPlus className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
@@ -351,7 +472,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Répartition par Statut</CardTitle>
+            <CardTitle>{lt.statusDistribution}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
@@ -371,7 +492,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
 
         <Card>
           <CardHeader>
-            <CardTitle>Répartition par Genre</CardTitle>
+            <CardTitle>{lt.genderDistribution}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
@@ -393,8 +514,8 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       {/* Growth Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Croissance Mensuelle</CardTitle>
-          <CardDescription>Nouveaux membres par mois (12 derniers mois)</CardDescription>
+          <CardTitle>{lt.monthlyGrowth}</CardTitle>
+          <CardDescription>{lt.newMembersPerMonth}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -404,7 +525,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="nouveaux" name="Nouveaux membres" stroke="hsl(var(--primary))" strokeWidth={2} />
+                <Line type="monotone" dataKey="newMembers" name={lt.newMembers} stroke="hsl(var(--primary))" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -415,7 +536,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Membres par Branche</CardTitle>
+            <CardTitle>{lt.membersByBranch}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -425,7 +546,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={120} />
                   <Tooltip />
-                  <Bar dataKey="value" name="Membres" fill="hsl(var(--primary))" />
+                  <Bar dataKey="value" name={lt.members} fill="hsl(var(--primary))" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -434,7 +555,7 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
 
         <Card>
           <CardHeader>
-            <CardTitle>Membres par Ministère</CardTitle>
+            <CardTitle>{lt.membersByMinistry}</CardTitle>
           </CardHeader>
           <CardContent>
             {ministryData.length > 0 ? (
@@ -445,12 +566,12 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
                     <XAxis type="number" />
                     <YAxis type="category" dataKey="name" width={120} />
                     <Tooltip />
-                    <Bar dataKey="value" name="Membres" fill="hsl(var(--secondary))" />
+                    <Bar dataKey="value" name={lt.members} fill="hsl(var(--secondary))" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-8">Aucune donnée de ministère</p>
+              <p className="text-center text-muted-foreground py-8">{lt.noMinistryData}</p>
             )}
           </CardContent>
         </Card>
