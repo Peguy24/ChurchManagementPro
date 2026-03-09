@@ -476,8 +476,9 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.baptismStatus")} value={member.baptism_status} />
               <InfoRow 
                 label={t("memberDetails.baptismDate")} 
-                value={member.baptism_date ? new Date(member.baptism_date).toLocaleDateString(locale) : null} 
+                value={member.baptism_date ? formatDateForDisplay(member.baptism_date, locale) : null} 
               />
+
               <InfoRow 
                 label={t("memberDetails.conversionDate")} 
                 value={member.conversion_date ? new Date(member.conversion_date).toLocaleDateString(locale) : null} 
