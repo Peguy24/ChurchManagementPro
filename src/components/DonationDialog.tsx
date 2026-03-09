@@ -91,6 +91,7 @@ export default function DonationDialog({
         bankAccountId: "none",
       });
     }
+    setCustomFieldValues({});
   }, [editDonation, open]);
 
   const { data: members } = useQuery({

@@ -118,6 +118,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         eventCategory: "general",
       });
     }
+    setCustomFieldValues({});
   }, [event, open]);
 
   const createMutation = useMutation({
