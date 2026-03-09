@@ -23,6 +23,8 @@ import {
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface MinistryDialogProps {
   open: boolean;
@@ -42,6 +44,7 @@ export default function MinistryDialog({
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const m = (key: string) => t(`ministries.${key}`);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -95,6 +98,7 @@ export default function MinistryDialog({
     } else {
       setFormData({ name: "", description: "", leader_id: "", branch_id: "", status: "active" });
     }
+    setCustomFieldValues({});
   }, [ministry, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,17 +122,21 @@ export default function MinistryDialog({
           })
           .eq("id", ministry.id);
         if (error) throw error;
+        await saveCustomFieldValues(ministry.id, customFieldValues, "ministry", tenantId);
         toast.success(m("editSuccess"));
       } else {
-        const { error } = await supabase.from("ministries").insert([{
+        const { data: inserted, error } = await supabase.from("ministries").insert([{
           name: formData.name,
           description: formData.description,
           leader_id: formData.leader_id || null,
           branch_id: formData.branch_id || null,
           status: formData.status,
           tenant_id: tenantId,
-        }]);
+        }]).select("id").single();
         if (error) throw error;
+        if (inserted) {
+          await saveCustomFieldValues(inserted.id, customFieldValues, "ministry", tenantId);
+        }
         toast.success(m("createSuccess"));
       }
       onSuccess();
@@ -234,6 +242,15 @@ export default function MinistryDialog({
                 </SelectContent>
               </Select>
             </div>
+            {/* Custom Fields */}
+            <CustomFieldsRenderer
+              entityType="ministry"
+              entityId={ministry?.id}
+              values={customFieldValues}
+              onChange={(fieldName, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+              }
+            />
           </div>
 
           <DialogFooter>
