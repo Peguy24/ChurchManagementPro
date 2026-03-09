@@ -2746,7 +2746,7 @@ const translations = {
       active: "Actif",
       subject: "Sujet de l'email",
       subjectPlaceholder: "Sujet de l'email...",
-      htmlContent: "Contenu HTML",
+      htmlContent: "Contenu du message",
       htmlContentPlaceholder: "Contenu de l'email en HTML...",
       save: "Enregistrer",
       cancel: "Annuler",
