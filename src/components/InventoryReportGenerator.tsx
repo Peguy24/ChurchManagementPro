@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { generateInventoryReportPDF, downloadPDF } from "@/lib/inventoryReportPDF";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface InventoryItem {
   id: string;
@@ -55,6 +56,7 @@ export default function InventoryReportGenerator({
   logoUrl,
 }: InventoryReportGeneratorProps) {
   const { t } = useLanguage();
+  const { currencyCode } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -78,7 +80,7 @@ export default function InventoryReportGenerator({
       const blob = await generateInventoryReportPDF(
         items,
         maintenanceRecords,
-        { ...options, churchName, logoUrl },
+        { ...options, churchName, logoUrl, currencyCode },
         (p) => setProgress(p)
       );
 

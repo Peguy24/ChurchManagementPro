@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency } from "./currency";
+import { formatCurrency as formatCurrencyLib } from "./currency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -50,8 +50,10 @@ function maskAccountNumber(accountNumber: string | null): string {
 
 export async function generateBankReconciliationPDF(
   data: BankReconciliationReportData,
-  language: string = "fr"
+  language: string = "fr",
+  currencyCode: string = "USD"
 ): Promise<void> {
+  const formatCurrency = (amount: number) => formatCurrencyLib(amount, currencyCode);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

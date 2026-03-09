@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
+import { formatCurrency as formatCurrencyLib } from "./currency";
 export interface FiscalReceiptData {
   member: {
     first_name: string;
@@ -18,6 +18,7 @@ export interface FiscalReceiptData {
     taxId?: string;
   };
   year: number;
+  currencyCode?: string;
   donations: Array<{
     date: string;
     type: string;
@@ -35,12 +36,8 @@ const formatDate = (dateStr: string): string => {
   }
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "HTG",
-    minimumFractionDigits: 2,
-  }).format(amount);
+const createFormatCurrency = (currencyCode: string = "USD") => (amount: number): string => {
+  return formatCurrencyLib(amount, currencyCode);
 };
 
 const getDonationTypeLabel = (type: string): string => {
@@ -66,6 +63,7 @@ const getPaymentMethodLabel = (method: string): string => {
 };
 
 export async function generateFiscalReceiptPDF(data: FiscalReceiptData): Promise<Blob> {
+  const formatCurrency = createFormatCurrency(data.currencyCode);
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",

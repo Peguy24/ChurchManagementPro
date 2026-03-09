@@ -3,6 +3,7 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getSignedUrl } from "@/hooks/useSignedUrl";
+import { formatCurrency as formatCurrencyLib } from "./currency";
 
 interface InventoryItem {
   id: string;
@@ -41,6 +42,7 @@ interface ReportOptions {
   includeMaintenanceHistory: boolean;
   churchName?: string;
   logoUrl?: string;
+  currencyCode?: string;
 }
 
 const categories: Record<string, string> = {
@@ -82,13 +84,11 @@ const formatDate = (dateStr: string | null): string => {
   }
 };
 
+let _currencyCode = "USD";
+
 const formatCurrency = (value: number | null): string => {
   if (value === null || value === undefined) return "-";
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "HTG",
-    minimumFractionDigits: 0,
-  }).format(value);
+  return formatCurrencyLib(value, _currencyCode);
 };
 
 const loadImageAsBase64 = async (url: string): Promise<string | null> => {
@@ -112,6 +112,7 @@ export const generateInventoryReportPDF = async (
   options: ReportOptions,
   onProgress?: (progress: number) => void
 ): Promise<Blob> => {
+  _currencyCode = options.currencyCode || "USD";
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",

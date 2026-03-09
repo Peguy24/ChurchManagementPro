@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { generateFiscalReceiptPDF, downloadFiscalReceiptPDF, FiscalReceiptData } from "@/lib/fiscalReceiptPDF";
+import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateInputValue } from "@/lib/date";
 
 
@@ -21,6 +22,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning
 
 export default function MemberDonationStats({ memberId }: MemberDonationStatsProps) {
   const { t } = useLanguage();
+  const { currencyCode } = useCurrency();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
 
@@ -139,6 +141,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           taxId: churchSettings?.church_tax_id || "",
         },
         year: selectedYear,
+        currencyCode,
         donations: yearDonations.map((d) => ({
           date: d.donation_date,
           type: d.donation_type,
