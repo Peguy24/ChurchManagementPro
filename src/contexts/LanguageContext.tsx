@@ -8921,5 +8921,16 @@ const translations = {
     saveAddress: "Sove Adrès",
     saveWelcome: "Sove Mesaj",
   },
+  tenantNotifications: {
+    title: "Notifikasyon",
+    markAllRead: "Make tout li",
+    clearAll: "Efase tout",
+    empty: "Pa gen notifikasyon",
+    newMember: "Nouvo manm",
+    newDonation: "Nouvo don",
+    newEvent: "Nouvo evènman",
+    newExpense: "Nouvo depans",
+    memberRequest: "Demann adhesyon",
+  },
   },
 };
