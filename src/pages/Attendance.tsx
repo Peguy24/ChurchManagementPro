@@ -476,11 +476,15 @@ function AttendanceContent() {
 
       playSound("success");
 
+      const selectedEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
+      const arrivalSt = getArrivalStatus(scanTimestamp, selectedEvent?.event_time);
       setScannedMembers(prev => [{
         ...member,
-        time: new Date().toLocaleTimeString("fr-FR"),
+        time: formatScanTime(scanTimestamp),
         status: 'success' as const,
         attendance_record_id: insertedRecord?.id,
+        markedAt: scanTimestamp,
+        arrivalStatus: arrivalSt,
       }, ...prev].slice(0, 10));
 
       await loadAttendanceRecords();
