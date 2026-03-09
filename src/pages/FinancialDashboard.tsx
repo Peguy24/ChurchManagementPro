@@ -237,7 +237,7 @@ const FinancialDashboard = () => {
 
   // Expenses by category for pie chart
   const expensesByCategory = currentExpenses?.reduce((acc, e) => {
-    const category = (e.expense_categories as any)?.name || "Autres";
+    const category = (e.expense_categories as any)?.name || t("finance.other");
     acc[category] = (acc[category] || 0) + Number(e.amount);
     return acc;
   }, {} as Record<string, number>) || {};
