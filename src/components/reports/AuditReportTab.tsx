@@ -264,6 +264,20 @@ export default function AuditReportTab() {
     doc.save(`rapport-audit-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      filteredLogs,
+      [
+        { key: "created_at", header: "Date/Heure", formatter: (v) => format(parseISO(v), "dd/MM/yyyy HH:mm") },
+        { key: "user_email", header: "Utilisateur", formatter: (v) => v || "-" },
+        { key: "entity_type", header: "Entité", formatter: (v) => getEntityLabel(v) },
+        { key: "action", header: "Action" },
+        { key: "entity_id", header: "ID Entité" },
+      ],
+      `rapport-audit-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
