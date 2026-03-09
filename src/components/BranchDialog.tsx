@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Branch {
   id: string;
@@ -42,6 +43,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
   });
   const [loading, setLoading] = useState(false);
   const { tenantId } = useCurrentTenant();
+  const { t } = useLanguage();
 
   const { data: members } = useQuery({
     queryKey: ["active-members"],
@@ -120,21 +122,21 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
           .eq("id", branch.id);
 
         if (error) throw error;
-        toast.success("Branche modifiée avec succès");
+        toast.success(t("branches.editSuccess"));
       } else {
         const { error } = await supabase
           .from("branches")
           .insert([dataToSubmit]);
 
         if (error) throw error;
-        toast.success("Branche créée avec succès");
+        toast.success(t("branches.createSuccess"));
       }
 
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving branch:", error);
-      toast.error("Erreur lors de l'enregistrement de la branche");
+      toast.error(t("branches.saveError"));
     } finally {
       setLoading(false);
     }
@@ -145,13 +147,13 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {branch ? "Modifier la branche" : "Nouvelle branche"}
+            {branch ? t("branches.editBranch") : t("branches.newBranch")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nom de la branche *</Label>
+              <Label htmlFor="name">{t("branches.branchName")} *</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -161,7 +163,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Statut</Label>
+              <Label htmlFor="status">{t("branches.status")}</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -170,15 +172,15 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="active">{t("branches.active")}</SelectItem>
+                  <SelectItem value="inactive">{t("branches.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("branches.description")}</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -189,16 +191,16 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="leader">Responsable</Label>
+              <Label htmlFor="leader">{t("branches.responsible")}</Label>
               <Select
                 value={formData.leader_id || "none"}
                 onValueChange={(value) => setFormData({ ...formData, leader_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un responsable" />
+                  <SelectValue placeholder={t("branches.selectResponsible")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
+                  <SelectItem value="none">{t("branches.none")}</SelectItem>
                   {members?.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.first_name} {member.last_name}
@@ -209,16 +211,16 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="parent">Branche parente</Label>
+              <Label htmlFor="parent">{t("branches.parentBranch")}</Label>
               <Select
                 value={formData.parent_branch_id || "none"}
                 onValueChange={(value) => setFormData({ ...formData, parent_branch_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une branche parente" />
+                  <SelectValue placeholder={t("branches.selectParent")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucune (Branche principale)</SelectItem>
+                  <SelectItem value="none">{t("branches.noParent")}</SelectItem>
                   {branches?.filter(b => b.id !== branch?.id).map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name}
@@ -230,7 +232,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Adresse</Label>
+            <Label htmlFor="address">{t("branches.address")}</Label>
             <Input
               id="address"
               value={formData.address}
@@ -240,7 +242,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
+              <Label htmlFor="phone">{t("branches.phone")}</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -250,7 +252,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("branches.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -262,10 +264,10 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Annuler
+              {t("branches.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Enregistrement..." : branch ? "Modifier" : "Créer"}
+              {loading ? t("branches.save") : branch ? t("branches.modify") : t("branches.create")}
             </Button>
           </div>
         </form>
