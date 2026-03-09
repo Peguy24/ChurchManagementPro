@@ -48,7 +48,7 @@ export default function DonationDialog({
     amount: "",
     donationType: "",
     paymentMethod: "",
-    donationDate: new Date().toISOString().split("T")[0],
+    donationDate: todayInputValue(),
     notes: "",
     branchId: "none",
     description: "",
