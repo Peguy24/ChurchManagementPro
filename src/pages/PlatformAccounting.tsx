@@ -108,7 +108,7 @@ export default function PlatformAccounting() {
   const resetForm = () => {
     setFormData({
       amount: "",
-      expense_date: new Date().toISOString().split("T")[0],
+      expense_date: todayInputValue(),
       category: "general",
       description: "",
       vendor: "",
@@ -118,6 +118,7 @@ export default function PlatformAccounting() {
     });
     setEditingExpense(null);
   };
+
 
   const { data: expenses, isLoading } = useQuery({
     queryKey: ["platform-expenses"],
