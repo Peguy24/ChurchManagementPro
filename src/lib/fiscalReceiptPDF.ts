@@ -36,12 +36,8 @@ const formatDate = (dateStr: string): string => {
   }
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "HTG",
-    minimumFractionDigits: 2,
-  }).format(amount);
+const createFormatCurrency = (currencyCode: string = "USD") => (amount: number): string => {
+  return formatCurrencyLib(amount, currencyCode);
 };
 
 const getDonationTypeLabel = (type: string): string => {
