@@ -153,7 +153,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
   const statWidth = contentWidth / 4;
   
   pdf.text(`${data.attendance.length}`, margin + statWidth * 0.5, statsY - 3, { align: "center" });
-  pdf.text(`${totalDonations.toLocaleString("fr-FR")} €`, margin + statWidth * 1.5, statsY - 3, { align: "center" });
+  pdf.text(fmtCurrency(totalDonations), margin + statWidth * 1.5, statsY - 3, { align: "center" });
   pdf.text(`${data.ministries.length}`, margin + statWidth * 2.5, statsY - 3, { align: "center" });
   pdf.text(`${data.documents.length}`, margin + statWidth * 3.5, statsY - 3, { align: "center" });
   
