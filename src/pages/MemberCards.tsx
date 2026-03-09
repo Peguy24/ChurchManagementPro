@@ -123,6 +123,7 @@ export default function MemberCards() {
     churchNameOnCard: true,
     churchName: tenant.name || "",
     logoUrl: tenantLogoUrl,
+    language,
   } : undefined);
 
   // Filter members based on search and filters
