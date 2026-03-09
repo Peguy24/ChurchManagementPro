@@ -233,7 +233,7 @@ export default function Dashboard() {
     },
     {
       title: t("dashboard.monthlyOfferings"),
-      value: `$${totalMonthlyAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: formatAmount(totalMonthlyAmount),
       detail: `${monthlyDonations.length} ${t("donations.donationCount").toLowerCase()}`,
       icon: DollarSign,
       bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",
