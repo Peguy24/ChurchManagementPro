@@ -481,8 +481,9 @@ export default function MemberDetails() {
 
               <InfoRow 
                 label={t("memberDetails.conversionDate")} 
-                value={member.conversion_date ? new Date(member.conversion_date).toLocaleDateString(locale) : null} 
+                value={member.conversion_date ? formatDateForDisplay(member.conversion_date, locale) : null} 
               />
+
               {member.christian_experience && (
                 <div className="py-2">
                   <p className="text-sm font-medium text-muted-foreground mb-1">{t("memberDetails.christianExperience")}</p>
