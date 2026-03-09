@@ -309,7 +309,7 @@ export default function Budgets() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">
-                ${(totalPlanned - totalSpent).toLocaleString()}
+                {formatAmount(totalPlanned - totalSpent)}
               </div>
               <p className="text-xs text-muted-foreground">{t("budget.available")}</p>
             </CardContent>
