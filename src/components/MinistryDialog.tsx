@@ -252,6 +252,8 @@ export default function MinistryDialog({
               }
             />
           </div>
+
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {m("cancel")}
             </Button>
