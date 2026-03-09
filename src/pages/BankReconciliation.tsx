@@ -403,7 +403,8 @@ export default function BankReconciliation() {
                   {account.is_active && <Badge variant="outline">{t("common.active")}</Badge>}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{formatAmount(Number(account.current_balance)                 <p className="text-sm text-muted-foreground">
+                  <p className="text-2xl font-bold">{formatAmount(Number(account.current_balance))}</p>
+                  <p className="text-sm text-muted-foreground">
                     {account.bank_name || t("bank.notSpecified")}
                     {account.account_number && ` • ${account.account_number.slice(-4)}`}
                   </p>
