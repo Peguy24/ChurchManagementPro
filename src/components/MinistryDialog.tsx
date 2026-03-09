@@ -122,17 +122,21 @@ export default function MinistryDialog({
           })
           .eq("id", ministry.id);
         if (error) throw error;
+        await saveCustomFieldValues(ministry.id, customFieldValues, "ministry", tenantId);
         toast.success(m("editSuccess"));
       } else {
-        const { error } = await supabase.from("ministries").insert([{
+        const { data: inserted, error } = await supabase.from("ministries").insert([{
           name: formData.name,
           description: formData.description,
           leader_id: formData.leader_id || null,
           branch_id: formData.branch_id || null,
           status: formData.status,
           tenant_id: tenantId,
-        }]);
+        }]).select("id").single();
         if (error) throw error;
+        if (inserted) {
+          await saveCustomFieldValues(inserted.id, customFieldValues, "ministry", tenantId);
+        }
         toast.success(m("createSuccess"));
       }
       onSuccess();
