@@ -83,6 +83,8 @@ interface ScannedMember {
   time: string;
   status: 'success' | 'error';
   attendance_record_id?: string;
+  markedAt?: string;
+  arrivalStatus?: 'early' | 'onTime' | 'late' | null;
 }
 
 export default function Attendance() {
