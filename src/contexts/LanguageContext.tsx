@@ -5965,6 +5965,17 @@ const translations = {
     saveAddress: "Save Address",
     saveWelcome: "Save Message",
   },
+  tenantNotifications: {
+    title: "Notifications",
+    markAllRead: "Mark all read",
+    clearAll: "Clear all",
+    empty: "No notifications",
+    newMember: "New member",
+    newDonation: "New donation",
+    newEvent: "New event",
+    newExpense: "New expense",
+    memberRequest: "Membership request",
+  },
   },
   ht: {
     common: {
