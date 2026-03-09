@@ -535,7 +535,7 @@ const FinancialDashboard = () => {
                 <CreditCard className="h-5 w-5 text-blue-600" />
                 {t("finance.bankAccounts")}
               </CardTitle>
-              <CardDescription>Solde total: {formatCurrency(totalBankBalance)}</CardDescription>
+              <CardDescription>{t("finance.totalBalance")}: {formatCurrency(totalBankBalance)}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
