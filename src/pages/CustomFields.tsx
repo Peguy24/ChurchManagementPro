@@ -11,25 +11,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 export default function CustomFields() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { tenantId } = useCurrentTenant();
 
   const { data: fields, refetch } = useQuery({
-    queryKey: ["custom-fields"],
+    queryKey: ["custom-fields", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("custom_fields")
         .select("*")
         .order("entity_type")
         .order("display_order");
 
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const handleEdit = (field: any) => {
