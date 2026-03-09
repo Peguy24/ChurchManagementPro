@@ -298,7 +298,7 @@ export default function Budgets() {
               <TrendingDown className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructi{formatAmount(totalSpent)}</pentdiv>
+              <div className="text-2xl font-bold text-destructive">{formatAmount(totalSpent)}</div>
               <p className="text-xs text-muted-foreground">{t("budget.expensesApproved")}</p>
             </CardContent>
           </Card>
