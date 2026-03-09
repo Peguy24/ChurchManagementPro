@@ -535,8 +535,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   <LineChart data={revenueVsExpensesData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tickFormatter={(value) => `$${value}`} />
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                    <YAxis tickFormatter={(value) => formatAmount(value)} />
+                    <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" name={r("revenue")} stroke="hsl(var(--success))" strokeWidth={2} />
                     <Line type="monotone" dataKey="expenses" name={r("expenses")} stroke="hsl(var(--destructive))" strokeWidth={2} />
