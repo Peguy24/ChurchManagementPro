@@ -3874,6 +3874,11 @@ const translations = {
       deleteSuccess: "Attendance deleted",
       deleteSuccessDesc: "The attendance record for {name} has been deleted.",
       deleteError: "Error deleting attendance record",
+      scanTime: "Scan Time",
+      early: "Early",
+      onTime: "On Time",
+      late: "Late",
+      arrivalStatus: "Arrival Status",
     },
     attendanceAlerts: {
       title: "Attendance Alerts",
