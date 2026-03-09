@@ -648,8 +648,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       <BarChart data={fundsData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                         <XAxis dataKey="name" />
-                        <YAxis tickFormatter={(value) => `$${value}`} />
-                        <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`]} />
+                        <YAxis tickFormatter={(value) => formatAmount(value)} />
+                        <Tooltip formatter={(value: number) => [formatAmount(value)]} />
                         <Legend />
                         <Bar dataKey="target" name={r("target")} fill="hsl(var(--muted-foreground))" />
                         <Bar dataKey="current" name={r("collected")} fill="hsl(var(--primary))" />
