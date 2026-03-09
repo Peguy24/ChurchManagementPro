@@ -18,19 +18,22 @@ interface CustomFieldsRendererProps {
 
 export function CustomFieldsRenderer({ entityType, entityId, values, onChange }: CustomFieldsRendererProps) {
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
 
   const { data: fields } = useQuery({
-    queryKey: ["custom-fields", entityType],
+    queryKey: ["custom-fields", entityType, tenantId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("custom_fields")
         .select("*")
         .eq("entity_type", entityType)
         .eq("is_active", true)
+        .eq("tenant_id", tenantId)
         .order("display_order");
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   const { data: existingValues } = useQuery({
