@@ -7633,6 +7633,7 @@ const translations = {
       smartInsights: "Entelijan Insights",
       support: "Sipò",
       systemGuide: "Gid Sistèm",
+      dataBackup: "Sovgad Done",
       incomeCategoriesTitle: "Kategori Resèt",
       incomeCategoriesDesc: "Jere kategori pou klase revni yo",
       newCategory: "Nouvo Kategori",
