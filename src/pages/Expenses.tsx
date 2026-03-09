@@ -631,7 +631,7 @@ export default function Expenses() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${stats.count > 0 ? (stats.total / stats.count).toLocaleString(undefined, { maximumFractionDigits: 0 }) : 0}
+                {formatCurrency(stats.count > 0 ? stats.total / stats.count : 0)}
               </div>
               <p className="text-xs text-muted-foreground">{t("expense.perTransaction")}</p>
             </CardContent>
