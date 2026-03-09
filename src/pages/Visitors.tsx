@@ -13,7 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare, Download } from 'lucide-react';
+import { exportToCsv, type CsvColumn, formatDateForCsv } from '@/lib/csvExport';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -219,10 +220,26 @@ export default function Visitors() {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('visitors.title')}</h1>
             <p className="text-muted-foreground">{t('visitors.subtitle')}</p>
           </div>
-          <Dialog open={visitorDialogOpen} onOpenChange={setVisitorDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />{t('visitors.newVisitor')}</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              const columns: CsvColumn<Visitor>[] = [
+                { key: 'first_name', header: t('visitors.firstName') },
+                { key: 'last_name', header: t('visitors.lastName') },
+                { key: 'phone', header: t('visitors.phone') },
+                { key: 'email', header: t('visitors.email') },
+                { key: 'visit_date', header: t('visitors.visitDate'), formatter: (v) => formatDateForCsv(v) },
+                { key: 'how_heard', header: t('visitors.howHeard') },
+                { key: 'follow_up_status', header: t('visitors.status') },
+                { key: 'notes', header: t('visitors.notes') },
+              ];
+              exportToCsv(filteredVisitors, columns, `visitors-${format(new Date(), 'yyyy-MM-dd')}`);
+            }}>
+              <Download className="h-4 w-4 mr-2" />{t('common.export')}
+            </Button>
+            <Dialog open={visitorDialogOpen} onOpenChange={setVisitorDialogOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" />{t('visitors.newVisitor')}</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t('visitors.registerVisitor')}</DialogTitle>
@@ -251,6 +268,7 @@ export default function Visitors() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Stats */}
