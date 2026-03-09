@@ -209,8 +209,108 @@ function ScoreGauge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' 
   );
 }
 
-function AlertCard({ alert, onResolve, onView, lt, dateLocale }: { alert: PastoralAlert; onResolve: () => void; onView: () => void; lt: (key: string) => string; dateLocale: typeof fr }) {
+// Translate alert content based on alert_type, metadata, and language
+function translateAlert(alert: PastoralAlert, language: string): { title: string; message: string | null; action: string | null } {
+  if (language === 'fr') {
+    return { title: alert.title, message: alert.message, action: alert.action_suggested };
+  }
+
+  const memberName = alert.members
+    ? `${alert.members.first_name} ${alert.members.last_name}`
+    : '';
+  const meta = alert.metadata || {};
+
+  const alertTranslations: Record<string, Record<string, { title: string; message: string; action: string }>> = {
+    high_churn_risk: {
+      en: {
+        title: `High departure risk: ${memberName}`,
+        message: `${memberName} has a high disengagement risk (${meta.risk_probability ? Math.round(meta.risk_probability * 100) : '?'}%).${meta.factors?.length ? ` Factors: ${(meta.factors as string[]).join(', ')}` : ''}`,
+        action: 'Schedule a pastoral call or visit within 48h',
+      },
+      ht: {
+        title: `Gwo risk depa: ${memberName}`,
+        message: `${memberName} gen yon gwo risk dezangajman (${meta.risk_probability ? Math.round(meta.risk_probability * 100) : '?'}%).${meta.factors?.length ? ` Faktè: ${(meta.factors as string[]).join(', ')}` : ''}`,
+        action: 'Planifye yon apèl pastoral oswa yon vizit nan 48è',
+      },
+    },
+    engagement_drop: {
+      en: {
+        title: `Engagement drop: ${memberName}`,
+        message: `${memberName}'s engagement score dropped by ${meta.change ? Math.abs(meta.change as number) : '?'} points. Current score: ${meta.score || '?'}/100.`,
+        action: 'Check if the member is going through a difficult time',
+      },
+      ht: {
+        title: `Bès angajman: ${memberName}`,
+        message: `Nòt angajman ${memberName} te desann ${meta.change ? Math.abs(meta.change as number) : '?'} pwen. Nòt aktyèl: ${meta.score || '?'}/100.`,
+        action: 'Verifye si manm nan ap travèse yon moman difisil',
+      },
+    },
+    attendance_cliff: {
+      en: {
+        title: `Extended absence: ${memberName}`,
+        message: meta.days_absent
+          ? `${memberName} has not attended for ${meta.days_absent} days.`
+          : `No recent attendance recorded for ${memberName}.`,
+        action: 'Call the member to check in',
+      },
+      ht: {
+        title: `Absans pwolonje: ${memberName}`,
+        message: meta.days_absent
+          ? `${memberName} pa te prezan depi ${meta.days_absent} jou.`
+          : `Pa gen prezans anrejistre pou ${memberName} dènyèman.`,
+        action: 'Rele manm nan pou pran nouvel',
+      },
+    },
+    birthday_upcoming: {
+      en: {
+        title: meta.days_until === 0 ? `🎂 Birthday today: ${memberName}` : `🎂 Birthday in ${meta.days_until} day(s): ${memberName}`,
+        message: `${memberName} ${meta.days_until === 0 ? 'celebrates' : 'will celebrate'} their ${meta.age || '?'}th birthday${meta.days_until === 0 ? ' today' : ''}.`,
+        action: 'Send a birthday message',
+      },
+      ht: {
+        title: meta.days_until === 0 ? `🎂 Anivèsè jodi a: ${memberName}` : `🎂 Anivèsè nan ${meta.days_until} jou: ${memberName}`,
+        message: `${memberName} ${meta.days_until === 0 ? 'selebre' : 'ap selebre'} ${meta.age || '?'} an${meta.days_until === 0 ? ' jodi a' : ''}.`,
+        action: 'Voye yon mesaj anivèsè',
+      },
+    },
+    membership_anniversary: {
+      en: {
+        title: `🎉 ${meta.years || '?'} years of faithfulness: ${memberName}`,
+        message: `${memberName} celebrates ${meta.years || '?'} years in the church this month.`,
+        action: 'Prepare a recognition during the service',
+      },
+      ht: {
+        title: `🎉 ${meta.years || '?'} ane fidèl: ${memberName}`,
+        message: `${memberName} selebre ${meta.years || '?'} ane nan legliz la mwa sa a.`,
+        action: 'Prepare yon rekonesans pandan sèvis la',
+      },
+    },
+    spiritual_milestone: {
+      en: {
+        title: `✝️ 1 year of baptism: ${memberName}`,
+        message: `${memberName} celebrates the first anniversary of their baptism.`,
+        action: 'Congratulate the member and discuss their spiritual journey',
+      },
+      ht: {
+        title: `✝️ 1 ane batèm: ${memberName}`,
+        message: `${memberName} selebre premye anivèsè batèm li.`,
+        action: 'Felicite manm nan epi diskite sou wout espirityèl li',
+      },
+    },
+  };
+
+  const typeTranslations = alertTranslations[alert.alert_type];
+  if (typeTranslations && typeTranslations[language]) {
+    const t = typeTranslations[language];
+    return { title: t.title, message: t.message, action: t.action };
+  }
+  // Fallback to DB values
+  return { title: alert.title, message: alert.message, action: alert.action_suggested };
+}
+
+function AlertCard({ alert, onResolve, onView, lt, dateLocale, language }: { alert: PastoralAlert; onResolve: () => void; onView: () => void; lt: (key: string) => string; dateLocale: typeof fr; language: string }) {
   const config = ALERT_TYPE_CONFIG[alert.alert_type] || { icon: <Bell className="h-4 w-4" />, color: 'text-gray-500' };
+  const translated = translateAlert(alert, language);
   
   const priorityLabels: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; key: string }> = {
     high: { variant: 'destructive', key: 'urgent' },
@@ -234,14 +334,14 @@ function AlertCard({ alert, onResolve, onView, lt, dateLocale }: { alert: Pastor
                 {format(new Date(alert.created_at), 'dd MMM, HH:mm', { locale: dateLocale })}
               </span>
             </div>
-            <h4 className="font-medium text-sm mb-1 line-clamp-1">{alert.title}</h4>
-            {alert.message && (
-              <p className="text-sm text-muted-foreground line-clamp-2">{alert.message}</p>
+            <h4 className="font-medium text-sm mb-1 line-clamp-1">{translated.title}</h4>
+            {translated.message && (
+              <p className="text-sm text-muted-foreground line-clamp-2">{translated.message}</p>
             )}
-            {alert.action_suggested && (
+            {translated.action && (
               <p className="text-xs text-primary mt-2 flex items-center gap-1">
                 <ChevronRight className="h-3 w-3" />
-                {alert.action_suggested}
+                {translated.action}
               </p>
             )}
           </div>
@@ -482,19 +582,22 @@ export default function SmartInsights() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {celebrationAlerts.slice(0, 6).map(alert => (
-                        <div 
-                          key={alert.id} 
-                          className="p-3 rounded-lg bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => handleViewMember(alert)}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            {ALERT_TYPE_CONFIG[alert.alert_type]?.icon}
-                            <span className="font-medium text-sm line-clamp-1">{alert.title}</span>
+                      {celebrationAlerts.slice(0, 6).map(alert => {
+                        const translated = translateAlert(alert, language);
+                        return (
+                          <div 
+                            key={alert.id} 
+                            className="p-3 rounded-lg bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => handleViewMember(alert)}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              {ALERT_TYPE_CONFIG[alert.alert_type]?.icon}
+                              <span className="font-medium text-sm line-clamp-1">{translated.title}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">{translated.action}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground">{alert.action_suggested}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -525,6 +628,7 @@ export default function SmartInsights() {
                     onView={() => handleViewMember(alert)}
                     lt={lt}
                     dateLocale={dateLocale}
+                    language={language}
                   />
                 ))
               )}
