@@ -13,7 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare, Download } from 'lucide-react';
+import { exportToCsv, type CsvColumn, formatDateForCsv } from '@/lib/csvExport';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
