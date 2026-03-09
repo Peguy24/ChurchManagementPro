@@ -83,7 +83,7 @@ export default function Salaries() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<SalaryPayment | null>(null);
-
+  const [paymentPeriodFilter, setPaymentPeriodFilter] = useState("all");
   // Form states for employee
   const [employeeForm, setEmployeeForm] = useState({
     first_name: "",
