@@ -28,6 +28,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface MemberDialogProps {
   open: boolean;
@@ -54,6 +56,7 @@ export default function MemberDialog({
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
@@ -248,6 +251,7 @@ export default function MemberDialog({
         childrenNames: "",
       });
       setSelectedMinistryId("");
+      setCustomFieldValues({});
       setPhotoPreview("");
       setPhotoFile(null);
     }
@@ -367,6 +371,7 @@ export default function MemberDialog({
     setLoading(true);
 
     try {
+      let savedMemberId: string | null = member?.id || null;
       const addressData = {
         number: formData.addressNumber,
         street: formData.street,
@@ -460,6 +465,7 @@ export default function MemberDialog({
 
         // Upload photo and update member with photo_url and qr_code
         if (data) {
+          savedMemberId = data.id;
           const qrCodeData = `MEMBER-${data.id}`;
           
           // Upload photo if selected
@@ -526,6 +532,11 @@ export default function MemberDialog({
             joined_date: new Date().toISOString().split("T")[0],
           });
         }
+      }
+
+      // Save custom field values
+      if (savedMemberId) {
+        await saveCustomFieldValues(savedMemberId, customFieldValues, "member", tenantId);
       }
 
       toast({
@@ -1149,6 +1160,16 @@ export default function MemberDialog({
             </div>
           )}
           
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="member"
+            entityId={member?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <DialogFooter className="mt-6">
             <Button
               type="button"
