@@ -273,10 +273,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                 {generatingReceipt ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Génération...
+                    {t("memberDetails.fiscalReceiptGenerating")}
                   </>
                 ) : (
-                  "Relevé Fiscal"
+                  t("memberDetails.fiscalReceiptTitle")
                 )}
               </Button>
             </div>
