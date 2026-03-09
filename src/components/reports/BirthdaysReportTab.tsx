@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Cake, Heart, Church, Calendar, Users, Download, Gift } from "lucide-react";
+import { Cake, Heart, Church, Calendar, Users, Download, Gift, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, differenceInYears, isSameMonth, addDays, isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
