@@ -658,9 +658,10 @@ interface TransactionTableProps {
   language: string;
   t: (key: string) => string;
   onToggleReconcile: (id: string, reconciled: boolean) => void;
+  formatAmount: (amount: number) => string;
 }
 
-function TransactionTable({ transactions, language, t, onToggleReconcile }: TransactionTableProps) {
+function TransactionTable({ transactions, language, t, onToggleReconcile, formatAmount }: TransactionTableProps) {
   if (transactions.length === 0) {
     return <p className="text-center py-8 text-muted-foreground">{t("bank.noTransactions")}</p>;
   }
