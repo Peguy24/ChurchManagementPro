@@ -3,6 +3,7 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getSignedUrl } from "@/hooks/useSignedUrl";
+import { formatCurrency as formatCurrencyLib } from "./currency";
 
 interface InventoryItem {
   id: string;
