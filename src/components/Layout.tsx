@@ -39,6 +39,7 @@ import {
   ShieldAlert as ShieldAlertIcon,
   Zap,
   Monitor,
+  Clock,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
