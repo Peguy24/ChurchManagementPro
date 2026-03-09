@@ -50,7 +50,119 @@ import {
 } from '@/hooks/useSmartInsights';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    pageTitle: "Smart Insights",
+    pageSubtitle: "Intelligent analysis of member engagement",
+    recalculate: "Recalculate",
+    analyzing: "Analyzing...",
+    avgScore: "Average Score",
+    trends: "Trends",
+    atRisk: "At Risk",
+    medium: "medium",
+    activeAlerts: "Active Alerts",
+    overviewTab: "Overview",
+    alertsTab: "Alerts",
+    atRiskTab: "At Risk",
+    topEngagedTab: "Top Engaged",
+    scoreDistribution: "Score Distribution",
+    scoreDistributionDesc: "Member breakdown by engagement level",
+    riskAnalysis: "Risk Analysis",
+    riskAnalysisDesc: "Breakdown by departure risk category",
+    upcomingCelebrations: "Upcoming Celebrations",
+    noActiveAlerts: "No active alerts",
+    noActiveAlertsDesc: "Click \"Recalculate\" to generate new alerts",
+    highRisk: "High Risk",
+    mediumRisk: "Medium Risk",
+    riskPercent: "% risk",
+    members: "members",
+    viewMember: "View member",
+    markResolved: "Mark as resolved",
+    urgent: "Urgent",
+    important: "Important",
+    info: "Info",
+    celebration: "🎉 Celebration",
+    low: "Low",
+    riskLow: "Low",
+    riskMedium: "Medium",
+    riskHigh: "High",
+  },
+  fr: {
+    pageTitle: "Smart Insights",
+    pageSubtitle: "Analyse intelligente de l'engagement des membres",
+    recalculate: "Recalculer",
+    analyzing: "Analyse en cours...",
+    avgScore: "Score Moyen",
+    trends: "Tendances",
+    atRisk: "À Risque",
+    medium: "moyens",
+    activeAlerts: "Alertes Actives",
+    overviewTab: "Vue d'ensemble",
+    alertsTab: "Alertes",
+    atRiskTab: "À Risque",
+    topEngagedTab: "Top Engagés",
+    scoreDistribution: "Distribution des Scores",
+    scoreDistributionDesc: "Répartition des membres par niveau d'engagement",
+    riskAnalysis: "Analyse des Risques",
+    riskAnalysisDesc: "Répartition par catégorie de risque de départ",
+    upcomingCelebrations: "Célébrations à venir",
+    noActiveAlerts: "Aucune alerte active",
+    noActiveAlertsDesc: "Cliquez sur \"Recalculer\" pour générer de nouvelles alertes",
+    highRisk: "Risque Élevé",
+    mediumRisk: "Risque Moyen",
+    riskPercent: "% de risque",
+    members: "membres",
+    viewMember: "Voir le membre",
+    markResolved: "Marquer comme résolu",
+    urgent: "Urgent",
+    important: "Important",
+    info: "Info",
+    celebration: "🎉 Célébration",
+    low: "Faible",
+    riskLow: "Faible",
+    riskMedium: "Moyen",
+    riskHigh: "Élevé",
+  },
+  ht: {
+    pageTitle: "Smart Insights",
+    pageSubtitle: "Analiz entèlijan sou angajman manm yo",
+    recalculate: "Rekalkile",
+    analyzing: "Analiz ap fèt...",
+    avgScore: "Nòt Mwayèn",
+    trends: "Tandans",
+    atRisk: "An Risk",
+    medium: "mwayen",
+    activeAlerts: "Alèt Aktif",
+    overviewTab: "Rezime",
+    alertsTab: "Alèt",
+    atRiskTab: "An Risk",
+    topEngagedTab: "Pi Angaje",
+    scoreDistribution: "Distribisyon Nòt",
+    scoreDistributionDesc: "Repartisyon manm pa nivo angajman",
+    riskAnalysis: "Analiz Risk",
+    riskAnalysisDesc: "Repartisyon pa kategori risk depa",
+    upcomingCelebrations: "Selebrasyon k ap vini",
+    noActiveAlerts: "Pa gen alèt aktif",
+    noActiveAlertsDesc: "Klike sou \"Rekalkile\" pou jenere nouvo alèt",
+    highRisk: "Gwo Risk",
+    mediumRisk: "Risk Mwayen",
+    riskPercent: "% risk",
+    members: "manm",
+    viewMember: "Wè manm",
+    markResolved: "Make kòm rezoud",
+    urgent: "Ijan",
+    important: "Enpòtan",
+    info: "Enfò",
+    celebration: "🎉 Selebrasyon",
+    low: "Ba",
+    riskLow: "Ba",
+    riskMedium: "Mwayen",
+    riskHigh: "Wo",
+  },
+};
 
 const RISK_COLORS = {
   high: '#ef4444',
@@ -77,13 +189,6 @@ const ALERT_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string }
   ministry_absence: { icon: <Users className="h-4 w-4" />, color: 'text-indigo-500' },
 };
 
-const PRIORITY_BADGES: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; label: string }> = {
-  high: { variant: 'destructive', label: 'Urgent' },
-  medium: { variant: 'default', label: 'Important' },
-  low: { variant: 'secondary', label: 'Info' },
-  celebration: { variant: 'outline', label: '🎉 Célébration' },
-};
-
 function ScoreGauge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' | 'lg' }) {
   const sizeClasses = {
     sm: 'w-12 h-12 text-sm',
@@ -104,9 +209,16 @@ function ScoreGauge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' 
   );
 }
 
-function AlertCard({ alert, onResolve, onView }: { alert: PastoralAlert; onResolve: () => void; onView: () => void }) {
+function AlertCard({ alert, onResolve, onView, lt, dateLocale }: { alert: PastoralAlert; onResolve: () => void; onView: () => void; lt: (key: string) => string; dateLocale: Locale }) {
   const config = ALERT_TYPE_CONFIG[alert.alert_type] || { icon: <Bell className="h-4 w-4" />, color: 'text-gray-500' };
-  const priorityConfig = PRIORITY_BADGES[alert.priority] || PRIORITY_BADGES.low;
+  
+  const priorityLabels: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; key: string }> = {
+    high: { variant: 'destructive', key: 'urgent' },
+    medium: { variant: 'default', key: 'important' },
+    low: { variant: 'secondary', key: 'info' },
+    celebration: { variant: 'outline', key: 'celebration' },
+  };
+  const priorityConfig = priorityLabels[alert.priority] || priorityLabels.low;
 
   return (
     <Card className={`${!alert.is_read ? 'border-l-4 border-l-primary' : ''}`}>
@@ -117,9 +229,9 @@ function AlertCard({ alert, onResolve, onView }: { alert: PastoralAlert; onResol
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant={priorityConfig.variant}>{priorityConfig.label}</Badge>
+              <Badge variant={priorityConfig.variant}>{lt(priorityConfig.key)}</Badge>
               <span className="text-xs text-muted-foreground">
-                {format(new Date(alert.created_at), 'dd MMM à HH:mm', { locale: fr })}
+                {format(new Date(alert.created_at), 'dd MMM, HH:mm', { locale: dateLocale })}
               </span>
             </div>
             <h4 className="font-medium text-sm mb-1 line-clamp-1">{alert.title}</h4>
@@ -134,11 +246,11 @@ function AlertCard({ alert, onResolve, onView }: { alert: PastoralAlert; onResol
             )}
           </div>
           <div className="flex flex-col gap-1">
-            <Button variant="ghost" size="icon" onClick={onView} title="Voir le membre">
+            <Button variant="ghost" size="icon" onClick={onView} title={lt('viewMember')}>
               <Eye className="h-4 w-4" />
             </Button>
             {!alert.is_resolved && (
-              <Button variant="ghost" size="icon" onClick={onResolve} title="Marquer comme résolu">
+              <Button variant="ghost" size="icon" onClick={onResolve} title={lt('markResolved')}>
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
               </Button>
             )}
@@ -151,7 +263,15 @@ function AlertCard({ alert, onResolve, onView }: { alert: PastoralAlert; onResol
 
 export default function SmartInsights() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
+
+  const lt = (key: string) => {
+    const lang = localTranslations[language] || localTranslations.en;
+    return lang[key] || localTranslations.en[key] || key;
+  };
+
+  const dateLocale = language === 'fr' ? fr : enUS;
   
   const { data: engagementScores, isLoading: loadingScores } = useEngagementScores();
   const distribution = useEngagementDistribution();
@@ -169,9 +289,9 @@ export default function SmartInsights() {
   const decliningCount = engagementScores?.filter(s => s.trend === 'declining').length || 0;
 
   const riskDistribution = [
-    { name: 'Faible', value: engagementScores?.length ? engagementScores.length - highRisk.length - mediumRisk.length : 0, color: RISK_COLORS.low },
-    { name: 'Moyen', value: mediumRisk.length, color: RISK_COLORS.medium },
-    { name: 'Élevé', value: highRisk.length, color: RISK_COLORS.high },
+    { name: lt('riskLow'), value: engagementScores?.length ? engagementScores.length - highRisk.length - mediumRisk.length : 0, color: RISK_COLORS.low },
+    { name: lt('riskMedium'), value: mediumRisk.length, color: RISK_COLORS.medium },
+    { name: lt('riskHigh'), value: highRisk.length, color: RISK_COLORS.high },
   ];
 
   const handleResolveAlert = (alertId: string) => {
@@ -196,8 +316,8 @@ export default function SmartInsights() {
               <Brain className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Smart Insights</h1>
-              <p className="text-muted-foreground text-sm">Analyse intelligente de l'engagement des membres</p>
+              <h1 className="text-2xl font-bold">{lt('pageTitle')}</h1>
+              <p className="text-muted-foreground text-sm">{lt('pageSubtitle')}</p>
             </div>
           </div>
           <Button 
@@ -205,7 +325,7 @@ export default function SmartInsights() {
             disabled={recalculate.isPending}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${recalculate.isPending ? 'animate-spin' : ''}`} />
-            {recalculate.isPending ? 'Analyse en cours...' : 'Recalculer'}
+            {recalculate.isPending ? lt('analyzing') : lt('recalculate')}
           </Button>
         </div>
 
@@ -213,7 +333,7 @@ export default function SmartInsights() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Score Moyen</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{lt('avgScore')}</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingScores ? (
@@ -229,7 +349,7 @@ export default function SmartInsights() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tendances</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{lt('trends')}</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingScores ? (
@@ -251,7 +371,7 @@ export default function SmartInsights() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">À Risque</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{lt('atRisk')}</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingScores ? (
@@ -260,7 +380,7 @@ export default function SmartInsights() {
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                   <span className="text-2xl font-bold text-red-600">{highRisk.length}</span>
-                  <span className="text-muted-foreground text-sm">+ {mediumRisk.length} moyens</span>
+                  <span className="text-muted-foreground text-sm">+ {mediumRisk.length} {lt('medium')}</span>
                 </div>
               )}
             </CardContent>
@@ -268,7 +388,7 @@ export default function SmartInsights() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Alertes Actives</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{lt('activeAlerts')}</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingAlerts ? (
@@ -286,10 +406,10 @@ export default function SmartInsights() {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="alerts">Alertes ({alerts?.length || 0})</TabsTrigger>
-            <TabsTrigger value="at-risk">À Risque ({highRisk.length + mediumRisk.length})</TabsTrigger>
-            <TabsTrigger value="top-engaged">Top Engagés</TabsTrigger>
+            <TabsTrigger value="overview">{lt('overviewTab')}</TabsTrigger>
+            <TabsTrigger value="alerts">{lt('alertsTab')} ({alerts?.length || 0})</TabsTrigger>
+            <TabsTrigger value="at-risk">{lt('atRiskTab')} ({highRisk.length + mediumRisk.length})</TabsTrigger>
+            <TabsTrigger value="top-engaged">{lt('topEngagedTab')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -297,8 +417,8 @@ export default function SmartInsights() {
               {/* Engagement Distribution Chart */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Distribution des Scores</CardTitle>
-                  <CardDescription>Répartition des membres par niveau d'engagement</CardDescription>
+                  <CardTitle>{lt('scoreDistribution')}</CardTitle>
+                  <CardDescription>{lt('scoreDistributionDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64">
@@ -309,8 +429,8 @@ export default function SmartInsights() {
                         <YAxis />
                         <Tooltip 
                           formatter={(value: number, name: string) => [
-                            `${value} membres`,
-                            name === 'count' ? 'Membres' : name
+                            `${value} ${lt('members')}`,
+                            name === 'count' ? lt('members') : name
                           ]}
                         />
                         <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -323,8 +443,8 @@ export default function SmartInsights() {
               {/* Risk Distribution Pie */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Analyse des Risques</CardTitle>
-                  <CardDescription>Répartition par catégorie de risque de départ</CardDescription>
+                  <CardTitle>{lt('riskAnalysis')}</CardTitle>
+                  <CardDescription>{lt('riskAnalysisDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64">
@@ -357,7 +477,7 @@ export default function SmartInsights() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Gift className="h-5 w-5 text-pink-500" />
-                      Célébrations à venir
+                      {lt('upcomingCelebrations')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -392,8 +512,8 @@ export default function SmartInsights() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Bell className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">Aucune alerte active</p>
-                    <p className="text-sm text-muted-foreground">Cliquez sur "Recalculer" pour générer de nouvelles alertes</p>
+                    <p className="text-muted-foreground">{lt('noActiveAlerts')}</p>
+                    <p className="text-sm text-muted-foreground">{lt('noActiveAlertsDesc')}</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -403,6 +523,8 @@ export default function SmartInsights() {
                     alert={alert} 
                     onResolve={() => handleResolveAlert(alert.id)}
                     onView={() => handleViewMember(alert)}
+                    lt={lt}
+                    dateLocale={dateLocale}
                   />
                 ))
               )}
@@ -415,7 +537,7 @@ export default function SmartInsights() {
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
-                  Risque Élevé ({highRisk.length})
+                  {lt('highRisk')} ({highRisk.length})
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {highRisk.map(member => (
@@ -437,7 +559,7 @@ export default function SmartInsights() {
                               {member.members.first_name} {member.members.last_name}
                             </p>
                             <p className="text-sm text-red-600 font-semibold">
-                              {Math.round(member.risk_probability * 100)}% de risque
+                              {Math.round(member.risk_probability * 100)}{lt('riskPercent')}
                             </p>
                           </div>
                         </div>
@@ -456,7 +578,7 @@ export default function SmartInsights() {
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  Risque Moyen ({mediumRisk.length})
+                  {lt('mediumRisk')} ({mediumRisk.length})
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {mediumRisk.map(member => (
@@ -478,7 +600,7 @@ export default function SmartInsights() {
                               {member.members.first_name} {member.members.last_name}
                             </p>
                             <p className="text-sm text-yellow-600 font-semibold">
-                              {Math.round(member.risk_probability * 100)}% de risque
+                              {Math.round(member.risk_probability * 100)}{lt('riskPercent')}
                             </p>
                           </div>
                         </div>
