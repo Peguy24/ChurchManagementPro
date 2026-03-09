@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency } from "./currency";
+import { formatCurrency as formatCurrencyLib } from "./currency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
