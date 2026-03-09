@@ -29,6 +29,8 @@ import {
 import { DollarSign, Download, Plus, TrendingUp, FileText, Eye, Pencil, Wallet, Building2 } from "lucide-react";
 import DonationDialog from "@/components/DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { generateDonationReceiptPDF, downloadDonationReceiptPDF } from "@/lib/donationReceiptPDF";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -96,6 +98,8 @@ function DonationsContent() {
     endDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
   });
 
+  const { formatAmount: formatCurrency, currencyCode } = useCurrency();
+
   const categoryLabels: Record<string, string> = {
     tithe: t("donations.tithe"),
     offering: t("donations.offering"),
@@ -148,7 +152,7 @@ function DonationsContent() {
     },
   });
 
-  const { formatAmount: formatCurrency } = useCurrency();
+  
 
   const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
 
@@ -184,6 +188,48 @@ function DonationsContent() {
   const handleEdit = (donation: any) => {
     setEditDonation(donation);
     setDialogOpen(true);
+  };
+
+  const handleDownloadReceipt = async (donation: any) => {
+    try {
+      // Fetch church settings for the receipt header
+      const { data: settings } = await supabase
+        .from("church_settings")
+        .select("setting_key, setting_value")
+        .in("setting_key", ["church_name", "church_address", "church_phone", "church_email"]);
+
+      const getSetting = (key: string) =>
+        settings?.find((s) => s.setting_key === key)?.setting_value || "";
+
+      const blob = generateDonationReceiptPDF({
+        donation: {
+          id: donation.id,
+          donation_date: donation.donation_date,
+          donation_type: donation.donation_type,
+          amount: donation.amount,
+          payment_method: donation.payment_method,
+          description: donation.description,
+          notes: donation.notes,
+        },
+        member: donation.member
+          ? { first_name: donation.member.first_name, last_name: donation.member.last_name }
+          : null,
+        churchInfo: {
+          name: getSetting("church_name") || "Church",
+          address: getSetting("church_address") || "",
+          phone: getSetting("church_phone") || "",
+          email: getSetting("church_email") || "",
+        },
+        currencyCode,
+        language: language as "fr" | "en" | "ht",
+      });
+
+      downloadDonationReceiptPDF(blob, donation.id);
+      toast.success(t("common.downloadReceipt"));
+    } catch (error) {
+      console.error("Receipt generation error:", error);
+      toast.error("Error generating receipt");
+    }
   };
 
   const handleCloseDialog = (open: boolean) => {
@@ -447,7 +493,7 @@ function DonationsContent() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => console.log("Generate receipt for:", donation)}
+                              onClick={() => handleDownloadReceipt(donation)}
                               title={t("common.downloadReceipt")}
                             >
                               <FileText className="h-4 w-4" />
