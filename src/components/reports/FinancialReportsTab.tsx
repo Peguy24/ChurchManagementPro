@@ -434,7 +434,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${stats.netIncome >= 0 ? "text-success" : "text-destructive"}`}>
-                  ${stats.netIncome.toFixed(2)}
+                  {formatAmount(stats.netIncome)}
                 </div>
               </CardContent>
             </Card>
