@@ -260,6 +260,19 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     doc.save(`rapport-presences-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      monthlyData,
+      [
+        { key: "month", header: "Mois" },
+        { key: "presences", header: "Présences" },
+        { key: "events", header: "Événements" },
+        { key: "avgPerEvent", header: "Moyenne/Événement" },
+      ],
+      `rapport-presences-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   const eventTypeLabels: Record<string, string> = {
     sunday_service: "Service Dimanche",
     bible_study: "Étude Biblique",
