@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getLocalToday } from "@/lib/utils";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +74,8 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const isEditing = !!event;
   const isReadOnly = isEditing && (event.status === "completed" || event.status === "cancelled");
 
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     name: "",
     date: "",
@@ -114,12 +118,13 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         eventCategory: "general",
       });
     }
+    setCustomFieldValues({});
   }, [event, open]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (!tenantId) throw new Error(t("events.noTenant"));
-      const { error } = await supabase.from("events").insert({
+      const { data: inserted, error } = await supabase.from("events").insert({
         name: data.name,
         event_date: data.date,
         end_date: data.endDate || null,
@@ -131,8 +136,11 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         expected_attendees: data.expectedAttendees,
         event_category: data.eventCategory,
         tenant_id: tenantId,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted) {
+        await saveCustomFieldValues(inserted.id, customFieldValues, "event", tenantId);
+      }
     },
     onSuccess: () => {
       toast({ title: t("events.eventCreated"), description: `${formData.name} ${t("events.eventCreatedDesc")} ${formData.date}.` });
@@ -163,6 +171,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         })
         .eq("id", event.id);
       if (error) throw error;
+      await saveCustomFieldValues(event.id, customFieldValues, "event", tenantId);
     },
     onSuccess: () => {
       toast({ title: t("events.eventUpdated"), description: `${formData.name} ${t("events.eventUpdatedDesc")}` });
@@ -477,6 +486,17 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               </div>
             )}
           </div>
+
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="event"
+            entityId={event?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <DialogFooter className="flex-col sm:flex-row gap-2">
             {isEditing && (
               <AlertDialog>

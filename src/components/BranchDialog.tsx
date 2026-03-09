@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface Branch {
   id: string;
@@ -42,6 +44,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
     status: "active",
   });
   const [loading, setLoading] = useState(false);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
 
@@ -97,6 +100,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
         status: "active",
       });
     }
+    setCustomFieldValues({});
   }, [branch, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,15 +124,19 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
           .from("branches")
           .update(dataToSubmit)
           .eq("id", branch.id);
-
         if (error) throw error;
+        await saveCustomFieldValues(branch.id, customFieldValues, "branch", tenantId);
         toast.success(t("branches.editSuccess"));
       } else {
-        const { error } = await supabase
+        const { data: inserted, error } = await supabase
           .from("branches")
-          .insert([dataToSubmit]);
-
+          .insert([dataToSubmit])
+          .select("id")
+          .single();
         if (error) throw error;
+        if (inserted) {
+          await saveCustomFieldValues(inserted.id, customFieldValues, "branch", tenantId);
+        }
         toast.success(t("branches.createSuccess"));
       }
 
@@ -262,6 +270,17 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               />
             </div>
           </div>
+
+
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="branch"
+            entityId={branch?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -27,6 +27,8 @@ import { Wallet, Building2 } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useCurrency } from "@/hooks/useCurrency";
 import { todayInputValue } from "@/lib/date";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface DonationDialogProps {
   open: boolean;
@@ -44,6 +46,7 @@ export default function DonationDialog({
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
   const { currencyCode, currencySymbol } = useCurrency();
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     memberId: "none",
     amount: "",
@@ -88,6 +91,7 @@ export default function DonationDialog({
         bankAccountId: "none",
       });
     }
+    setCustomFieldValues({});
   }, [editDonation, open]);
 
   const { data: members } = useQuery({
@@ -175,15 +179,22 @@ export default function DonationDialog({
         tenant_id: tenantId,
       };
 
+      let donationId: string | null = editDonation?.id || null;
+
       if (editDonation) {
         const { error } = await supabase
           .from("donations")
           .update(donationData)
           .eq("id", editDonation.id);
         if (error) throw error;
+        await saveCustomFieldValues(editDonation.id, customFieldValues, "donation", tenantId);
       } else {
-        const { error } = await supabase.from("donations").insert(donationData);
+        const { data: inserted, error } = await supabase.from("donations").insert(donationData).select("id").single();
         if (error) throw error;
+        if (inserted) {
+          donationId = inserted.id;
+          await saveCustomFieldValues(inserted.id, customFieldValues, "donation", tenantId);
+        }
       }
 
       // Update account balance
@@ -493,6 +504,16 @@ export default function DonationDialog({
               rows={2}
             />
           </div>
+
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="donation"
+            entityId={editDonation?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
