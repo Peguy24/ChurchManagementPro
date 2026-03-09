@@ -493,7 +493,7 @@ function DonationsContent() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => console.log("Generate receipt for:", donation)}
+                              onClick={() => handleDownloadReceipt(donation)}
                               title={t("common.downloadReceipt")}
                             >
                               <FileText className="h-4 w-4" />
