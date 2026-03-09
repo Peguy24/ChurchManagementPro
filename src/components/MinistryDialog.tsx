@@ -98,6 +98,7 @@ export default function MinistryDialog({
     } else {
       setFormData({ name: "", description: "", leader_id: "", branch_id: "", status: "active" });
     }
+    setCustomFieldValues({});
   }, [ministry, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
