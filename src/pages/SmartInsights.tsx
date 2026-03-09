@@ -582,19 +582,22 @@ export default function SmartInsights() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {celebrationAlerts.slice(0, 6).map(alert => (
-                        <div 
-                          key={alert.id} 
-                          className="p-3 rounded-lg bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => handleViewMember(alert)}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            {ALERT_TYPE_CONFIG[alert.alert_type]?.icon}
-                            <span className="font-medium text-sm line-clamp-1">{alert.title}</span>
+                      {celebrationAlerts.slice(0, 6).map(alert => {
+                        const translated = translateAlert(alert, language);
+                        return (
+                          <div 
+                            key={alert.id} 
+                            className="p-3 rounded-lg bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => handleViewMember(alert)}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              {ALERT_TYPE_CONFIG[alert.alert_type]?.icon}
+                              <span className="font-medium text-sm line-clamp-1">{translated.title}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">{translated.action}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground">{alert.action_suggested}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
