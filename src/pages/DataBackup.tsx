@@ -13,7 +13,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
-import { exportToCsv, downloadCsv, arrayToCsv } from "@/lib/csvExport";
+import { downloadCsv, arrayToCsv } from "@/lib/csvExport";
+import { flattenRow, transformForExport } from "@/lib/backupExportConfig";
 
 type ExportFormat = "xlsx" | "csv";
 
@@ -215,19 +216,7 @@ export default function DataBackup() {
     }
   };
 
-  const flattenRow = (row: any): Record<string, any> => {
-    const flat: Record<string, any> = {};
-    for (const [key, value] of Object.entries(row)) {
-      if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
-        for (const [subKey, subValue] of Object.entries(value as Record<string, any>)) {
-          flat[`${key}_${subKey}`] = subValue;
-        }
-      } else {
-        flat[key] = value;
-      }
-    }
-    return flat;
-  };
+  // flattenRow is now imported from backupExportConfig
 
   const fetchModuleData = async (mod: DataModule): Promise<any[]> => {
     let query = supabase.from(mod.table as any).select(mod.select);
@@ -277,7 +266,16 @@ export default function DataBackup() {
         for (const mod of modulesToExport) {
           const data = allData[mod.key];
           if (data.length > 0) {
-            const ws = XLSX.utils.json_to_sheet(data);
+            const { headers, rows } = transformForExport(mod.key, data, language);
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            
+            // Auto-size columns
+            const colWidths = headers.map((h, i) => {
+              const maxDataLen = rows.reduce((max, row) => Math.max(max, String(row[i] ?? "").length), 0);
+              return { wch: Math.min(Math.max(h.length, maxDataLen, 10), 40) };
+            });
+            ws["!cols"] = colWidths;
+            
             const sheetName = lt(mod.labelKey).substring(0, 31);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
             hasSheets = true;
@@ -285,7 +283,6 @@ export default function DataBackup() {
         }
 
         if (!hasSheets) {
-          // Add an empty info sheet so the workbook is valid
           const ws = XLSX.utils.aoa_to_sheet([[language === "fr" ? "Aucune donnée trouvée" : language === "ht" ? "Pa gen done jwenn" : "No data found"]]);
           XLSX.utils.book_append_sheet(wb, ws, "Info");
         }
@@ -293,17 +290,23 @@ export default function DataBackup() {
         const filename = `backup-${format(new Date(), "yyyy-MM-dd-HHmm")}.xlsx`;
         XLSX.writeFile(wb, filename);
       } else {
-        // CSV: export each module as separate CSV file
+        // CSV: export each module as separate CSV file with clean headers
         for (const mod of modulesToExport) {
           const data = allData[mod.key];
           if (data.length > 0) {
-            const columns = Object.keys(data[0]).map((key) => ({
-              key,
-              header: key,
-            }));
-            const csvContent = arrayToCsv(data, columns);
+            const { headers, rows } = transformForExport(mod.key, data, language);
+            const csvLines = [headers.join(",")];
+            for (const row of rows) {
+              csvLines.push(row.map((v: any) => {
+                const str = String(v ?? "");
+                if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+                  return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+              }).join(","));
+            }
             const filename = `backup-${mod.key}-${format(new Date(), "yyyy-MM-dd-HHmm")}`;
-            downloadCsv(csvContent, filename);
+            downloadCsv(csvLines.join("\n"), filename);
           }
         }
       }
