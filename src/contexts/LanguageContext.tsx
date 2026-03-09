@@ -6191,6 +6191,7 @@ const translations = {
       memberCards: "Kat Manm",
       attendance: "Prezans",
       attendanceAlerts: "Alèt Prezans",
+      arrivalReport: "Rapò Arive",
       groupComparison: "Konparezon Gwoup",
       donations: "Resèt",
       financialReports: "Rapò Jeneral",
