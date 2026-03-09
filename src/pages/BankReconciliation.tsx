@@ -700,7 +700,7 @@ function TransactionTable({ transactions, language, t, onToggleReconcile, format
             <TableCell className="text-right font-medium">
               <span className={tx.transaction_type === "income" ? "text-primary" : "text-destructive"}>
                 {tx.transaction_type === "income" ? "+" : "-"}
-                ${Number(tx.amount).toLocaleString()}
+                {formatAmount(Number(tx.amount))}
               </span>
             </TableCell>
             <TableCell>
