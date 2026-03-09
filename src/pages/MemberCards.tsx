@@ -385,14 +385,14 @@ export default function MemberCards() {
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <Button 
                 variant="default" 
-                onClick={() => setAttendanceDialogOpen(true)}
-                disabled={selectedCount === 0}
+                onClick={handlePreview}
+                disabled={selectedCount === 0 || generatingPDF}
                 size="sm"
                 className="flex-1 sm:flex-none"
               >
-                <ClipboardCheck className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">{t("memberCards.markAttendance")}</span>
-                <span className="sm:hidden">{t("memberCards.markAttendance")}</span>
+                <Eye className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{t("memberCards.preview") || "Aperçu"}</span>
+                <span className="sm:hidden">{t("memberCards.preview") || "Aperçu"}</span>
                 <span className="ml-1">({selectedCount})</span>
               </Button>
               <Button 
