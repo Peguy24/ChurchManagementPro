@@ -251,6 +251,7 @@ export default function MemberDialog({
         childrenNames: "",
       });
       setSelectedMinistryId("");
+      setCustomFieldValues({});
       setPhotoPreview("");
       setPhotoFile(null);
     }
