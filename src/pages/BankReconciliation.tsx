@@ -643,6 +643,7 @@ export default function BankReconciliation() {
                     transactions={reconciledTransactions}
                     language={language}
                     t={t}
+                    formatAmount={formatAmount}
                     onToggleReconcile={(id, reconciled) => toggleReconciliation.mutate({ id, reconciled })}
                   />
                 </TabsContent>
