@@ -104,7 +104,7 @@ const GroupComparisonDashboard = () => {
         const monthlyMap = new Map<string, { present: Set<string>; total: number }>();
         
         attendance?.forEach(record => {
-          const date = new Date(record.event_date);
+          const date = toSafeDate(record.event_date) ?? new Date(record.event_date);
           const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           
           if (!monthlyMap.has(monthKey)) {
@@ -115,6 +115,7 @@ const GroupComparisonDashboard = () => {
           monthData.present.add(record.member_id);
           monthData.total++;
         });
+
 
         const monthlyData = Array.from(monthlyMap.entries())
           .map(([month, data]) => ({
