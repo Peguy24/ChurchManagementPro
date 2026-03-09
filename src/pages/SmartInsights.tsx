@@ -625,6 +625,7 @@ export default function SmartInsights() {
                     onView={() => handleViewMember(alert)}
                     lt={lt}
                     dateLocale={dateLocale}
+                    language={language}
                   />
                 ))
               )}
