@@ -98,6 +98,8 @@ function DonationsContent() {
     endDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
   });
 
+  const { formatAmount: formatCurrency, currencyCode } = useCurrency();
+
   const categoryLabels: Record<string, string> = {
     tithe: t("donations.tithe"),
     offering: t("donations.offering"),
