@@ -95,7 +95,7 @@ export default function PlatformAccounting() {
   // Form state
   const [formData, setFormData] = useState({
     amount: "",
-    expense_date: new Date().toISOString().split("T")[0],
+    expense_date: todayInputValue(),
     category: "general" as string,
     description: "",
     vendor: "",
@@ -103,6 +103,7 @@ export default function PlatformAccounting() {
     is_recurring: false,
     recurring_frequency: "",
   });
+
 
   const resetForm = () => {
     setFormData({
