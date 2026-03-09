@@ -56,6 +56,7 @@ export default function MemberDialog({
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
