@@ -198,6 +198,28 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
     XLSX.writeFile(wb, `anniversaires_${months[parseInt(selectedMonth)]}.xlsx`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      monthEvents.map((event) => ({
+        membre: `${event.member.first_name} ${event.member.last_name}`,
+        type: getEventLabel(event.eventType),
+        date: format(event.date, "dd MMMM", { locale: fr }),
+        annees: event.years,
+        telephone: event.member.phone || "-",
+        email: event.member.email || "-",
+      })),
+      [
+        { key: "membre", header: "Membre" },
+        { key: "type", header: "Type" },
+        { key: "date", header: "Date" },
+        { key: "annees", header: "Années" },
+        { key: "telephone", header: "Téléphone" },
+        { key: "email", header: "Email" },
+      ],
+      `anniversaires_${months[parseInt(selectedMonth)]}`
+    );
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Chargement...</div>;
   }
