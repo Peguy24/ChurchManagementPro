@@ -563,12 +563,12 @@ const FinancialDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Fonds Disponibles Totaux</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("finance.totalAvailableFunds")}</p>
                 <p className="text-3xl font-bold text-primary">
                   {formatCurrency(totalCashBalance + totalBankBalance)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Caisses: {formatCurrency(totalCashBalance)} + Banques: {formatCurrency(totalBankBalance)}
+                  {t("finance.cashAndBanks").replace("{cash}", formatCurrency(totalCashBalance)).replace("{bank}", formatCurrency(totalBankBalance))}
                 </p>
               </div>
               <DollarSign className="h-12 w-12 text-primary/50" />
