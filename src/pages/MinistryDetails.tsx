@@ -59,7 +59,7 @@ export default function MinistryDetails() {
   const [addMemberDialog, setAddMemberDialog] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [memberRole, setMemberRole] = useState("member");
-  const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [loading, setLoading] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({
     open: false,
