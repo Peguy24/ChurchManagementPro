@@ -57,7 +57,8 @@ const formatDateLong = (dateStr: string | null): string => {
   }
 };
 
-export async function generateMemberHistoryPDF(data: MemberHistoryData): Promise<Blob> {
+export async function generateMemberHistoryPDF(data: MemberHistoryData, currencyFormatter?: (amount: number) => string): Promise<Blob> {
+  const fmtCurrency = currencyFormatter || ((amount: number) => `${amount.toLocaleString("fr-FR")} €`);
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
