@@ -371,6 +371,7 @@ export default function MemberDialog({
     setLoading(true);
 
     try {
+      let savedMemberId: string | null = member?.id || null;
       const addressData = {
         number: formData.addressNumber,
         street: formData.street,
