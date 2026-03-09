@@ -37,7 +37,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Users, Calendar, TrendingUp, Percent, FileSpreadsheet, FileText } from "lucide-react";
+import { Users, Calendar, TrendingUp, Percent, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO, startOfMonth, endOfMonth } from "date-fns";
