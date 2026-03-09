@@ -16,6 +16,7 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
+import { useCurrency } from "@/hooks/useCurrency";
 
 
 export default function Dashboard() {

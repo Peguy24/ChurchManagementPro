@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Expenses() {
   const { t, language } = useLanguage();
