@@ -76,6 +76,7 @@ import VolunteerScheduling from "./pages/VolunteerScheduling";
 import Visitors from "./pages/Visitors";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import DataBackup from "./pages/DataBackup";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -140,6 +141,7 @@ const App = () => (
               <Route path="/settings/invitations" element={<ProtectedRoute requireAdmin><AdminInvitations /></ProtectedRoute>} />
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
               <Route path="/settings/branding" element={<ProtectedRoute><TenantBranding /></ProtectedRoute>} />
+              <Route path="/settings/backup" element={<ProtectedRoute><DataBackup /></ProtectedRoute>} />
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
