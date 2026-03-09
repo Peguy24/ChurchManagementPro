@@ -36,7 +36,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Plus, Users, History, Edit, Trash2, Banknote, Search } from "lucide-react";
+import { Plus, Users, History, Edit, Trash2, Banknote, Search, Download, Filter } from "lucide-react";
+import * as XLSX from "xlsx";
+import { subMonths, subYears, isAfter } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -74,14 +76,14 @@ export default function Salaries() {
   const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<SalaryPayment | null>(null);
-
+  const [paymentPeriodFilter, setPaymentPeriodFilter] = useState("all");
   // Form states for employee
   const [employeeForm, setEmployeeForm] = useState({
     first_name: "",
@@ -467,6 +469,54 @@ export default function Salaries() {
   const activeEmployees = employees.filter((e) => e.is_active);
   const totalSalaries = activeEmployees.reduce((sum, e) => sum + e.salary_amount, 0);
 
+  // Filter payments by period
+  const filteredPayments = payments.filter((p) => {
+    if (paymentPeriodFilter === "all") return true;
+    const paymentDate = new Date(p.payment_date);
+    const now = new Date();
+    switch (paymentPeriodFilter) {
+      case "1month": return isAfter(paymentDate, subMonths(now, 1));
+      case "3months": return isAfter(paymentDate, subMonths(now, 3));
+      case "6months": return isAfter(paymentDate, subMonths(now, 6));
+      case "1year": return isAfter(paymentDate, subYears(now, 1));
+      default: return true;
+    }
+  });
+
+  const periodFilterLabels: Record<string, string> = {
+    all: language === "fr" ? "Tout" : language === "ht" ? "Tout" : "All",
+    "1month": language === "fr" ? "1 mois" : language === "ht" ? "1 mwa" : "1 month",
+    "3months": language === "fr" ? "3 mois" : language === "ht" ? "3 mwa" : "3 months",
+    "6months": language === "fr" ? "6 mois" : language === "ht" ? "6 mwa" : "6 months",
+    "1year": language === "fr" ? "1 an" : language === "ht" ? "1 ane" : "1 year",
+  };
+
+  const handleDownloadPayments = () => {
+    if (filteredPayments.length === 0) return;
+    const rows = filteredPayments.map((p) => ({
+      [language === "fr" ? "Date" : "Date"]: format(new Date(p.payment_date), "dd/MM/yyyy"),
+      [language === "fr" ? "Employé" : "Employee"]: p.employees ? `${p.employees.first_name} ${p.employees.last_name}` : "-",
+      [language === "fr" ? "Poste" : "Position"]: p.employees?.position || "-",
+      [language === "fr" ? "Période" : "Period"]: `${format(new Date(p.period_start), "dd/MM/yyyy")} - ${format(new Date(p.period_end), "dd/MM/yyyy")}`,
+      [language === "fr" ? "Montant" : "Amount"]: p.amount,
+      [language === "fr" ? "Méthode" : "Method"]: paymentMethods[p.payment_method] || p.payment_method,
+      [language === "fr" ? "Référence" : "Reference"]: p.reference_number || "-",
+      [language === "fr" ? "Statut" : "Status"]: p.status === "paid" ? (language === "fr" ? "Payé" : "Paid") : p.status,
+      [language === "fr" ? "Notes" : "Notes"]: p.notes || "-",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    // Auto-size columns
+    const colWidths = Object.keys(rows[0]).map((key) => ({
+      wch: Math.max(key.length, ...rows.map((r) => String((r as any)[key]).length)) + 2,
+    }));
+    ws["!cols"] = colWidths;
+    const wb = XLSX.utils.book_new();
+    const sheetName = language === "fr" ? "Historique Salaires" : "Salary History";
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    const filterLabel = periodFilterLabels[paymentPeriodFilter] || "";
+    XLSX.writeFile(wb, `salaires_${filterLabel.replace(/\s/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+  };
+
   const paymentMethods: Record<string, string> = {
     bank_transfer: t("salariesPage.bankTransfer"),
     cash: t("salariesPage.cash"),
@@ -764,10 +814,33 @@ export default function Salaries() {
           <TabsContent value="history" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
-                <CardDescription>
-                  {t("salariesPage.allPayments")}
-                </CardDescription>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
+                    <CardDescription>
+                      {t("salariesPage.allPayments")}
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <Select value={paymentPeriodFilter} onValueChange={setPaymentPeriodFilter}>
+                        <SelectTrigger className="w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(periodFilterLabels).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleDownloadPayments} disabled={filteredPayments.length === 0}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Excel
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -788,14 +861,14 @@ export default function Salaries() {
                           {t("salariesPage.loading")}
                         </TableCell>
                       </TableRow>
-                    ) : payments.length === 0 ? (
+                    ) : filteredPayments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           {t("salariesPage.noPayments")}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      payments.map((payment) => (
+                      filteredPayments.map((payment) => (
                         <TableRow key={payment.id}>
                           <TableCell>
                             {format(new Date(payment.payment_date), "dd MMM yyyy", { locale: fr })}
