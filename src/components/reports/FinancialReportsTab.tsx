@@ -415,7 +415,7 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                 <TrendingUp className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatAmount(stats.totalRevenue)}</div>
               </CardContent>
             </Card>
             <Card>
