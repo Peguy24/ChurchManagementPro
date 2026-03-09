@@ -216,19 +216,7 @@ export default function DataBackup() {
     }
   };
 
-  const flattenRow = (row: any): Record<string, any> => {
-    const flat: Record<string, any> = {};
-    for (const [key, value] of Object.entries(row)) {
-      if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
-        for (const [subKey, subValue] of Object.entries(value as Record<string, any>)) {
-          flat[`${key}_${subKey}`] = subValue;
-        }
-      } else {
-        flat[key] = value;
-      }
-    }
-    return flat;
-  };
+  // flattenRow is now imported from backupExportConfig
 
   const fetchModuleData = async (mod: DataModule): Promise<any[]> => {
     let query = supabase.from(mod.table as any).select(mod.select);
