@@ -25,6 +25,7 @@ export default function BankReconciliation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenant, tenantId } = useCurrentTenant();
+  const { currencyCode } = useCurrency();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>("");
