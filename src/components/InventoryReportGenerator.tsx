@@ -80,7 +80,7 @@ export default function InventoryReportGenerator({
       const blob = await generateInventoryReportPDF(
         items,
         maintenanceRecords,
-        { ...options, churchName, logoUrl },
+        { ...options, churchName, logoUrl, currencyCode },
         (p) => setProgress(p)
       );
 
