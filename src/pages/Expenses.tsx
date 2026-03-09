@@ -160,9 +160,7 @@ export default function Expenses() {
     return "-";
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(amount);
-  };
+  const formatCurrency = (amount: number) => formatCurrencyFn(amount);
 
   const createExpense = useMutation({
     mutationFn: async (data: typeof formData) => {
