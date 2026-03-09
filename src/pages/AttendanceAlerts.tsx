@@ -59,7 +59,7 @@ export default function AttendanceAlerts() {
 
       attendanceData?.forEach((record: any) => {
         const memberId = record.member_id;
-        const eventDate = new Date(record.event_date);
+        const eventDate = toSafeDate(record.event_date) ?? new Date(record.event_date);
         const memberName = `${record.members.first_name} ${record.members.last_name}`;
 
         if (!memberStats.has(memberId)) {
@@ -79,10 +79,12 @@ export default function AttendanceAlerts() {
           stats.previousMonth++;
         }
 
-        if (!stats.lastAttendance || eventDate > new Date(stats.lastAttendance)) {
+        const last = toSafeDate(stats.lastAttendance);
+        if (!last || eventDate > last) {
           stats.lastAttendance = record.event_date;
         }
       });
+
 
       const alertsList: AttendanceAlert[] = [];
 
