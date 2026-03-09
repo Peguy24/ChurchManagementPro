@@ -22,6 +22,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 export default function Expenses() {
   const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const { formatAmount: formatCurrencyFn } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
