@@ -472,7 +472,7 @@ const FinancialDashboard = () => {
                         <p className="text-sm text-muted-foreground">{alert.categoryName}</p>
                       </div>
                       <Badge variant={alert.isOverBudget ? "destructive" : "secondary"}>
-                        {alert.isOverBudget ? "Dépassé" : "Proche limite"}
+                        {alert.isOverBudget ? t("finance.overBudget") : t("finance.nearLimit")}
                       </Badge>
                     </div>
                     <div className="space-y-2">
