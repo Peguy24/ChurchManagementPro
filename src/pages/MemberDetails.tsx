@@ -453,8 +453,9 @@ export default function MemberDetails() {
               <InfoRow label={t("memberDetails.spouseName")} value={member.spouse_name} />
               <InfoRow 
                 label={t("memberDetails.marriageDate")} 
-                value={member.marriage_date ? new Date(member.marriage_date).toLocaleDateString(locale) : null} 
+                value={member.marriage_date ? formatDateForDisplay(member.marriage_date, locale) : null} 
               />
+
               <InfoRow 
                 label={t("memberDetails.numberOfChildren")} 
                 value={member.number_of_children?.toString()} 
