@@ -168,9 +168,10 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       setFormData({
         documentType: "",
         documentName: "",
-        documentDate: new Date().toISOString().split("T")[0],
+        documentDate: todayInputValue(),
         notes: "",
       });
+
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setAddDialogOpen(false);
