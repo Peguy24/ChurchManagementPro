@@ -42,7 +42,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Shield, FileSpreadsheet, FileText, Search, Eye, Activity } from "lucide-react";
+import { Shield, FileSpreadsheet, FileText, Search, Eye, Activity, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subMonths } from "date-fns";
