@@ -834,8 +834,13 @@ function AttendanceContent() {
                               {member.first_name} {member.last_name}
                             </CardTitle>
                             <p className="text-lg text-muted-foreground">{member.time}</p>
+                            {member.arrivalStatus && (
+                              <Badge variant={getStatusBadgeVariant(member.arrivalStatus)} className="mt-1 text-xs">
+                                {t(getStatusTranslationKey(member.arrivalStatus))}
+                              </Badge>
+                            )}
                             {member.status === 'error' && (
-                              <p className="text-sm text-red-600 dark:text-red-400 font-medium mt-1">
+                              <p className="text-sm text-destructive font-medium mt-1">
                                 {t("attendance.duplicateScan")}
                               </p>
                             )}
