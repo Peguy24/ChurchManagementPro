@@ -118,8 +118,9 @@ export default function Members() {
       { key: "created_at", header: t("members.csvCreatedAt"), formatter: (v) => formatDateForCsv(v) },
     ];
 
-    const filename = `membres_export_${new Date().toISOString().split('T')[0]}`;
+    const filename = `membres_export_${todayInputValue()}`;
     exportToCsv(filteredMembers, columns, filename);
+
 
     toast({
       title: t("common.success"),
