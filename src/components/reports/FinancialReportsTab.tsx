@@ -45,7 +45,9 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
+  FileDown,
 } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import {
