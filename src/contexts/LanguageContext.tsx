@@ -666,6 +666,7 @@ const translations = {
       membersText: "membres...",
       pdfGenerated: "PDF généré avec succès",
       cardsDownloaded: "carte(s) téléchargée(s).",
+      preview: "Aperçu",
       errorGeneratingPdf: "Impossible de générer le PDF. Veuillez réessayer.",
       attendanceDialog: {
         title: "Marquer la Présence",
