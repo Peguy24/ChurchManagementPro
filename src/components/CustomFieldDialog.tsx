@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface CustomFieldDialogProps {
   open: boolean;
