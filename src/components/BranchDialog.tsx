@@ -124,15 +124,19 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
           .from("branches")
           .update(dataToSubmit)
           .eq("id", branch.id);
-
         if (error) throw error;
+        await saveCustomFieldValues(branch.id, customFieldValues, "branch", tenantId);
         toast.success(t("branches.editSuccess"));
       } else {
-        const { error } = await supabase
+        const { data: inserted, error } = await supabase
           .from("branches")
-          .insert([dataToSubmit]);
-
+          .insert([dataToSubmit])
+          .select("id")
+          .single();
         if (error) throw error;
+        if (inserted) {
+          await saveCustomFieldValues(inserted.id, customFieldValues, "branch", tenantId);
+        }
         toast.success(t("branches.createSuccess"));
       }
 
