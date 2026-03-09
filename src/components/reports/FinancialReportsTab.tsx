@@ -671,8 +671,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       {fundsData.map((row) => (
                         <TableRow key={row.name}>
                           <TableCell>{row.name}</TableCell>
-                          <TableCell className="text-right">${row.target.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.current.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.target)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.current)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
