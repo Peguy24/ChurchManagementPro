@@ -612,10 +612,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                       {budgetVsActualData.map((row) => (
                         <TableRow key={row.name}>
                           <TableCell>{row.name}</TableCell>
-                          <TableCell className="text-right">${row.planned.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.actual.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.planned)}</TableCell>
+                          <TableCell className="text-right">{formatAmount(row.actual)}</TableCell>
                           <TableCell className={`text-right ${row.variance >= 0 ? "text-success" : "text-destructive"}`}>
-                            ${row.variance.toFixed(2)}
+                            {formatAmount(row.variance)}
                           </TableCell>
                           <TableCell className={`text-right font-semibold ${row.percentUsed > 100 ? "text-destructive" : "text-success"}`}>
                             {row.percentUsed.toFixed(1)}%
