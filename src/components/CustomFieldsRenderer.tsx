@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 interface CustomFieldsRendererProps {
   entityType: "member" | "branch" | "ministry" | "event" | "donation";
