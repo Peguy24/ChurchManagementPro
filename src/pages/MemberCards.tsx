@@ -61,12 +61,10 @@ export default function MemberCards() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [baptismFilter, setBaptismFilter] = useState<string>("all");
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
-  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
-  const [eventType, setEventType] = useState("");
-  const [eventDate, setEventDate] = useState(todayInputValue());
-  const [submittingAttendance, setSubmittingAttendance] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
