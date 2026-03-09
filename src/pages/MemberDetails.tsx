@@ -102,7 +102,7 @@ export default function MemberDetails() {
   const [addMinistryDialog, setAddMinistryDialog] = useState(false);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
   const [ministryRole, setMinistryRole] = useState("member");
-  const [joinedDate, setJoinedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [addingMinistry, setAddingMinistry] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
