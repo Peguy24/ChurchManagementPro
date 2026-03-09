@@ -4687,6 +4687,7 @@ const translations = {
       smartInsights: "Smart Insights",
       support: "Support",
       systemGuide: "System Guide",
+      dataBackup: "Data Backup",
       incomeCategoriesTitle: "Income Categories",
       incomeCategoriesDesc: "Manage categories to classify income",
       newCategory: "New Category",
