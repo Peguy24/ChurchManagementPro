@@ -5703,7 +5703,7 @@ const translations = {
       active: "Active",
       subject: "Email Subject",
       subjectPlaceholder: "Email subject...",
-      htmlContent: "HTML Content",
+      htmlContent: "Message Content",
       htmlContentPlaceholder: "Email content in HTML...",
       save: "Save",
       cancel: "Cancel",
