@@ -3677,6 +3677,7 @@ const translations = {
       membersText: "members...",
       pdfGenerated: "PDF generated successfully",
       cardsDownloaded: "card(s) downloaded.",
+      preview: "Preview",
       errorGeneratingPdf: "Unable to generate PDF. Please try again.",
       attendanceDialog: {
         title: "Mark Attendance",
