@@ -263,12 +263,24 @@ export default function DonationDialog({
     createDonation.mutate(formData);
   };
 
-  const donationTypes = [
+  const defaultDonationTypes = [
     { value: "tithe", label: t("donations.tithe") },
     { value: "offering", label: t("donations.offering") },
     { value: "special", label: t("donations.special") },
     { value: "activity", label: t("donations.activity") },
     { value: "other", label: t("donations.other") },
+  ];
+
+  const categoryTypes = (incomeCategories || []).map((cat) => ({
+    value: cat.code.toLowerCase(),
+    label: cat.name,
+  }));
+
+  // Merge: income categories first, then defaults that aren't already covered
+  const existingValues = new Set(categoryTypes.map((c) => c.value));
+  const donationTypes = [
+    ...categoryTypes,
+    ...defaultDonationTypes.filter((d) => !existingValues.has(d.value)),
   ];
 
   return (
