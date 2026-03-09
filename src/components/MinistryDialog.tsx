@@ -242,9 +242,16 @@ export default function MinistryDialog({
                 </SelectContent>
               </Select>
             </div>
+            {/* Custom Fields */}
+            <CustomFieldsRenderer
+              entityType="ministry"
+              entityId={ministry?.id}
+              values={customFieldValues}
+              onChange={(fieldName, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+              }
+            />
           </div>
-
-          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {m("cancel")}
             </Button>
