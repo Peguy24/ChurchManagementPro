@@ -40,7 +40,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
       
       const { data, error } = await supabase
         .from("attendance_records")
-        .select("event_date, event_type")
+        .select("event_date, event_type, marked_at")
         .eq("member_id", memberId)
         .gte("event_date", format(sixMonthsAgo, "yyyy-MM-dd"))
         .order("event_date", { ascending: true });
