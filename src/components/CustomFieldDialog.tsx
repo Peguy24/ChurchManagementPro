@@ -20,6 +20,7 @@ interface CustomFieldDialogProps {
 
 export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: CustomFieldDialogProps) {
   const { t } = useLanguage();
+  const { tenantId } = useCurrentTenant();
   const [formData, setFormData] = useState<{
     entity_type: "member" | "branch" | "ministry" | "event" | "donation";
     field_name: string;
