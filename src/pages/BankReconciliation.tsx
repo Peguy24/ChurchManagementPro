@@ -597,10 +597,12 @@ export default function BankReconciliation() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalIncome")}</p>
-                  <p className="text-xl font-bold text-primary">${to{for{formatAmount(totalIncome           </div>
+                  <p className="text-xl font-bold text-primary">{formatAmount(totalIncome)}</p>
+                </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalExpense")}</p>
-                  <p className="text-xl font-bold text-destructive">${totalE{formatAmount(totalExpense               </div>
+                  <p className="text-xl font-bold text-destructive">{formatAmount(totalExpense)}</p>
+                </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.reconciled")}</p>
                   <p className="text-xl font-bold">{reconciledTransactions.length}</p>
