@@ -403,7 +403,7 @@ export default function BankReconciliation() {
                   {account.is_active && <Badge variant="outline">{t("common.active")}</Badge>}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{formatAmount(Number(account.current_balance))}</p>
+                  <p className="text-2xl font-bold">{formatAmount(Number(account.current_balance)p>
                   <p className="text-sm text-muted-foreground">
                     {account.bank_name || t("bank.notSpecified")}
                     {account.account_number && ` • ${account.account_number.slice(-4)}`}
@@ -597,7 +597,7 @@ export default function BankReconciliation() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalIncome")}</p>
-                  <p className="text-xl font-bold text-primary">${totalIncome.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-primary">${to{formatAmount(totalIncomep>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">{t("bank.totalExpense")}</p>
