@@ -22,6 +22,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 export default function Dashboard() {
   const { t } = useLanguage();
   const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
+  const { formatAmount } = useCurrency();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 

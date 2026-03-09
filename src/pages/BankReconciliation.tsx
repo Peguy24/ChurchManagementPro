@@ -22,6 +22,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BankReconciliation() {
   const { t, language } = useLanguage();
+  const { formatAmount } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenant, tenantId } = useCurrentTenant();

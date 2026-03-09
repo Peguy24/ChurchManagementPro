@@ -24,6 +24,7 @@ export default function Budgets() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
+  const { formatAmount } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 

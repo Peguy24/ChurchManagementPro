@@ -73,6 +73,7 @@ interface FinancialReportsTabProps {
 
 export default function FinancialReportsTab({ selectedBranch, branches }: FinancialReportsTabProps) {
   const { t, language } = useLanguage();
+  const { formatAmount, currencySymbol } = useCurrency();
   const r = (key: string) => t(`financialReports.${key}`);
   const [period, setPeriod] = useState("12");
   const [reportType, setReportType] = useState("monthly");
