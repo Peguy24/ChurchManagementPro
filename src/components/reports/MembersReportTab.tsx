@@ -30,7 +30,8 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { Users, UserPlus, UserCheck, Church, FileSpreadsheet, FileText } from "lucide-react";
+import { Users, UserPlus, UserCheck, Church, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO } from "date-fns";
