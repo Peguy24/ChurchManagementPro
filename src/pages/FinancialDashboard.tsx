@@ -159,7 +159,7 @@ const FinancialDashboard = () => {
         const monthDate = subMonths(currentDate, i);
         const start = format(startOfMonth(monthDate), "yyyy-MM-dd");
         const end = format(endOfMonth(monthDate), "yyyy-MM-dd");
-        months.push({ start, end, label: format(monthDate, "MMM", { locale: fr }) });
+        months.push({ start, end, label: format(monthDate, "MMM", { locale: language === "fr" ? fr : undefined }) });
       }
 
       const trends = await Promise.all(
@@ -216,7 +216,7 @@ const FinancialDashboard = () => {
     
     return {
       name: budget.name,
-      categoryName: (budget.category as any)?.name || "Non catégorisé",
+      categoryName: (budget.category as any)?.name || t("finance.uncategorized"),
       planned: plannedAmount,
       spent: spentAmount,
       percentage,
@@ -237,7 +237,7 @@ const FinancialDashboard = () => {
 
   // Expenses by category for pie chart
   const expensesByCategory = currentExpenses?.reduce((acc, e) => {
-    const category = (e.expense_categories as any)?.name || "Autres";
+    const category = (e.expense_categories as any)?.name || t("finance.other");
     acc[category] = (acc[category] || 0) + Number(e.amount);
     return acc;
   }, {} as Record<string, number>) || {};
@@ -458,9 +458,9 @@ const FinancialDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-700">
                 <AlertTriangle className="h-5 w-5" />
-                Alertes Budgétaires
+                {t("finance.budgetAlerts")}
               </CardTitle>
-              <CardDescription>Budgets proches ou dépassés</CardDescription>
+              <CardDescription>{t("finance.budgetsNearOrOver")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -472,13 +472,13 @@ const FinancialDashboard = () => {
                         <p className="text-sm text-muted-foreground">{alert.categoryName}</p>
                       </div>
                       <Badge variant={alert.isOverBudget ? "destructive" : "secondary"}>
-                        {alert.isOverBudget ? "Dépassé" : "Proche limite"}
+                        {alert.isOverBudget ? t("finance.overBudget") : t("finance.nearLimit")}
                       </Badge>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Dépensé: {formatCurrency(alert.spent)}</span>
-                        <span>Budget: {formatCurrency(alert.planned)}</span>
+                        <span>{t("finance.spent")}: {formatCurrency(alert.spent)}</span>
+                        <span>{t("finance.budget")}: {formatCurrency(alert.planned)}</span>
                       </div>
                       <Progress 
                         value={Math.min(alert.percentage, 100)} 
@@ -486,8 +486,8 @@ const FinancialDashboard = () => {
                       />
                       <p className={`text-sm font-medium ${alert.remaining < 0 ? "text-destructive" : "text-muted-foreground"}`}>
                         {alert.remaining < 0 
-                          ? `Dépassement: ${formatCurrency(Math.abs(alert.remaining))}` 
-                          : `Restant: ${formatCurrency(alert.remaining)}`}
+                          ? `${t("finance.overage")}: ${formatCurrency(Math.abs(alert.remaining))}` 
+                          : `${t("finance.remaining")}: ${formatCurrency(alert.remaining)}`}
                       </p>
                     </div>
                   </div>
@@ -504,9 +504,9 @@ const FinancialDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Banknote className="h-5 w-5 text-green-600" />
-                Caisses
+                {t("finance.cashRegisters")}
               </CardTitle>
-              <CardDescription>Solde total: {formatCurrency(totalCashBalance)}</CardDescription>
+              <CardDescription>{t("finance.totalBalance")}: {formatCurrency(totalCashBalance)}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -535,7 +535,7 @@ const FinancialDashboard = () => {
                 <CreditCard className="h-5 w-5 text-blue-600" />
                 {t("finance.bankAccounts")}
               </CardTitle>
-              <CardDescription>Solde total: {formatCurrency(totalBankBalance)}</CardDescription>
+              <CardDescription>{t("finance.totalBalance")}: {formatCurrency(totalBankBalance)}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -563,12 +563,12 @@ const FinancialDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Fonds Disponibles Totaux</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("finance.totalAvailableFunds")}</p>
                 <p className="text-3xl font-bold text-primary">
                   {formatCurrency(totalCashBalance + totalBankBalance)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Caisses: {formatCurrency(totalCashBalance)} + Banques: {formatCurrency(totalBankBalance)}
+                  {t("finance.cashAndBanks").replace("{cash}", formatCurrency(totalCashBalance)).replace("{bank}", formatCurrency(totalBankBalance))}
                 </p>
               </div>
               <DollarSign className="h-12 w-12 text-primary/50" />
