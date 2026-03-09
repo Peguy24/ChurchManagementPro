@@ -333,9 +333,9 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     doc.setFontSize(14);
     doc.text(r("pdfSummary"), 14, 48);
     doc.setFontSize(11);
-    doc.text(`${r("totalRevenue")}: $${stats.totalRevenue.toFixed(2)}`, 14, 56);
-    doc.text(`${r("totalExpenses")}: $${stats.totalExpenses.toFixed(2)}`, 14, 62);
-    doc.text(`${r("netIncome")}: $${stats.netIncome.toFixed(2)}`, 14, 68);
+    doc.text(`${r("totalRevenue")}: ${formatAmount(stats.totalRevenue)}`, 14, 56);
+    doc.text(`${r("totalExpenses")}: ${formatAmount(stats.totalExpenses)}`, 14, 62);
+    doc.text(`${r("netIncome")}: ${formatAmount(stats.netIncome)}`, 14, 68);
 
     autoTable(doc, {
       startY: 80,
