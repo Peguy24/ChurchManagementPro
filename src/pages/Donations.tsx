@@ -152,7 +152,7 @@ function DonationsContent() {
     },
   });
 
-  const { formatAmount: formatCurrency } = useCurrency();
+  
 
   const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
 
