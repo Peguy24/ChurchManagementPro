@@ -369,7 +369,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
                               <p className="font-medium truncate">{event.title}</p>
                               {event.amount && (
                                 <Badge variant="secondary" className="shrink-0">
-                                  {event.amount.toLocaleString("fr-FR")} €
+                                  {formatAmount(event.amount)}
                                 </Badge>
                               )}
                             </div>
