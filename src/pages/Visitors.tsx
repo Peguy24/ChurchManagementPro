@@ -268,6 +268,7 @@ export default function Visitors() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Stats */}
