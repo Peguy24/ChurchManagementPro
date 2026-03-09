@@ -141,6 +141,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           taxId: churchSettings?.church_tax_id || "",
         },
         year: selectedYear,
+        currencyCode,
         donations: yearDonations.map((d) => ({
           date: d.donation_date,
           type: d.donation_type,

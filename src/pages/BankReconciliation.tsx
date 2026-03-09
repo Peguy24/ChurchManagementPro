@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { generateBankReconciliationPDF, BankTransaction } from "@/lib/bankReconciliationPDF";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BankReconciliation() {
   const { t, language } = useLanguage();
