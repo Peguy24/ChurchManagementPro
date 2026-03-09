@@ -216,7 +216,7 @@ const FinancialDashboard = () => {
     
     return {
       name: budget.name,
-      categoryName: (budget.category as any)?.name || "Non catégorisé",
+      categoryName: (budget.category as any)?.name || t("finance.uncategorized"),
       planned: plannedAmount,
       spent: spentAmount,
       percentage,
