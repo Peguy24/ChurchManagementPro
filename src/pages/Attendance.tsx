@@ -476,8 +476,8 @@ function AttendanceContent() {
 
       playSound("success");
 
-      const selectedEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
-      const arrivalSt = getArrivalStatus(scanTimestamp, selectedEvent?.event_time);
+      const currentEvent = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
+      const arrivalSt = getArrivalStatus(scanTimestamp, currentEvent?.event_time);
       setScannedMembers(prev => [{
         ...member,
         time: formatScanTime(scanTimestamp),
