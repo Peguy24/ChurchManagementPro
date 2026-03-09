@@ -41,6 +41,7 @@ interface TimelineEvent {
 
 export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const { formatAmount } = useCurrency();
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
