@@ -190,6 +190,48 @@ function DonationsContent() {
     setDialogOpen(true);
   };
 
+  const handleDownloadReceipt = async (donation: any) => {
+    try {
+      // Fetch church settings for the receipt header
+      const { data: settings } = await supabase
+        .from("church_settings")
+        .select("setting_key, setting_value")
+        .in("setting_key", ["church_name", "church_address", "church_phone", "church_email"]);
+
+      const getSetting = (key: string) =>
+        settings?.find((s) => s.setting_key === key)?.setting_value || "";
+
+      const blob = generateDonationReceiptPDF({
+        donation: {
+          id: donation.id,
+          donation_date: donation.donation_date,
+          donation_type: donation.donation_type,
+          amount: donation.amount,
+          payment_method: donation.payment_method,
+          description: donation.description,
+          notes: donation.notes,
+        },
+        member: donation.member
+          ? { first_name: donation.member.first_name, last_name: donation.member.last_name }
+          : null,
+        churchInfo: {
+          name: getSetting("church_name") || "Church",
+          address: getSetting("church_address") || "",
+          phone: getSetting("church_phone") || "",
+          email: getSetting("church_email") || "",
+        },
+        currencyCode,
+        language: language as "fr" | "en" | "ht",
+      });
+
+      downloadDonationReceiptPDF(blob, donation.id);
+      toast.success(t("common.downloadReceipt"));
+    } catch (error) {
+      console.error("Receipt generation error:", error);
+      toast.error("Error generating receipt");
+    }
+  };
+
   const handleCloseDialog = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
