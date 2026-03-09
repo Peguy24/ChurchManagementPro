@@ -304,6 +304,10 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
           <FileText className="mr-2 h-4 w-4" />
           PDF
         </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
+        </Button>
       </div>
 
       {/* Stats Cards */}

@@ -254,7 +254,11 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
         </Select>
         <Button variant="outline" onClick={exportToExcel}>
           <Download className="h-4 w-4 mr-2" />
-          Exporter Excel
+          Excel
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="h-4 w-4 mr-2" />
+          CSV
         </Button>
       </div>
 

@@ -381,7 +381,11 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                   </Select>
                   <Button variant="outline" onClick={exportToExcel}>
                     <Download className="h-4 w-4 mr-2" />
-                    Exporter
+                    Excel
+                  </Button>
+                  <Button variant="outline" onClick={exportToCSV}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    CSV
                   </Button>
                 </div>
               </div>
