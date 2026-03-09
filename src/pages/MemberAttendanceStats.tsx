@@ -129,9 +129,10 @@ export default function MemberAttendanceStats() {
         .from("attendance_records")
         .select("event_date, event_type")
         .eq("member_id", id)
-        .gte("event_date", startDate.toISOString().split("T")[0])
-        .lte("event_date", endDate.toISOString().split("T")[0])
+        .gte("event_date", formatDateInputValue(startDate))
+        .lte("event_date", formatDateInputValue(endDate))
         .order("event_date");
+
 
       if (attendanceError) throw attendanceError;
       setAttendanceRecords(attendanceData || []);
