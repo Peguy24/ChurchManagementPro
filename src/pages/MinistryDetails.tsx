@@ -155,7 +155,7 @@ export default function MinistryDetails() {
       setAddMemberDialog(false);
       setSelectedMemberId("");
       setMemberRole("member");
-      setJoinedDate(new Date().toISOString().split('T')[0]);
+      setJoinedDate(todayInputValue());
       refetchMembers();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de l'ajout");
