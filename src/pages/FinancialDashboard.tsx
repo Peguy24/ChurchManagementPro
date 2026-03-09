@@ -159,7 +159,7 @@ const FinancialDashboard = () => {
         const monthDate = subMonths(currentDate, i);
         const start = format(startOfMonth(monthDate), "yyyy-MM-dd");
         const end = format(endOfMonth(monthDate), "yyyy-MM-dd");
-        months.push({ start, end, label: format(monthDate, "MMM", { locale: fr }) });
+        months.push({ start, end, label: format(monthDate, "MMM", { locale: language === "fr" ? fr : undefined }) });
       }
 
       const trends = await Promise.all(
