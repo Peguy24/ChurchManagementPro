@@ -18,6 +18,7 @@ export interface FiscalReceiptData {
     taxId?: string;
   };
   year: number;
+  currencyCode?: string;
   donations: Array<{
     date: string;
     type: string;
