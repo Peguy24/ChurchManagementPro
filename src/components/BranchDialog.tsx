@@ -228,6 +228,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">{t("branches.parentBranchHelp")}</p>
             </div>
           </div>
 
