@@ -611,7 +611,7 @@ export default function Expenses() {
               <Clock className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">${stats.pending.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-warning">{formatCurrency(stats.pending)}</div>
               <p className="text-xs text-muted-foreground">{t("expense.awaitingReview")}</p>
             </CardContent>
           </Card>
