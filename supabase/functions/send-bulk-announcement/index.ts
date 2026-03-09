@@ -113,8 +113,15 @@ Deno.serve(async (req) => {
                         announcementType === "new_feature" ? "🚀 New Feature" :
                         announcementType === "update" ? "📦 Platform Update" : "📢 Announcement";
 
-      // Send individual emails for better deliverability
-      for (const recipientEmail of adminEmails) {
+      // Send individual emails with rate limiting (max 2/sec for Resend)
+      for (let i = 0; i < adminEmails.length; i++) {
+        const recipientEmail = adminEmails[i];
+
+        // Add delay every 2 emails to respect Resend's 2 req/sec rate limit
+        if (i > 0 && i % 2 === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1100));
+        }
+
         try {
           const emailRes = await fetch("https://api.resend.com/emails", {
             method: "POST",
