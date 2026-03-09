@@ -28,6 +28,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
+import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 
 interface MemberDialogProps {
   open: boolean;
