@@ -27,7 +27,53 @@ export interface CardCustomization {
   churchNameOnCard: boolean;
   churchName: string;
   logoUrl: string;
+  language?: string;
 }
+
+// ASCII-safe text for jsPDF default fonts
+function sanitize(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
+const cardTranslations = {
+  fr: {
+    memberCard: "CARTE DE MEMBRE",
+    ministry: "Ministere:",
+    memberSince: "Membre depuis:",
+    phone: "Tel:",
+    notDefined: "Non defini",
+    activeMember: "Membre Actif",
+    baptized: "Baptise",
+  },
+  en: {
+    memberCard: "MEMBER CARD",
+    ministry: "Ministry:",
+    memberSince: "Member since:",
+    phone: "Phone:",
+    notDefined: "Not defined",
+    activeMember: "Active Member",
+    baptized: "Baptized",
+  },
+  ht: {
+    memberCard: "KAT MANM",
+    ministry: "Ministè:",
+    memberSince: "Manm depi:",
+    phone: "Tel:",
+    notDefined: "Pa defini",
+    activeMember: "Manm Aktif",
+    baptized: "Batize",
+  },
+};
+
+type Lang = "fr" | "en" | "ht";
+
+const getT = (language?: string) => {
+  const lang = (language || "en") as Lang;
+  return cardTranslations[lang] || cardTranslations.en;
+};
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -47,12 +93,13 @@ const CARDS_PER_PAGE = 4;
 const PAGE_MARGIN = 10; // mm
 const CARD_MARGIN = 5; // mm
 
-const formatDate = (dateStr: string | null): string => {
-  if (!dateStr) return "Non défini";
+const formatDate = (dateStr: string | null, language?: string): string => {
+  const t = getT(language);
+  if (!dateStr) return t.notDefined;
   try {
     return format(new Date(dateStr), "dd/MM/yyyy", { locale: fr });
   } catch {
-    return "Non défini";
+    return t.notDefined;
   }
 };
 
@@ -87,6 +134,7 @@ const drawCard = async (
   customization?: CardCustomization,
   memberIndex: number = 0
 ) => {
+  const t = getT(customization?.language);
   const primaryColor = hexToRgb(customization?.primaryColor || "#3B82F6");
   const secondaryColor = hexToRgb(customization?.secondaryColor || "#1E40AF");
   const textColor = hexToRgb(customization?.textColor || "#FFFFFF");
@@ -126,8 +174,8 @@ const drawCard = async (
   pdf.setFont("helvetica", "bold");
   
   const headerTitle = customization?.churchNameOnCard && customization?.churchName 
-    ? customization.churchName 
-    : "CARTE DE MEMBRE";
+    ? sanitize(customization.churchName)
+    : sanitize(t.memberCard);
   pdf.text(headerTitle, headerTextX, y + 6);
 
   // Always show member ID in header
@@ -168,10 +216,10 @@ const drawCard = async (
   pdf.setTextColor(30, 30, 30);
   pdf.setFontSize(9);
   pdf.setFont("helvetica", "bold");
-  pdf.text(member.first_name, x + 24, y + 16);
+  pdf.text(sanitize(member.first_name), x + 24, y + 16);
   
   pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.text(member.last_name.toUpperCase(), x + 24, y + 21);
+  pdf.text(sanitize(member.last_name.toUpperCase()), x + 24, y + 21);
 
   // Role badge
   if (member.role) {
@@ -180,7 +228,7 @@ const drawCard = async (
     pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
     pdf.setFontSize(5);
     pdf.setFont("helvetica", "normal");
-    pdf.text(member.role, x + 25, y + 26);
+    pdf.text(sanitize(member.role), x + 25, y + 26);
   }
 
   // Member info
@@ -193,24 +241,24 @@ const drawCard = async (
 
   // Ministry
   pdf.setFont("helvetica", "bold");
-  pdf.text("Ministère:", infoX, infoY);
+  pdf.text(sanitize(t.ministry), infoX, infoY);
   pdf.setFont("helvetica", "normal");
-  pdf.text(member.ministry || "Non défini", infoX + 14, infoY);
+  pdf.text(sanitize(member.ministry || t.notDefined), infoX + 14, infoY);
 
   infoY += 4;
 
   // Join date
   pdf.setFont("helvetica", "bold");
-  pdf.text("Membre depuis:", infoX, infoY);
+  pdf.text(sanitize(t.memberSince), infoX, infoY);
   pdf.setFont("helvetica", "normal");
-  pdf.text(formatDate(member.join_date), infoX + 18, infoY);
+  pdf.text(formatDate(member.join_date, customization?.language), infoX + 18, infoY);
 
   infoY += 4;
 
   // Phone
   if (member.phone) {
     pdf.setFont("helvetica", "bold");
-    pdf.text("Tél:", infoX, infoY);
+    pdf.text(sanitize(t.phone), infoX, infoY);
     pdf.setFont("helvetica", "normal");
     pdf.text(member.phone, infoX + 6, infoY);
   }
@@ -240,14 +288,14 @@ const drawCard = async (
   pdf.setFont("helvetica", "bold");
   pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
   const footerName = customization?.churchNameOnCard 
-    ? "Membre Actif" 
-    : (customization?.churchName || "Church Manager Pro");
+    ? sanitize(t.activeMember)
+    : sanitize(customization?.churchName || "Church Management Pro");
   pdf.text(footerName, x + CARD_WIDTH - 3, y + CARD_HEIGHT - 6, { align: "right" });
 
   pdf.setFontSize(4);
   pdf.setFont("helvetica", "normal");
   pdf.setTextColor(120, 120, 120);
-  pdf.text("Membre Actif", x + CARD_WIDTH - 3, y + CARD_HEIGHT - 3, { align: "right" });
+  pdf.text(sanitize(t.activeMember), x + CARD_WIDTH - 3, y + CARD_HEIGHT - 3, { align: "right" });
 
   // Baptism status badge
   if (member.baptism_status === "baptise" || member.baptism_status === "Oui") {
@@ -255,7 +303,7 @@ const drawCard = async (
     pdf.roundedRect(x + CARD_WIDTH - 18, y + CARD_HEIGHT - 13, 12, 4, 1, 1, "F");
     pdf.setTextColor(22, 163, 74);
     pdf.setFontSize(4);
-    pdf.text("Baptisé", x + CARD_WIDTH - 17, y + CARD_HEIGHT - 10);
+    pdf.text(sanitize(t.baptized), x + CARD_WIDTH - 17, y + CARD_HEIGHT - 10);
   }
 };
 
