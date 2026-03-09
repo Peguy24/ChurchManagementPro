@@ -124,7 +124,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (!tenantId) throw new Error(t("events.noTenant"));
-      const { error } = await supabase.from("events").insert({
+      const { data: inserted, error } = await supabase.from("events").insert({
         name: data.name,
         event_date: data.date,
         end_date: data.endDate || null,
@@ -136,8 +136,11 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         expected_attendees: data.expectedAttendees,
         event_category: data.eventCategory,
         tenant_id: tenantId,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted) {
+        await saveCustomFieldValues(inserted.id, customFieldValues, "event", tenantId);
+      }
     },
     onSuccess: () => {
       toast({ title: t("events.eventCreated"), description: `${formData.name} ${t("events.eventCreatedDesc")} ${formData.date}.` });
@@ -168,6 +171,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
         })
         .eq("id", event.id);
       if (error) throw error;
+      await saveCustomFieldValues(event.id, customFieldValues, "event", tenantId);
     },
     onSuccess: () => {
       toast({ title: t("events.eventUpdated"), description: `${formData.name} ${t("events.eventUpdatedDesc")}` });
