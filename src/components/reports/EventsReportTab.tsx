@@ -35,7 +35,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Calendar, CalendarCheck, CalendarX, Users, FileSpreadsheet, FileText } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarX, Users, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, isPast, isFuture, isToday, subMonths } from "date-fns";
