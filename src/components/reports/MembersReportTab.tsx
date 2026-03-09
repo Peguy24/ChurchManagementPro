@@ -30,7 +30,8 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { Users, UserPlus, UserCheck, Church, FileSpreadsheet, FileText } from "lucide-react";
+import { Users, UserPlus, UserCheck, Church, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO } from "date-fns";
@@ -265,6 +266,23 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     doc.save(`rapport-membres-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      members,
+      [
+        { key: "member_number", header: "N° Membre" },
+        { key: "first_name", header: "Prénom" },
+        { key: "last_name", header: "Nom" },
+        { key: "status", header: "Statut" },
+        { key: "branch.name", header: "Branche" },
+        { key: "phone", header: "Téléphone" },
+        { key: "email", header: "Email" },
+        { key: "join_date", header: "Date d'inscription", formatter: (v) => v ? format(parseISO(v), "dd/MM/yyyy") : "" },
+      ],
+      `rapport-membres-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -276,6 +294,10 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
         <Button variant="outline" onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           PDF
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
         </Button>
       </div>
 

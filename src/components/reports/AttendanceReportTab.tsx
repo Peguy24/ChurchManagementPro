@@ -37,7 +37,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Users, Calendar, TrendingUp, Percent, FileSpreadsheet, FileText } from "lucide-react";
+import { Users, Calendar, TrendingUp, Percent, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO, startOfMonth, endOfMonth } from "date-fns";
@@ -259,6 +260,19 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     doc.save(`rapport-presences-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      monthlyData,
+      [
+        { key: "month", header: "Mois" },
+        { key: "presences", header: "Présences" },
+        { key: "events", header: "Événements" },
+        { key: "avgPerEvent", header: "Moyenne/Événement" },
+      ],
+      `rapport-presences-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   const eventTypeLabels: Record<string, string> = {
     sunday_service: "Service Dimanche",
     bible_study: "Étude Biblique",
@@ -289,6 +303,10 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
         <Button variant="outline" onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           PDF
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
         </Button>
       </div>
 

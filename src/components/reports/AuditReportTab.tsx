@@ -42,7 +42,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Shield, FileSpreadsheet, FileText, Search, Eye, Activity } from "lucide-react";
+import { Shield, FileSpreadsheet, FileText, Search, Eye, Activity, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subMonths } from "date-fns";
@@ -263,6 +264,20 @@ export default function AuditReportTab() {
     doc.save(`rapport-audit-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      filteredLogs,
+      [
+        { key: "created_at", header: "Date/Heure", formatter: (v) => format(parseISO(v), "dd/MM/yyyy HH:mm") },
+        { key: "user_email", header: "Utilisateur", formatter: (v) => v || "-" },
+        { key: "entity_type", header: "Entité", formatter: (v) => getEntityLabel(v) },
+        { key: "action", header: "Action" },
+        { key: "entity_id", header: "ID Entité" },
+      ],
+      `rapport-audit-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -307,6 +322,10 @@ export default function AuditReportTab() {
         <Button variant="outline" onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           PDF
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
         </Button>
       </div>
 

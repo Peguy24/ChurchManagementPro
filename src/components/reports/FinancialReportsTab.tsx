@@ -45,7 +45,9 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
+  FileDown,
 } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -349,6 +351,19 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     doc.save(`${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      revenueVsExpensesData,
+      [
+        { key: "month", header: r("month") },
+        { key: "revenue", header: r("revenue"), formatter: (v) => v.toFixed(2) },
+        { key: "expenses", header: r("expenses"), formatter: (v) => v.toFixed(2) },
+        { key: "net", header: r("net"), formatter: (v) => v.toFixed(2) },
+      ],
+      `${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -372,6 +387,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
         <Button variant="outline" onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           PDF
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
         </Button>
       </div>
 

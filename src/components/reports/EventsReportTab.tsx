@@ -35,7 +35,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Calendar, CalendarCheck, CalendarX, Users, FileSpreadsheet, FileText } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarX, Users, FileSpreadsheet, FileText, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, isPast, isFuture, isToday, subMonths } from "date-fns";
@@ -223,6 +224,18 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
     doc.save(`events-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      events,
+      [
+        { key: "date", header: er("date"), formatter: (v) => format(parseISO(v), "dd/MM/yyyy") },
+        { key: "type", header: er("type"), formatter: (v) => eventTypeLabels[v] || v },
+        { key: "attendees", header: er("participants") },
+      ],
+      `events-report-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   const periodOptions = [
     { value: "1", label: er("lastMonth") },
     { value: "3", label: er("last3Months") },
@@ -254,6 +267,10 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
         <Button variant="outline" onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           PDF
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          CSV
         </Button>
       </div>
 

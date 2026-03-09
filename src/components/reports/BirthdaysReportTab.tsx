@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Cake, Heart, Church, Calendar, Users, Download, Gift } from "lucide-react";
+import { Cake, Heart, Church, Calendar, Users, Download, Gift, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, differenceInYears, isSameMonth, addDays, isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
@@ -197,6 +198,28 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
     XLSX.writeFile(wb, `anniversaires_${months[parseInt(selectedMonth)]}.xlsx`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      monthEvents.map((event) => ({
+        membre: `${event.member.first_name} ${event.member.last_name}`,
+        type: getEventLabel(event.eventType),
+        date: format(event.date, "dd MMMM", { locale: fr }),
+        annees: event.years,
+        telephone: event.member.phone || "-",
+        email: event.member.email || "-",
+      })),
+      [
+        { key: "membre", header: "Membre" },
+        { key: "type", header: "Type" },
+        { key: "date", header: "Date" },
+        { key: "annees", header: "Années" },
+        { key: "telephone", header: "Téléphone" },
+        { key: "email", header: "Email" },
+      ],
+      `anniversaires_${months[parseInt(selectedMonth)]}`
+    );
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Chargement...</div>;
   }
@@ -358,7 +381,11 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
                   </Select>
                   <Button variant="outline" onClick={exportToExcel}>
                     <Download className="h-4 w-4 mr-2" />
-                    Exporter
+                    Excel
+                  </Button>
+                  <Button variant="outline" onClick={exportToCSV}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    CSV
                   </Button>
                 </div>
               </div>

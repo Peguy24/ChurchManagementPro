@@ -4,7 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Wrench, AlertTriangle, Download, TrendingUp } from "lucide-react";
+import { Package, Wrench, AlertTriangle, Download, TrendingUp, FileDown } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
@@ -212,6 +213,26 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
     XLSX.writeFile(wb, `rapport_inventaire_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      items,
+      [
+        { key: "name", header: "Nom" },
+        { key: "category", header: "Catégorie", formatter: (v) => getCategoryLabel(v) },
+        { key: "serial_number", header: "N° Série", formatter: (v) => v || "-" },
+        { key: "quantity", header: "Quantité" },
+        { key: "min_quantity", header: "Stock Min" },
+        { key: "condition", header: "État", formatter: (v) => getConditionLabel(v) || "-" },
+        { key: "status", header: "Statut", formatter: (v) => getStatusLabel(v) },
+        { key: "location", header: "Emplacement", formatter: (v) => v || "-" },
+        { key: "purchase_price", header: "Prix d'achat", formatter: (v) => v?.toFixed(2) || "0" },
+        { key: "current_value", header: "Valeur actuelle", formatter: (v) => v?.toFixed(2) || "0" },
+        { key: "purchase_date", header: "Date d'achat", formatter: (v) => v ? format(new Date(v), "dd/MM/yyyy") : "-" },
+      ],
+      `rapport_inventaire_${format(new Date(), "yyyy-MM-dd")}`
+    );
+  };
+
   if (itemsLoading) {
     return <div className="flex items-center justify-center p-8">Chargement...</div>;
   }
@@ -233,7 +254,11 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
         </Select>
         <Button variant="outline" onClick={exportToExcel}>
           <Download className="h-4 w-4 mr-2" />
-          Exporter Excel
+          Excel
+        </Button>
+        <Button variant="outline" onClick={exportToCSV}>
+          <FileDown className="h-4 w-4 mr-2" />
+          CSV
         </Button>
       </div>
 
