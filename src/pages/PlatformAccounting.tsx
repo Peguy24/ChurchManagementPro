@@ -16,9 +16,11 @@ import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Cal
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateInputValue, formatDateForDisplay, todayInputValue } from "@/lib/date";
 import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
+
 
 const CATEGORIES = [
   "hosting",

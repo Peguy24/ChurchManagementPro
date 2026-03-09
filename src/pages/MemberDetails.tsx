@@ -39,7 +39,9 @@ import MemberDonationStats from "@/components/MemberDonationStats";
 import MemberDocuments from "@/components/MemberDocuments";
 import MemberTimeline from "@/components/MemberTimeline";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateForDisplay, todayInputValue } from "@/lib/date";
 import QRCode from "qrcode";
+
 
 interface MemberSimple {
   id: string;

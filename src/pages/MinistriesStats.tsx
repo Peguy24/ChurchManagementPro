@@ -136,9 +136,10 @@ export default function MinistriesStats() {
       const { data, error } = await supabase
         .from("ministry_members")
         .select("joined_date")
-        .gte("joined_date", startDate.toISOString().split("T")[0])
-        .lte("joined_date", endDate.toISOString().split("T")[0])
+        .gte("joined_date", formatDateInputValue(startDate))
+        .lte("joined_date", formatDateInputValue(endDate))
         .order("joined_date");
+
 
       if (error) throw error;
 

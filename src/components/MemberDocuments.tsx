@@ -32,8 +32,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { FileText, Plus, Upload, Download, Trash2, Eye, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { todayInputValue, parseDateOnly } from "@/lib/date";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+
 
 interface MemberDocumentsProps {
   memberId: string;

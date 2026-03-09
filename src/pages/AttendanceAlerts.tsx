@@ -8,6 +8,8 @@ import { AlertTriangle, TrendingDown, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
+
 
 interface AttendanceAlert {
   member_id: string;

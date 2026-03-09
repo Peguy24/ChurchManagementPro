@@ -25,10 +25,12 @@ import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateForDisplay, todayInputValue } from "@/lib/date";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 import { exportToCsv, CsvColumn, formatDateForCsv } from "@/lib/csvExport";
 import { useToast } from "@/hooks/use-toast";
+
 const statusColors: Record<string, string> = {
   Actif: "bg-success/10 text-success border-success/20",
   Inactif: "bg-muted text-muted-foreground border-border",

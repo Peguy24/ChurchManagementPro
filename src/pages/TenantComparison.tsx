@@ -10,6 +10,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { GitCompareArrows, Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateInputValue } from "@/lib/date";
+
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {

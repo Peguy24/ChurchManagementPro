@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, addDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
 import { useState, useMemo } from "react";
@@ -15,6 +16,7 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
+
 
 export default function Dashboard() {
   const { t } = useLanguage();
