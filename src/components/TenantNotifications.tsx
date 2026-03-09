@@ -65,7 +65,7 @@ export default function TenantNotifications() {
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return (data || []) as TenantNotification[];
+      return (data || []) as unknown as TenantNotification[];
     },
     enabled: !!tenantId,
     refetchInterval: 60000,
