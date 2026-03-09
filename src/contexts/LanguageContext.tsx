@@ -3008,6 +3008,17 @@ const translations = {
     saveAddress: "Sauver Adresse",
     saveWelcome: "Sauver Message",
   },
+  tenantNotifications: {
+    title: "Notifications",
+    markAllRead: "Tout lire",
+    clearAll: "Tout effacer",
+    empty: "Aucune notification",
+    newMember: "Nouveau membre",
+    newDonation: "Nouveau don",
+    newEvent: "Nouvel événement",
+    newExpense: "Nouvelle dépense",
+    memberRequest: "Demande d'adhésion",
+  },
   },
   en: {
     common: {
