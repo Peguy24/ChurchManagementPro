@@ -6680,6 +6680,7 @@ const translations = {
       membersText: "manm...",
       pdfGenerated: "PDF jenere avèk siksè",
       cardsDownloaded: "kat telechaje.",
+      preview: "Apèsi",
       errorGeneratingPdf: "Pa kapab jenere PDF. Tanpri eseye ankò.",
       attendanceDialog: {
         title: "Make Prezans",
