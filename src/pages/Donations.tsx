@@ -29,6 +29,8 @@ import {
 import { DollarSign, Download, Plus, TrendingUp, FileText, Eye, Pencil, Wallet, Building2 } from "lucide-react";
 import DonationDialog from "@/components/DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { generateDonationReceiptPDF, downloadDonationReceiptPDF } from "@/lib/donationReceiptPDF";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
