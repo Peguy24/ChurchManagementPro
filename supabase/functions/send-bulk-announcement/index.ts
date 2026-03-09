@@ -117,9 +117,9 @@ Deno.serve(async (req) => {
       for (let i = 0; i < adminEmails.length; i++) {
         const recipientEmail = adminEmails[i];
 
-        // Add delay every 2 emails to respect Resend's 2 req/sec rate limit
-        if (i > 0 && i % 2 === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1100));
+        // Add delay before every email (except first) to respect Resend's 2 req/sec rate limit
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
         }
 
         try {
