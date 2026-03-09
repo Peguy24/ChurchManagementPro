@@ -17,7 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, ClipboardCheck, Calendar, Church, Hash, FileDown, Briefcase } from "lucide-react";
+import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, Calendar, Church, Hash, FileDown, Briefcase, Eye } from "lucide-react";
 import { SignedImage } from "@/components/SignedImage";
 import {
   Dialog,
@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { generateMemberCardsPDF, downloadPDF, CardCustomization } from "@/lib/memberCardPDF";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { todayInputValue } from "@/lib/date";
+
 
 
 interface Member {
@@ -61,12 +61,10 @@ export default function MemberCards() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [baptismFilter, setBaptismFilter] = useState<string>("all");
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
-  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
-  const [eventType, setEventType] = useState("");
-  const [eventDate, setEventDate] = useState(todayInputValue());
-  const [submittingAttendance, setSubmittingAttendance] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   const { data: allMembers = [], isLoading, refetch } = useQuery({
     queryKey: ["member-cards"],
@@ -299,61 +297,43 @@ export default function MemberCards() {
     }
   };
 
-  const handleMarkAttendance = async () => {
-    if (!eventType || !eventDate) {
+  const handlePreview = async () => {
+    const selectedMembersList = members.filter((m) => selectedMembers.has(m.id));
+    
+    if (selectedMembersList.length === 0) {
       toast({
-        title: t("common.error"),
-        description: t("memberCards.attendanceDialog.selectEvent"),
+        title: t("memberCards.noMemberSelected"),
+        description: t("memberCards.selectAtLeastOne"),
         variant: "destructive",
       });
       return;
     }
 
-    const selectedMemberIds = Array.from(selectedMembers).filter((id) =>
-      members.some((m) => m.id === id)
-    );
-
-    if (selectedMemberIds.length === 0) {
-      toast({
-        title: t("common.error"),
-        description: t("memberCards.attendanceDialog.selectMember"),
-        variant: "destructive",
-      });
-      return;
-    }
+    setGeneratingPDF(true);
+    setPdfProgress(0);
 
     try {
-      setSubmittingAttendance(true);
-
-      const records = selectedMemberIds.map((memberId) => ({
-        member_id: memberId,
-        event_type: eventType,
-        event_date: eventDate,
-        scan_method: "bulk_selection",
+      const cardData = selectedMembersList.map(m => ({
+        ...m,
+        ministry: m.ministry_members?.[0]?.ministries?.name || null,
       }));
+      const pdfBlob = await generateMemberCardsPDF(cardData, (progress) => {
+        setPdfProgress(progress);
+      }, cardCustomization);
 
-      const { error } = await supabase
-        .from("attendance_records")
-        .insert(records);
-
-      if (error) throw error;
-
-      toast({
-        title: t("memberCards.attendanceDialog.success"),
-        description: t("memberCards.attendanceDialog.attendanceRecorded").replace("{count}", String(selectedMemberIds.length)),
-      });
-
-      setAttendanceDialogOpen(false);
-      setEventType("");
+      const url = URL.createObjectURL(pdfBlob);
+      setPreviewUrl(url);
+      setPreviewDialogOpen(true);
     } catch (error) {
-      console.error("Error marking attendance:", error);
+      console.error("Error generating preview:", error);
       toast({
         title: t("common.error"),
-        description: t("memberCards.attendanceDialog.error"),
+        description: t("memberCards.errorGeneratingPdf"),
         variant: "destructive",
       });
     } finally {
-      setSubmittingAttendance(false);
+      setGeneratingPDF(false);
+      setPdfProgress(0);
     }
   };
 
@@ -387,14 +367,14 @@ export default function MemberCards() {
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <Button 
                 variant="default" 
-                onClick={() => setAttendanceDialogOpen(true)}
-                disabled={selectedCount === 0}
+                onClick={handlePreview}
+                disabled={selectedCount === 0 || generatingPDF}
                 size="sm"
                 className="flex-1 sm:flex-none"
               >
-                <ClipboardCheck className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">{t("memberCards.markAttendance")}</span>
-                <span className="sm:hidden">{t("memberCards.markAttendance")}</span>
+                <Eye className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{t("memberCards.preview") || "Aperçu"}</span>
+                <span className="sm:hidden">{t("memberCards.preview") || "Aperçu"}</span>
                 <span className="ml-1">({selectedCount})</span>
               </Button>
               <Button 
@@ -803,59 +783,59 @@ export default function MemberCards() {
         }
       `}</style>
 
-      {/* Attendance Dialog */}
-      <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+      {/* Preview Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={(open) => {
+        setPreviewDialogOpen(open);
+        if (!open && previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>{t("memberCards.attendanceDialog.title")}</DialogTitle>
+            <DialogTitle>{t("memberCards.preview") || "Aperçu"}</DialogTitle>
             <DialogDescription>
-              {t("memberCards.attendanceDialog.description")} {selectedCount} {t("memberCards.attendanceDialog.membersSelected")}
+              {selectedCount} {t("memberCards.cardsSelected")}
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="event-type">{t("memberCards.attendanceDialog.eventType")}</Label>
-              <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger id="event-type">
-                  <SelectValue placeholder={t("memberCards.attendanceDialog.chooseEvent")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Service Dimanche">{t("memberCards.attendanceDialog.sundayService")}</SelectItem>
-                  <SelectItem value="Etude Biblique">{t("memberCards.attendanceDialog.bibleStudy")}</SelectItem>
-                  <SelectItem value="Reunion Priere">{t("memberCards.attendanceDialog.prayerMeeting")}</SelectItem>
-                  <SelectItem value="Groupe Jeunesse">{t("memberCards.attendanceDialog.youthGroup")}</SelectItem>
-                  <SelectItem value="Autre">{t("memberCards.attendanceDialog.other")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="event-date">{t("memberCards.attendanceDialog.date")}</Label>
-              <Input
-                id="event-date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
+          <div className="flex-1 min-h-0">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg border"
+                title="Card Preview"
               />
-            </div>
+            )}
           </div>
-
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAttendanceDialogOpen(false)}
-              disabled={submittingAttendance}
-              className="w-full sm:w-auto"
-            >
-              {t("memberCards.attendanceDialog.cancel")}
+            <Button variant="outline" onClick={() => setPreviewDialogOpen(false)} className="w-full sm:w-auto">
+              {t("common.close") || "Fermer"}
             </Button>
-            <Button
-              onClick={handleMarkAttendance}
-              disabled={submittingAttendance || !eventType}
-              className="w-full sm:w-auto"
-            >
-              {submittingAttendance ? t("memberCards.attendanceDialog.saving") : t("memberCards.attendanceDialog.confirm")}
+            <Button onClick={() => {
+              if (previewUrl) {
+                const link = document.createElement("a");
+                link.href = previewUrl;
+                link.download = `cartes-membres-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+                link.click();
+              }
+            }} className="w-full sm:w-auto">
+              <FileDown className="mr-2 h-4 w-4" />
+              {t("memberCards.downloadPdf")}
+            </Button>
+            <Button onClick={() => {
+              if (previewUrl) {
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                iframe.src = previewUrl;
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                  iframe.contentWindow?.print();
+                  setTimeout(() => document.body.removeChild(iframe), 1000);
+                };
+              }
+            }} className="w-full sm:w-auto">
+              <Printer className="mr-2 h-4 w-4" />
+              {t("memberCards.print")}
             </Button>
           </DialogFooter>
         </DialogContent>
