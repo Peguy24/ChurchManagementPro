@@ -350,6 +350,21 @@ export default function AttendanceKiosk() {
               {memberName && (
                 <h3 className="text-2xl font-bold text-center mb-1">{memberName}</h3>
               )}
+              {feedback === "success" && selectedEvent && (() => {
+                const scanTime = formatScanTime(new Date().toISOString());
+                const arrivalStatus = getArrivalStatus(new Date().toISOString(), selectedEvent.event_time);
+                const statusKey = getStatusTranslationKey(arrivalStatus);
+                return (
+                  <div className="flex flex-col items-center gap-1 mb-1">
+                    <p className="text-sm text-muted-foreground">{t("attendance.scanTime")}: {scanTime}</p>
+                    {arrivalStatus && (
+                      <Badge variant={getStatusBadgeVariant(arrivalStatus)} className="text-sm">
+                        {t(statusKey)}
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })()}
               <p className="text-lg text-center text-muted-foreground">
                 {feedbackMessage}
               </p>
