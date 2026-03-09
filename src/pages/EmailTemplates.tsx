@@ -249,13 +249,11 @@ function EmailTemplatesContent() {
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor={`body-${template.id}`}>{t("emailTemplatesPage.htmlContent")}</Label>
-                          <Textarea
-                            id={`body-${template.id}`}
+                          <Label>{t("emailTemplatesPage.htmlContent")}</Label>
+                          <RichTextEditor
                             value={getCurrentValue(template, "body_html") as string}
-                            onChange={(e) => handleChange(template.id, "body_html", e.target.value)}
-                            placeholder={t("emailTemplatesPage.htmlContentPlaceholder")}
-                            className="min-h-[300px] font-mono text-sm"
+                            onChange={(html) => handleChange(template.id, "body_html", html)}
+                            minHeight="300px"
                           />
                         </div>
 
