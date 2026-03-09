@@ -9,22 +9,200 @@ import { Church, Building2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    loading: 'Loading...',
+    error: 'Error',
+    fillAllFields: 'Please fill in all fields',
+    loginError: 'Login Error',
+    invalidCredentials: 'Incorrect email or password',
+    loginSuccess: 'Login Successful!',
+    welcomeMessage: 'Welcome to the management system',
+    emailSent: 'Email Sent',
+    checkMailbox: 'Check your mailbox to reset your password.',
+    signupSuccess: 'Registration Successful!',
+    accountCreated: 'Your account has been created. An administrator must approve your access.',
+    alreadyExists: 'Account Already Exists',
+    alreadyExistsDesc: 'An account with this email already exists. Please log in.',
+    signupError: 'Registration Error',
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShortAuth: 'Password must be at least 6 characters',
+    superAdminInvite: 'Super Administrator Invitation',
+    superAdminInviteDesc: 'You are invited to become Super Admin of the platform',
+    invalidInvite: 'Invalid Invitation',
+    invalidInviteDesc: 'This invitation link has expired or has already been used.',
+    adminInvite: 'Administrator Invitation',
+    adminInviteDesc: 'You are invited to manage',
+    administration: 'Administration',
+    superAdminPortal: 'Super Admin Portal',
+    login: 'Login',
+    signup: 'Sign Up',
+    loginTitle: 'Login',
+    loginDesc: 'Enter your information to log in',
+    email: 'Email',
+    emailPlaceholder: 'name@example.com',
+    password: 'Password',
+    forgotPassword: 'Forgot password?',
+    forgotPasswordDesc: 'Enter your email to receive a reset link',
+    sendLink: 'Send Link',
+    sending: 'Sending...',
+    cancel: 'Cancel',
+    logIn: 'Log In',
+    createAccount: 'Create Account',
+    createAccountDesc: 'Fill in your information to create a new account',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    confirmPassword: 'Confirm Password',
+    createBtn: 'Create Account',
+    youAreNow: 'You are now',
+    ofThePlatform: 'of the platform.',
+    adminOf: 'administrator of',
+    theChurch: 'the church',
+    superAdmin: 'Super Administrator',
+    financeAdmin: 'Finance Admin',
+    moderator: 'Moderator',
+    support: 'Technical Support',
+    sales: 'Sales',
+    administrator: 'Administrator',
+    invitationInvalid: 'Invalid invitation',
+    invitationExpired: 'This invitation link has expired or has already been used.',
+  },
+  fr: {
+    loading: 'Chargement...',
+    error: 'Erreur',
+    fillAllFields: 'Veuillez remplir tous les champs',
+    loginError: 'Erreur de connexion',
+    invalidCredentials: 'Email ou mot de passe incorrect',
+    loginSuccess: 'Connexion réussie!',
+    welcomeMessage: 'Bienvenue dans le système de gestion',
+    emailSent: 'Email envoyé',
+    checkMailbox: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.',
+    signupSuccess: 'Inscription réussie!',
+    accountCreated: 'Votre compte a été créé. Un administrateur doit approuver votre accès.',
+    alreadyExists: 'Compte déjà existant',
+    alreadyExistsDesc: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
+    signupError: "Erreur d'inscription",
+    passwordMismatch: 'Les mots de passe ne correspondent pas',
+    passwordTooShortAuth: 'Le mot de passe doit contenir au moins 6 caractères',
+    superAdminInvite: 'Invitation Super Administrateur',
+    superAdminInviteDesc: 'Vous êtes invité à devenir Super Admin de la plateforme',
+    invalidInvite: 'Invitation invalide',
+    invalidInviteDesc: "Ce lien d'invitation est expiré ou a déjà été utilisé.",
+    adminInvite: 'Invitation Administrateur',
+    adminInviteDesc: 'Vous êtes invité à administrer',
+    administration: 'Administration',
+    superAdminPortal: 'Portail Super Admin',
+    login: 'Connexion',
+    signup: 'Inscription',
+    loginTitle: 'Connexion',
+    loginDesc: 'Entrez vos informations pour vous connecter',
+    email: 'Email',
+    emailPlaceholder: 'nom@exemple.com',
+    password: 'Mot de passe',
+    forgotPassword: 'Mot de passe oublié ?',
+    forgotPasswordDesc: 'Entrez votre email pour recevoir un lien de réinitialisation',
+    sendLink: 'Envoyer le lien',
+    sending: 'Envoi...',
+    cancel: 'Annuler',
+    logIn: 'Se connecter',
+    createAccount: 'Créer un Compte',
+    createAccountDesc: 'Remplissez vos informations pour créer un nouveau compte',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    confirmPassword: 'Confirmer le Mot de passe',
+    createBtn: 'Créer le Compte',
+    youAreNow: 'Vous êtes maintenant',
+    ofThePlatform: 'de la plateforme.',
+    adminOf: 'administrateur de',
+    theChurch: "l'église",
+    superAdmin: 'Super Administrateur',
+    financeAdmin: 'Admin Finance',
+    moderator: 'Modérateur',
+    support: 'Support Technique',
+    sales: 'Commercial',
+    administrator: 'Administrateur',
+    invitationInvalid: 'Invitation invalide',
+    invitationExpired: "Ce lien d'invitation est expiré ou déjà utilisé.",
+  },
+  ht: {
+    loading: 'Chajman...',
+    error: 'Erè',
+    fillAllFields: 'Tanpri ranpli tout chan yo',
+    loginError: 'Erè koneksyon',
+    invalidCredentials: 'Imèl oswa modpas pa kòrèk',
+    loginSuccess: 'Koneksyon reyisi!',
+    welcomeMessage: 'Byenveni nan sistèm jesyon an',
+    emailSent: 'Imèl voye',
+    checkMailbox: 'Verifye bwat imèl ou pou reyinisyalize modpas ou.',
+    signupSuccess: 'Enskripsyon reyisi!',
+    accountCreated: 'Kont ou kreye. Yon administratè dwe apwouve aksè ou.',
+    alreadyExists: 'Kont deja egziste',
+    alreadyExistsDesc: 'Yon kont ak imèl sa a deja egziste. Tanpri konekte ou.',
+    signupError: 'Erè enskripsyon',
+    passwordMismatch: 'Modpas yo pa menm',
+    passwordTooShortAuth: 'Modpas la dwe gen omwen 6 karaktè',
+    superAdminInvite: 'Envitasyon Super Administratè',
+    superAdminInviteDesc: 'Ou envite pou vin Super Admin platfòm nan',
+    invalidInvite: 'Envitasyon envalid',
+    invalidInviteDesc: 'Lyen envitasyon sa a ekspire oswa deja itilize.',
+    adminInvite: 'Envitasyon Administratè',
+    adminInviteDesc: 'Ou envite pou administre',
+    administration: 'Administrasyon',
+    superAdminPortal: 'Pòtay Super Admin',
+    login: 'Koneksyon',
+    signup: 'Enskripsyon',
+    loginTitle: 'Koneksyon',
+    loginDesc: 'Antre enfòmasyon ou pou konekte',
+    email: 'Imèl',
+    emailPlaceholder: 'non@egzanp.com',
+    password: 'Modpas',
+    forgotPassword: 'Bliye modpas?',
+    forgotPasswordDesc: 'Antre imèl ou pou resevwa yon lyen reyinisyalizasyon',
+    sendLink: 'Voye lyen',
+    sending: 'Anvwa...',
+    cancel: 'Anile',
+    logIn: 'Konekte',
+    createAccount: 'Kreye yon Kont',
+    createAccountDesc: 'Ranpli enfòmasyon ou pou kreye yon nouvo kont',
+    firstName: 'Prenon',
+    lastName: 'Non',
+    confirmPassword: 'Konfime Modpas',
+    createBtn: 'Kreye Kont',
+    youAreNow: 'Ou se kounye a',
+    ofThePlatform: 'nan platfòm nan.',
+    adminOf: 'administratè',
+    theChurch: 'legliz la',
+    superAdmin: 'Super Administratè',
+    financeAdmin: 'Admin Finans',
+    moderator: 'Moderatè',
+    support: 'Sipò Teknik',
+    sales: 'Komèsyal',
+    administrator: 'Administratè',
+    invitationInvalid: 'Envitasyon envalid',
+    invitationExpired: 'Lyen envitasyon sa a ekspire oswa deja itilize.',
+  },
+};
 
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
+  const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations['en'][key] || key;
   
   // Get tenant info from URL params (from invitation link)
   const tenantId = searchParams.get('tenant');
   const invitedRole = searchParams.get('role');
   const superAdminInviteToken = searchParams.get('superadmin_invite');
-  const platformRole = searchParams.get('role'); // For platform roles (super_admin, finance_admin, etc.)
+  const platformRole = searchParams.get('role');
   
   const [tenantInfo, setTenantInfo] = useState<{ name: string; slug: string } | null>(null);
   const [superAdminInvite, setSuperAdminInvite] = useState<{ email: string; valid: boolean } | null>(null);
@@ -47,8 +225,8 @@ export default function Auth() {
           } else {
             setSuperAdminInvite({ email: '', valid: false });
             toast({
-              title: 'Invitation invalide',
-              description: 'Ce lien d\'invitation est expiré ou déjà utilisé.',
+              title: lt('invitationInvalid'),
+              description: lt('invitationExpired'),
               variant: 'destructive',
             });
           }
@@ -113,8 +291,8 @@ export default function Auth() {
 
     if (!loginForm.email || !loginForm.password) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs',
+        title: lt('error'),
+        description: lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -125,16 +303,16 @@ export default function Auth() {
 
     if (error) {
       toast({
-        title: 'Erreur de connexion',
+        title: lt('loginError'),
         description: error.message === 'Invalid login credentials' 
-          ? 'Email ou mot de passe incorrect' 
+          ? lt('invalidCredentials')
           : error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Connexion réussie!',
-        description: 'Bienvenue dans le système de gestion',
+        title: lt('loginSuccess'),
+        description: lt('welcomeMessage'),
       });
       navigate('/');
     }
@@ -150,9 +328,9 @@ export default function Auth() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      toast({ title: lt('error'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Email envoyé', description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.' });
+      toast({ title: lt('emailSent'), description: lt('checkMailbox') });
       setShowForgotPassword(false);
       setForgotEmail('');
     }
@@ -163,11 +341,10 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validation
     if (!signupForm.firstName || !signupForm.lastName || !signupForm.email || !signupForm.password) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs',
+        title: lt('error'),
+        description: lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -176,8 +353,8 @@ export default function Auth() {
 
     if (signupForm.password !== signupForm.confirmPassword) {
       toast({
-        title: 'Erreur',
-        description: 'Les mots de passe ne correspondent pas',
+        title: lt('error'),
+        description: lt('passwordMismatch'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -186,8 +363,8 @@ export default function Auth() {
 
     if (signupForm.password.length < 6) {
       toast({
-        title: 'Erreur',
-        description: 'Le mot de passe doit contenir au moins 6 caractères',
+        title: lt('error'),
+        description: lt('passwordTooShortAuth'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -204,13 +381,13 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('already registered')) {
         toast({
-          title: 'Compte déjà existant',
-          description: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
+          title: lt('alreadyExists'),
+          description: lt('alreadyExistsDesc'),
           variant: 'destructive',
         });
       } else {
         toast({
-          title: "Erreur d'inscription",
+          title: lt('signupError'),
           description: error.message,
           variant: 'destructive',
         });
@@ -221,7 +398,6 @@ export default function Auth() {
       // Handle Super Admin / Platform invitation
       if (superAdminInviteToken && superAdminInvite?.valid && userId) {
         try {
-          // Always assign legacy admin role for backward compatibility
           await supabase
             .from('user_roles')
             .delete()
@@ -235,7 +411,6 @@ export default function Auth() {
               role: 'admin',
             });
           
-          // If a specific platform role was provided, assign it
           const validPlatformRoles = ['super_admin', 'finance_admin', 'moderator', 'support', 'sales'];
           if (platformRole && validPlatformRoles.includes(platformRole)) {
             await supabase
@@ -243,7 +418,7 @@ export default function Auth() {
               .insert({
                 user_id: userId,
                 role: platformRole as any,
-                created_by: null, // Will be set by the system
+                created_by: null,
               });
           }
           
@@ -254,18 +429,18 @@ export default function Auth() {
             .eq('token', superAdminInviteToken);
           
           const roleLabels: Record<string, string> = {
-            super_admin: 'Super Administrateur',
-            finance_admin: 'Admin Finance',
-            moderator: 'Modérateur',
-            support: 'Support Technique',
-            sales: 'Commercial',
+            super_admin: lt('superAdmin'),
+            finance_admin: lt('financeAdmin'),
+            moderator: lt('moderator'),
+            support: lt('support'),
+            sales: lt('sales'),
           };
           
-          const roleLabel = platformRole ? roleLabels[platformRole] || 'Administrateur' : 'Super Administrateur';
+          const roleLabel = platformRole ? roleLabels[platformRole] || lt('administrator') : lt('superAdmin');
           
           toast({
-            title: 'Inscription réussie!',
-            description: `Vous êtes maintenant ${roleLabel} de la plateforme.`,
+            title: lt('signupSuccess'),
+            description: `${lt('youAreNow')} ${roleLabel} ${lt('ofThePlatform')}`,
           });
           navigate('/');
           setIsLoading(false);
@@ -278,13 +453,11 @@ export default function Auth() {
       // If this is a tenant admin invitation, assign user to tenant
       if (tenantId && invitedRole === 'admin' && userId) {
         try {
-          // Update user profile with tenant_id
           await supabase
             .from('profiles')
             .update({ tenant_id: tenantId })
             .eq('id', userId);
           
-          // Assign admin role for this tenant
           await supabase
             .from('tenant_user_roles')
             .insert({
@@ -295,8 +468,8 @@ export default function Auth() {
             });
           
           toast({
-            title: 'Inscription réussie!',
-            description: `Vous êtes maintenant administrateur de ${tenantInfo?.name || 'l\'église'}.`,
+            title: lt('signupSuccess'),
+            description: `${lt('youAreNow')} ${lt('adminOf')} ${tenantInfo?.name || lt('theChurch')}.`,
           });
           navigate('/');
           setIsLoading(false);
@@ -318,12 +491,11 @@ export default function Auth() {
         });
       } catch (notifyError) {
         console.error('Failed to notify admins:', notifyError);
-        // Don't block signup if notification fails
       }
 
       toast({
-        title: 'Inscription réussie!',
-        description: 'Votre compte a été créé. Un administrateur doit approuver votre accès.',
+        title: lt('signupSuccess'),
+        description: lt('accountCreated'),
       });
       navigate('/');
     }
@@ -337,14 +509,62 @@ export default function Auth() {
         <div className="text-center">
           <img 
             src="/images/church-logo.png" 
-            alt="Logo de l'église" 
+            alt="Logo" 
             className="mx-auto h-16 w-16 animate-pulse"
           />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+          <p className="mt-4 text-muted-foreground">{lt('loading')}</p>
         </div>
       </div>
     );
   }
+
+  const renderForgotPasswordForm = () => (
+    showForgotPassword && (
+      <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
+        <p className="text-sm text-muted-foreground">{lt('forgotPasswordDesc')}</p>
+        <Input type="email" placeholder={lt('emailPlaceholder')} value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? lt('sending') : lt('sendLink')}</Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>{lt('cancel')}</Button>
+        </div>
+      </form>
+    )
+  );
+
+  const renderLoginForm = () => (
+    <form onSubmit={handleLogin} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="login-email">{lt('email')}</Label>
+        <Input
+          id="login-email"
+          type="email"
+          placeholder={lt('emailPlaceholder')}
+          value={loginForm.email}
+          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="login-password">{lt('password')}</Label>
+        <Input
+          id="login-password"
+          type="password"
+          placeholder="••••••••"
+          value={loginForm.password}
+          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+          required
+        />
+      </div>
+      <div className="flex justify-end">
+        <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
+          {lt('forgotPassword')}
+        </button>
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? lt('loading') : lt('logIn')}
+      </Button>
+    </form>
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
@@ -356,10 +576,8 @@ export default function Auth() {
               <div className="flex items-center gap-3">
                 <Shield className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="font-semibold text-purple-600">Invitation Super Administrateur</p>
-                  <p className="text-sm text-muted-foreground">
-                    Vous êtes invité à devenir Super Admin de la plateforme
-                  </p>
+                  <p className="font-semibold text-purple-600">{lt('superAdminInvite')}</p>
+                  <p className="text-sm text-muted-foreground">{lt('superAdminInviteDesc')}</p>
                 </div>
               </div>
             </CardContent>
@@ -372,10 +590,8 @@ export default function Auth() {
               <div className="flex items-center gap-3">
                 <Shield className="h-8 w-8 text-destructive" />
                 <div>
-                  <p className="font-semibold text-destructive">Invitation invalide</p>
-                  <p className="text-sm text-muted-foreground">
-                    Ce lien d'invitation est expiré ou a déjà été utilisé.
-                  </p>
+                  <p className="font-semibold text-destructive">{lt('invalidInvite')}</p>
+                  <p className="text-sm text-muted-foreground">{lt('invalidInviteDesc')}</p>
                 </div>
               </div>
             </CardContent>
@@ -389,9 +605,9 @@ export default function Auth() {
               <div className="flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="font-semibold text-primary">Invitation Administrateur</p>
+                  <p className="font-semibold text-primary">{lt('adminInvite')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Vous êtes invité à administrer <strong>{tenantInfo.name}</strong>
+                    {lt('adminInviteDesc')} <strong>{tenantInfo.name}</strong>
                   </p>
                 </div>
               </div>
@@ -405,8 +621,8 @@ export default function Auth() {
               <Building2 className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Administration</h1>
-              <p className="text-sm text-muted-foreground">Portail Super Admin</p>
+              <h1 className="text-xl font-bold text-foreground">{lt('administration')}</h1>
+              <p className="text-sm text-muted-foreground">{lt('superAdminPortal')}</p>
             </div>
           </div>
         </div>
@@ -415,65 +631,19 @@ export default function Auth() {
         {(superAdminInvite?.valid || tenantInfo) ? (
           <Tabs defaultValue="signup" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Connexion</TabsTrigger>
-              <TabsTrigger value="signup">Inscription</TabsTrigger>
+              <TabsTrigger value="login">{lt('login')}</TabsTrigger>
+              <TabsTrigger value="signup">{lt('signup')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>Connexion</CardTitle>
-                  <CardDescription>
-                    Entrez vos informations pour vous connecter
-                  </CardDescription>
+                  <CardTitle>{lt('loginTitle')}</CardTitle>
+                  <CardDescription>{lt('loginDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="nom@exemple.com"
-                        value={loginForm.email}
-                        onChange={(e) =>
-                          setLoginForm({ ...loginForm, email: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Mot de passe</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginForm.password}
-                        onChange={(e) =>
-                          setLoginForm({ ...loginForm, password: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="flex justify-end">
-                      <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
-                        Mot de passe oublié ?
-                      </button>
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Chargement...' : 'Se connecter'}
-                    </Button>
-                  </form>
-                  {showForgotPassword && (
-                    <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
-                      <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation</p>
-                      <Input type="email" placeholder="nom@exemple.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
-                      <div className="flex gap-2">
-                        <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? 'Envoi...' : 'Envoyer le lien'}</Button>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>Annuler</Button>
-                      </div>
-                    </form>
-                  )}
+                  {renderLoginForm()}
+                  {renderForgotPasswordForm()}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -481,83 +651,68 @@ export default function Auth() {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>Créer un Compte</CardTitle>
-                  <CardDescription>
-                    Remplissez vos informations pour créer un nouveau compte
-                  </CardDescription>
+                  <CardTitle>{lt('createAccount')}</CardTitle>
+                  <CardDescription>{lt('createAccountDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signup-firstname">Prénom</Label>
+                        <Label htmlFor="signup-firstname">{lt('firstName')}</Label>
                         <Input
                           id="signup-firstname"
                           placeholder="Jean"
                           value={signupForm.firstName}
-                          onChange={(e) =>
-                            setSignupForm({ ...signupForm, firstName: e.target.value })
-                          }
+                          onChange={(e) => setSignupForm({ ...signupForm, firstName: e.target.value })}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-lastname">Nom</Label>
+                        <Label htmlFor="signup-lastname">{lt('lastName')}</Label>
                         <Input
                           id="signup-lastname"
                           placeholder="Pierre"
                           value={signupForm.lastName}
-                          onChange={(e) =>
-                            setSignupForm({ ...signupForm, lastName: e.target.value })
-                          }
+                          onChange={(e) => setSignupForm({ ...signupForm, lastName: e.target.value })}
                           required
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
+                      <Label htmlFor="signup-email">{lt('email')}</Label>
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="nom@exemple.com"
+                        placeholder={lt('emailPlaceholder')}
                         value={signupForm.email}
-                        onChange={(e) =>
-                          setSignupForm({ ...signupForm, email: e.target.value })
-                        }
+                        onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Mot de passe</Label>
+                      <Label htmlFor="signup-password">{lt('password')}</Label>
                       <Input
                         id="signup-password"
                         type="password"
                         placeholder="••••••••"
                         value={signupForm.password}
-                        onChange={(e) =>
-                          setSignupForm({ ...signupForm, password: e.target.value })
-                        }
+                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-confirm">Confirmer le Mot de passe</Label>
+                      <Label htmlFor="signup-confirm">{lt('confirmPassword')}</Label>
                       <Input
                         id="signup-confirm"
                         type="password"
                         placeholder="••••••••"
                         value={signupForm.confirmPassword}
-                        onChange={(e) =>
-                          setSignupForm({
-                            ...signupForm,
-                            confirmPassword: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Chargement...' : 'Créer le Compte'}
+                      {isLoading ? lt('loading') : lt('createBtn')}
                     </Button>
                   </form>
                 </CardContent>
@@ -568,58 +723,12 @@ export default function Auth() {
           /* Login only - no signup tab without invitation */
           <Card>
             <CardHeader>
-              <CardTitle>Connexion</CardTitle>
-              <CardDescription>
-                Entrez vos informations pour vous connecter
-              </CardDescription>
+              <CardTitle>{lt('loginTitle')}</CardTitle>
+              <CardDescription>{lt('loginDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="nom@exemple.com"
-                    value={loginForm.email}
-                    onChange={(e) =>
-                      setLoginForm({ ...loginForm, email: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Mot de passe</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginForm.password}
-                    onChange={(e) =>
-                      setLoginForm({ ...loginForm, password: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
-                    Mot de passe oublié ?
-                  </button>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Chargement...' : 'Se connecter'}
-                </Button>
-              </form>
-              {showForgotPassword && (
-                <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
-                  <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation</p>
-                  <Input type="email" placeholder="nom@exemple.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
-                  <div className="flex gap-2">
-                    <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? 'Envoi...' : 'Envoyer le lien'}</Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>Annuler</Button>
-                  </div>
-                </form>
-              )}
+              {renderLoginForm()}
+              {renderForgotPasswordForm()}
             </CardContent>
           </Card>
         )}
