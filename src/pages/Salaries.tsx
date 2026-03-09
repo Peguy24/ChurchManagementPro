@@ -814,10 +814,33 @@ export default function Salaries() {
           <TabsContent value="history" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
-                <CardDescription>
-                  {t("salariesPage.allPayments")}
-                </CardDescription>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle>{t("salariesPage.paymentHistory")}</CardTitle>
+                    <CardDescription>
+                      {t("salariesPage.allPayments")}
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <Select value={paymentPeriodFilter} onValueChange={setPaymentPeriodFilter}>
+                        <SelectTrigger className="w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(periodFilterLabels).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleDownloadPayments} disabled={filteredPayments.length === 0}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Excel
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -838,14 +861,14 @@ export default function Salaries() {
                           {t("salariesPage.loading")}
                         </TableCell>
                       </TableRow>
-                    ) : payments.length === 0 ? (
+                    ) : filteredPayments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           {t("salariesPage.noPayments")}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      payments.map((payment) => (
+                      filteredPayments.map((payment) => (
                         <TableRow key={payment.id}>
                           <TableCell>
                             {format(new Date(payment.payment_date), "dd MMM yyyy", { locale: fr })}
