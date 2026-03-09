@@ -45,7 +45,8 @@ export default function AttendanceAlerts() {
       const { data: attendanceData, error } = await supabase
         .from("attendance_records")
         .select("member_id, event_date, members(first_name, last_name)")
-        .gte("event_date", twoMonthsAgo.toISOString().split("T")[0]);
+        .gte("event_date", formatDateInputValue(twoMonthsAgo));
+
 
       if (error) throw error;
 
