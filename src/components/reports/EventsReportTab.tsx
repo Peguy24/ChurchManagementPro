@@ -224,6 +224,18 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
     doc.save(`events-report-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      events,
+      [
+        { key: "date", header: er("date"), formatter: (v) => format(parseISO(v), "dd/MM/yyyy") },
+        { key: "type", header: er("type"), formatter: (v) => eventTypeLabels[v] || v },
+        { key: "attendees", header: er("participants") },
+      ],
+      `events-report-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   const periodOptions = [
     { value: "1", label: er("lastMonth") },
     { value: "3", label: er("last3Months") },
