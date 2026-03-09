@@ -48,17 +48,122 @@ import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))", "hsl(var(--warning))"];
 
+const localTranslations: Record<string, Record<string, string>> = {
+  fr: {
+    totalEvents: "Total Événements",
+    totalParticipations: "Total Participations",
+    avgPerEvent: "Moyenne/Événement",
+    eventTypes: "Types d'Événements",
+    eventsByMonth: "Événements par Mois",
+    eventsByMonthDesc: "Nombre d'événements et participants",
+    distributionByType: "Répartition par Type",
+    statsByType: "Statistiques par Type d'Événement",
+    type: "Type",
+    events: "Événements",
+    totalParticipants: "Total Participants",
+    avgParticipants: "Moy. Participants",
+    recentEvents: "Événements Récents",
+    recentEventsDesc: "Liste des derniers événements enregistrés",
+    date: "Date",
+    participants: "Participants",
+    status: "Statut",
+    passed: "Passé",
+    today: "Aujourd'hui",
+    upcoming: "À venir",
+    lastMonth: "1 Mois",
+    last3Months: "3 Mois",
+    last6Months: "6 Mois",
+    last12Months: "12 Mois",
+    period: "Période",
+    sundayService: "Service Dimanche",
+    bibleStudy: "Étude Biblique",
+    prayerMeeting: "Réunion Prière",
+    youthGroup: "Groupe Jeunesse",
+    other: "Autre",
+    reportTitle: "Rapport des Événements",
+  },
+  en: {
+    totalEvents: "Total Events",
+    totalParticipations: "Total Participations",
+    avgPerEvent: "Avg/Event",
+    eventTypes: "Event Types",
+    eventsByMonth: "Events by Month",
+    eventsByMonthDesc: "Number of events and participants",
+    distributionByType: "Distribution by Type",
+    statsByType: "Statistics by Event Type",
+    type: "Type",
+    events: "Events",
+    totalParticipants: "Total Participants",
+    avgParticipants: "Avg. Participants",
+    recentEvents: "Recent Events",
+    recentEventsDesc: "List of latest recorded events",
+    date: "Date",
+    participants: "Participants",
+    status: "Status",
+    passed: "Passed",
+    today: "Today",
+    upcoming: "Upcoming",
+    lastMonth: "1 Month",
+    last3Months: "3 Months",
+    last6Months: "6 Months",
+    last12Months: "12 Months",
+    period: "Period",
+    sundayService: "Sunday Service",
+    bibleStudy: "Bible Study",
+    prayerMeeting: "Prayer Meeting",
+    youthGroup: "Youth Group",
+    other: "Other",
+    reportTitle: "Events Report",
+  },
+  ht: {
+    totalEvents: "Total Evènman",
+    totalParticipations: "Total Patisipasyon",
+    avgPerEvent: "Mwayèn/Evènman",
+    eventTypes: "Tip Evènman",
+    eventsByMonth: "Evènman pa Mwa",
+    eventsByMonthDesc: "Kantite evènman ak patisipan",
+    distributionByType: "Distribisyon pa Tip",
+    statsByType: "Estatistik pa Tip Evènman",
+    type: "Tip",
+    events: "Evènman",
+    totalParticipants: "Total Patisipan",
+    avgParticipants: "Mwayèn Patisipan",
+    recentEvents: "Evènman Resan",
+    recentEventsDesc: "Lis dènye evènman anrejistre yo",
+    date: "Dat",
+    participants: "Patisipan",
+    status: "Estati",
+    passed: "Pase",
+    today: "Jodi a",
+    upcoming: "Ap vini",
+    lastMonth: "1 Mwa",
+    last3Months: "3 Mwa",
+    last6Months: "6 Mwa",
+    last12Months: "12 Mwa",
+    period: "Peryòd",
+    sundayService: "Sèvis Dimanch",
+    bibleStudy: "Etid Biblik",
+    prayerMeeting: "Reyinyon Lapriyè",
+    youthGroup: "Gwoup Jenès",
+    other: "Lòt",
+    reportTitle: "Rapò Evènman",
+  },
+};
+
 interface EventsReportTabProps {
   selectedBranch: string;
 }
 
 export default function EventsReportTab({ selectedBranch }: EventsReportTabProps) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const currentDate = new Date();
   const [periodMonths, setPeriodMonths] = useState<number>(12);
   const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
-  const er = (key: string) => t(`layout.eventsReport.${key}`);
+  const er = (key: string) => {
+    const lang = localTranslations[language] || localTranslations.en;
+    return lang[key] || localTranslations.en[key] || key;
+  };
 
   const eventTypeLabels: Record<string, string> = {
     sunday_service: er("sundayService"),
