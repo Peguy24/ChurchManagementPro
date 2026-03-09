@@ -559,10 +559,10 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
                   {revenueVsExpensesData.map((row) => (
                     <TableRow key={row.month}>
                       <TableCell>{row.month}</TableCell>
-                      <TableCell className="text-right text-success">${row.revenue.toFixed(2)}</TableCell>
-                      <TableCell className="text-right text-destructive">${row.expenses.toFixed(2)}</TableCell>
+                      <TableCell className="text-right text-success">{formatAmount(row.revenue)}</TableCell>
+                      <TableCell className="text-right text-destructive">{formatAmount(row.expenses)}</TableCell>
                       <TableCell className={`text-right font-semibold ${row.net >= 0 ? "text-success" : "text-destructive"}`}>
-                        ${row.net.toFixed(2)}
+                        {formatAmount(row.net)}
                       </TableCell>
                     </TableRow>
                   ))}
