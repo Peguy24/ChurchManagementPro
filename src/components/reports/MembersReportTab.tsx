@@ -266,6 +266,23 @@ export default function MembersReportTab({ selectedBranch }: MembersReportTabPro
     doc.save(`rapport-membres-${format(currentDate, "yyyy-MM-dd")}.pdf`);
   };
 
+  const exportToCSV = () => {
+    exportToCsv(
+      members,
+      [
+        { key: "member_number", header: "N° Membre" },
+        { key: "first_name", header: "Prénom" },
+        { key: "last_name", header: "Nom" },
+        { key: "status", header: "Statut" },
+        { key: "branch.name", header: "Branche" },
+        { key: "phone", header: "Téléphone" },
+        { key: "email", header: "Email" },
+        { key: "join_date", header: "Date d'inscription", formatter: (v) => v ? format(parseISO(v), "dd/MM/yyyy") : "" },
+      ],
+      `rapport-membres-${format(currentDate, "yyyy-MM-dd")}`
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
