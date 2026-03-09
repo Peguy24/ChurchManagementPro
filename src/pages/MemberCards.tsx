@@ -297,61 +297,43 @@ export default function MemberCards() {
     }
   };
 
-  const handleMarkAttendance = async () => {
-    if (!eventType || !eventDate) {
+  const handlePreview = async () => {
+    const selectedMembersList = members.filter((m) => selectedMembers.has(m.id));
+    
+    if (selectedMembersList.length === 0) {
       toast({
-        title: t("common.error"),
-        description: t("memberCards.attendanceDialog.selectEvent"),
+        title: t("memberCards.noMemberSelected"),
+        description: t("memberCards.selectAtLeastOne"),
         variant: "destructive",
       });
       return;
     }
 
-    const selectedMemberIds = Array.from(selectedMembers).filter((id) =>
-      members.some((m) => m.id === id)
-    );
-
-    if (selectedMemberIds.length === 0) {
-      toast({
-        title: t("common.error"),
-        description: t("memberCards.attendanceDialog.selectMember"),
-        variant: "destructive",
-      });
-      return;
-    }
+    setGeneratingPDF(true);
+    setPdfProgress(0);
 
     try {
-      setSubmittingAttendance(true);
-
-      const records = selectedMemberIds.map((memberId) => ({
-        member_id: memberId,
-        event_type: eventType,
-        event_date: eventDate,
-        scan_method: "bulk_selection",
+      const cardData = selectedMembersList.map(m => ({
+        ...m,
+        ministry: m.ministry_members?.[0]?.ministries?.name || null,
       }));
+      const pdfBlob = await generateMemberCardsPDF(cardData, (progress) => {
+        setPdfProgress(progress);
+      }, cardCustomization);
 
-      const { error } = await supabase
-        .from("attendance_records")
-        .insert(records);
-
-      if (error) throw error;
-
-      toast({
-        title: t("memberCards.attendanceDialog.success"),
-        description: t("memberCards.attendanceDialog.attendanceRecorded").replace("{count}", String(selectedMemberIds.length)),
-      });
-
-      setAttendanceDialogOpen(false);
-      setEventType("");
+      const url = URL.createObjectURL(pdfBlob);
+      setPreviewUrl(url);
+      setPreviewDialogOpen(true);
     } catch (error) {
-      console.error("Error marking attendance:", error);
+      console.error("Error generating preview:", error);
       toast({
         title: t("common.error"),
-        description: t("memberCards.attendanceDialog.error"),
+        description: t("memberCards.errorGeneratingPdf"),
         variant: "destructive",
       });
     } finally {
-      setSubmittingAttendance(false);
+      setGeneratingPDF(false);
+      setPdfProgress(0);
     }
   };
 
