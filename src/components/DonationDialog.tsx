@@ -498,6 +498,16 @@ export default function DonationDialog({
             />
           </div>
 
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="donation"
+            entityId={editDonation?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("common.cancel")}

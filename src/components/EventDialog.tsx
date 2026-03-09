@@ -486,6 +486,17 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               </div>
             )}
           </div>
+
+          {/* Custom Fields */}
+          <CustomFieldsRenderer
+            entityType="event"
+            entityId={event?.id}
+            values={customFieldValues}
+            onChange={(fieldName, value) =>
+              setCustomFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+            }
+          />
+
           <DialogFooter className="flex-col sm:flex-row gap-2">
             {isEditing && (
               <AlertDialog>
