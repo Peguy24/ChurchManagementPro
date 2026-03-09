@@ -3163,6 +3163,7 @@ const translations = {
       memberCards: "Member Cards",
       attendance: "Attendance",
       attendanceAlerts: "Attendance Alerts",
+      arrivalReport: "Arrival Report",
       groupComparison: "Group Comparison",
       donations: "Income",
       financialReports: "General Report",
