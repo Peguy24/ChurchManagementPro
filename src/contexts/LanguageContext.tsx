@@ -8659,7 +8659,7 @@ const translations = {
       active: "Aktif",
       subject: "Sijè imèl la",
       subjectPlaceholder: "Sijè imèl la...",
-      htmlContent: "Kontni HTML",
+      htmlContent: "Kontni mesaj la",
       htmlContentPlaceholder: "Kontni imèl la an HTML...",
       save: "Anrejistre",
       cancel: "Anile",
