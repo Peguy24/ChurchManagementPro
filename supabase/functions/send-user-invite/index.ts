@@ -84,6 +84,36 @@ serve(async (req) => {
 
     const t = translations[language] || translations["en"];
 
+    // Check if user with this email already has a role in this tenant
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Look up user by email in auth.users
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = authData?.users?.find((u: any) => u.email === email);
+
+    if (existingUser) {
+      const { data: existingRole } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .select("id, role")
+        .eq("tenant_id", tenantId)
+        .eq("user_id", existingUser.id)
+        .maybeSingle();
+
+      if (existingRole) {
+        const duplicateMessages: Record<string, string> = {
+          fr: `Cette adresse email a déjà un rôle assigné dans cette église.`,
+          en: `This email address already has a role assigned in this church.`,
+          ht: `Adrès imèl sa a deja gen yon wòl nan legliz sa a.`,
+        };
+        return new Response(
+          JSON.stringify({ error: "EMAIL_ALREADY_HAS_ROLE", message: duplicateMessages[language] || duplicateMessages["en"] }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Build the invitation URL
     const siteUrl = "https://churchmanagementpro.com";
     const slug = tenantSlug || tenantId;
