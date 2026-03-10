@@ -125,7 +125,7 @@ function SupportTierBanner({ plan, language }: { plan: string | null; language: 
 
 export default function Support() {
   const { tenantId } = useCurrentTenant();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const { plan, subscribed, loading: planLoading } = useSubscription();
   const { hasFeature } = usePlanLimits();
