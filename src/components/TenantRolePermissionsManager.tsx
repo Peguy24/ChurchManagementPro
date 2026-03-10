@@ -239,7 +239,7 @@ export default function TenantRolePermissionsManager() {
                       <Checkbox
                         checked={hasPermission(role, group)}
                         onCheckedChange={() => togglePermission(role, group)}
-                        disabled={group === "dashboard"} // Dashboard always accessible
+                        disabled={false}
                       />
                     </td>
                   ))}
