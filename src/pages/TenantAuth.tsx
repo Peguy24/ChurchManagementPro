@@ -235,6 +235,8 @@ export default function TenantAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
 
   const [loginForm, setLoginForm] = useState({
     email: '',
