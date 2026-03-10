@@ -28,7 +28,45 @@ const priorityColors: Record<string, string> = {
   high: "bg-red-100 text-red-800",
 };
 
-function SupportTierBanner({ plan }: { plan: string | null }) {
+const TIER_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    support247: "24/7 Support",
+    supportPriority: "Priority Support",
+    supportEmail: "Email Support",
+    enterprise: "Enterprise",
+    professional: "Professional",
+    essential: "Essential",
+    enterpriseDesc: "You benefit from priority 24/7 support. Your tickets are handled with absolute priority.",
+    professionalDesc: "Your tickets are handled with priority. Accelerated response time guaranteed.",
+    essentialDesc: "Standard email support. Upgrade to Professional plan for priority support.",
+  },
+  fr: {
+    support247: "Support 24/7",
+    supportPriority: "Support Prioritaire",
+    supportEmail: "Support Email",
+    enterprise: "Entreprise",
+    professional: "Professionnel",
+    essential: "Essentiel",
+    enterpriseDesc: "Vous bénéficiez du support prioritaire 24h/24, 7j/7. Vos tickets sont traités en priorité absolue.",
+    professionalDesc: "Vos tickets sont traités en priorité. Temps de réponse accéléré garanti.",
+    essentialDesc: "Support par email standard. Passez au plan Professionnel pour un support prioritaire.",
+  },
+  ht: {
+    support247: "Sipò 24/7",
+    supportPriority: "Sipò Priyorite",
+    supportEmail: "Sipò Imèl",
+    enterprise: "Antrepriz",
+    professional: "Pwofesyonèl",
+    essential: "Esansyèl",
+    enterpriseDesc: "Ou benefisye sipò priyorite 24/7. Tikè ou yo trete ak priyorite absoli.",
+    professionalDesc: "Tikè ou yo trete ak priyorite. Tan repons akselere garanti.",
+    essentialDesc: "Sipò imèl estanda. Pase nan plan Pwofesyonèl pou sipò priyorite.",
+  },
+};
+
+function SupportTierBanner({ plan, language }: { plan: string | null; language: string }) {
+  const tt = TIER_TRANSLATIONS[language] || TIER_TRANSLATIONS.en;
+
   if (plan === "entreprise") {
     return (
       <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
@@ -38,12 +76,10 @@ function SupportTierBanner({ plan }: { plan: string | null }) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-lg">Support 24/7</h3>
-              <Badge className="bg-primary text-primary-foreground">Entreprise</Badge>
+              <h3 className="font-semibold text-lg">{tt.support247}</h3>
+              <Badge className="bg-primary text-primary-foreground">{tt.enterprise}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Vous bénéficiez du support prioritaire 24h/24, 7j/7. Vos tickets sont traités en priorité absolue.
-            </p>
+            <p className="text-sm text-muted-foreground">{tt.enterpriseDesc}</p>
           </div>
         </CardContent>
       </Card>
@@ -59,12 +95,10 @@ function SupportTierBanner({ plan }: { plan: string | null }) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-lg">Support Prioritaire</h3>
-              <Badge variant="secondary">Professionnel</Badge>
+              <h3 className="font-semibold text-lg">{tt.supportPriority}</h3>
+              <Badge variant="secondary">{tt.professional}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Vos tickets sont traités en priorité. Temps de réponse accéléré garanti.
-            </p>
+            <p className="text-sm text-muted-foreground">{tt.professionalDesc}</p>
           </div>
         </CardContent>
       </Card>
@@ -79,12 +113,10 @@ function SupportTierBanner({ plan }: { plan: string | null }) {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-lg">Support Email</h3>
-            <Badge variant="outline">Essentiel</Badge>
+            <h3 className="font-semibold text-lg">{tt.supportEmail}</h3>
+            <Badge variant="outline">{tt.essential}</Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Support par email standard. Passez au plan Professionnel pour un support prioritaire.
-          </p>
+          <p className="text-sm text-muted-foreground">{tt.essentialDesc}</p>
         </div>
       </CardContent>
     </Card>
@@ -93,7 +125,7 @@ function SupportTierBanner({ plan }: { plan: string | null }) {
 
 export default function Support() {
   const { tenantId } = useCurrentTenant();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const { plan, subscribed, loading: planLoading } = useSubscription();
   const { hasFeature } = usePlanLimits();
@@ -114,11 +146,16 @@ export default function Support() {
 
   // Gate support access: users without any active subscription see locked card
   if (!planLoading && !subscribed) {
+    const lockedDesc: Record<string, string> = {
+      en: "Access technical support to resolve your issues and get help. An active subscription is required to contact our team.",
+      fr: "Accédez au support technique pour résoudre vos problèmes et obtenir de l'aide. Un abonnement actif est requis pour contacter notre équipe.",
+      ht: "Jwenn sipò teknik pou rezoud pwoblèm ou yo epi jwenn èd. Yon abònman aktif obligatwa pou kontakte ekip nou an.",
+    };
     return (
       <Layout>
         <FeatureLockedCard
           featureName={t("layout.support")}
-          featureDescription="Accédez au support technique pour résoudre vos problèmes et obtenir de l'aide. Un abonnement actif est requis pour contacter notre équipe."
+          featureDescription={lockedDesc[language] || lockedDesc.en}
           requiredPlan="essentiel"
           icon={<MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />}
         />
@@ -178,7 +215,7 @@ export default function Support() {
           </Button>
         </div>
 
-        <SupportTierBanner plan={plan} />
+        <SupportTierBanner plan={plan} language={language} />
 
         {isLoading ? (
           <div className="text-muted-foreground">{t("common.loading")}...</div>

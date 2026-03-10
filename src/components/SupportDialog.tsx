@@ -11,6 +11,36 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Headphones } from "lucide-react";
 
+const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    enterpriseDesc: "Your ticket will be handled with absolute priority (24/7).",
+    professionalDesc: "Your ticket will be handled with priority.",
+    standardDesc: "Describe your issue, our team will respond by email.",
+    support247: "24/7 Support",
+    supportPriority: "Priority Support",
+    enterprise: "Enterprise",
+    professional: "Professional",
+  },
+  fr: {
+    enterpriseDesc: "Votre ticket sera traité en priorité absolue (24/7).",
+    professionalDesc: "Votre ticket sera traité en priorité.",
+    standardDesc: "Décrivez votre problème, notre équipe vous répondra par email.",
+    support247: "Support 24/7",
+    supportPriority: "Support Prioritaire",
+    enterprise: "Entreprise",
+    professional: "Professionnel",
+  },
+  ht: {
+    enterpriseDesc: "Tikè ou a ap trete ak priyorite absoli (24/7).",
+    professionalDesc: "Tikè ou a ap trete ak priyorite.",
+    standardDesc: "Dekri pwoblèm ou, ekip nou an ap reponn pa imèl.",
+    support247: "Sipò 24/7",
+    supportPriority: "Sipò Priyorite",
+    enterprise: "Antrepriz",
+    professional: "Pwofesyonèl",
+  },
+};
+
 interface SupportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,7 +49,8 @@ interface SupportDialogProps {
 }
 
 export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: SupportDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dt = DIALOG_TRANSLATIONS[language] || DIALOG_TRANSLATIONS.en;
   const { tenantId } = useCurrentTenant();
   const [loading, setLoading] = useState(false);
   const [subject, setSubject] = useState("");
@@ -82,8 +113,8 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
       return (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
           <Headphones className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Support 24/7</span>
-          <Badge className="bg-primary text-primary-foreground text-xs">Entreprise</Badge>
+          <span className="text-sm font-medium">{dt.support247}</span>
+          <Badge className="bg-primary text-primary-foreground text-xs">{dt.enterprise}</Badge>
         </div>
       );
     }
@@ -91,8 +122,8 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
       return (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/5 border border-secondary/20">
           <Shield className="h-4 w-4 text-secondary" />
-          <span className="text-sm font-medium">Support Prioritaire</span>
-          <Badge variant="secondary" className="text-xs">Professionnel</Badge>
+          <span className="text-sm font-medium">{dt.supportPriority}</span>
+          <Badge variant="secondary" className="text-xs">{dt.professional}</Badge>
         </div>
       );
     }
@@ -106,10 +137,10 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
           <DialogTitle>{t("layout.supportNewTicket")}</DialogTitle>
           <DialogDescription>
             {plan === "entreprise"
-              ? "Votre ticket sera traité en priorité absolue (24/7)."
+              ? dt.enterpriseDesc
               : plan === "professionnel"
-              ? "Votre ticket sera traité en priorité."
-              : "Décrivez votre problème, notre équipe vous répondra par email."}
+              ? dt.professionalDesc
+              : dt.standardDesc}
           </DialogDescription>
         </DialogHeader>
 
