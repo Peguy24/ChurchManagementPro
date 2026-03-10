@@ -124,7 +124,6 @@ export function useUserRole() {
                 setPermissions(dbPermissions);
               }
             }
-          }
           } else {
             // No tenant role found
             setRoles(globalRoles);
