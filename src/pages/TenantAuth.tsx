@@ -429,7 +429,13 @@ export default function TenantAuth() {
     );
 
     if (error) {
-      if (error.message.includes('already registered')) {
+      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+        toast({
+          title: lt('accountExists'),
+          description: lt('accountExistsDesc'),
+          variant: 'destructive',
+        });
+      } else if (error.message.includes('security purposes') || error.message.includes('rate') || error.status === 429) {
         toast({
           title: lt('accountExists'),
           description: lt('accountExistsDesc'),
