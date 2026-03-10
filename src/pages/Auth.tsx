@@ -308,6 +308,30 @@ export default function Auth() {
         variant: 'destructive',
       });
     } else {
+      // Check if user has roles in multiple tenants
+      try {
+        const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+        if (loggedInUser) {
+          const { data: approvedRoles } = await supabase
+            .from('tenant_user_roles')
+            .select('tenant_id')
+            .eq('user_id', loggedInUser.id)
+            .eq('is_approved', true);
+
+          if (approvedRoles && approvedRoles.length > 1) {
+            toast({
+              title: lt('loginSuccess'),
+              description: lt('welcomeMessage'),
+            });
+            navigate('/select-church');
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error checking multi-tenant roles:', err);
+      }
+
       toast({
         title: lt('loginSuccess'),
         description: lt('welcomeMessage'),
