@@ -46,7 +46,7 @@ export default function TenantUserManagement() {
   // Invite dialog state
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('user');
+  const [inviteRole, setInviteRole] = useState('volunteer');
   const [sendingInvite, setSendingInvite] = useState(false);
   const [inviteMode, setInviteMode] = useState<'email' | 'link' | null>(null);
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export default function TenantUserManagement() {
     treasurer: t('tenant.roleTreasurer'),
     secretary: t('tenant.roleSecretary'),
     volunteer: t('tenant.roleVolunteer'),
-    user: t('tenant.roleUser'),
+    
   };
 
   useEffect(() => {
@@ -225,7 +225,7 @@ export default function TenantUserManagement() {
 
   const resetInviteState = () => {
     setInviteEmail('');
-    setInviteRole('user');
+    setInviteRole('volunteer');
     setInvitationLink(null);
     setCopied(false);
     setInviteMode(null);
