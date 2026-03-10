@@ -130,9 +130,16 @@ export default function TenantUserManagement() {
     try {
       // If a role override is provided, update the role first
       if (roleOverride) {
+        const isCustom = roleOverride.startsWith('custom:');
+        const customRoleId = isCustom ? roleOverride.replace('custom:', '') : null;
+        const enumRole = isCustom ? 'volunteer' : roleOverride;
+
         const { error: roleError } = await supabase
           .from('tenant_user_roles')
-          .update({ role: roleOverride as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user' })
+          .update({
+            role: enumRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+            custom_role_id: customRoleId,
+          })
           .eq('tenant_id', tenantId)
           .eq('user_id', userId);
 
