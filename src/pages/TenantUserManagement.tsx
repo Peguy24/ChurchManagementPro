@@ -60,7 +60,7 @@ export default function TenantUserManagement() {
     treasurer: t('tenant.roleTreasurer'),
     secretary: t('tenant.roleSecretary'),
     volunteer: t('tenant.roleVolunteer'),
-    user: t('tenant.roleUser'),
+    
   };
 
   useEffect(() => {
