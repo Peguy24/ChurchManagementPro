@@ -361,6 +361,71 @@ export default function TenantAuth() {
         variant: 'destructive',
       });
     } else {
+      // After successful login, check if we need to link user to this tenant (invitation context)
+      const hasInvitationContext = (invitationValid && invitation) || inviteEmailParam;
+      
+      if (hasInvitationContext && tenant) {
+        try {
+          // Get the logged-in user
+          const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+          
+          if (loggedInUser) {
+            // Check if user already has a role in this tenant
+            const { data: existingRole } = await supabase
+              .from('tenant_user_roles')
+              .select('id')
+              .eq('tenant_id', tenant.id)
+              .eq('user_id', loggedInUser.id)
+              .maybeSingle();
+
+            if (!existingRole) {
+              // Determine role and approval
+              const isTokenInvite = Boolean(inviteToken && invitation?.id);
+              const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+              const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as typeof validRoles[number])
+                ? inviteRoleParam
+                : 'admin';
+              const roleToAssign = (invitationValid && invitation) ? roleFromParam : 'user';
+              const isAutoApproved = isTokenInvite;
+
+              // Update profile tenant_id
+              await supabase
+                .from('profiles')
+                .update({ tenant_id: tenant.id })
+                .eq('id', loggedInUser.id);
+
+              // Insert tenant role
+              await supabase
+                .from('tenant_user_roles')
+                .insert({
+                  tenant_id: tenant.id,
+                  user_id: loggedInUser.id,
+                  role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+                  is_approved: isAutoApproved,
+                });
+
+              // Mark token invitation as used
+              if (isTokenInvite && invitation?.id) {
+                await supabase
+                  .from('admin_invitations')
+                  .update({ used_at: new Date().toISOString() })
+                  .eq('id', invitation.id);
+              }
+
+              toast({
+                title: lt('linkedSuccess'),
+                description: lt('linkedSuccessDesc', { name: tenant.name }),
+              });
+              navigate('/');
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Error linking existing user to tenant:', err);
+        }
+      }
+
       toast({
         title: lt('loginSuccess'),
         description: lt('welcomeTo', { name: tenant?.name || '' }),
