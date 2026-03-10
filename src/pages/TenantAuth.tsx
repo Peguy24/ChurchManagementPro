@@ -506,12 +506,29 @@ export default function TenantAuth() {
       return;
     }
 
-    // Sign up the user
+    // Determine role + approval behavior based on invitation source
+    const isTokenInvite = Boolean(inviteToken && invitation?.id);
+    const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+    const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as typeof validRoles[number])
+      ? inviteRoleParam
+      : 'admin';
+    const roleToAssign = hasValidInvitation ? roleFromParam : 'user';
+    // Token-based admin invitation = trusted, auto-approved.
+    // Email+role invitation (tenant user invite) = requires manual approval.
+    const isAutoApproved = isTokenInvite;
+
+    // Sign up the user — pass tenant info in metadata so the handle_new_user trigger
+    // (which runs as SECURITY DEFINER) can create the profile and role atomically
     const { error, data } = await signUp(
       signupForm.email,
       signupForm.password,
       signupForm.firstName,
-      signupForm.lastName
+      signupForm.lastName,
+      {
+        tenant_id: tenant?.id,
+        tenant_role: roleToAssign,
+        tenant_auto_approved: isAutoApproved,
+      }
     );
 
     if (error) {
@@ -546,55 +563,15 @@ export default function TenantAuth() {
       return;
     }
 
-    // Link user to tenant and assign role
-    if (data?.user && tenant) {
+    // Mark token invitation as used (best-effort, will also be handled on login)
+    if (isTokenInvite && invitation?.id) {
       try {
-        // Update profile with tenant_id and email
-        const updateData: Record<string, unknown> = { tenant_id: tenant.id, email: signupForm.email };
-        const { error: profileUpdateError } = await supabase
-          .from('profiles')
-          .update(updateData as any)
-          .eq('id', data.user.id);
-
-        if (profileUpdateError) {
-          console.error('Profile update error:', profileUpdateError);
-        }
-        
-        // Determine role + approval behavior based on invitation source
-        const isInvitedSignup = hasValidInvitation;
-        const isTokenInvite = Boolean(inviteToken && invitation?.id);
-        const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
-        const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as typeof validRoles[number])
-          ? inviteRoleParam
-          : 'admin';
-
-        const roleToAssign = isInvitedSignup ? roleFromParam : 'user';
-        // Token-based admin invitation = trusted, auto-approved.
-        // Email+role invitation (tenant user invite) = requires manual approval.
-        const isAutoApproved = isTokenInvite;
-
-        const { error: roleInsertError } = await supabase
-          .from('tenant_user_roles')
-          .insert({
-            tenant_id: tenant.id,
-            user_id: data.user.id,
-            role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
-            is_approved: isAutoApproved,
-          });
-
-        if (roleInsertError) {
-          console.error('Role insert error:', roleInsertError);
-        }
-
-        // Mark token invitation as used when applicable
-        if (isTokenInvite && invitation?.id) {
-          await supabase
-            .from('admin_invitations')
-            .update({ used_at: new Date().toISOString() })
-            .eq('id', invitation.id);
-        }
+        await supabase
+          .from('admin_invitations')
+          .update({ used_at: new Date().toISOString() })
+          .eq('id', invitation.id);
       } catch (err) {
-        console.error('Error linking user to tenant:', err);
+        console.error('Error marking invitation as used:', err);
       }
     }
 
