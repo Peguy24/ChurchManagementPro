@@ -460,6 +460,9 @@ export default function TenantUserManagement() {
                                 <SelectItem value="treasurer">{ROLE_LABELS['treasurer']}</SelectItem>
                                 <SelectItem value="secretary">{ROLE_LABELS['secretary']}</SelectItem>
                                 <SelectItem value="volunteer">{ROLE_LABELS['volunteer']}</SelectItem>
+                                {customRoles.length > 0 && customRoles.map((cr) => (
+                                  <SelectItem key={cr.id} value={`custom:${cr.id}`}>{cr.name}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </TableCell>
