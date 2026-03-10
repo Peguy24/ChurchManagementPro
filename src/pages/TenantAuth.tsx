@@ -721,7 +721,7 @@ export default function TenantAuth() {
           )}
         </div>
 
-        <Tabs defaultValue={canSignupAsAdmin ? "signup" : "login"} className="w-full">
+        <Tabs value={activeTab} defaultValue={canSignupAsAdmin ? "signup" : "login"} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${showSignupTab ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <TabsTrigger value="login">{lt('login')}</TabsTrigger>
             {showSignupTab && (
