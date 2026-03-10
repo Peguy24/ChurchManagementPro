@@ -87,14 +87,14 @@ export default function TenantUserManagement() {
         (tenantRoles || []).map(async (role) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('first_name, last_name')
+            .select('first_name, last_name, email')
             .eq('id', role.user_id)
             .single();
 
           return {
             ...role,
             profile,
-            user_email: `user-${role.user_id.slice(0, 8)}`,
+            user_email: (profile as any)?.email || `user-${role.user_id.slice(0, 8)}`,
           };
         })
       );

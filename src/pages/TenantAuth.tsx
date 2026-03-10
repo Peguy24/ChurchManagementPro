@@ -549,10 +549,10 @@ export default function TenantAuth() {
     // Link user to tenant and assign role
     if (data?.user && tenant) {
       try {
-        // Update profile with tenant_id
+        // Update profile with tenant_id and email
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({ tenant_id: tenant.id })
+          .update({ tenant_id: tenant.id, email: signupForm.email } as any)
           .eq('id', data.user.id);
 
         if (profileUpdateError) {
@@ -598,14 +598,12 @@ export default function TenantAuth() {
             title: lt('congratulations'),
             description: lt('adminCreatedDesc', { name: tenant.name }),
           });
+          navigate('/');
         } else {
-          toast({
-            title: lt('signupSuccess'),
-            description: lt('signupSuccessDesc', { name: tenant.name }),
-          });
+          // Show email confirmation screen instead of navigating
+          setConfirmationEmail(signupForm.email);
+          setShowEmailConfirmation(true);
         }
-        
-        navigate('/');
       } catch (err) {
         console.error('Error linking user to tenant:', err);
         toast({
