@@ -358,6 +358,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           tenantName: tenant?.name,
           tenantSlug: tenant?.slug,
           skipEmail: true,
+          language,
         },
       });
 

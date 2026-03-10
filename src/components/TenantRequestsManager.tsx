@@ -213,6 +213,7 @@ export function TenantRequestsManager() {
             tenantId: tenant.id,
             tenantName: tenant.name,
             tenantSlug: tenant.slug,
+            language,
           },
         });
       } catch (inviteErr) {

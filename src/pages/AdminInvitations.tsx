@@ -191,6 +191,7 @@ export default function AdminInvitations() {
           tenantId: invitation.tenant_id,
           tenantName: invitation.tenant.name,
           tenantSlug: invitation.tenant.slug,
+          language,
         },
       });
       if (error) throw error;

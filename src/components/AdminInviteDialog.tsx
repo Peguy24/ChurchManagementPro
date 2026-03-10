@@ -132,6 +132,7 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
           tenantName: tenant.name,
           tenantSlug: tenant.slug,
           skipEmail,
+          language,
         },
       });
 
