@@ -46,7 +46,7 @@ export default function TenantUserManagement() {
   // Invite dialog state
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('user');
+  const [inviteRole, setInviteRole] = useState('volunteer');
   const [sendingInvite, setSendingInvite] = useState(false);
   const [inviteMode, setInviteMode] = useState<'email' | 'link' | null>(null);
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
