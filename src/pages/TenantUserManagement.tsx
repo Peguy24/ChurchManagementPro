@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2, Users2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,8 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import TenantRolePermissionsManager from '@/components/TenantRolePermissionsManager';
+import TenantCustomRolesManager from '@/components/TenantCustomRolesManager';
+import { useCustomRoles } from '@/hooks/useCustomRoles';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
