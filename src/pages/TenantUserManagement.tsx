@@ -289,13 +289,18 @@ export default function TenantUserManagement() {
     setInviteMode(skipEmail ? 'link' : 'email');
 
     try {
+      const isCustom = inviteRole.startsWith('custom:');
+      const customRoleId = isCustom ? inviteRole.replace('custom:', '') : null;
+      const enumRole = isCustom ? 'volunteer' : inviteRole;
+
       const { data, error } = await supabase.functions.invoke('send-user-invite', {
         body: {
           email: inviteEmail,
           tenantId: tenantId,
           tenantName: tenant.name,
           tenantSlug: tenant.slug,
-          role: inviteRole,
+          role: enumRole,
+          customRoleId: customRoleId,
           inviterName: user?.user_metadata?.first_name && user?.user_metadata?.last_name
             ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
             : user?.email,
