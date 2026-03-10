@@ -277,23 +277,21 @@ export default function TenantAuth() {
         const { data: inviteData, error: inviteError } = await (supabase
           .rpc as any)('validate_admin_invitation', { _token: inviteToken });
 
-        console.log('Invitation query result:', { inviteData, inviteError });
+        const inviteRow = Array.isArray(inviteData) ? inviteData[0] : inviteData;
+        console.log('Invitation query result:', { inviteRow, inviteError });
 
-        if (inviteError || !inviteData) {
+        if (inviteError || !inviteRow) {
           console.log('Invalid invitation token - error or no data');
           setInvitationValid(false);
-        } else if (inviteData.used_at) {
-          console.log('Invitation already used at:', inviteData.used_at);
-          setInvitationValid(false);
-        } else if (new Date(inviteData.expires_at) < new Date()) {
-          console.log('Invitation expired at:', inviteData.expires_at);
+        } else if (inviteRow.tenant_id && inviteRow.tenant_id !== data.id) {
+          console.log('Invitation does not belong to this tenant');
           setInvitationValid(false);
         } else {
-          console.log('Invitation is valid! Email:', inviteData.email);
-          setInvitation(inviteData);
+          console.log('Invitation is valid! Email:', inviteRow.email);
+          setInvitation({ ...inviteRow, tenant_id: data.id });
           setInvitationValid(true);
           // Pre-fill email from invitation
-          setSignupForm(prev => ({ ...prev, email: inviteData.email }));
+          setSignupForm(prev => ({ ...prev, email: inviteRow.email }));
         }
       } else if (inviteEmailParam) {
         // Handle direct email+role invitation (from tenant admin invite)
