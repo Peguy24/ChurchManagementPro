@@ -439,13 +439,21 @@ export default function TenantAuth() {
     );
 
     if (error) {
-      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+      const isAlreadyRegistered = error.message.includes('already registered') || 
+        error.message.includes('already been registered') ||
+        error.message.includes('security purposes') || 
+        error.message.includes('rate') || 
+        (error as any).status === 429;
+
+      if (isAlreadyRegistered && hasValidInvitation) {
+        // User exists from another tenant — switch to login tab
+        setLoginForm({ email: signupForm.email, password: '' });
+        setActiveTab('login');
         toast({
           title: lt('accountExists'),
-          description: lt('accountExistsDesc'),
-          variant: 'destructive',
+          description: lt('accountExistsLogin'),
         });
-      } else if (error.message.includes('security purposes') || error.message.includes('rate') || error.status === 429) {
+      } else if (isAlreadyRegistered) {
         toast({
           title: lt('accountExists'),
           description: lt('accountExistsDesc'),
