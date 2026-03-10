@@ -257,7 +257,7 @@ const GroupComparisonDashboard = () => {
         {/* Header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3 md:gap-4">
-            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/attendance')}>
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-0">
