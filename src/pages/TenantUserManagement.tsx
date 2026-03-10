@@ -415,7 +415,21 @@ export default function TenantUserManagement() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{ROLE_LABELS[pendingUser.role]}</Badge>
+                            <Select
+                              value={pendingRoleOverrides[pendingUser.user_id] || pendingUser.role}
+                              onValueChange={(value) => setPendingRoleOverrides(prev => ({ ...prev, [pendingUser.user_id]: value }))}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">{ROLE_LABELS['admin']}</SelectItem>
+                                <SelectItem value="pastor">{ROLE_LABELS['pastor']}</SelectItem>
+                                <SelectItem value="treasurer">{ROLE_LABELS['treasurer']}</SelectItem>
+                                <SelectItem value="secretary">{ROLE_LABELS['secretary']}</SelectItem>
+                                <SelectItem value="volunteer">{ROLE_LABELS['volunteer']}</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell>
                             {format(new Date(pendingUser.created_at), 'PP', { locale: dateLocale })}
@@ -424,7 +438,10 @@ export default function TenantUserManagement() {
                             <div className="flex justify-end gap-2">
                               <Button
                                 size="sm"
-                                onClick={() => handleApprove(pendingUser.user_id)}
+                                onClick={() => handleApprove(
+                                  pendingUser.user_id,
+                                  pendingRoleOverrides[pendingUser.user_id] || undefined
+                                )}
                               >
                                 <Check className="h-4 w-4 mr-1" />
                                 {t('tenant.approve')}
