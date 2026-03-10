@@ -144,15 +144,7 @@ serve(async (req) => {
       // Sync plan to tenant_subscriptions in database
       if (plan) {
         const dbPlan = PLAN_TO_DB[plan];
-        if (dbPlan) {
-          // Get user's tenant_id
-          const { data: profile } = await supabaseClient
-            .from("profiles")
-            .select("tenant_id")
-            .eq("id", user.id)
-            .single();
-
-          if (profile?.tenant_id) {
+        if (dbPlan && userTenantId) {
             const { error: syncError } = await supabaseClient
               .from("tenant_subscriptions")
               .update({
