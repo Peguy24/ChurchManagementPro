@@ -25,6 +25,9 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "reports",
   "communication",
   "settings",
+  "inventory",
+  "volunteers",
+  "visitors",
 ];
 
 interface RolePermission {
