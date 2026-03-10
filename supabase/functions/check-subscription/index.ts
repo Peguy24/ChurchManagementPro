@@ -56,13 +56,52 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Get user's tenant_id first (needed for DB fallback)
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .single();
+    const userTenantId = profile?.tenant_id;
+    logStep("User tenant", { tenantId: userTenantId });
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Find customer by email
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      logStep("No customer found, returning unsubscribed state");
+      logStep("No Stripe customer for this user, checking tenant subscription in DB");
+      
+      // Fallback: check tenant_subscriptions table (subscription may be under admin's email)
+      if (userTenantId) {
+        const { data: tenantSub } = await supabaseClient
+          .from("tenant_subscriptions")
+          .select("plan, status, current_period_end")
+          .eq("tenant_id", userTenantId)
+          .single();
+
+        if (tenantSub && tenantSub.status === "active" && tenantSub.plan) {
+          // Map DB plan names back to frontend plan names
+          const DB_TO_PLAN: Record<string, string> = {
+            "basic": "essentiel",
+            "standard": "professionnel",
+            "premium": "entreprise",
+            "free": "free",
+          };
+          const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
+          logStep("Found active tenant subscription in DB", { plan: mappedPlan });
+          return new Response(JSON.stringify({ 
+            subscribed: true,
+            plan: mappedPlan,
+            subscription_end: tenantSub.current_period_end,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+      }
+
       return new Response(JSON.stringify({ 
         subscribed: false,
         plan: null,
@@ -105,37 +144,29 @@ serve(async (req) => {
       // Sync plan to tenant_subscriptions in database
       if (plan) {
         const dbPlan = PLAN_TO_DB[plan];
-        if (dbPlan) {
-          // Get user's tenant_id
-          const { data: profile } = await supabaseClient
-            .from("profiles")
-            .select("tenant_id")
-            .eq("id", user.id)
-            .single();
+        if (dbPlan && userTenantId) {
+          const { error: syncError } = await supabaseClient
+            .from("tenant_subscriptions")
+            .update({
+              plan: dbPlan.plan,
+              status: "active",
+              price_monthly: dbPlan.price,
+              max_members: dbPlan.members,
+              max_branches: dbPlan.branches,
+              max_users: dbPlan.users,
+              max_storage_mb: dbPlan.storage,
+              current_period_end: subscriptionEnd,
+              trial_ends_at: null,
+            })
+            .eq("tenant_id", userTenantId);
 
-          if (profile?.tenant_id) {
-            const { error: syncError } = await supabaseClient
-              .from("tenant_subscriptions")
-              .update({
-                plan: dbPlan.plan,
-                status: "active",
-                price_monthly: dbPlan.price,
-                max_members: dbPlan.members,
-                max_branches: dbPlan.branches,
-                max_users: dbPlan.users,
-                max_storage_mb: dbPlan.storage,
-                current_period_end: subscriptionEnd,
-                trial_ends_at: null,
-              })
-              .eq("tenant_id", profile.tenant_id);
-
-            if (syncError) {
-              logStep("Failed to sync plan to DB", { error: syncError.message });
-            } else {
-              logStep("Plan synced to tenant_subscriptions", { tenantId: profile.tenant_id, dbPlan: dbPlan.plan });
-            }
+          if (syncError) {
+            logStep("Failed to sync plan to DB", { error: syncError.message });
+          } else {
+            logStep("Plan synced to tenant_subscriptions", { tenantId: userTenantId, dbPlan: dbPlan.plan });
           }
         }
+      }
       }
     } else {
       logStep("No active subscription found");
