@@ -78,6 +78,7 @@ import Visitors from "./pages/Visitors";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import DataBackup from "./pages/DataBackup";
+import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
+              <Route path="/select-church" element={<SelectChurch />} />
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
               <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
