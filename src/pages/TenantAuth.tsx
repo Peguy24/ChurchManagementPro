@@ -224,6 +224,7 @@ export default function TenantAuth() {
   const [invitationValid, setInvitationValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   const [loginForm, setLoginForm] = useState({
