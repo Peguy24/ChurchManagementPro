@@ -11,6 +11,36 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Headphones } from "lucide-react";
 
+const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    enterpriseDesc: "Your ticket will be handled with absolute priority (24/7).",
+    professionalDesc: "Your ticket will be handled with priority.",
+    standardDesc: "Describe your issue, our team will respond by email.",
+    support247: "24/7 Support",
+    supportPriority: "Priority Support",
+    enterprise: "Enterprise",
+    professional: "Professional",
+  },
+  fr: {
+    enterpriseDesc: "Votre ticket sera traité en priorité absolue (24/7).",
+    professionalDesc: "Votre ticket sera traité en priorité.",
+    standardDesc: "Décrivez votre problème, notre équipe vous répondra par email.",
+    support247: "Support 24/7",
+    supportPriority: "Support Prioritaire",
+    enterprise: "Entreprise",
+    professional: "Professionnel",
+  },
+  ht: {
+    enterpriseDesc: "Tikè ou a ap trete ak priyorite absoli (24/7).",
+    professionalDesc: "Tikè ou a ap trete ak priyorite.",
+    standardDesc: "Dekri pwoblèm ou, ekip nou an ap reponn pa imèl.",
+    support247: "Sipò 24/7",
+    supportPriority: "Sipò Priyorite",
+    enterprise: "Antrepriz",
+    professional: "Pwofesyonèl",
+  },
+};
+
 interface SupportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
