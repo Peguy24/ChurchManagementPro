@@ -274,9 +274,8 @@ export default function TenantAuth() {
       // Validate invitation token if present
       if (inviteToken) {
         console.log('Validating invitation token...');
-        const { data: inviteData, error: inviteError } = await supabase
-          .rpc('validate_admin_invitation', { _token: inviteToken })
-          .single();
+        const { data: inviteData, error: inviteError } = await (supabase
+          .rpc as any)('validate_admin_invitation', { _token: inviteToken });
 
         console.log('Invitation query result:', { inviteData, inviteError });
 
