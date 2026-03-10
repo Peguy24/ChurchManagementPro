@@ -72,7 +72,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, role, inviterName, skipEmail, language = "en" } = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
 
     if (!email || !tenantId || !tenantName) {
       console.error("Missing required fields:", { email, tenantId, tenantName });
