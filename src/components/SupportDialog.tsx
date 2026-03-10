@@ -113,8 +113,8 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
       return (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
           <Headphones className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Support 24/7</span>
-          <Badge className="bg-primary text-primary-foreground text-xs">Entreprise</Badge>
+          <span className="text-sm font-medium">{dt.support247}</span>
+          <Badge className="bg-primary text-primary-foreground text-xs">{dt.enterprise}</Badge>
         </div>
       );
     }
@@ -122,8 +122,8 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
       return (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/5 border border-secondary/20">
           <Shield className="h-4 w-4 text-secondary" />
-          <span className="text-sm font-medium">Support Prioritaire</span>
-          <Badge variant="secondary" className="text-xs">Professionnel</Badge>
+          <span className="text-sm font-medium">{dt.supportPriority}</span>
+          <Badge variant="secondary" className="text-xs">{dt.professional}</Badge>
         </div>
       );
     }
@@ -137,10 +137,10 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
           <DialogTitle>{t("layout.supportNewTicket")}</DialogTitle>
           <DialogDescription>
             {plan === "entreprise"
-              ? "Votre ticket sera traité en priorité absolue (24/7)."
+              ? dt.enterpriseDesc
               : plan === "professionnel"
-              ? "Votre ticket sera traité en priorité."
-              : "Décrivez votre problème, notre équipe vous répondra par email."}
+              ? dt.professionalDesc
+              : dt.standardDesc}
           </DialogDescription>
         </DialogHeader>
 
