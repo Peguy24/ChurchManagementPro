@@ -541,9 +541,9 @@ export default function TenantUserManagement() {
                           </TableCell>
                           <TableCell>
                             <Badge 
-                              variant={approvedUser.role === 'admin' ? 'default' : 'secondary'}
+                              variant={approvedUser.role === 'admin' ? 'default' : approvedUser.custom_role_id ? 'outline' : 'secondary'}
                             >
-                              {ROLE_LABELS[approvedUser.role]}
+                              {getRoleDisplayName(approvedUser)}
                             </Badge>
                           </TableCell>
                           <TableCell>
