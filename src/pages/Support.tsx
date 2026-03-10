@@ -215,7 +215,7 @@ export default function Support() {
           </Button>
         </div>
 
-        <SupportTierBanner plan={plan} />
+        <SupportTierBanner plan={plan} language={language} />
 
         {isLoading ? (
           <div className="text-muted-foreground">{t("common.loading")}...</div>
