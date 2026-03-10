@@ -68,6 +68,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Only a person with a valid invitation can create the administrator account.",
     admin: "Admin",
     errorLoading: "Error loading",
+    checkEmailTitle: "Check Your Email",
+    checkEmailDesc: "We sent a verification link to {email}. Please check your inbox (and spam folder) and click the link to verify your account.",
+    checkEmailBack: "Back to Login",
   },
   fr: {
     loading: "Chargement...",
@@ -123,6 +126,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Seule une personne avec une invitation valide peut créer le compte administrateur.",
     admin: "Admin",
     errorLoading: "Erreur lors du chargement",
+    checkEmailTitle: "Vérifiez votre email",
+    checkEmailDesc: "Nous avons envoyé un lien de vérification à {email}. Veuillez vérifier votre boîte de réception (et le dossier spam) et cliquer sur le lien pour activer votre compte.",
+    checkEmailBack: "Retour à la connexion",
   },
   ht: {
     loading: "Chajman...",
@@ -178,6 +184,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Sèlman yon moun ki gen yon envitasyon valid ka kreye kont administratè a.",
     admin: "Admin",
     errorLoading: "Erè pandan chajman",
+    checkEmailTitle: "Tcheke Imèl Ou",
+    checkEmailDesc: "Nou voye yon lyen verifikasyon bay {email}. Tanpri tcheke bwat resepsyon ou (ak dosye spam) epi klike sou lyen nan pou aktive kont ou.",
+    checkEmailBack: "Retounen nan koneksyon",
   },
 };
 

@@ -1,12 +1,41 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Church, Clock, LogOut } from "lucide-react";
+import { Clock, LogOut } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+const localTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Pending Approval",
+    subtitle: "Your account has been created successfully",
+    description: "An administrator must approve your account and assign you a role before you can access the system.",
+    contactAdmin: "Please contact your church administrator to approve your access.",
+    loggedInAs: "Logged in as:",
+    logout: "Log Out",
+  },
+  fr: {
+    title: "En Attente d'Approbation",
+    subtitle: "Votre compte a été créé avec succès",
+    description: "Un administrateur doit approuver votre compte et vous assigner un rôle avant que vous puissiez accéder au système.",
+    contactAdmin: "Veuillez contacter l'administrateur de votre église pour qu'il approuve votre accès.",
+    loggedInAs: "Connecté en tant que :",
+    logout: "Se déconnecter",
+  },
+  ht: {
+    title: "Ap Tann Apwobasyon",
+    subtitle: "Kont ou kreye avèk siksè",
+    description: "Yon administratè dwe apwouve kont ou epi ba ou yon wòl anvan ou ka jwenn aksè nan sistèm nan.",
+    contactAdmin: "Tanpri kontakte administratè legliz ou a pou li apwouve aksè ou.",
+    loggedInAs: "Konekte kòm :",
+    logout: "Dekonekte",
+  },
+};
 
 export default function PendingApproval() {
   const { signOut, user } = useAuth();
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+
+  const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
 
   const handleLogout = async () => {
     await signOut();
@@ -19,38 +48,26 @@ export default function PendingApproval() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
             <Clock className="h-8 w-8 text-orange-500" />
           </div>
-          <CardTitle className="text-2xl">En Attente d'Approbation</CardTitle>
-          <CardDescription>
-            Votre compte a été créé avec succès
-          </CardDescription>
+          <CardTitle className="text-2xl">{lt("title")}</CardTitle>
+          <CardDescription>{lt("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg bg-muted p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Un administrateur doit approuver votre compte et vous assigner un rôle 
-              avant que vous puissiez accéder au système.
-            </p>
+            <p className="text-sm text-muted-foreground">{lt("description")}</p>
           </div>
 
           <div className="space-y-2 text-center">
-            <p className="text-sm text-muted-foreground">Connecté en tant que:</p>
+            <p className="text-sm text-muted-foreground">{lt("loggedInAs")}</p>
             <p className="font-medium">{user?.email}</p>
           </div>
 
           <div className="space-y-2 text-center text-sm text-muted-foreground">
-            <p>
-              Veuillez contacter l'administrateur de votre église pour qu'il approuve 
-              votre accès.
-            </p>
+            <p>{lt("contactAdmin")}</p>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleLogout}
-          >
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
-            Se déconnecter
+            {lt("logout")}
           </Button>
         </CardContent>
       </Card>
