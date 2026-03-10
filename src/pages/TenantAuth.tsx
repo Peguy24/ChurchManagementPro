@@ -557,7 +557,7 @@ export default function TenantAuth() {
           .eq('id', data.user.id);
 
         if (profileUpdateError) {
-          throw profileUpdateError;
+          console.error('Profile update error:', profileUpdateError);
         }
         
         // Determine role + approval behavior based on invitation source
@@ -583,7 +583,7 @@ export default function TenantAuth() {
           });
 
         if (roleInsertError) {
-          throw roleInsertError;
+          console.error('Role insert error:', roleInsertError);
         }
 
         // Mark token invitation as used when applicable
@@ -593,28 +593,14 @@ export default function TenantAuth() {
             .update({ used_at: new Date().toISOString() })
             .eq('id', invitation.id);
         }
-
-        if (isInvitedSignup && isAutoApproved) {
-          toast({
-            title: lt('congratulations'),
-            description: lt('adminCreatedDesc', { name: tenant.name }),
-          });
-          navigate('/');
-        } else {
-          // Show email confirmation screen instead of navigating
-          setConfirmationEmail(signupForm.email);
-          setShowEmailConfirmation(true);
-        }
       } catch (err) {
         console.error('Error linking user to tenant:', err);
-        toast({
-          title: lt('errorTitle'),
-          description: lt('linkError'),
-          variant: 'destructive',
-        });
       }
     }
 
+    // Always show email confirmation screen after successful signup
+    setConfirmationEmail(signupForm.email);
+    setShowEmailConfirmation(true);
     setIsLoading(false);
   };
 
