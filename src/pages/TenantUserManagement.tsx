@@ -51,6 +51,7 @@ export default function TenantUserManagement() {
   const [inviteMode, setInviteMode] = useState<'email' | 'link' | null>(null);
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [pendingRoleOverrides, setPendingRoleOverrides] = useState<Record<string, string>>({});
 
   const dateLocale = language === 'fr' ? fr : language === 'ht' ? fr : enUS;
 
