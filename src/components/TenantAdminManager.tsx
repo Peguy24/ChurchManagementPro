@@ -330,6 +330,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           skipEmail: false,
           customSubject: subject,
           customMessage: message,
+          language,
         },
       });
 
