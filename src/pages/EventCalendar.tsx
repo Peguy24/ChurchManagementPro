@@ -150,8 +150,9 @@ export default function EventCalendar() {
                       {dayEvents.slice(0, 2).map((event) => (
                         <div
                           key={event.id}
+                          title={event.name}
                           className={cn(
-                            "text-[10px] sm:text-xs px-1 py-0.5 rounded border-l-2 truncate",
+                            "text-[10px] sm:text-xs px-1 py-0.5 rounded border-l-2 leading-tight line-clamp-2 break-words overflow-hidden",
                             categoryColors[event.event_category || "general"] || categoryColors.general
                           )}
                         >
