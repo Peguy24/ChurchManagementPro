@@ -87,14 +87,14 @@ export default function TenantUserManagement() {
         (tenantRoles || []).map(async (role) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('first_name, last_name')
+            .select('first_name, last_name, email')
             .eq('id', role.user_id)
             .single();
 
           return {
             ...role,
             profile,
-            user_email: `user-${role.user_id.slice(0, 8)}`,
+            user_email: (profile as any)?.email || `user-${role.user_id.slice(0, 8)}`,
           };
         })
       );
@@ -397,7 +397,10 @@ export default function TenantUserManagement() {
                       {pendingUsers.map((pendingUser) => (
                         <TableRow key={pendingUser.id}>
                           <TableCell className="font-medium">
-                            {pendingUser.profile?.first_name} {pendingUser.profile?.last_name}
+                            <div>
+                              <div>{pendingUser.profile?.first_name} {pendingUser.profile?.last_name}</div>
+                              <div className="text-xs text-muted-foreground">{pendingUser.user_email}</div>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{ROLE_LABELS[pendingUser.role]}</Badge>
@@ -465,11 +468,14 @@ export default function TenantUserManagement() {
                       {approvedUsers.map((approvedUser) => (
                         <TableRow key={approvedUser.id}>
                           <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
-                              {approvedUser.role === 'admin' && (
-                                <Crown className="h-4 w-4 text-primary" />
-                              )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
+                                {approvedUser.role === 'admin' && (
+                                  <Crown className="h-4 w-4 text-primary" />
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">{approvedUser.user_email}</div>
                             </div>
                           </TableCell>
                           <TableCell>

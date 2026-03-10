@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Church, Crown, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Church, Crown, Users, ShieldCheck, AlertTriangle, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,6 +68,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Only a person with a valid invitation can create the administrator account.",
     admin: "Admin",
     errorLoading: "Error loading",
+    checkEmailTitle: "Check Your Email",
+    checkEmailDesc: "We sent a verification link to {email}. Please check your inbox (and spam folder) and click the link to verify your account.",
+    checkEmailBack: "Back to Login",
   },
   fr: {
     loading: "Chargement...",
@@ -123,6 +126,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Seule une personne avec une invitation valide peut créer le compte administrateur.",
     admin: "Admin",
     errorLoading: "Erreur lors du chargement",
+    checkEmailTitle: "Vérifiez votre email",
+    checkEmailDesc: "Nous avons envoyé un lien de vérification à {email}. Veuillez vérifier votre boîte de réception (et le dossier spam) et cliquer sur le lien pour activer votre compte.",
+    checkEmailBack: "Retour à la connexion",
   },
   ht: {
     loading: "Chajman...",
@@ -178,6 +184,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     noAdminConfiguredDesc: "Sèlman yon moun ki gen yon envitasyon valid ka kreye kont administratè a.",
     admin: "Admin",
     errorLoading: "Erè pandan chajman",
+    checkEmailTitle: "Tcheke Imèl Ou",
+    checkEmailDesc: "Nou voye yon lyen verifikasyon bay {email}. Tanpri tcheke bwat resepsyon ou (ak dosye spam) epi klike sou lyen nan pou aktive kont ou.",
+    checkEmailBack: "Retounen nan koneksyon",
   },
 };
 
@@ -226,6 +235,8 @@ export default function TenantAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -538,10 +549,10 @@ export default function TenantAuth() {
     // Link user to tenant and assign role
     if (data?.user && tenant) {
       try {
-        // Update profile with tenant_id
+        // Update profile with tenant_id and email
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({ tenant_id: tenant.id })
+          .update({ tenant_id: tenant.id, email: signupForm.email } as any)
           .eq('id', data.user.id);
 
         if (profileUpdateError) {
@@ -587,14 +598,12 @@ export default function TenantAuth() {
             title: lt('congratulations'),
             description: lt('adminCreatedDesc', { name: tenant.name }),
           });
+          navigate('/');
         } else {
-          toast({
-            title: lt('signupSuccess'),
-            description: lt('signupSuccessDesc', { name: tenant.name }),
-          });
+          // Show email confirmation screen instead of navigating
+          setConfirmationEmail(signupForm.email);
+          setShowEmailConfirmation(true);
         }
-        
-        navigate('/');
       } catch (err) {
         console.error('Error linking user to tenant:', err);
         toast({
@@ -615,6 +624,36 @@ export default function TenantAuth() {
           <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
           <p className="mt-4 text-muted-foreground">{lt('loading')}</p>
         </div>
+      </div>
+    );
+  }
+
+  if (showEmailConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">{lt('checkEmailTitle')}</CardTitle>
+            <CardDescription>
+              {lt('checkEmailDesc', { email: confirmationEmail })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => {
+                setShowEmailConfirmation(false);
+                setActiveTab('login');
+              }}
+            >
+              {lt('checkEmailBack')}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

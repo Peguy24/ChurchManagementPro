@@ -1,49 +1,32 @@
 
 
-## Three Issues to Fix
+## Current Situation
 
-### 1. After signup, show "Check your email" message
-Currently after a successful signup, the code calls `navigate('/')` which redirects away. Since email confirmation is enabled (default in Supabase), the user needs to verify their email first. The signup handler should instead show a clear message telling the user to check their email inbox for a verification link, in the appropriate language (EN/FR/HT).
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-**Changes in `src/pages/TenantAuth.tsx`:**
-- After successful signup (lines 585-597), instead of `navigate('/')`, display a confirmation screen/toast telling the user to verify their email
-- Add new translation keys: `checkEmailTitle`, `checkEmailDesc` in all 3 languages
-- Add a state variable (e.g. `showEmailConfirmation`) to render a confirmation card instead of the form
+## What Needs to Be Done
 
-### 2. Fix PendingApproval page — add full translations (EN/FR/HT)
-Currently all text is hardcoded in French.
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-**Changes in `src/pages/PendingApproval.tsx`:**
-- Add local translations map (EN/FR/HT) for all strings: title, description, instructions, button label, "logged in as"
-- Use `useLanguage()` (already imported) to select the right language
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### 3. User Management — pending users section not visible
-The code in `TenantUserManagement.tsx` already has approve/reject functionality (lines 115-165) and renders a pending users card (lines 375-432). The issue is likely that the `user_email` field shows `user-XXXXXXXX` instead of the real email, making it hard to identify users. Also, the pending section only shows when `pendingUsers.length > 0` — need to verify users are actually being inserted with `is_approved: false`.
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-**Changes in `src/pages/TenantUserManagement.tsx`:**
-- Fetch user emails from `auth.users` via a security-definer function or by storing email in `tenant_user_roles` or profiles
-- Currently email shows as `user-${role.user_id.slice(0, 8)}` (line 98) — need to fetch actual email from profiles or add it during role insertion
-- The approve/reject buttons already exist and work. The real fix is ensuring users can be identified (show real name/email)
-
-**Additional fix:** Store the user's email in `profiles` table during signup so it can be queried. Or add an `email` column to `tenant_user_roles`.
-
-### Technical Plan
-
-1. **`src/pages/TenantAuth.tsx`**: 
-   - Add `showEmailConfirmation` state
-   - Add translations: `checkEmailTitle` ("Check your email" / "Vérifiez votre email" / "Tcheke imèl ou"), `checkEmailDesc` with instructions
-   - After successful non-auto-approved signup, set `showEmailConfirmation = true` instead of navigating
-   - Render a confirmation card with email icon and message when `showEmailConfirmation` is true
-
-2. **`src/pages/PendingApproval.tsx`**:
-   - Add local translation map for EN/FR/HT covering: title, subtitle, description, contact admin message, "logged in as", logout button
-   - Replace all hardcoded French strings with translated versions
-
-3. **`src/pages/TenantUserManagement.tsx`**:
-   - Fix email display: fetch email from `auth.users` table via the profiles table (store email in profiles during signup)
-   - Or simpler: add email storage during signup in TenantAuth
-
-4. **`src/pages/TenantAuth.tsx` (signup handler)**: Store email in profiles table during signup: `update profiles set email = signupForm.email where id = data.user.id`
-
-5. **Database migration**: Add `email` column to `profiles` table if not already present, and update `TenantUserManagement` to display it.
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
