@@ -145,28 +145,28 @@ serve(async (req) => {
       if (plan) {
         const dbPlan = PLAN_TO_DB[plan];
         if (dbPlan && userTenantId) {
-            const { error: syncError } = await supabaseClient
-              .from("tenant_subscriptions")
-              .update({
-                plan: dbPlan.plan,
-                status: "active",
-                price_monthly: dbPlan.price,
-                max_members: dbPlan.members,
-                max_branches: dbPlan.branches,
-                max_users: dbPlan.users,
-                max_storage_mb: dbPlan.storage,
-                current_period_end: subscriptionEnd,
-                trial_ends_at: null,
-              })
-              .eq("tenant_id", profile.tenant_id);
+          const { error: syncError } = await supabaseClient
+            .from("tenant_subscriptions")
+            .update({
+              plan: dbPlan.plan,
+              status: "active",
+              price_monthly: dbPlan.price,
+              max_members: dbPlan.members,
+              max_branches: dbPlan.branches,
+              max_users: dbPlan.users,
+              max_storage_mb: dbPlan.storage,
+              current_period_end: subscriptionEnd,
+              trial_ends_at: null,
+            })
+            .eq("tenant_id", userTenantId);
 
-            if (syncError) {
-              logStep("Failed to sync plan to DB", { error: syncError.message });
-            } else {
-              logStep("Plan synced to tenant_subscriptions", { tenantId: profile.tenant_id, dbPlan: dbPlan.plan });
-            }
+          if (syncError) {
+            logStep("Failed to sync plan to DB", { error: syncError.message });
+          } else {
+            logStep("Plan synced to tenant_subscriptions", { tenantId: userTenantId, dbPlan: dbPlan.plan });
           }
         }
+      }
       }
     } else {
       logStep("No active subscription found");
