@@ -49,7 +49,8 @@ interface SupportDialogProps {
 }
 
 export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: SupportDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dt = DIALOG_TRANSLATIONS[language] || DIALOG_TRANSLATIONS.en;
   const { tenantId } = useCurrentTenant();
   const [loading, setLoading] = useState(false);
   const [subject, setSubject] = useState("");
