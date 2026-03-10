@@ -65,7 +65,16 @@ export default function TenantUserManagement() {
     treasurer: t('tenant.roleTreasurer'),
     secretary: t('tenant.roleSecretary'),
     volunteer: t('tenant.roleVolunteer'),
-    
+    // Add custom roles dynamically
+    ...Object.fromEntries(customRoles.map((cr) => [`custom:${cr.id}`, cr.name])),
+  };
+
+  const getRoleDisplayName = (user: TenantUser): string => {
+    if (user.custom_role_id) {
+      const cr = customRoles.find((r) => r.id === user.custom_role_id);
+      return cr?.name || ROLE_LABELS[user.role] || user.role;
+    }
+    return ROLE_LABELS[user.role] || user.role;
   };
 
   useEffect(() => {
