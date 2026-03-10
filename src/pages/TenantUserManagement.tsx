@@ -611,8 +611,9 @@ export default function TenantUserManagement() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="permissions">
+          <TabsContent value="permissions" className="space-y-6">
             <TenantRolePermissionsManager />
+            <TenantCustomRolesManager />
           </TabsContent>
         </Tabs>
       </div>
