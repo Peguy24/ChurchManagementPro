@@ -106,7 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
   const userId = userData.user.id;
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, skipEmail = false }: AdminInviteRequest = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, skipEmail = false, language = 'fr' }: AdminInviteRequest = await req.json();
+    const t = translations[language] || translations['fr'];
 
     console.log(`Checking permissions for user ${userId} to invite admin for tenant ${tenantId}`);
 
