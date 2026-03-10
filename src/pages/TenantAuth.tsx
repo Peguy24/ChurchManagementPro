@@ -550,19 +550,11 @@ export default function TenantAuth() {
     if (data?.user && tenant) {
       try {
         // Update profile with tenant_id and email
+        const updateData: Record<string, unknown> = { tenant_id: tenant.id, email: signupForm.email };
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({ tenant_id: tenant.id } as any)
+          .update(updateData as any)
           .eq('id', data.user.id);
-
-        // Also store email in profile (column may not be in types yet)
-        await supabase.rpc('execute_sql' as any, {}).catch(() => {});
-        await supabase
-          .from('profiles')
-          .update({ email: signupForm.email } as any)
-          .eq('id', data.user.id)
-          .then(() => {})
-          .catch(() => {});
 
         if (profileUpdateError) {
           throw profileUpdateError;
