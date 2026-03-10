@@ -632,11 +632,23 @@ export default function TenantUserManagement() {
                 <SelectValue placeholder={t('tenant.selectRole')} />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="admin">{t('tenant.roleAdmin')}</SelectItem>
+                <SelectItem value="pastor">{t('tenant.rolePastor')}</SelectItem>
+                <SelectItem value="treasurer">{t('tenant.roleTreasurer')}</SelectItem>
+                <SelectItem value="secretary">{t('tenant.roleSecretary')}</SelectItem>
+                <SelectItem value="volunteer">{t('tenant.roleVolunteer')}</SelectItem>
+                {customRoles.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                      {t('customRoles.title') || 'Custom Roles'}
+                    </div>
+                    {customRoles.map((cr) => (
+                      <SelectItem key={cr.id} value={`custom:${cr.id}`}>
+                        {cr.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
