@@ -167,7 +167,6 @@ serve(async (req) => {
           }
         }
       }
-      }
     } else {
       logStep("No active subscription found");
     }
