@@ -225,7 +225,7 @@ export default function TenantUserManagement() {
 
   const resetInviteState = () => {
     setInviteEmail('');
-    setInviteRole('user');
+    setInviteRole('volunteer');
     setInvitationLink(null);
     setCopied(false);
     setInviteMode(null);
