@@ -3517,6 +3517,25 @@ export type Database = {
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
       tenant_has_admin: { Args: { _tenant_id: string }; Returns: boolean }
+      validate_admin_invitation: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          id: string
+          tenant_id: string
+          used_at: string
+        }[]
+      }
+      validate_super_admin_invitation: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          id: string
+          used_at: string
+        }[]
+      }
     }
     Enums: {
       app_role:
