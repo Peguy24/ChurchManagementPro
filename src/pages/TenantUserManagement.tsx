@@ -355,6 +355,14 @@ export default function TenantUserManagement() {
   const pendingUsers = users.filter(u => !u.is_approved);
   const approvedUsers = users.filter(u => u.is_approved);
 
+  // Find the first admin (oldest admin by created_at) — their role cannot be changed
+  const firstAdmin = approvedUsers
+    .filter(u => u.role === 'admin')
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
+
+  const isFirstAdmin = (userId: string) => firstAdmin?.user_id === userId;
+  const isSelf = (userId: string) => userId === user?.id;
+
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
@@ -519,18 +527,30 @@ export default function TenantUserManagement() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingUser(approvedUser);
-                                  setSelectedRole(approvedUser.role);
-                                }}
-                              >
-                                <Shield className="h-4 w-4 mr-1" />
-                                {t('tenant.modifyRole')}
-                              </Button>
-                              {approvedUser.user_id !== user?.id && (
+                              {!isFirstAdmin(approvedUser.user_id) && !isSelf(approvedUser.user_id) && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingUser(approvedUser);
+                                    setSelectedRole(approvedUser.role);
+                                  }}
+                                >
+                                  <Shield className="h-4 w-4 mr-1" />
+                                  {t('tenant.modifyRole')}
+                                </Button>
+                              )}
+                              {isFirstAdmin(approvedUser.user_id) && (
+                                <Badge variant="outline" className="text-xs">
+                                  {t('tenant.founder') || 'Fondateur'}
+                                </Badge>
+                              )}
+                              {isSelf(approvedUser.user_id) && !isFirstAdmin(approvedUser.user_id) && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {t('common.you') || 'Vous'}
+                                </Badge>
+                              )}
+                              {approvedUser.user_id !== user?.id && !isFirstAdmin(approvedUser.user_id) && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button size="sm" variant="destructive">
