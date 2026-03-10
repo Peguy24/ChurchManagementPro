@@ -628,7 +628,36 @@ export default function TenantAuth() {
     );
   }
 
-  if (error || !tenant) {
+  if (showEmailConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">{lt('checkEmailTitle')}</CardTitle>
+            <CardDescription>
+              {lt('checkEmailDesc', { email: confirmationEmail })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => {
+                setShowEmailConfirmation(false);
+                setActiveTab('login');
+              }}
+            >
+              {lt('checkEmailBack')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
