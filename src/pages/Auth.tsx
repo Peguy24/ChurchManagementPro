@@ -217,8 +217,9 @@ export default function Auth() {
           const { data, error } = await (supabase
             .rpc as any)('validate_super_admin_invitation', { _token: superAdminInviteToken });
           
-          if (!error && data && !data.used_at && new Date(data.expires_at) > new Date()) {
-            setSuperAdminInvite({ email: data.email, valid: true });
+          const row = Array.isArray(data) ? data[0] : data;
+          if (!error && row) {
+            setSuperAdminInvite({ email: row.email, valid: true });
           } else {
             setSuperAdminInvite({ email: '', valid: false });
             toast({
