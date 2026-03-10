@@ -355,6 +355,14 @@ export default function TenantUserManagement() {
   const pendingUsers = users.filter(u => !u.is_approved);
   const approvedUsers = users.filter(u => u.is_approved);
 
+  // Find the first admin (oldest admin by created_at) — their role cannot be changed
+  const firstAdmin = approvedUsers
+    .filter(u => u.role === 'admin')
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
+
+  const isFirstAdmin = (userId: string) => firstAdmin?.user_id === userId;
+  const isSelf = (userId: string) => userId === user?.id;
+
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
