@@ -253,8 +253,11 @@ export default function TenantUserManagement() {
           tenantName: tenant.name,
           tenantSlug: tenant.slug,
           role: inviteRole,
-          inviterName: user?.email,
+          inviterName: user?.user_metadata?.first_name && user?.user_metadata?.last_name
+            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+            : user?.email,
           skipEmail,
+          language,
         },
       });
 
