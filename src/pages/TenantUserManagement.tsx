@@ -261,7 +261,18 @@ export default function TenantUserManagement() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if the response body contains our custom error
+        if (data?.error === 'EMAIL_ALREADY_HAS_ROLE') {
+          toast({
+            title: t('common.error'),
+            description: data.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       if (skipEmail && data?.invitationLink) {
         setInvitationLink(data.invitationLink);
@@ -276,8 +287,21 @@ export default function TenantUserManagement() {
         });
         handleInviteDialogClose(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating invite:', err);
+      // Try to parse error context for EMAIL_ALREADY_HAS_ROLE
+      try {
+        const parsed = JSON.parse(err?.context?.body || '{}');
+        if (parsed?.error === 'EMAIL_ALREADY_HAS_ROLE') {
+          toast({
+            title: t('common.error'),
+            description: parsed.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+      } catch {}
+      
       if (!skipEmail) {
         toast({
           title: t('common.error'),
