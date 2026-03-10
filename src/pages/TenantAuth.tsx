@@ -275,10 +275,7 @@ export default function TenantAuth() {
       if (inviteToken) {
         console.log('Validating invitation token...');
         const { data: inviteData, error: inviteError } = await supabase
-          .from('admin_invitations')
-          .select('id, email, tenant_id, expires_at, used_at')
-          .eq('token', inviteToken)
-          .eq('tenant_id', data.id)
+          .rpc('validate_admin_invitation', { _token: inviteToken })
           .single();
 
         console.log('Invitation query result:', { inviteData, inviteError });

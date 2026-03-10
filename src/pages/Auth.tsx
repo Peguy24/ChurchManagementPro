@@ -215,9 +215,7 @@ export default function Auth() {
         setIsValidatingToken(true);
         try {
           const { data, error } = await supabase
-            .from('super_admin_invitations')
-            .select('email, expires_at, used_at')
-            .eq('token', superAdminInviteToken)
+            .rpc('validate_super_admin_invitation', { _token: superAdminInviteToken })
             .single();
           
           if (!error && data && !data.used_at && new Date(data.expires_at) > new Date()) {
