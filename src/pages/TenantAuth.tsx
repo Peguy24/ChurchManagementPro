@@ -53,6 +53,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     signupUnauthorizedDesc: "Only an invited administrator can create the first account. Contact the Super Admin.",
     accountExists: "Account Already Exists",
     accountExistsDesc: "An account with this email already exists. Please log in.",
+    accountExistsLogin: "You already have an account. Log in below to accept this invitation.",
+    linkedSuccess: "Invitation Accepted!",
+    linkedSuccessDesc: "You have been linked to {name} successfully.",
     signupError: "Registration Error",
     congratulations: "Congratulations!",
     adminCreatedDesc: "You are now the administrator of {name}. Your account is active.",
@@ -105,6 +108,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     signupUnauthorizedDesc: "Seul un administrateur invité peut créer le premier compte. Contactez le Super Admin.",
     accountExists: "Compte déjà existant",
     accountExistsDesc: "Un compte avec cet email existe déjà. Veuillez vous connecter.",
+    accountExistsLogin: "Vous avez déjà un compte. Connectez-vous ci-dessous pour accepter cette invitation.",
+    linkedSuccess: "Invitation Acceptée!",
+    linkedSuccessDesc: "Vous avez été associé à {name} avec succès.",
     signupError: "Erreur d'inscription",
     congratulations: "Félicitations!",
     adminCreatedDesc: "Vous êtes maintenant l'administrateur de {name}. Votre compte est actif.",
@@ -157,6 +163,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     signupUnauthorizedDesc: "Sèlman yon administratè envite ka kreye premye kont la. Kontakte Super Admin.",
     accountExists: "Kont Deja Egziste",
     accountExistsDesc: "Yon kont ak imèl sa a deja egziste. Tanpri konekte.",
+    accountExistsLogin: "Ou deja gen yon kont. Konekte anba a pou aksepte envitasyon sa a.",
+    linkedSuccess: "Envitasyon Aksepte!",
+    linkedSuccessDesc: "Ou te asosye ak {name} avèk siksè.",
     signupError: "Erè Enskripsyon",
     congratulations: "Felisitasyon!",
     adminCreatedDesc: "Ou se administratè {name} kounye a. Kont ou aktif.",
@@ -215,6 +224,7 @@ export default function TenantAuth() {
   const [invitationValid, setInvitationValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   const [loginForm, setLoginForm] = useState({
@@ -351,6 +361,71 @@ export default function TenantAuth() {
         variant: 'destructive',
       });
     } else {
+      // After successful login, check if we need to link user to this tenant (invitation context)
+      const hasInvitationContext = (invitationValid && invitation) || inviteEmailParam;
+      
+      if (hasInvitationContext && tenant) {
+        try {
+          // Get the logged-in user
+          const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+          
+          if (loggedInUser) {
+            // Check if user already has a role in this tenant
+            const { data: existingRole } = await supabase
+              .from('tenant_user_roles')
+              .select('id')
+              .eq('tenant_id', tenant.id)
+              .eq('user_id', loggedInUser.id)
+              .maybeSingle();
+
+            if (!existingRole) {
+              // Determine role and approval
+              const isTokenInvite = Boolean(inviteToken && invitation?.id);
+              const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+              const roleFromParam = inviteRoleParam && validRoles.includes(inviteRoleParam as typeof validRoles[number])
+                ? inviteRoleParam
+                : 'admin';
+              const roleToAssign = (invitationValid && invitation) ? roleFromParam : 'user';
+              const isAutoApproved = isTokenInvite;
+
+              // Update profile tenant_id
+              await supabase
+                .from('profiles')
+                .update({ tenant_id: tenant.id })
+                .eq('id', loggedInUser.id);
+
+              // Insert tenant role
+              await supabase
+                .from('tenant_user_roles')
+                .insert({
+                  tenant_id: tenant.id,
+                  user_id: loggedInUser.id,
+                  role: roleToAssign as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+                  is_approved: isAutoApproved,
+                });
+
+              // Mark token invitation as used
+              if (isTokenInvite && invitation?.id) {
+                await supabase
+                  .from('admin_invitations')
+                  .update({ used_at: new Date().toISOString() })
+                  .eq('id', invitation.id);
+              }
+
+              toast({
+                title: lt('linkedSuccess'),
+                description: lt('linkedSuccessDesc', { name: tenant.name }),
+              });
+              navigate('/');
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Error linking existing user to tenant:', err);
+        }
+      }
+
       toast({
         title: lt('loginSuccess'),
         description: lt('welcomeTo', { name: tenant?.name || '' }),
@@ -429,13 +504,21 @@ export default function TenantAuth() {
     );
 
     if (error) {
-      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+      const isAlreadyRegistered = error.message.includes('already registered') || 
+        error.message.includes('already been registered') ||
+        error.message.includes('security purposes') || 
+        error.message.includes('rate') || 
+        (error as any).status === 429;
+
+      if (isAlreadyRegistered && hasValidInvitation) {
+        // User exists from another tenant — switch to login tab
+        setLoginForm({ email: signupForm.email, password: '' });
+        setActiveTab('login');
         toast({
           title: lt('accountExists'),
-          description: lt('accountExistsDesc'),
-          variant: 'destructive',
+          description: lt('accountExistsLogin'),
         });
-      } else if (error.message.includes('security purposes') || error.message.includes('rate') || error.status === 429) {
+      } else if (isAlreadyRegistered) {
         toast({
           title: lt('accountExists'),
           description: lt('accountExistsDesc'),
@@ -638,7 +721,7 @@ export default function TenantAuth() {
           )}
         </div>
 
-        <Tabs defaultValue={canSignupAsAdmin ? "signup" : "login"} className="w-full">
+        <Tabs value={activeTab} defaultValue={canSignupAsAdmin ? "signup" : "login"} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${showSignupTab ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <TabsTrigger value="login">{lt('login')}</TabsTrigger>
             {showSignupTab && (
