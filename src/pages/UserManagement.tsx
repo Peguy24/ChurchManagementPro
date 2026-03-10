@@ -59,6 +59,7 @@ export default function UserManagement() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["platform-users-with-roles"],
     queryFn: async () => {
+      // Get profiles without tenant_id (platform-level users)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, created_at, tenant_id")
@@ -66,13 +67,23 @@ export default function UserManagement() {
 
       if (profilesError) throw profilesError;
 
+      // Get all tenant_user_roles to exclude users who belong to a tenant
+      const { data: tenantRoles } = await supabase
+        .from("tenant_user_roles")
+        .select("user_id");
+
+      const tenantUserIds = new Set((tenantRoles || []).map(r => r.user_id));
+
+      // Filter out users who have tenant roles (they belong to a church, not the platform)
+      const platformProfiles = (profiles || []).filter(p => !tenantUserIds.has(p.id));
+
       const { data: allRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select("user_id, role");
 
       if (rolesError) throw rolesError;
 
-      const usersWithRoles: UserWithRoles[] = profiles.map((profile) => {
+      const usersWithRoles: UserWithRoles[] = platformProfiles.map((profile) => {
         const userRoles = allRoles
           .filter((r) => r.user_id === profile.id)
           .map((r) => r.role);

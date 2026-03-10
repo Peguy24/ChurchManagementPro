@@ -550,9 +550,10 @@ export default function TenantAuth() {
     if (data?.user && tenant) {
       try {
         // Update profile with tenant_id and email
+        const updateData: Record<string, unknown> = { tenant_id: tenant.id, email: signupForm.email };
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({ tenant_id: tenant.id, email: signupForm.email } as any)
+          .update(updateData as any)
           .eq('id', data.user.id);
 
         if (profileUpdateError) {
