@@ -112,8 +112,19 @@ export default function TenantUserManagement() {
     }
   }
 
-  async function handleApprove(userId: string) {
+  async function handleApprove(userId: string, roleOverride?: string) {
     try {
+      // If a role override is provided, update the role first
+      if (roleOverride) {
+        const { error: roleError } = await supabase
+          .from('tenant_user_roles')
+          .update({ role: roleOverride as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user' })
+          .eq('tenant_id', tenantId)
+          .eq('user_id', userId);
+
+        if (roleError) throw roleError;
+      }
+
       const { error } = await supabase
         .from('tenant_user_roles')
         .update({ is_approved: true })
