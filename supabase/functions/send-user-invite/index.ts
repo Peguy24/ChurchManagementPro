@@ -117,7 +117,10 @@ serve(async (req) => {
     // Build the invitation URL
     const siteUrl = "https://churchmanagementpro.com";
     const slug = tenantSlug || tenantId;
-    const inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || "user"}`;
+    let inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || "user"}`;
+    if (customRoleId) {
+      inviteUrl += `&custom_role_id=${encodeURIComponent(customRoleId)}`;
+    }
 
     console.log(`Generating invitation for ${email} to tenant ${tenantName} with role ${role}`);
 
