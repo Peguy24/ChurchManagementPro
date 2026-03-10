@@ -558,9 +558,9 @@ export default function TenantUserManagement() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => {
+                                onClick={() => {
                                     setEditingUser(approvedUser);
-                                    setSelectedRole(approvedUser.role);
+                                    setSelectedRole(approvedUser.custom_role_id ? `custom:${approvedUser.custom_role_id}` : approvedUser.role);
                                   }}
                                 >
                                   <Shield className="h-4 w-4 mr-1" />
