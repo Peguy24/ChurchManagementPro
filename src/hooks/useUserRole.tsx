@@ -36,17 +36,17 @@ export function useUserRole() {
       }
 
       try {
-        // First, fetch global user roles (for super admins)
-        const { data: rolesData, error: rolesError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id);
+        // Fetch global roles and profile in parallel
+        const [rolesResult, profileResult] = await Promise.all([
+          supabase.from("user_roles").select("role").eq("user_id", user.id),
+          supabase.from("profiles").select("tenant_id").eq("id", user.id).single(),
+        ]);
 
-        if (rolesError) {
-          console.error("Error fetching user_roles:", rolesError);
+        if (rolesResult.error) {
+          console.error("Error fetching user_roles:", rolesResult.error);
         }
 
-        const globalRoles = rolesData?.map((r) => r.role) || [];
+        const globalRoles = rolesResult.data?.map((r) => r.role) || [];
         
         // Check if user is super admin
         const isSuperAdmin = globalRoles.includes("admin");
@@ -61,51 +61,45 @@ export function useUserRole() {
           return;
         }
 
-        // For non-super admins, check tenant roles
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("tenant_id")
-          .eq("id", user.id)
-          .single();
+        const tenantId = profileResult.data?.tenant_id;
 
-        if (profile?.tenant_id) {
-          // Fetch tenant-specific role
-          const { data: tenantRoleData, error: tenantRoleError } = await supabase
-            .from("tenant_user_roles")
-            .select("role, is_approved")
-            .eq("tenant_id", profile.tenant_id)
-            .eq("user_id", user.id)
-            .single();
+        if (tenantId) {
+          // Fetch tenant role and permissions in parallel
+          const [tenantRoleResult, permResult] = await Promise.all([
+            supabase
+              .from("tenant_user_roles")
+              .select("role, is_approved")
+              .eq("tenant_id", tenantId)
+              .eq("user_id", user.id)
+              .single(),
+            supabase
+              .from("role_permissions")
+              .select("role, permission_group")
+              .eq("tenant_id", tenantId),
+          ]);
 
-          if (tenantRoleError) {
-            console.error("Error fetching tenant_user_roles:", tenantRoleError);
+          if (tenantRoleResult.error) {
+            console.error("Error fetching tenant_user_roles:", tenantRoleResult.error);
           }
+
+          const tenantRoleData = tenantRoleResult.data;
 
           if (tenantRoleData) {
             const tenantRole = tenantRoleData.role as AppRole;
             const tenantApproved = tenantRoleData.is_approved;
             
-            // Combine global roles with tenant role
             const allRoles = [...new Set([...globalRoles, tenantRole])];
             setRoles(allRoles);
-            
-            // User is approved if their tenant role is approved
             setIsApproved(tenantApproved);
-            
-            // User is admin if they have admin role in tenant and are approved
             setIsAdmin(tenantRole === "admin" && tenantApproved);
 
-            // Fetch tenant-specific permissions if approved
             if (tenantApproved) {
-              const { data: permData, error: permError } = await supabase
-                .from("role_permissions")
-                .select("role, permission_group")
-                .eq("tenant_id", profile.tenant_id);
+              const permData = permResult.data;
+              const permError = permResult.error;
 
               if (permError) {
                 console.error("Error fetching permissions, using defaults:", permError);
               } else if (permData && permData.length > 0) {
-                // Build permissions map from database
                 const dbPermissions: Record<AppRole, RouteGroup[]> = {
                   admin: DEFAULT_ROLE_PERMISSIONS.admin,
                   pastor: [],
@@ -121,7 +115,6 @@ export function useUserRole() {
                   }
                 });
 
-                // Use defaults for roles with no specific permissions set
                 (['pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as AppRole[]).forEach(role => {
                   if (dbPermissions[role].length === 0) {
                     dbPermissions[role] = DEFAULT_ROLE_PERMISSIONS[role];
@@ -131,6 +124,7 @@ export function useUserRole() {
                 setPermissions(dbPermissions);
               }
             }
+          }
           } else {
             // No tenant role found
             setRoles(globalRoles);
