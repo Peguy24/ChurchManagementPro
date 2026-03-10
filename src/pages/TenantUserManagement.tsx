@@ -706,6 +706,7 @@ export default function TenantUserManagement() {
                     <SelectItem key={cr.id} value={`custom:${cr.id}`}>{cr.name}</SelectItem>
                   ))}
                 </SelectContent>
+              </Select>
             </div>
 
             {!invitationLink ? (
