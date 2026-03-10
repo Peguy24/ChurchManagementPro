@@ -2840,6 +2840,67 @@ export type Database = {
           },
         ]
       }
+      tenant_custom_role_permissions: {
+        Row: {
+          custom_role_id: string
+          id: string
+          permission_group: string
+        }
+        Insert: {
+          custom_role_id: string
+          id?: string
+          permission_group: string
+        }
+        Update: {
+          custom_role_id?: string
+          id?: string
+          permission_group?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_custom_role_permissions_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_custom_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_custom_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_health_scores: {
         Row: {
           active_members_30d: number
@@ -3197,6 +3258,7 @@ export type Database = {
       tenant_user_roles: {
         Row: {
           created_at: string | null
+          custom_role_id: string | null
           id: string
           is_approved: boolean | null
           role: Database["public"]["Enums"]["app_role"]
@@ -3206,6 +3268,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          custom_role_id?: string | null
           id?: string
           is_approved?: boolean | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -3215,6 +3278,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          custom_role_id?: string | null
           id?: string
           is_approved?: boolean | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -3223,6 +3287,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tenant_user_roles_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_custom_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tenant_user_roles_tenant_id_fkey"
             columns: ["tenant_id"]
