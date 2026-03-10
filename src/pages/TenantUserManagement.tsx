@@ -224,16 +224,27 @@ export default function TenantUserManagement() {
     if (!editingUser || !selectedRole) return;
 
     try {
+      const isCustomRole = selectedRole.startsWith('custom:');
+      const customRoleId = isCustomRole ? selectedRole.replace('custom:', '') : null;
+      const enumRole = isCustomRole ? 'volunteer' : selectedRole;
+
       const { error } = await supabase
         .from('tenant_user_roles')
-        .update({ role: selectedRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user' })
+        .update({
+          role: enumRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+          custom_role_id: customRoleId,
+        })
         .eq('id', editingUser.id);
 
       if (error) throw error;
 
+      const displayName = isCustomRole
+        ? customRoles.find((r) => r.id === customRoleId)?.name || selectedRole
+        : ROLE_LABELS[selectedRole];
+
       toast({
         title: t('tenant.roleUpdated'),
-        description: `${t('tenant.roleChangedTo')} ${ROLE_LABELS[selectedRole]}`,
+        description: `${t('tenant.roleChangedTo')} ${displayName}`,
       });
       
       setEditingUser(null);
