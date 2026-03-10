@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2, Users2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,8 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import TenantRolePermissionsManager from '@/components/TenantRolePermissionsManager';
+import TenantCustomRolesManager from '@/components/TenantCustomRolesManager';
+import { useCustomRoles } from '@/hooks/useCustomRoles';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -26,6 +28,7 @@ interface TenantUser {
   role: string;
   is_approved: boolean;
   created_at: string;
+  custom_role_id: string | null;
   profile: {
     first_name: string | null;
     last_name: string | null;
@@ -52,6 +55,7 @@ export default function TenantUserManagement() {
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [pendingRoleOverrides, setPendingRoleOverrides] = useState<Record<string, string>>({});
+  const { customRoles } = useCustomRoles();
 
   const dateLocale = language === 'fr' ? fr : language === 'ht' ? fr : enUS;
 
@@ -61,7 +65,16 @@ export default function TenantUserManagement() {
     treasurer: t('tenant.roleTreasurer'),
     secretary: t('tenant.roleSecretary'),
     volunteer: t('tenant.roleVolunteer'),
-    
+    // Add custom roles dynamically
+    ...Object.fromEntries(customRoles.map((cr) => [`custom:${cr.id}`, cr.name])),
+  };
+
+  const getRoleDisplayName = (user: TenantUser): string => {
+    if (user.custom_role_id) {
+      const cr = customRoles.find((r) => r.id === user.custom_role_id);
+      return cr?.name || ROLE_LABELS[user.role] || user.role;
+    }
+    return ROLE_LABELS[user.role] || user.role;
   };
 
   useEffect(() => {
@@ -117,9 +130,16 @@ export default function TenantUserManagement() {
     try {
       // If a role override is provided, update the role first
       if (roleOverride) {
+        const isCustom = roleOverride.startsWith('custom:');
+        const customRoleId = isCustom ? roleOverride.replace('custom:', '') : null;
+        const enumRole = isCustom ? 'volunteer' : roleOverride;
+
         const { error: roleError } = await supabase
           .from('tenant_user_roles')
-          .update({ role: roleOverride as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user' })
+          .update({
+            role: enumRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+            custom_role_id: customRoleId,
+          })
           .eq('tenant_id', tenantId)
           .eq('user_id', userId);
 
@@ -211,16 +231,27 @@ export default function TenantUserManagement() {
     if (!editingUser || !selectedRole) return;
 
     try {
+      const isCustomRole = selectedRole.startsWith('custom:');
+      const customRoleId = isCustomRole ? selectedRole.replace('custom:', '') : null;
+      const enumRole = isCustomRole ? 'volunteer' : selectedRole;
+
       const { error } = await supabase
         .from('tenant_user_roles')
-        .update({ role: selectedRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user' })
+        .update({
+          role: enumRole as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+          custom_role_id: customRoleId,
+        })
         .eq('id', editingUser.id);
 
       if (error) throw error;
 
+      const displayName = isCustomRole
+        ? customRoles.find((r) => r.id === customRoleId)?.name || selectedRole
+        : ROLE_LABELS[selectedRole];
+
       toast({
         title: t('tenant.roleUpdated'),
-        description: `${t('tenant.roleChangedTo')} ${ROLE_LABELS[selectedRole]}`,
+        description: `${t('tenant.roleChangedTo')} ${displayName}`,
       });
       
       setEditingUser(null);
@@ -258,13 +289,18 @@ export default function TenantUserManagement() {
     setInviteMode(skipEmail ? 'link' : 'email');
 
     try {
+      const isCustom = inviteRole.startsWith('custom:');
+      const customRoleId = isCustom ? inviteRole.replace('custom:', '') : null;
+      const enumRole = isCustom ? 'volunteer' : inviteRole;
+
       const { data, error } = await supabase.functions.invoke('send-user-invite', {
         body: {
           email: inviteEmail,
           tenantId: tenantId,
           tenantName: tenant.name,
           tenantSlug: tenant.slug,
-          role: inviteRole,
+          role: enumRole,
+          customRoleId: customRoleId,
           inviterName: user?.user_metadata?.first_name && user?.user_metadata?.last_name
             ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
             : user?.email,
@@ -436,6 +472,9 @@ export default function TenantUserManagement() {
                                 <SelectItem value="treasurer">{ROLE_LABELS['treasurer']}</SelectItem>
                                 <SelectItem value="secretary">{ROLE_LABELS['secretary']}</SelectItem>
                                 <SelectItem value="volunteer">{ROLE_LABELS['volunteer']}</SelectItem>
+                                {customRoles.length > 0 && customRoles.map((cr) => (
+                                  <SelectItem key={cr.id} value={`custom:${cr.id}`}>{cr.name}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </TableCell>
@@ -517,9 +556,9 @@ export default function TenantUserManagement() {
                           </TableCell>
                           <TableCell>
                             <Badge 
-                              variant={approvedUser.role === 'admin' ? 'default' : 'secondary'}
+                              variant={approvedUser.role === 'admin' ? 'default' : approvedUser.custom_role_id ? 'outline' : 'secondary'}
                             >
-                              {ROLE_LABELS[approvedUser.role]}
+                              {getRoleDisplayName(approvedUser)}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -531,9 +570,9 @@ export default function TenantUserManagement() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => {
+                                onClick={() => {
                                     setEditingUser(approvedUser);
-                                    setSelectedRole(approvedUser.role);
+                                    setSelectedRole(approvedUser.custom_role_id ? `custom:${approvedUser.custom_role_id}` : approvedUser.role);
                                   }}
                                 >
                                   <Shield className="h-4 w-4 mr-1" />
@@ -587,8 +626,9 @@ export default function TenantUserManagement() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="permissions">
+          <TabsContent value="permissions" className="space-y-6">
             <TenantRolePermissionsManager />
+            <TenantCustomRolesManager />
           </TabsContent>
         </Tabs>
       </div>
@@ -607,11 +647,23 @@ export default function TenantUserManagement() {
                 <SelectValue placeholder={t('tenant.selectRole')} />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="admin">{t('tenant.roleAdmin')}</SelectItem>
+                <SelectItem value="pastor">{t('tenant.rolePastor')}</SelectItem>
+                <SelectItem value="treasurer">{t('tenant.roleTreasurer')}</SelectItem>
+                <SelectItem value="secretary">{t('tenant.roleSecretary')}</SelectItem>
+                <SelectItem value="volunteer">{t('tenant.roleVolunteer')}</SelectItem>
+                {customRoles.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                      {t('customRoles.title') || 'Custom Roles'}
+                    </div>
+                    {customRoles.map((cr) => (
+                      <SelectItem key={cr.id} value={`custom:${cr.id}`}>
+                        {cr.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -657,10 +709,13 @@ export default function TenantUserManagement() {
                   <SelectValue placeholder={t('tenant.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
+                  <SelectItem value="admin">{t('tenant.roleAdmin')}</SelectItem>
+                  <SelectItem value="pastor">{t('tenant.rolePastor')}</SelectItem>
+                  <SelectItem value="treasurer">{t('tenant.roleTreasurer')}</SelectItem>
+                  <SelectItem value="secretary">{t('tenant.roleSecretary')}</SelectItem>
+                  <SelectItem value="volunteer">{t('tenant.roleVolunteer')}</SelectItem>
+                  {customRoles.length > 0 && customRoles.map((cr) => (
+                    <SelectItem key={cr.id} value={`custom:${cr.id}`}>{cr.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

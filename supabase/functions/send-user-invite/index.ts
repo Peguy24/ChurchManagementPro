@@ -72,7 +72,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, role, inviterName, skipEmail, language = "en" } = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
 
     if (!email || !tenantId || !tenantName) {
       console.error("Missing required fields:", { email, tenantId, tenantName });
@@ -117,7 +117,10 @@ serve(async (req) => {
     // Build the invitation URL
     const siteUrl = "https://churchmanagementpro.com";
     const slug = tenantSlug || tenantId;
-    const inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || "user"}`;
+    let inviteUrl = `${siteUrl}/t/${slug}/auth?invite_email=${encodeURIComponent(email)}&role=${role || "user"}`;
+    if (customRoleId) {
+      inviteUrl += `&custom_role_id=${encodeURIComponent(customRoleId)}`;
+    }
 
     console.log(`Generating invitation for ${email} to tenant ${tenantName} with role ${role}`);
 
