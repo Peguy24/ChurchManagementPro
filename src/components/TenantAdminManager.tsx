@@ -330,6 +330,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           skipEmail: false,
           customSubject: subject,
           customMessage: message,
+          language,
         },
       });
 
@@ -357,6 +358,7 @@ export function TenantAdminManager({ open, onOpenChange, tenant }: TenantAdminMa
           tenantName: tenant?.name,
           tenantSlug: tenant?.slug,
           skipEmail: true,
+          language,
         },
       });
 

@@ -16,7 +16,59 @@ interface AdminInviteRequest {
   tenantName: string;
   tenantSlug: string;
   skipEmail?: boolean;
+  language?: string;
 }
+
+const translations: Record<string, Record<string, string>> = {
+  fr: {
+    subject: "Invitation administrateur",
+    heroTitle: "🔐 Invitation Sécurisée",
+    heroSubtitle: "Vous êtes invité à administrer une église",
+    greeting: "Bonjour,",
+    body: "Vous avez été personnellement sélectionné pour devenir <strong>administrateur</strong> de l'église",
+    securityTitle: "⚠️ Lien personnel et sécurisé",
+    securityBody: "Ce lien est unique et valide pour 7 jours. Ne le partagez avec personne.",
+    features: "En tant qu'administrateur, vous aurez accès à toutes les fonctionnalités de gestion de votre église, y compris la gestion des membres, des finances, des événements et plus encore.",
+    cta: "✨ Activer mon compte administrateur",
+    ignore: "Si vous n'avez pas demandé cette invitation ou ne reconnaissez pas cette église, vous pouvez ignorer cet email en toute sécurité.",
+    church: "Église",
+    identifier: "Identifiant",
+    footer: "Tous droits réservés.",
+    footerSub: "Cet email contient un lien sécurisé à usage unique.",
+  },
+  en: {
+    subject: "Administrator Invitation",
+    heroTitle: "🔐 Secure Invitation",
+    heroSubtitle: "You are invited to manage a church",
+    greeting: "Hello,",
+    body: "You have been personally selected to become an <strong>administrator</strong> of the church",
+    securityTitle: "⚠️ Personal & Secure Link",
+    securityBody: "This link is unique and valid for 7 days. Do not share it with anyone.",
+    features: "As an administrator, you will have access to all management features including members, finances, events and more.",
+    cta: "✨ Activate my admin account",
+    ignore: "If you did not request this invitation or do not recognize this church, you can safely ignore this email.",
+    church: "Church",
+    identifier: "Identifier",
+    footer: "All rights reserved.",
+    footerSub: "This email contains a single-use secure link.",
+  },
+  ht: {
+    subject: "Envitasyon Administratè",
+    heroTitle: "🔐 Envitasyon Sekirize",
+    heroSubtitle: "Ou envite pou jere yon legliz",
+    greeting: "Bonjou,",
+    body: "Ou te chwazi pèsonèlman pou vin <strong>administratè</strong> legliz la",
+    securityTitle: "⚠️ Lyen pèsonèl ak sekirize",
+    securityBody: "Lyen sa a inik e li valab pou 7 jou. Pa pataje li ak pèsonn.",
+    features: "Kòm administratè, ou pral gen aksè nan tout fonksyonalite jesyon legliz ou a, tankou jesyon manm, finans, evènman ak plis ankò.",
+    cta: "✨ Aktive kont administratè mwen",
+    ignore: "Si ou pa t mande envitasyon sa a oswa ou pa rekonèt legliz sa a, ou ka inyore imèl sa a san danje.",
+    church: "Legliz",
+    identifier: "Idantifyan",
+    footer: "Tout dwa rezève.",
+    footerSub: "Imèl sa a gen yon lyen sekirize pou yon sèl itilizasyon.",
+  },
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -54,7 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
   const userId = userData.user.id;
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, skipEmail = false }: AdminInviteRequest = await req.json();
+    const { email, tenantId, tenantName, tenantSlug, skipEmail = false, language = 'fr' }: AdminInviteRequest = await req.json();
+    const t = translations[language] || translations['fr'];
 
     console.log(`Checking permissions for user ${userId} to invite admin for tenant ${tenantId}`);
 
@@ -186,9 +239,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Church Management <noreply@churchmanagementpro.com>",
+      from: `${tenantName} <noreply@churchmanagementpro.com>`,
       to: [email],
-      subject: `Invitation administrateur - ${tenantName}`,
+      subject: `${t.subject} - ${tenantName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -199,50 +252,50 @@ const handler = async (req: Request): Promise<Response> => {
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🔐 Invitation Sécurisée</h1>
-              <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">Vous êtes invité à administrer une église</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">${t.heroTitle}</h1>
+              <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">${t.heroSubtitle}</p>
             </div>
             
             <div style="padding: 40px 30px;">
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Bonjour,
+                ${t.greeting}
               </p>
               
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Vous avez été personnellement sélectionné pour devenir <strong>administrateur</strong> de l'église <strong>${tenantName}</strong>.
+                ${t.body} <strong>${tenantName}</strong>.
               </p>
 
               <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
                 <p style="color: #92400E; font-size: 14px; margin: 0;">
-                  <strong>⚠️ Lien personnel et sécurisé</strong><br>
-                  Ce lien est unique et valide pour 7 jours. Ne le partagez avec personne.
+                  <strong>${t.securityTitle}</strong><br>
+                  ${t.securityBody}
                 </p>
               </div>
               
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                En tant qu'administrateur, vous aurez accès à toutes les fonctionnalités de gestion de votre église, y compris la gestion des membres, des finances, des événements et plus encore.
+                ${t.features}
               </p>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${registrationLink}" style="display: inline-block; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  ✨ Activer mon compte administrateur
+                  ${t.cta}
                 </a>
               </div>
               
               <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">
-                Si vous n'avez pas demandé cette invitation ou ne reconnaissez pas cette église, vous pouvez ignorer cet email en toute sécurité.
+                ${t.ignore}
               </p>
               
               <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0;">
-                <strong>Église:</strong> ${tenantName}<br>
-                <strong>Identifiant:</strong> ${tenantSlug}
+                <strong>${t.church}:</strong> ${tenantName}<br>
+                <strong>${t.identifier}:</strong> ${tenantSlug}
               </p>
             </div>
             
             <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
               <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} Church Manager Pro. Tous droits réservés.<br>
-                <span style="color: #D1D5DB;">Cet email contient un lien sécurisé à usage unique.</span>
+                © ${new Date().getFullYear()} Church Manager Pro. ${t.footer}<br>
+                <span style="color: #D1D5DB;">${t.footerSub}</span>
               </p>
             </div>
           </div>

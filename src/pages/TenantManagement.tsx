@@ -250,6 +250,7 @@ export default function TenantManagement() {
               tenantId: tenant.id,
               tenantName: tenant.name,
               tenantSlug: tenant.slug,
+              language,
             },
           });
           if (inviteError) {
