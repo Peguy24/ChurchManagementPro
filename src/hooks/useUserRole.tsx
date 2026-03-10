@@ -68,7 +68,7 @@ export function useUserRole() {
           const [tenantRoleResult, permResult] = await Promise.all([
             supabase
               .from("tenant_user_roles")
-              .select("role, is_approved")
+              .select("role, is_approved, custom_role_id")
               .eq("tenant_id", tenantId)
               .eq("user_id", user.id)
               .single(),
@@ -87,6 +87,7 @@ export function useUserRole() {
           if (tenantRoleData) {
             const tenantRole = tenantRoleData.role as AppRole;
             const tenantApproved = tenantRoleData.is_approved;
+            const customRoleId = (tenantRoleData as any).custom_role_id as string | null;
             
             const allRoles = [...new Set([...globalRoles, tenantRole])];
             setRoles(allRoles);
@@ -94,34 +95,61 @@ export function useUserRole() {
             setIsAdmin(tenantRole === "admin" && tenantApproved);
 
             if (tenantApproved) {
-              const permData = permResult.data;
-              const permError = permResult.error;
+              // If user has a custom role, fetch permissions from custom role permissions
+              if (customRoleId) {
+                const { data: customPerms, error: customError } = await supabase
+                  .from("tenant_custom_role_permissions")
+                  .select("permission_group")
+                  .eq("custom_role_id", customRoleId);
 
-              if (permError) {
-                console.error("Error fetching permissions, using defaults:", permError);
-              } else if (permData && permData.length > 0) {
-                const dbPermissions: Record<AppRole, RouteGroup[]> = {
-                  admin: DEFAULT_ROLE_PERMISSIONS.admin,
-                  pastor: [],
-                  treasurer: [],
-                  secretary: [],
-                  volunteer: [],
-                  user: [],
-                };
+                if (customError) {
+                  console.error("Error fetching custom role permissions:", customError);
+                } else if (customPerms && customPerms.length > 0) {
+                  const customPermGroups = customPerms.map((p) => p.permission_group as RouteGroup);
+                  // Build permissions map with custom role permissions applied to the user's enum role
+                  const dbPermissions: Record<AppRole, RouteGroup[]> = {
+                    admin: DEFAULT_ROLE_PERMISSIONS.admin,
+                    pastor: [],
+                    treasurer: [],
+                    secretary: [],
+                    volunteer: [],
+                    user: [],
+                  };
+                  // Apply custom permissions to the user's actual enum role
+                  dbPermissions[tenantRole] = customPermGroups;
+                  setPermissions(dbPermissions);
+                }
+              } else {
+                // Standard role permissions from role_permissions table
+                const permData = permResult.data;
+                const permError = permResult.error;
 
-                permData.forEach((p) => {
-                  if (dbPermissions[p.role] && p.role !== 'admin') {
-                    dbPermissions[p.role].push(p.permission_group as RouteGroup);
-                  }
-                });
+                if (permError) {
+                  console.error("Error fetching permissions, using defaults:", permError);
+                } else if (permData && permData.length > 0) {
+                  const dbPermissions: Record<AppRole, RouteGroup[]> = {
+                    admin: DEFAULT_ROLE_PERMISSIONS.admin,
+                    pastor: [],
+                    treasurer: [],
+                    secretary: [],
+                    volunteer: [],
+                    user: [],
+                  };
 
-                (['pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as AppRole[]).forEach(role => {
-                  if (dbPermissions[role].length === 0) {
-                    dbPermissions[role] = DEFAULT_ROLE_PERMISSIONS[role];
-                  }
-                });
+                  permData.forEach((p) => {
+                    if (dbPermissions[p.role] && p.role !== 'admin') {
+                      dbPermissions[p.role].push(p.permission_group as RouteGroup);
+                    }
+                  });
 
-                setPermissions(dbPermissions);
+                  (['pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as AppRole[]).forEach(role => {
+                    if (dbPermissions[role].length === 0) {
+                      dbPermissions[role] = DEFAULT_ROLE_PERMISSIONS[role];
+                    }
+                  });
+
+                  setPermissions(dbPermissions);
+                }
               }
             }
           } else {
