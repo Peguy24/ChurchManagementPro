@@ -100,6 +100,7 @@ const App = () => (
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
+              <Route path="/select-church" element={<SelectChurch />} />
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
               <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
