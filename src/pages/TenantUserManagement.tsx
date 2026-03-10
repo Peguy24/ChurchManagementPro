@@ -468,11 +468,14 @@ export default function TenantUserManagement() {
                       {approvedUsers.map((approvedUser) => (
                         <TableRow key={approvedUser.id}>
                           <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
-                              {approvedUser.role === 'admin' && (
-                                <Crown className="h-4 w-4 text-primary" />
-                              )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                {approvedUser.profile?.first_name} {approvedUser.profile?.last_name}
+                                {approvedUser.role === 'admin' && (
+                                  <Crown className="h-4 w-4 text-primary" />
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">{approvedUser.user_email}</div>
                             </div>
                           </TableCell>
                           <TableCell>
