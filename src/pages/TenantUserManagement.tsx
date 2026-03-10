@@ -28,6 +28,7 @@ interface TenantUser {
   role: string;
   is_approved: boolean;
   created_at: string;
+  custom_role_id: string | null;
   profile: {
     first_name: string | null;
     last_name: string | null;
