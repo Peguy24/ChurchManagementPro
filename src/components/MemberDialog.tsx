@@ -949,7 +949,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, firstName: e.target.value })
                     }
-                    placeholder="Jean"
+                    placeholder="John"
                     required
                   />
                 </div>
