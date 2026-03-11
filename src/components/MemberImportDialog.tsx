@@ -195,24 +195,49 @@ export default function MemberImportDialog({
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
 
-    // Read file content BEFORE anything else
+    const file = fileList[0];
+    const fileSize = file.size;
     const fileNameLocal = file.name;
     const extension = fileNameLocal.split('.').pop()?.toLowerCase();
     
+    console.log('[IMPORT DEBUG] File selected:', fileNameLocal, 'Size:', fileSize, 'bytes, Type:', file.type);
+    
+    // Read the raw bytes into memory immediately using FileReader for max compatibility
+    let rawBytes: ArrayBuffer;
+    try {
+      rawBytes = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as ArrayBuffer);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsArrayBuffer(file);
+      });
+    } catch (err: any) {
+      toast({
+        title: t("members.parseError"),
+        description: err.message || "Failed to read file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('[IMPORT DEBUG] Raw bytes read:', rawBytes.byteLength);
+
     let readData: string[][] = [];
     
     try {
       if (extension === 'csv') {
-        const text = await file.text();
+        const decoder = new TextDecoder('utf-8');
+        const text = decoder.decode(rawBytes);
+        console.log('[IMPORT DEBUG] CSV text length:', text.length, 'First 200 chars:', text.substring(0, 200));
         readData = parseCSV(text);
       } else if (['xlsx', 'xls'].includes(extension || '')) {
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+        const workbook = XLSX.read(new Uint8Array(rawBytes), { type: 'array' });
+        console.log('[IMPORT DEBUG] Excel sheets:', workbook.SheetNames);
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        readData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
+        readData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' }) as string[][];
       } else {
         throw new Error("Format non supporté");
       }
@@ -223,6 +248,17 @@ export default function MemberImportDialog({
         variant: "destructive",
       });
       return;
+    }
+
+    console.log('[IMPORT DEBUG] Total rows parsed (including header):', readData.length);
+    if (readData.length > 0) {
+      console.log('[IMPORT DEBUG] Header row:', readData[0]);
+    }
+    if (readData.length > 1) {
+      console.log('[IMPORT DEBUG] First data row:', readData[1]);
+    }
+    if (readData.length > 2) {
+      console.log('[IMPORT DEBUG] Second data row:', readData[2]);
     }
 
     // Force new input element for next selection
