@@ -18,36 +18,32 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
-  const hadUserRef = useRef(false);
+  const userRef = useRef(user);
+
+  // Keep userRef always in sync with latest user value
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   const loading = authLoading || roleLoading || tenantLoading;
 
-  // Track if user was ever authenticated in this session
   useEffect(() => {
-    if (user) hadUserRef.current = true;
-  }, [user]);
+    if (loading) return;
 
-  useEffect(() => {
-    // Only redirect to commercial if we never had a user (not a transient state)
-    if (!loading && !user && !hadUserRef.current) {
-      navigate('/commercial');
-    }
-    // If user was previously authenticated but is now null, wait briefly for token refresh
-    if (!loading && !user && hadUserRef.current) {
+    if (!user) {
+      // Give a generous grace period for token refresh before redirecting
       const timeout = setTimeout(() => {
-        // Re-check after delay
-        if (!user) {
-          hadUserRef.current = false;
+        // Check the REF (current value), not the stale closure value
+        if (!userRef.current) {
           navigate('/commercial');
         }
-      }, 2000);
+      }, 5000);
       return () => clearTimeout(timeout);
     }
   }, [user, loading, navigate]);
 
   useEffect(() => {
     if (!loading && user && !isApproved) {
-      // User is logged in but not approved - redirect to pending page
       if (location.pathname !== '/pending-approval') {
         navigate('/pending-approval');
       }
@@ -63,7 +59,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, isAdmin, isSuperAdmin, requireAdmin, requireSuperAdmin, navigate]);
 
-  // Super admin redirection: if admin without tenant, redirect to super admin dashboard
+  // Super admin redirection
   useEffect(() => {
     if (!loading && user && isApproved && isSuperAdmin && !tenantId && !hasRedirected) {
       if (location.pathname === '/') {
@@ -75,9 +71,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
 
   useEffect(() => {
     if (!loading && user && isApproved && !requireAdmin) {
-      // Check route-level permissions
       if (!canAccess(location.pathname) && location.pathname !== '/pending-approval') {
-        // User doesn't have permission for this route
         navigate('/');
       }
     }
@@ -95,33 +89,25 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   }
 
   if (!user) {
-    return null;
+    // Show loading instead of null while waiting for grace period
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
-  // If we're on the pending approval page, let it render
   if (location.pathname === '/pending-approval') {
     return <>{children}</>;
   }
 
-  // User must be approved to see protected content
-  if (!isApproved) {
-    return null;
-  }
-
-  // If admin is required, user must be admin
-  if (requireAdmin && !isAdmin) {
-    return null;
-  }
-
-  // If super admin is required, user must be super admin
-  if (requireSuperAdmin && !isSuperAdmin) {
-    return null;
-  }
-
-  // Check route permissions
-  if (!canAccess(location.pathname)) {
-    return null;
-  }
+  if (!isApproved) return null;
+  if (requireAdmin && !isAdmin) return null;
+  if (requireSuperAdmin && !isSuperAdmin) return null;
+  if (!canAccess(location.pathname)) return null;
 
   return <>{children}</>;
 }
