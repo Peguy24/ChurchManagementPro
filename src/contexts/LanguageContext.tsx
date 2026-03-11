@@ -3738,6 +3738,13 @@ const translations = {
       planLimitPartialImport: "Your plan allows {max} members. You have {current}. Only {remaining} members will be imported.",
       planLimitReachedImport: "Plan limit reached. You can no longer import members. Upgrade your plan.",
       upgradePlanForMore: "Upgrade your plan to import more members.",
+      // Import results
+      imported: "imported",
+      duplicatesIgnored: "duplicates ignored",
+      planLimitLabel: "plan limit",
+      failedRows: "failed",
+      retryFailed: "Retry {count} failed",
+      upgrade: "Upgrade",
     },
     memberCards: {
       title: "Member Cards",
