@@ -217,7 +217,7 @@ export default function MemberImportDialog({
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [fileName, setFileName] = useState("");
-  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; failed: { rowNumber: number; error: string; data: Record<string, string> }[] } | null>(null);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; limitReached: number; failed: { rowNumber: number; error: string; data: Record<string, string> }[] } | null>(null);
 
   const resetState = () => {
     setStep("upload");
