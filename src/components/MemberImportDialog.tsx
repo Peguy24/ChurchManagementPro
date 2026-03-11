@@ -225,6 +225,7 @@ export default function MemberImportDialog({
     setImportProgress(0);
     setFileName("");
     setInputKey(prev => prev + 1);
+    setImportResult(null);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
