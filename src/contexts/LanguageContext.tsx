@@ -641,6 +641,13 @@ const translations = {
       planLimitPartialImport: "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.",
       planLimitReachedImport: "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan.",
       upgradePlanForMore: "Mettez à niveau votre plan pour importer plus de membres.",
+      // Import results
+      imported: "importés",
+      duplicatesIgnored: "doublons ignorés",
+      planLimitLabel: "limite du plan",
+      failedRows: "échoués",
+      retryFailed: "Réessayer les {count} échoués",
+      upgrade: "Mettre à niveau",
     },
     memberCards: {
       title: "Cartes des Membres",
@@ -3731,6 +3738,13 @@ const translations = {
       planLimitPartialImport: "Your plan allows {max} members. You have {current}. Only {remaining} members will be imported.",
       planLimitReachedImport: "Plan limit reached. You can no longer import members. Upgrade your plan.",
       upgradePlanForMore: "Upgrade your plan to import more members.",
+      // Import results
+      imported: "imported",
+      duplicatesIgnored: "duplicates ignored",
+      planLimitLabel: "plan limit",
+      failedRows: "failed",
+      retryFailed: "Retry {count} failed",
+      upgrade: "Upgrade",
     },
     memberCards: {
       title: "Member Cards",
@@ -6813,6 +6827,13 @@ const translations = {
       planLimitPartialImport: "Plan ou a pèmèt {max} manm. Ou gen {current}. Se sèlman {remaining} manm ki ap enpòte.",
       planLimitReachedImport: "Limite plan rive. Ou pa ka enpòte plis manm. Mete ajou plan ou.",
       upgradePlanForMore: "Mete ajou plan ou pou enpòte plis manm.",
+      // Import results
+      imported: "enpòte",
+      duplicatesIgnored: "doublons inyore",
+      planLimitLabel: "limit plan",
+      failedRows: "echwe",
+      retryFailed: "Re-eseye {count} echwe yo",
+      upgrade: "Mete ajou",
     },
     memberCards: {
       title: "Kat Manm yo",

@@ -81,7 +81,7 @@ serve(async (req) => {
           .eq("tenant_id", userTenantId)
           .single();
 
-        if (tenantSub && (tenantSub.status === "active" || tenantSub.status === "trialing") && tenantSub.plan) {
+        if (tenantSub && (tenantSub.status === "active" || tenantSub.status === "trialing" || tenantSub.status === "trial") && tenantSub.plan) {
           // Map DB plan names back to frontend plan names
           const DB_TO_PLAN: Record<string, string> = {
             "basic": "essentiel",

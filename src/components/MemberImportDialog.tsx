@@ -546,16 +546,16 @@ export default function MemberImportDialog({
       if (!hasIssues) {
         toast({
           title: t("common.confirm"),
-          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} doublons ignorés)` : ''}`,
+          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} ${t("members.duplicatesIgnored")})` : ''}`,
         });
         onSuccess?.();
         onOpenChange(false);
         resetState();
       } else {
-        const parts = [`${imported} importés`];
-        if (skipped > 0) parts.push(`${skipped} doublons ignorés`);
-        if (limitReached > 0) parts.push(`${limitReached} limite du plan atteinte`);
-        if (failedRows.length > 0) parts.push(`${failedRows.length} échoués`);
+        const parts = [`${imported} ${t("members.imported")}`];
+        if (skipped > 0) parts.push(`${skipped} ${t("members.duplicatesIgnored")}`);
+        if (limitReached > 0) parts.push(`${limitReached} ${t("members.planLimitLabel")}`);
+        if (failedRows.length > 0) parts.push(`${failedRows.length} ${t("members.failedRows")}`);
         toast({
           title: t("members.importError"),
           description: parts.join(", "),
@@ -729,13 +729,13 @@ export default function MemberImportDialog({
                   <Crown className="h-4 w-4" />
                   <AlertDescription>
                     {remainingCapacity <= 0 
-                      ? t("members.planLimitReachedImport") || "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan."
+                      ? t("members.planLimitReachedImport")
                       : willBeLimited
-                        ? (t("members.planLimitPartialImport") || "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.")
+                        ? t("members.planLimitPartialImport")
                             .replace("{max}", String(limits.maxMembers))
                             .replace("{current}", String(usage.membersCount))
                             .replace("{remaining}", String(remainingCapacity))
-                        : (t("members.planCapacityInfo") || "Capacité restante : {remaining} membres sur {max}.")
+                        : t("members.planCapacityInfo")
                             .replace("{remaining}", String(remainingCapacity))
                             .replace("{max}", String(limits.maxMembers))
                     }
@@ -813,24 +813,24 @@ export default function MemberImportDialog({
               <div className="flex gap-4 flex-wrap">
                 <Badge variant="outline" className="text-sm">
                   <CheckCircle className="h-4 w-4 mr-1 text-success" />
-                  {importResult.imported} importés
+                  {importResult.imported} {t("members.imported")}
                 </Badge>
                 {importResult.skipped > 0 && (
                   <Badge variant="outline" className="text-sm">
-                    <AlertTriangle className="h-4 w-4 mr-1 text-yellow-500" />
-                    {importResult.skipped} doublons ignorés
+                    <AlertTriangle className="h-4 w-4 mr-1 text-warning" />
+                    {importResult.skipped} {t("members.duplicatesIgnored")}
                   </Badge>
                 )}
                 {importResult.limitReached > 0 && (
                   <Badge variant="outline" className="text-sm">
-                    <Crown className="h-4 w-4 mr-1 text-orange-500" />
-                    {importResult.limitReached} limite du plan
+                    <Crown className="h-4 w-4 mr-1 text-warning" />
+                    {importResult.limitReached} {t("members.planLimitLabel")}
                   </Badge>
                 )}
                 {importResult.failed.length > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <XCircle className="h-4 w-4 mr-1 text-destructive" />
-                    {importResult.failed.length} échoués
+                    {importResult.failed.length} {t("members.failedRows")}
                   </Badge>
                 )}
               </div>
@@ -839,9 +839,9 @@ export default function MemberImportDialog({
                 <Alert>
                   <Crown className="h-4 w-4" />
                   <AlertDescription className="flex items-center justify-between">
-                    <span>{t("members.upgradePlanForMore") || "Mettez à niveau votre plan pour importer plus de membres."}</span>
-                    <Button variant="outline" size="sm" onClick={() => { onOpenChange(false); resetState(); navigate("/subscription"); }}>
-                      {t("subscription.upgrade") || "Mettre à niveau"}
+                    <span>{t("members.upgradePlanForMore")}</span>
+                    <Button variant="outline" size="sm" onClick={() => { onOpenChange(false); resetState(); navigate("/settings/subscription"); }}>
+                      {t("members.upgrade")}
                     </Button>
                   </AlertDescription>
                 </Alert>
@@ -852,10 +852,10 @@ export default function MemberImportDialog({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Ligne</TableHead>
+                        <TableHead className="w-16">{t("members.rowNumber")}</TableHead>
                         <TableHead>{t("members.firstName")}</TableHead>
                         <TableHead>{t("members.lastName")}</TableHead>
-                        <TableHead>Erreur</TableHead>
+                        <TableHead>{t("members.errorMessage")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -907,11 +907,11 @@ export default function MemberImportDialog({
           {step === "importing" && importResult && importResult.failed.length > 0 && (
             <>
               <Button variant="outline" onClick={() => { onOpenChange(false); resetState(); }}>
-                Fermer
+                {t("common.close")}
               </Button>
               <Button onClick={handleRetryFailed} disabled={importing}>
                 {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Réessayer les {importResult.failed.length} échoués
+                {t("members.retryFailed").replace("{count}", String(importResult.failed.length))}
               </Button>
             </>
           )}

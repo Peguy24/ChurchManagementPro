@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Lock, Crown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FeatureLockedCardProps {
   featureName: string;
@@ -22,6 +23,27 @@ const planPrices = {
   entreprise: "199",
 };
 
+const translations = {
+  fr: {
+    planRequired: "Plan {plan} requis",
+    startingAt: "À partir de {price}$/mois",
+    upgrade: "Mettre à niveau",
+    backToDashboard: "Retour au tableau de bord",
+  },
+  en: {
+    planRequired: "{plan} plan required",
+    startingAt: "Starting at ${price}/month",
+    upgrade: "Upgrade",
+    backToDashboard: "Back to dashboard",
+  },
+  ht: {
+    planRequired: "Plan {plan} obligatwa",
+    startingAt: "Apati ${price}/mwa",
+    upgrade: "Mete ajou",
+    backToDashboard: "Retounen nan tablo bò",
+  },
+};
+
 export function FeatureLockedCard({ 
   featureName, 
   featureDescription, 
@@ -29,6 +51,8 @@ export function FeatureLockedCard({
   icon 
 }: FeatureLockedCardProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   return (
     <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[60vh] px-4">
@@ -47,11 +71,11 @@ export function FeatureLockedCard({
             <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
               <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <span className="font-semibold text-base sm:text-lg">
-                Plan {planNames[requiredPlan]} requis
+                {t.planRequired.replace("{plan}", planNames[requiredPlan])}
               </span>
             </div>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              À partir de {planPrices[requiredPlan]}$/mois
+              {t.startingAt.replace("{price}", planPrices[requiredPlan])}
             </p>
           </div>
 
@@ -60,7 +84,7 @@ export function FeatureLockedCard({
               onClick={() => navigate("/settings/subscription")}
               className="w-full bg-gradient-to-r from-primary to-primary-dark text-sm sm:text-base"
             >
-              Mettre à niveau
+              {t.upgrade}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             <Button 
@@ -68,7 +92,7 @@ export function FeatureLockedCard({
               onClick={() => navigate("/")}
               className="w-full text-sm sm:text-base"
             >
-              Retour au tableau de bord
+              {t.backToDashboard}
             </Button>
           </div>
         </CardContent>
