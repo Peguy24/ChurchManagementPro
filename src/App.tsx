@@ -80,8 +80,14 @@ import ResetPassword from "./pages/ResetPassword";
 import DataBackup from "./pages/DataBackup";
 import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useInactivityLogout } from "./hooks/useInactivityLogout";
 
 const queryClient = new QueryClient();
+
+const InactivityGuard = ({ children }: { children: React.ReactNode }) => {
+  useInactivityLogout();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -90,6 +96,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <InactivityGuard>
           <TenantProvider>
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
