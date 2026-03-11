@@ -701,9 +701,16 @@ export default function MemberImportDialog({
             </div>
           )}
 
-          {step === "preview" && (
+          {step === "preview" && (() => {
+            const remainingCapacity = limits.maxMembers === Infinity 
+              ? Infinity 
+              : Math.max(0, limits.maxMembers - usage.membersCount);
+            const willImport = remainingCapacity === Infinity ? validCount : Math.min(validCount, remainingCapacity);
+            const willBeLimited = remainingCapacity !== Infinity && validCount > remainingCapacity;
+
+            return (
             <div className="space-y-4">
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <Badge variant="outline" className="text-sm">
                   <CheckCircle className="h-4 w-4 mr-1 text-success" />
                   {validCount} {t("members.validRows")}
@@ -715,6 +722,26 @@ export default function MemberImportDialog({
                   </Badge>
                 )}
               </div>
+
+              {/* Plan capacity info */}
+              {remainingCapacity !== Infinity && (
+                <Alert variant={willBeLimited ? "destructive" : "default"}>
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription>
+                    {remainingCapacity <= 0 
+                      ? t("members.planLimitReachedImport") || "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan."
+                      : willBeLimited
+                        ? (t("members.planLimitPartialImport") || "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.")
+                            .replace("{max}", String(limits.maxMembers))
+                            .replace("{current}", String(usage.membersCount))
+                            .replace("{remaining}", String(remainingCapacity))
+                        : (t("members.planCapacityInfo") || "Capacité restante : {remaining} membres sur {max}.")
+                            .replace("{remaining}", String(remainingCapacity))
+                            .replace("{max}", String(limits.maxMembers))
+                    }
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {invalidCount > 0 && (
                 <Alert variant="destructive">
