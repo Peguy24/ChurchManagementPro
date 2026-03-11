@@ -937,7 +937,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, lastName: e.target.value })
                     }
-                    placeholder="Pierre"
+                    placeholder="Smith"
                     required
                   />
                 </div>
@@ -949,7 +949,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, firstName: e.target.value })
                     }
-                    placeholder="Jean"
+                    placeholder="John"
                     required
                   />
                 </div>
@@ -996,7 +996,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    placeholder="+33 1 23 45 67 89"
+                    placeholder="+1 (555) 123-4567"
                     required
                   />
                 </div>
@@ -1009,7 +1009,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    placeholder="jean@example.com"
+                    placeholder="john@example.com"
                   />
                 </div>
               </div>
@@ -1022,7 +1022,7 @@ export default function MemberDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, emergencyPhone: e.target.value })
                   }
-                  placeholder="+33 1 98 76 54 32"
+                  placeholder="+1 (555) 987-6543"
                 />
               </div>
 
@@ -1031,14 +1031,14 @@ export default function MemberDialog({
                 <Label className="text-base font-semibold">{lt.address}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="addressNumber">N°</Label>
+                    <Label htmlFor="addressNumber">#</Label>
                     <Input
                       id="addressNumber"
                       value={formData.addressNumber}
                       onChange={(e) =>
                         setFormData({ ...formData, addressNumber: e.target.value })
                       }
-                      placeholder="123"
+                      placeholder="1234"
                     />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
@@ -1049,7 +1049,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, street: e.target.value })
                       }
-                      placeholder="Rue Principale"
+                      placeholder="Main Street"
                     />
                   </div>
                 </div>
@@ -1062,7 +1062,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, apartment: e.target.value })
                       }
-                      placeholder="A-12"
+                      placeholder="4B"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -1073,7 +1073,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, city: e.target.value })
                       }
-                      placeholder="Paris"
+                      placeholder="New York"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -1084,7 +1084,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, zipCode: e.target.value })
                       }
-                      placeholder="75001"
+                      placeholder="10001"
                     />
                   </div>
                 </div>
@@ -1097,7 +1097,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, state: e.target.value })
                       }
-                      placeholder="Île-de-France"
+                      placeholder="NY"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -1108,7 +1108,7 @@ export default function MemberDialog({
                       onChange={(e) =>
                         setFormData({ ...formData, country: e.target.value })
                       }
-                      placeholder="France"
+                      placeholder="United States"
                     />
                   </div>
                 </div>
@@ -1390,7 +1390,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, emergencyPhone: e.target.value })
                     }
-                    placeholder="+33 1 98 76 54 32"
+                    placeholder="+1 (555) 987-6543"
                   />
                 </div>
               </div>
