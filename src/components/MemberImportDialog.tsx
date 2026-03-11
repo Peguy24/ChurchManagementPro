@@ -229,18 +229,7 @@ export default function MemberImportDialog({
     setInputKey(prev => prev + 1);
     setFileName(fileNameLocal);
 
-    try {
-      let data: string[][] = [];
-
-      if (extension === 'csv') {
-        data = parseCSV(fileContent as string);
-      } else if (['xlsx', 'xls'].includes(extension || '')) {
-        const workbook = XLSX.read(fileContent as ArrayBuffer, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
-      } else {
-        throw new Error("Format non supporté");
-      }
+      const data = readData;
 
       if (data.length < 2) {
         throw new Error("Le fichier doit contenir au moins une ligne d'en-tête et une ligne de données");
