@@ -127,6 +127,7 @@ export default function MemberDetails() {
   const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [addingMinistry, setAddingMinistry] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: "archive" | "deceased" } | null>(null);
 
   const locale = language === 'en' ? 'en-US' : language === 'ht' ? 'fr-FR' : 'fr-FR';
 
