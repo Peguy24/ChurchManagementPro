@@ -24,12 +24,288 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import QRCode from "qrcode";
 import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upload, X, Crop } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
+
+const localT: Record<Language, Record<string, string>> = {
+  fr: {
+    editMember: "Modifier le Membre",
+    addMember: "Ajouter un Membre",
+    personalInfo: "Informations Personnelles",
+    spiritualInfo: "Informations Spirituelles",
+    familyInfo: "Informations Familiales",
+    memberPhoto: "Photo du Membre",
+    memberPhotoAlt: "Photo du membre",
+    memberAddPhoto: "Ajouter une photo",
+    memberChangePhoto: "Changer la photo",
+    memberPhotoHint: "JPEG, PNG, WebP ou GIF. Max 5 Mo.",
+    photoTooLarge: "Fichier trop volumineux",
+    photoTooLargeDesc: "La photo ne doit pas dépasser 5 Mo.",
+    photoFormatError: "Format non supporté",
+    photoFormatErrorDesc: "Veuillez utiliser un format JPEG, PNG, WebP ou GIF.",
+    photoUploadError: "Erreur d'upload",
+    photoUploadErrorDesc: "Impossible de télécharger la photo.",
+    lastName: "Nom",
+    firstName: "Prénom",
+    gender: "Genre",
+    selectGender: "Sélectionner le genre",
+    male: "Masculin",
+    female: "Féminin",
+    dateOfBirth: "Date de naissance",
+    phone: "Téléphone",
+    email: "Email",
+    emergencyPhone: "Contact d'urgence",
+    emergencyContact: "Contact d'urgence",
+    address: "Adresse",
+    street: "Rue",
+    city: "Ville",
+    zipCode: "Code postal",
+    stateRegion: "État/Région",
+    country: "Pays",
+    joinDate: "Date d'adhésion",
+    selectBranch: "Sélectionner une branche",
+    formationSection: "Formation",
+    academicFormation: "Formation académique",
+    professionalFormation: "Formation professionnelle",
+    academicPlaceholder: "Ex: Licence en informatique, Bac+3...",
+    professionalPlaceholder: "Ex: Comptable, Ingénieur...",
+    baptized: "Baptisé(e)",
+    baptismDate: "Date de baptême",
+    originChurch: "Église d'origine",
+    originChurchPlaceholder: "Nom de l'église précédente",
+    ministryRole: "Ministère / Service",
+    selectRole: "Sélectionner un rôle",
+    conversionDate: "Date de conversion",
+    christianExperience: "Expérience Chrétienne/Ministérielle",
+    christianExperiencePlaceholder: "Service dans l'église, responsabilités, etc.",
+    ministry: "Ministère",
+    selectMinistry: "Sélectionner un ministère",
+    maritalStatus: "État civil",
+    selectMaritalStatus: "Sélectionner l'état civil",
+    maritalSingle: "Célibataire",
+    maritalMarried: "Marié(e)",
+    maritalDivorced: "Divorcé(e)",
+    maritalWidowed: "Veuf/Veuve",
+    spouseName: "Nom du conjoint(e)",
+    spouseNamePlaceholder: "Nom de votre conjoint(e)",
+    marriageDate: "Date de mariage",
+    numberOfChildren: "Nombre d'enfants",
+    childrenNames: "Noms des enfants",
+    childrenNamesPlaceholder: "Noms des enfants (séparés par une virgule)",
+    roleMember: "Membre",
+    roleDeacon: "Diacre",
+    roleElder: "Ancien",
+    rolePastor: "Pasteur",
+    roleSecretary: "Secrétaire",
+    roleTreasurer: "Trésorier",
+    roleWorship: "Chantre",
+    roleTech: "Technique",
+    qrCode: "QR Code du Membre",
+    qrCodeDescription: "Ce QR code est unique pour ce membre. Scannez-le pour accéder à la fiche.",
+    downloadQrCode: "Télécharger le QR Code",
+    memberUpdated: "Membre mis à jour",
+    memberAdded: "Membre ajouté",
+    branch: "Branche",
+    select: "Sélectionner",
+    active: "Actif",
+    inactive: "Inactif",
+    transferred: "Transféré",
+    status: "Statut",
+    none: "Aucun",
+    yes: "Oui",
+    no: "Non",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    loading: "Chargement...",
+    error: "Erreur",
+  },
+  en: {
+    editMember: "Edit Member",
+    addMember: "Add Member",
+    personalInfo: "Personal Information",
+    spiritualInfo: "Spiritual Information",
+    familyInfo: "Family Information",
+    memberPhoto: "Member Photo",
+    memberPhotoAlt: "Member photo",
+    memberAddPhoto: "Add a photo",
+    memberChangePhoto: "Change photo",
+    memberPhotoHint: "JPEG, PNG, WebP, or GIF. Max 5 MB.",
+    photoTooLarge: "File too large",
+    photoTooLargeDesc: "Photo must not exceed 5 MB.",
+    photoFormatError: "Unsupported format",
+    photoFormatErrorDesc: "Please use JPEG, PNG, WebP, or GIF format.",
+    photoUploadError: "Upload error",
+    photoUploadErrorDesc: "Unable to upload the photo.",
+    lastName: "Last Name",
+    firstName: "First Name",
+    gender: "Gender",
+    selectGender: "Select gender",
+    male: "Male",
+    female: "Female",
+    dateOfBirth: "Date of Birth",
+    phone: "Phone",
+    email: "Email",
+    emergencyPhone: "Emergency Contact",
+    emergencyContact: "Emergency Contact",
+    address: "Address",
+    street: "Street",
+    city: "City",
+    zipCode: "Zip Code",
+    stateRegion: "State/Region",
+    country: "Country",
+    joinDate: "Church Join Date",
+    selectBranch: "Select a branch",
+    formationSection: "Education & Training",
+    academicFormation: "Academic education",
+    professionalFormation: "Professional training",
+    academicPlaceholder: "e.g. Bachelor's in Computer Science, MBA...",
+    professionalPlaceholder: "e.g. Accountant, Engineer...",
+    baptized: "Baptized",
+    baptismDate: "Baptism Date",
+    originChurch: "Origin Church",
+    originChurchPlaceholder: "Previous church name",
+    ministryRole: "Ministry / Service",
+    selectRole: "Select a role",
+    conversionDate: "Conversion Date",
+    christianExperience: "Christian/Ministry Experience",
+    christianExperiencePlaceholder: "Church service, responsibilities, etc.",
+    ministry: "Ministry",
+    selectMinistry: "Select a ministry",
+    maritalStatus: "Marital Status",
+    selectMaritalStatus: "Select marital status",
+    maritalSingle: "Single",
+    maritalMarried: "Married",
+    maritalDivorced: "Divorced",
+    maritalWidowed: "Widowed",
+    spouseName: "Spouse Name",
+    spouseNamePlaceholder: "Your spouse's name",
+    marriageDate: "Marriage Date",
+    numberOfChildren: "Number of Children",
+    childrenNames: "Children's Names",
+    childrenNamesPlaceholder: "Children's names (separated by comma)",
+    roleMember: "Member",
+    roleDeacon: "Deacon",
+    roleElder: "Elder",
+    rolePastor: "Pastor",
+    roleSecretary: "Secretary",
+    roleTreasurer: "Treasurer",
+    roleWorship: "Worship Leader",
+    roleTech: "Tech",
+    qrCode: "Member QR Code",
+    qrCodeDescription: "This QR code is unique to this member. Scan it to access their profile.",
+    downloadQrCode: "Download QR Code",
+    memberUpdated: "Member updated",
+    memberAdded: "Member added",
+    branch: "Branch",
+    select: "Select",
+    active: "Active",
+    inactive: "Inactive",
+    transferred: "Transferred",
+    status: "Status",
+    none: "None",
+    yes: "Yes",
+    no: "No",
+    cancel: "Cancel",
+    save: "Save",
+    loading: "Loading...",
+    error: "Error",
+  },
+  ht: {
+    editMember: "Modifye Manm",
+    addMember: "Ajoute yon Manm",
+    personalInfo: "Enfòmasyon Pèsonèl",
+    spiritualInfo: "Enfòmasyon Espirityèl",
+    familyInfo: "Enfòmasyon Fanmi",
+    memberPhoto: "Foto Manm",
+    memberPhotoAlt: "Foto manm nan",
+    memberAddPhoto: "Ajoute yon foto",
+    memberChangePhoto: "Chanje foto",
+    memberPhotoHint: "JPEG, PNG, WebP oswa GIF. Maks 5 Mo.",
+    photoTooLarge: "Fichye twò gwo",
+    photoTooLargeDesc: "Foto a pa dwe depase 5 Mo.",
+    photoFormatError: "Fòma pa sipòte",
+    photoFormatErrorDesc: "Tanpri itilize fòma JPEG, PNG, WebP, oswa GIF.",
+    photoUploadError: "Erè telechajman",
+    photoUploadErrorDesc: "Enposib pou telechaje foto a.",
+    lastName: "Non",
+    firstName: "Prenon",
+    gender: "Sèks",
+    selectGender: "Chwazi sèks",
+    male: "Gason",
+    female: "Fi",
+    dateOfBirth: "Dat nesans",
+    phone: "Telefòn",
+    email: "Imèl",
+    emergencyPhone: "Kontak ijans",
+    emergencyContact: "Kontak ijans",
+    address: "Adrès",
+    street: "Ri",
+    city: "Vil",
+    zipCode: "Kòd postal",
+    stateRegion: "Eta/Rejyon",
+    country: "Peyi",
+    joinDate: "Dat antre nan legliz",
+    selectBranch: "Chwazi yon branch",
+    formationSection: "Fòmasyon",
+    academicFormation: "Fòmasyon akademik",
+    professionalFormation: "Fòmasyon pwofesyonèl",
+    academicPlaceholder: "Egz: Lisans nan enfòmatik, Metriz...",
+    professionalPlaceholder: "Egz: Kontab, Enjenyè...",
+    baptized: "Batize",
+    baptismDate: "Dat batèm",
+    originChurch: "Legliz orijin",
+    originChurchPlaceholder: "Non legliz anvan",
+    ministryRole: "Ministè / Sèvis",
+    selectRole: "Chwazi yon wòl",
+    conversionDate: "Dat konvèsyon",
+    christianExperience: "Eksperyans Kretyen/Ministè",
+    christianExperiencePlaceholder: "Sèvis nan legliz, responsablite, elatriye.",
+    ministry: "Ministè",
+    selectMinistry: "Chwazi yon ministè",
+    maritalStatus: "Eta sivil",
+    selectMaritalStatus: "Chwazi eta sivil",
+    maritalSingle: "Selibatè",
+    maritalMarried: "Marye",
+    maritalDivorced: "Divòse",
+    maritalWidowed: "Vèf/Vèv",
+    spouseName: "Non konjwen",
+    spouseNamePlaceholder: "Non konjwen ou",
+    marriageDate: "Dat maryaj",
+    numberOfChildren: "Kantite timoun",
+    childrenNames: "Non timoun yo",
+    childrenNamesPlaceholder: "Non timoun yo (separe pa vigil)",
+    roleMember: "Manm",
+    roleDeacon: "Dyak",
+    roleElder: "Ansyen",
+    rolePastor: "Pastè",
+    roleSecretary: "Sekretè",
+    roleTreasurer: "Trezorye",
+    roleWorship: "Chantè",
+    roleTech: "Teknik",
+    qrCode: "Kòd QR Manm",
+    qrCodeDescription: "Kòd QR sa a inik pou manm sa a. Eskane li pou jwenn pwofil li.",
+    downloadQrCode: "Telechaje Kòd QR",
+    memberUpdated: "Manm mete ajou",
+    memberAdded: "Manm ajoute",
+    branch: "Branch",
+    select: "Chwazi",
+    active: "Aktif",
+    inactive: "Inaktif",
+    transferred: "Transfère",
+    status: "Estati",
+    none: "Okenn",
+    yes: "Wi",
+    no: "Non",
+    cancel: "Anile",
+    save: "Anrejistre",
+    loading: "Ap chaje...",
+    error: "Erè",
+  },
+};
 
 interface MemberDialogProps {
   open: boolean;
@@ -44,7 +320,8 @@ export default function MemberDialog({
   member,
   onSuccess,
 }: MemberDialogProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = localT[language];
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
   const [loading, setLoading] = useState(false);
@@ -263,8 +540,8 @@ export default function MemberDialog({
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: t("members.photoTooLarge"),
-          description: t("members.photoTooLargeDesc"),
+          title: lt.photoTooLarge,
+          description: lt.photoTooLargeDesc,
           variant: "destructive",
         });
         return;
@@ -273,8 +550,8 @@ export default function MemberDialog({
       // Validate file type
       if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
         toast({
-          title: t("members.photoFormatError"),
-          description: t("members.photoFormatErrorDesc"),
+          title: lt.photoFormatError,
+          description: lt.photoFormatErrorDesc,
           variant: "destructive",
         });
         return;
@@ -322,8 +599,8 @@ export default function MemberDialog({
     } catch (error: any) {
       console.error('Error uploading photo:', error);
       toast({
-        title: t("members.photoUploadError"),
-        description: error.message || t("members.photoUploadErrorDesc"),
+        title: lt.photoUploadError,
+        description: error.message || lt.photoUploadErrorDesc,
         variant: "destructive",
       });
       return null;
@@ -540,7 +817,7 @@ export default function MemberDialog({
       }
 
       toast({
-        title: member ? t("members.memberUpdated") : t("members.memberAdded"),
+        title: member ? lt.memberUpdated : lt.memberAdded,
         description: `${formData.firstName} ${formData.lastName}`,
       });
       
@@ -549,7 +826,7 @@ export default function MemberDialog({
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: t("common.error"),
+        title: lt.error,
         description: error.message,
         variant: "destructive",
       });
@@ -564,7 +841,7 @@ export default function MemberDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {member ? t("members.editMember") : t("members.addMember")}
+            {member ? lt.editMember : lt.addMember}
           </DialogTitle>
           <DialogDescription>
             {member?.member_number && (
@@ -579,17 +856,17 @@ export default function MemberDialog({
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="personal" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
                 <User className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{t("members.personalInfo")}</span>
+                <span className="hidden sm:inline">{lt.personalInfo}</span>
                 <span className="sm:hidden">Info</span>
               </TabsTrigger>
               <TabsTrigger value="spiritual" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
                 <Church className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{t("members.spiritualInfo")}</span>
+                <span className="hidden sm:inline">{lt.spiritualInfo}</span>
                 <span className="sm:hidden">Spiritual</span>
               </TabsTrigger>
               <TabsTrigger value="family" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
                 <Users className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{t("members.familyInfo")}</span>
+                <span className="hidden sm:inline">{lt.familyInfo}</span>
                 <span className="sm:hidden">Family</span>
               </TabsTrigger>
             </TabsList>
@@ -598,7 +875,7 @@ export default function MemberDialog({
             <TabsContent value="personal" className="space-y-4 mt-4">
               {/* Photo Upload Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-                <Label className="text-base font-semibold">{t("members.memberPhoto")}</Label>
+                <Label className="text-base font-semibold">{lt.memberPhoto}</Label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {/* Photo Preview */}
                   <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted border-2 border-dashed border-primary/30 flex items-center justify-center">
@@ -606,7 +883,7 @@ export default function MemberDialog({
                       <>
                         <img
                           src={photoPreview}
-                          alt={t("members.memberPhotoAlt")}
+                          alt={lt.memberPhotoAlt}
                           className="h-full w-full object-cover"
                         />
                         <Button
@@ -642,10 +919,10 @@ export default function MemberDialog({
                       disabled={uploadingPhoto}
                     >
                       <Upload className="mr-2 h-4 w-4" />
-                      {photoPreview ? t("members.memberChangePhoto") : t("members.memberAddPhoto")}
+                      {photoPreview ? lt.memberChangePhoto : lt.memberAddPhoto}
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      {t("members.memberPhotoHint")}
+                      {lt.memberPhotoHint}
                     </p>
                   </div>
                 </div>
@@ -653,7 +930,7 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="lastName">{t("members.lastName")} *</Label>
+                  <Label htmlFor="lastName">{lt.lastName} *</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -665,7 +942,7 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="firstName">{t("members.firstName")} *</Label>
+                  <Label htmlFor="firstName">{lt.firstName} *</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
@@ -680,7 +957,7 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="gender">{t("members.gender")}</Label>
+                  <Label htmlFor="gender">{lt.gender}</Label>
                   <Select
                     value={formData.gender || "none"}
                     onValueChange={(value) =>
@@ -688,17 +965,17 @@ export default function MemberDialog({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={t("members.selectGender")} />
+                      <SelectValue placeholder={lt.selectGender} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">{t("common.select")}</SelectItem>
-                      <SelectItem value="M">{t("members.male")}</SelectItem>
-                      <SelectItem value="F">{t("members.female")}</SelectItem>
+                      <SelectItem value="none">{lt.select}</SelectItem>
+                      <SelectItem value="M">{lt.male}</SelectItem>
+                      <SelectItem value="F">{lt.female}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="dateOfBirth">{t("members.dateOfBirth")}</Label>
+                  <Label htmlFor="dateOfBirth">{lt.dateOfBirth}</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
@@ -712,7 +989,7 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="phone">{t("common.phone")} *</Label>
+                  <Label htmlFor="phone">{lt.phone} *</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -724,7 +1001,7 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">{t("common.email")}</Label>
+                  <Label htmlFor="email">{lt.email}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -738,7 +1015,7 @@ export default function MemberDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="emergencyPhone">{t("members.emergencyPhone")}</Label>
+                <Label htmlFor="emergencyPhone">{lt.emergencyPhone}</Label>
                 <Input
                   id="emergencyPhone"
                   value={formData.emergencyPhone}
@@ -751,7 +1028,7 @@ export default function MemberDialog({
 
               {/* Address Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-                <Label className="text-base font-semibold">{t("members.address")}</Label>
+                <Label className="text-base font-semibold">{lt.address}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="addressNumber">N°</Label>
@@ -765,7 +1042,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
-                    <Label htmlFor="street">{t("members.street")}</Label>
+                    <Label htmlFor="street">{lt.street}</Label>
                     <Input
                       id="street"
                       value={formData.street}
@@ -789,7 +1066,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="city">{t("members.city")}</Label>
+                    <Label htmlFor="city">{lt.city}</Label>
                     <Input
                       id="city"
                       value={formData.city}
@@ -800,7 +1077,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="zipCode">{t("members.zipCode")}</Label>
+                    <Label htmlFor="zipCode">{lt.zipCode}</Label>
                     <Input
                       id="zipCode"
                       value={formData.zipCode}
@@ -813,7 +1090,7 @@ export default function MemberDialog({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="state">{t("members.stateRegion")}</Label>
+                    <Label htmlFor="state">{lt.stateRegion}</Label>
                     <Input
                       id="state"
                       value={formData.state}
@@ -824,7 +1101,7 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="country">{t("members.country")}</Label>
+                    <Label htmlFor="country">{lt.country}</Label>
                     <Input
                       id="country"
                       value={formData.country}
@@ -839,7 +1116,7 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="joinDate">{t("members.joinDate")}</Label>
+                  <Label htmlFor="joinDate">{lt.joinDate}</Label>
                   <Input
                     id="joinDate"
                     type="date"
@@ -850,7 +1127,7 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="status">{t("common.status")}</Label>
+                  <Label htmlFor="status">{lt.status}</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) =>
@@ -861,16 +1138,16 @@ export default function MemberDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">{t("common.active")}</SelectItem>
-                      <SelectItem value="inactive">{t("common.inactive")}</SelectItem>
-                      <SelectItem value="transferred">{t("common.transferred")}</SelectItem>
+                      <SelectItem value="active">{lt.active}</SelectItem>
+                      <SelectItem value="inactive">{lt.inactive}</SelectItem>
+                      <SelectItem value="transferred">{lt.transferred}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="branch">{t("members.branch")}</Label>
+                <Label htmlFor="branch">{lt.branch}</Label>
                 <Select
                   value={formData.branchId || "none"}
                   onValueChange={(value) =>
@@ -878,10 +1155,10 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("members.selectBranch")} />
+                    <SelectValue placeholder={lt.selectBranch} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{t("common.none")}</SelectItem>
+                    <SelectItem value="none">{lt.none}</SelectItem>
                     {branches?.map((branch: any) => (
                       <SelectItem key={branch.id} value={branch.id}>
                         {branch.name}
@@ -894,29 +1171,29 @@ export default function MemberDialog({
               {/* Formation Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
                 <Label className="text-base font-semibold">
-                  {t("members.formationSection")}
+                  {lt.formationSection}
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="academicFormation">{t("members.academicFormation")}</Label>
+                    <Label htmlFor="academicFormation">{lt.academicFormation}</Label>
                     <Input
                       id="academicFormation"
                       value={formData.academicFormation}
                       onChange={(e) =>
                         setFormData({ ...formData, academicFormation: e.target.value })
                       }
-                      placeholder={t("members.academicPlaceholder")}
+                      placeholder={lt.academicPlaceholder}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="professionalFormation">{t("members.professionalFormation")}</Label>
+                    <Label htmlFor="professionalFormation">{lt.professionalFormation}</Label>
                     <Input
                       id="professionalFormation"
                       value={formData.professionalFormation}
                       onChange={(e) =>
                         setFormData({ ...formData, professionalFormation: e.target.value })
                       }
-                      placeholder={t("members.professionalPlaceholder")}
+                      placeholder={lt.professionalPlaceholder}
                     />
                   </div>
                 </div>
@@ -927,7 +1204,7 @@ export default function MemberDialog({
             <TabsContent value="spiritual" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="baptismStatus">{t("members.baptized")}</Label>
+                  <Label htmlFor="baptismStatus">{lt.baptized}</Label>
                   <Select
                     value={formData.baptismStatus || "none"}
                     onValueChange={(value) =>
@@ -935,17 +1212,17 @@ export default function MemberDialog({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={t("common.select")} />
+                      <SelectValue placeholder={lt.select} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">{t("common.select")}</SelectItem>
-                      <SelectItem value="Oui">{t("common.yes")}</SelectItem>
-                      <SelectItem value="Non">{t("common.no")}</SelectItem>
+                      <SelectItem value="none">{lt.select}</SelectItem>
+                      <SelectItem value="Oui">{lt.yes}</SelectItem>
+                      <SelectItem value="Non">{lt.no}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="baptismDate">{t("members.baptismDate")}</Label>
+                  <Label htmlFor="baptismDate">{lt.baptismDate}</Label>
                   <Input
                     id="baptismDate"
                     type="date"
@@ -958,19 +1235,19 @@ export default function MemberDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="originChurch">{t("members.originChurch")}</Label>
+                <Label htmlFor="originChurch">{lt.originChurch}</Label>
                 <Input
                   id="originChurch"
                   value={formData.originChurch}
                   onChange={(e) =>
                     setFormData({ ...formData, originChurch: e.target.value })
                   }
-                  placeholder={t("members.originChurchPlaceholder")}
+                  placeholder={lt.originChurchPlaceholder}
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="role">{t("members.ministryRole")}</Label>
+                <Label htmlFor="role">{lt.ministryRole}</Label>
                 <Select
                   value={formData.role || "none"}
                   onValueChange={(value) =>
@@ -978,24 +1255,24 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("members.selectRole")} />
+                    <SelectValue placeholder={lt.selectRole} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{t("common.select")}</SelectItem>
-                    <SelectItem value="Membre">{t("members.roles.member")}</SelectItem>
-                    <SelectItem value="Diacre">{t("members.roles.deacon")}</SelectItem>
-                    <SelectItem value="Ancien">{t("members.roles.elder")}</SelectItem>
-                    <SelectItem value="Pasteur">{t("members.roles.pastor")}</SelectItem>
-                    <SelectItem value="Secrétaire">{t("members.roles.secretary")}</SelectItem>
-                    <SelectItem value="Trésorier">{t("members.roles.treasurer")}</SelectItem>
-                    <SelectItem value="Chantre">{t("members.roles.worship")}</SelectItem>
-                    <SelectItem value="Technique">{t("members.roles.tech")}</SelectItem>
+                    <SelectItem value="none">{lt.select}</SelectItem>
+                    <SelectItem value="Membre">{lt.roleMember}</SelectItem>
+                    <SelectItem value="Diacre">{lt.roleDeacon}</SelectItem>
+                    <SelectItem value="Ancien">{lt.roleElder}</SelectItem>
+                    <SelectItem value="Pasteur">{lt.rolePastor}</SelectItem>
+                    <SelectItem value="Secrétaire">{lt.roleSecretary}</SelectItem>
+                    <SelectItem value="Trésorier">{lt.roleTreasurer}</SelectItem>
+                    <SelectItem value="Chantre">{lt.roleWorship}</SelectItem>
+                    <SelectItem value="Technique">{lt.roleTech}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="conversionDate">{t("members.conversionDate")}</Label>
+                <Label htmlFor="conversionDate">{lt.conversionDate}</Label>
                 <Input
                   id="conversionDate"
                   type="date"
@@ -1007,21 +1284,21 @@ export default function MemberDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="christianExperience">{t("members.christianExperience")}</Label>
+                <Label htmlFor="christianExperience">{lt.christianExperience}</Label>
                 <Textarea
                   id="christianExperience"
                   value={formData.christianExperience}
                   onChange={(e) =>
                     setFormData({ ...formData, christianExperience: e.target.value })
                   }
-                  placeholder={t("members.christianExperiencePlaceholder")}
+                  placeholder={lt.christianExperiencePlaceholder}
                   rows={4}
                 />
               </div>
 
               {/* Ministry Selection */}
               <div className="grid gap-2">
-                <Label htmlFor="ministry">{t("members.ministry") || "Ministère"}</Label>
+                <Label htmlFor="ministry">{lt.ministry}</Label>
                 <Select
                   value={selectedMinistryId || "none"}
                   onValueChange={(value) =>
@@ -1029,10 +1306,10 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("members.selectMinistry") || "Sélectionner un ministère"} />
+                    <SelectValue placeholder={lt.selectMinistry} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{t("common.none") || "Aucun"}</SelectItem>
+                    <SelectItem value="none">{lt.none}</SelectItem>
                     {ministries?.map((ministry) => (
                       <SelectItem key={ministry.id} value={ministry.id}>
                         {ministry.name}
@@ -1046,7 +1323,7 @@ export default function MemberDialog({
             {/* Family Information Tab */}
             <TabsContent value="family" className="space-y-4 mt-4">
               <div className="grid gap-2">
-                <Label htmlFor="maritalStatus">{t("members.maritalStatus")}</Label>
+                <Label htmlFor="maritalStatus">{lt.maritalStatus}</Label>
                 <Select
                   value={formData.maritalStatus || "none"}
                   onValueChange={(value) =>
@@ -1054,32 +1331,32 @@ export default function MemberDialog({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("members.selectMaritalStatus")} />
+                    <SelectValue placeholder={lt.selectMaritalStatus} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{t("common.select")}</SelectItem>
-                    <SelectItem value="Célibataire">{t("members.marital.single")}</SelectItem>
-                    <SelectItem value="Marié(e)">{t("members.marital.married")}</SelectItem>
-                    <SelectItem value="Divorcé(e)">{t("members.marital.divorced")}</SelectItem>
-                    <SelectItem value="Veuf/Veuve">{t("members.marital.widowed")}</SelectItem>
+                    <SelectItem value="none">{lt.select}</SelectItem>
+                    <SelectItem value="Célibataire">{lt.maritalSingle}</SelectItem>
+                    <SelectItem value="Marié(e)">{lt.maritalMarried}</SelectItem>
+                    <SelectItem value="Divorcé(e)">{lt.maritalDivorced}</SelectItem>
+                    <SelectItem value="Veuf/Veuve">{lt.maritalWidowed}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="spouseName">{t("members.spouseName")}</Label>
+                  <Label htmlFor="spouseName">{lt.spouseName}</Label>
                   <Input
                     id="spouseName"
                     value={formData.spouseName}
                     onChange={(e) =>
                       setFormData({ ...formData, spouseName: e.target.value })
                     }
-                    placeholder={t("members.spouseNamePlaceholder")}
+                    placeholder={lt.spouseNamePlaceholder}
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="marriageDate">{t("members.marriageDate")}</Label>
+                  <Label htmlFor="marriageDate">{lt.marriageDate}</Label>
                   <Input
                     id="marriageDate"
                     type="date"
@@ -1093,7 +1370,7 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="numberOfChildren">{t("members.numberOfChildren")}</Label>
+                  <Label htmlFor="numberOfChildren">{lt.numberOfChildren}</Label>
                   <Input
                     id="numberOfChildren"
                     type="number"
@@ -1106,7 +1383,7 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="emergencyPhone">{t("members.emergencyContact")}</Label>
+                  <Label htmlFor="emergencyPhone">{lt.emergencyContact}</Label>
                   <Input
                     id="familyEmergency"
                     value={formData.emergencyPhone}
@@ -1119,14 +1396,14 @@ export default function MemberDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="childrenNames">{t("members.childrenNames")}</Label>
+                <Label htmlFor="childrenNames">{lt.childrenNames}</Label>
                 <Textarea
                   id="childrenNames"
                   value={formData.childrenNames}
                   onChange={(e) =>
                     setFormData({ ...formData, childrenNames: e.target.value })
                   }
-                  placeholder={t("members.childrenNamesPlaceholder")}
+                  placeholder={lt.childrenNamesPlaceholder}
                   rows={3}
                 />
               </div>
@@ -1138,14 +1415,14 @@ export default function MemberDialog({
             <div className="space-y-4 rounded-lg border p-4 bg-muted/50 mt-6">
               <div className="flex items-center gap-2">
                 <QrCodeIcon className="h-5 w-5" />
-                <Label className="text-base font-semibold">{t("members.qrCode")}</Label>
+                <Label className="text-base font-semibold">{lt.qrCode}</Label>
               </div>
               <div className="flex flex-col items-center gap-4">
                 <div className="rounded-lg border-2 border-primary/20 p-4 bg-background">
                   <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
                 </div>
                 <p className="text-sm text-muted-foreground text-center">
-                  {t("members.qrCodeDescription")}
+                  {lt.qrCodeDescription}
                 </p>
                 <Button
                   type="button"
@@ -1154,7 +1431,7 @@ export default function MemberDialog({
                   className="w-full"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  {t("members.downloadQrCode")}
+                  {lt.downloadQrCode}
                 </Button>
               </div>
             </div>
@@ -1177,10 +1454,10 @@ export default function MemberDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              {t("common.cancel")}
+              {lt.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t("common.loading") : t("common.save")}
+              {loading ? lt.loading : lt.save}
             </Button>
           </DialogFooter>
         </form>
