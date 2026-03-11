@@ -1,32 +1,33 @@
 
 
-## Current Situation
+## Problem
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+When some rows fail during import, the user must re-upload the entire file to retry. This creates **duplicates** for the rows that already succeeded the first time.
 
-## What Needs to Be Done
+## Solution
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+Two complementary fixes:
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+### 1. Duplicate Detection Before Insert
+Before inserting each row, check if a member with the same `first_name + last_name + tenant_id` (and optionally `email`) already exists. If a match is found, **skip** that row and count it as "already exists" rather than inserting a duplicate.
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+Logic:
+- For each row, query `members` table for matching `first_name`, `last_name`, and `tenant_id`
+- If email is provided, also match on email for stronger dedup
+- If found → skip and add to a "skipped (duplicate)" list
+- If not found → insert normally
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### 2. Show Failed Rows After Import & Allow Retry
+After import completes, if some rows failed:
+- Stay on the dialog instead of closing it
+- Display a summary: "X imported, Y skipped (duplicates), Z failed"
+- Filter `parsedRows` to keep only the failed rows
+- Let the user click "Retry Failed Rows" without re-uploading the file
+
+### Files to modify
+- **`src/components/MemberImportDialog.tsx`**:
+  - Add duplicate-check query before each insert
+  - Track skipped/duplicate rows separately from failed rows
+  - After import, if failures exist: keep dialog open, show failed rows, offer retry button
+  - Update toast messages to show duplicates skipped count
 
