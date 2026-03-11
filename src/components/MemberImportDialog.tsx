@@ -213,6 +213,7 @@ export default function MemberImportDialog({
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [fileName, setFileName] = useState("");
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; failed: { rowNumber: number; error: string; data: Record<string, string> }[] } | null>(null);
 
   const resetState = () => {
     setStep("upload");
@@ -224,6 +225,7 @@ export default function MemberImportDialog({
     setImportProgress(0);
     setFileName("");
     setInputKey(prev => prev + 1);
+    setImportResult(null);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -432,8 +434,8 @@ export default function MemberImportDialog({
     setStep("preview");
   };
 
-  const handleImport = async () => {
-    const validRows = parsedRows.filter(r => r.isValid);
+  const handleImport = async (rowsToImport?: ParsedRow[]) => {
+    const validRows = (rowsToImport || parsedRows).filter(r => r.isValid);
     if (validRows.length === 0) {
       toast({
         title: t("members.importError"),
@@ -445,13 +447,34 @@ export default function MemberImportDialog({
 
     setImporting(true);
     setStep("importing");
+    setImportResult(null);
     let imported = 0;
+    let skipped = 0;
+    const failedRows: { rowNumber: number; error: string; data: Record<string, string> }[] = [];
 
     try {
-      const failedRows: { row: number; error: string }[] = [];
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
+        // --- Duplicate detection ---
+        let query = supabase
+          .from("members")
+          .select("id")
+          .eq("first_name", row.data.first_name)
+          .eq("last_name", row.data.last_name);
+        
+        if (tenantId) query = query.eq("tenant_id", tenantId);
+        if (row.data.email) query = query.eq("email", row.data.email);
+
+        const { data: existing } = await query.maybeSingle();
+
+        if (existing) {
+          skipped++;
+          setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
+          continue;
+        }
+
+        // --- Insert ---
         const memberData: Record<string, any> = {
           first_name: row.data.first_name,
           last_name: row.data.last_name,
@@ -486,10 +509,9 @@ export default function MemberImportDialog({
           .single();
 
         if (error) {
-          console.error(`Error importing row ${row.rowNumber}:`, error, 'Data:', JSON.stringify(memberData));
-          failedRows.push({ row: row.rowNumber, error: error.message });
+          console.error(`Error importing row ${row.rowNumber}:`, error);
+          failedRows.push({ rowNumber: row.rowNumber, error: error.message, data: row.data });
         } else if (data) {
-          // Update with QR code
           const qrCodeData = `MEMBER-${data.id}`;
           await supabase
             .from("members")
@@ -501,19 +523,25 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
-      const failedCount = failedRows.length;
-      if (failedCount > 0) {
-        console.warn(`[IMPORT] ${failedCount} rows failed:`, failedRows);
+      setImportResult({ imported, skipped, failed: failedRows });
+
+      if (failedRows.length === 0) {
+        toast({
+          title: t("common.confirm"),
+          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} doublons ignorés)` : ''}`,
+        });
+        onSuccess?.();
+        onOpenChange(false);
+        resetState();
+      } else {
+        toast({
+          title: t("members.importError"),
+          description: `${imported} importés, ${skipped} doublons ignorés, ${failedRows.length} échoués`,
+          variant: "destructive",
+        });
+        onSuccess?.();
+        setStep("importing"); // stay on result screen
       }
-
-      toast({
-        title: t("common.confirm"),
-        description: `${imported} ${t("members.importSuccess")}${failedCount > 0 ? ` (${failedCount} failed)` : ''}`,
-      });
-
-      onSuccess?.();
-      onOpenChange(false);
-      resetState();
     } catch (error: any) {
       toast({
         title: t("members.importError"),
@@ -523,6 +551,17 @@ export default function MemberImportDialog({
     } finally {
       setImporting(false);
     }
+  };
+
+  const handleRetryFailed = () => {
+    if (!importResult) return;
+    const retryRows: ParsedRow[] = importResult.failed.map(f => ({
+      rowNumber: f.rowNumber,
+      data: f.data,
+      errors: [],
+      isValid: true,
+    }));
+    handleImport(retryRows);
   };
 
   const downloadTemplate = () => {
@@ -704,7 +743,7 @@ export default function MemberImportDialog({
             </div>
           )}
 
-          {step === "importing" && (
+          {step === "importing" && !importResult && (
             <div className="space-y-4 py-8">
               <div className="flex items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -716,6 +755,54 @@ export default function MemberImportDialog({
               <p className="text-center text-sm text-muted-foreground">
                 {importProgress}%
               </p>
+            </div>
+          )}
+
+          {step === "importing" && importResult && (
+            <div className="space-y-4 py-4">
+              <div className="flex gap-4 flex-wrap">
+                <Badge variant="outline" className="text-sm">
+                  <CheckCircle className="h-4 w-4 mr-1 text-success" />
+                  {importResult.imported} importés
+                </Badge>
+                {importResult.skipped > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <AlertTriangle className="h-4 w-4 mr-1 text-yellow-500" />
+                    {importResult.skipped} doublons ignorés
+                  </Badge>
+                )}
+                {importResult.failed.length > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <XCircle className="h-4 w-4 mr-1 text-destructive" />
+                    {importResult.failed.length} échoués
+                  </Badge>
+                )}
+              </div>
+
+              {importResult.failed.length > 0 && (
+                <ScrollArea className="h-[250px] border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Ligne</TableHead>
+                        <TableHead>{t("members.firstName")}</TableHead>
+                        <TableHead>{t("members.lastName")}</TableHead>
+                        <TableHead>Erreur</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importResult.failed.map((f) => (
+                        <TableRow key={f.rowNumber} className="bg-destructive/10">
+                          <TableCell>{f.rowNumber}</TableCell>
+                          <TableCell>{f.data.first_name || "-"}</TableCell>
+                          <TableCell>{f.data.last_name || "-"}</TableCell>
+                          <TableCell className="text-xs text-destructive">{f.error}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
             </div>
           )}
         </div>
@@ -737,8 +824,20 @@ export default function MemberImportDialog({
               <Button variant="outline" onClick={() => setStep("mapping")}>
                 {t("common.cancel")}
               </Button>
-              <Button onClick={handleImport} disabled={validCount === 0}>
+              <Button onClick={() => handleImport()} disabled={validCount === 0}>
                 {t("members.importNow")} ({validCount})
+              </Button>
+            </>
+          )}
+
+          {step === "importing" && importResult && importResult.failed.length > 0 && (
+            <>
+              <Button variant="outline" onClick={() => { onOpenChange(false); resetState(); }}>
+                Fermer
+              </Button>
+              <Button onClick={handleRetryFailed} disabled={importing}>
+                {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Réessayer les {importResult.failed.length} échoués
               </Button>
             </>
           )}
