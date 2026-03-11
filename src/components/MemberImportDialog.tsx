@@ -190,6 +190,9 @@ export default function MemberImportDialog({
     setImporting(false);
     setImportProgress(0);
     setFileName("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
