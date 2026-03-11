@@ -193,6 +193,7 @@ function normalizeDate(value: string): string {
   return ''; // Invalid date - return empty to avoid DB error
 }
 
+export default function MemberImportDialog({
   open,
   onOpenChange,
   onSuccess,
