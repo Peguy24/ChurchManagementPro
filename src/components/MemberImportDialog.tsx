@@ -420,15 +420,25 @@ export default function MemberImportDialog({
   };
 
   const downloadTemplate = () => {
-    const templateData = [
-      ["Prénom", "Nom", "Email", "Téléphone", "Sexe", "Date de naissance", "Adresse", "Statut", "Date d'entrée", "Baptisé", "État civil"],
-      ["Jean", "Dupont", "jean@exemple.com", "+509 1234-5678", "M", "1990-01-15", "123 Rue Example", "Actif", "2020-01-01", "Oui", "Marié"],
-    ];
-
+    const headersMap: Record<Language, string[]> = {
+      fr: ["Prénom", "Nom", "Email", "Téléphone", "Sexe", "Date de naissance", "Adresse", "Statut", "Date d'entrée", "Statut baptême", "Date de baptême", "Date de conversion", "État civil", "Date de mariage", "Nom du conjoint", "Nombre d'enfants", "Noms des enfants", "Église d'origine", "Expérience chrétienne", "Formation académique", "Formation professionnelle", "Rôle", "Contact d'urgence"],
+      en: ["First Name", "Last Name", "Email", "Phone", "Gender", "Date of Birth", "Address", "Status", "Join Date", "Baptism Status", "Baptism Date", "Conversion Date", "Marital Status", "Marriage Date", "Spouse Name", "Number of Children", "Children Names", "Origin Church", "Christian Experience", "Academic Education", "Professional Training", "Role", "Emergency Contact"],
+      ht: ["Prenon", "Non", "Imèl", "Telefòn", "Sèks", "Dat nesans", "Adrès", "Estati", "Dat antre", "Estati batèm", "Dat batèm", "Dat konvèsyon", "Eta sivil", "Dat maryaj", "Non konjwen", "Kantite timoun", "Non timoun yo", "Legliz orijin", "Eksperyans kretyen", "Fòmasyon akademik", "Fòmasyon pwofesyonèl", "Wòl", "Kontak ijans"],
+    };
+    const samplesMap: Record<Language, string[]> = {
+      fr: ["Jean", "Dupont", "jean@exemple.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Actif", "2020-01-01", "Oui", "2015-06-20", "2010-03-10", "Marié", "2018-07-14", "Marie Dupont", "2", "Pierre, Sophie", "First Baptist Church", "5 ans", "Licence en Théologie", "Enseignant", "Membre", "+1 (555) 987-6543"],
+      en: ["John", "Smith", "john@example.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Active", "2020-01-01", "Yes", "2015-06-20", "2010-03-10", "Married", "2018-07-14", "Jane Smith", "2", "Peter, Sophie", "First Baptist Church", "5 years", "Bachelor in Theology", "Teacher", "Member", "+1 (555) 987-6543"],
+      ht: ["Jean", "Dupont", "jean@egzanp.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Aktif", "2020-01-01", "Wi", "2015-06-20", "2010-03-10", "Marye", "2018-07-14", "Marie Dupont", "2", "Pierre, Sophie", "Premye Legliz Batis", "5 ane", "Lisans nan Teyoloji", "Pwofesè", "Manm", "+1 (555) 987-6543"],
+    };
+    const templateData = [headersMap[language], samplesMap[language]];
     const ws = XLSX.utils.aoa_to_sheet(templateData);
+    // Auto-size columns
+    const colWidths = templateData[0].map((h, i) => Math.max(h.length, (templateData[1][i] || "").length) + 2);
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "modele_import_membres.xlsx");
+    const fileNames: Record<Language, string> = { fr: "modele_import_membres.xlsx", en: "member_import_template.xlsx", ht: "modèl_enpòte_manm.xlsx" };
+    XLSX.writeFile(wb, fileNames[language]);
   };
 
   const validCount = parsedRows.filter(r => r.isValid).length;
