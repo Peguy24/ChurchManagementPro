@@ -6808,6 +6808,11 @@ const translations = {
       ignore: "Inyore",
       rowNumber: "Liy",
       errorMessage: "Erè",
+      // Plan limits
+      planCapacityInfo: "Kapasite ki rete: {remaining} manm sou {max}",
+      planLimitPartialImport: "Plan ou a pèmèt {max} manm. Ou gen {current}. Se sèlman {remaining} manm ki ap enpòte.",
+      planLimitReachedImport: "Limite plan rive. Ou pa ka enpòte plis manm. Mete ajou plan ou.",
+      upgradePlanForMore: "Mete ajou plan ou pou enpòte plis manm.",
     },
     memberCards: {
       title: "Kat Manm yo",
