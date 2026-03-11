@@ -434,8 +434,8 @@ export default function MemberImportDialog({
     setStep("preview");
   };
 
-  const handleImport = async () => {
-    const validRows = parsedRows.filter(r => r.isValid);
+  const handleImport = async (rowsToImport?: ParsedRow[]) => {
+    const validRows = (rowsToImport || parsedRows).filter(r => r.isValid);
     if (validRows.length === 0) {
       toast({
         title: t("members.importError"),
@@ -447,13 +447,34 @@ export default function MemberImportDialog({
 
     setImporting(true);
     setStep("importing");
+    setImportResult(null);
     let imported = 0;
+    let skipped = 0;
+    const failedRows: { rowNumber: number; error: string; data: Record<string, string> }[] = [];
 
     try {
-      const failedRows: { row: number; error: string }[] = [];
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
+        // --- Duplicate detection ---
+        let query = supabase
+          .from("members")
+          .select("id")
+          .eq("first_name", row.data.first_name)
+          .eq("last_name", row.data.last_name);
+        
+        if (tenantId) query = query.eq("tenant_id", tenantId);
+        if (row.data.email) query = query.eq("email", row.data.email);
+
+        const { data: existing } = await query.maybeSingle();
+
+        if (existing) {
+          skipped++;
+          setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
+          continue;
+        }
+
+        // --- Insert ---
         const memberData: Record<string, any> = {
           first_name: row.data.first_name,
           last_name: row.data.last_name,
@@ -488,10 +509,9 @@ export default function MemberImportDialog({
           .single();
 
         if (error) {
-          console.error(`Error importing row ${row.rowNumber}:`, error, 'Data:', JSON.stringify(memberData));
-          failedRows.push({ row: row.rowNumber, error: error.message });
+          console.error(`Error importing row ${row.rowNumber}:`, error);
+          failedRows.push({ rowNumber: row.rowNumber, error: error.message, data: row.data });
         } else if (data) {
-          // Update with QR code
           const qrCodeData = `MEMBER-${data.id}`;
           await supabase
             .from("members")
@@ -503,19 +523,25 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
-      const failedCount = failedRows.length;
-      if (failedCount > 0) {
-        console.warn(`[IMPORT] ${failedCount} rows failed:`, failedRows);
+      setImportResult({ imported, skipped, failed: failedRows });
+
+      if (failedRows.length === 0) {
+        toast({
+          title: t("common.confirm"),
+          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} doublons ignorés)` : ''}`,
+        });
+        onSuccess?.();
+        onOpenChange(false);
+        resetState();
+      } else {
+        toast({
+          title: t("members.importError"),
+          description: `${imported} importés, ${skipped} doublons ignorés, ${failedRows.length} échoués`,
+          variant: "destructive",
+        });
+        onSuccess?.();
+        setStep("importing"); // stay on result screen
       }
-
-      toast({
-        title: t("common.confirm"),
-        description: `${imported} ${t("members.importSuccess")}${failedCount > 0 ? ` (${failedCount} failed)` : ''}`,
-      });
-
-      onSuccess?.();
-      onOpenChange(false);
-      resetState();
     } catch (error: any) {
       toast({
         title: t("members.importError"),
@@ -525,6 +551,17 @@ export default function MemberImportDialog({
     } finally {
       setImporting(false);
     }
+  };
+
+  const handleRetryFailed = () => {
+    if (!importResult) return;
+    const retryRows: ParsedRow[] = importResult.failed.map(f => ({
+      rowNumber: f.rowNumber,
+      data: f.data,
+      errors: [],
+      isValid: true,
+    }));
+    handleImport(retryRows);
   };
 
   const downloadTemplate = () => {
