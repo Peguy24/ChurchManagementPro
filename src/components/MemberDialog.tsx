@@ -598,7 +598,7 @@ export default function MemberDialog({
             <TabsContent value="personal" className="space-y-4 mt-4">
               {/* Photo Upload Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-                <Label className="text-base font-semibold">Photo du Membre</Label>
+                <Label className="text-base font-semibold">{t("members.memberPhoto")}</Label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {/* Photo Preview */}
                   <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted border-2 border-dashed border-primary/30 flex items-center justify-center">
@@ -606,7 +606,7 @@ export default function MemberDialog({
                       <>
                         <img
                           src={photoPreview}
-                          alt="Photo du membre"
+                          alt={t("members.memberPhotoAlt")}
                           className="h-full w-full object-cover"
                         />
                         <Button
@@ -642,10 +642,10 @@ export default function MemberDialog({
                       disabled={uploadingPhoto}
                     >
                       <Upload className="mr-2 h-4 w-4" />
-                      {photoPreview ? "Changer la photo" : "Ajouter une photo"}
+                      {photoPreview ? t("members.memberChangePhoto") : t("members.memberAddPhoto")}
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      JPEG, PNG, WebP ou GIF. Max 5 Mo.
+                      {t("members.memberPhotoHint")}
                     </p>
                   </div>
                 </div>
