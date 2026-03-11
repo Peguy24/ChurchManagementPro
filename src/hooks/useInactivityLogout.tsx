@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
-const INACTIVITY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 const THROTTLE_MS = 1000;
 
 const translations = {
