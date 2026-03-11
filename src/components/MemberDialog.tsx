@@ -1390,7 +1390,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, emergencyPhone: e.target.value })
                     }
-                    placeholder="+33 1 98 76 54 32"
+                    placeholder="+1 (555) 987-6543"
                   />
                 </div>
               </div>
