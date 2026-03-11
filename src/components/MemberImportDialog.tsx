@@ -198,31 +198,35 @@ export default function MemberImportDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read file content BEFORE clearing input to keep the File reference valid
+    // Read file content BEFORE anything else
     const fileNameLocal = file.name;
     const extension = fileNameLocal.split('.').pop()?.toLowerCase();
     
-    let fileContent: string | ArrayBuffer;
+    let readData: string[][] = [];
+    
     try {
       if (extension === 'csv') {
-        fileContent = await file.text();
+        const text = await file.text();
+        readData = parseCSV(text);
+      } else if (['xlsx', 'xls'].includes(extension || '')) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        readData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
       } else {
-        fileContent = await file.arrayBuffer();
+        throw new Error("Format non supporté");
       }
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: t("members.parseError"),
-        description: "Failed to read file",
+        description: err.message || "Failed to read file",
         variant: "destructive",
       });
       return;
     }
 
-    // Now safe to reset input for re-selection
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
+    // Force new input element for next selection
+    setInputKey(prev => prev + 1);
     setFileName(fileNameLocal);
 
     try {
