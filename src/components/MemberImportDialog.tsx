@@ -490,6 +490,7 @@ export default function MemberImportDialog({
                   {t("members.supportedFormats")}
                 </p>
                 <Input
+                  key={inputKey}
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.xlsx,.xls"
@@ -499,7 +500,7 @@ export default function MemberImportDialog({
               </div>
 
               <div className="flex justify-center">
-                <Button variant="outline" onClick={downloadTemplate}>
+                <Button variant="outline" onClick={(e) => { e.stopPropagation(); downloadTemplate(); }}>
                   <Download className="mr-2 h-4 w-4" />
                   {t("members.downloadTemplate")}
                 </Button>
