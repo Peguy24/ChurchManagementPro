@@ -636,6 +636,11 @@ const translations = {
       ignore: "Ignorer",
       rowNumber: "Ligne",
       errorMessage: "Erreur",
+      // Plan limits
+      planCapacityInfo: "Capacité restante : {remaining} membres sur {max}",
+      planLimitPartialImport: "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.",
+      planLimitReachedImport: "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan.",
+      upgradePlanForMore: "Mettez à niveau votre plan pour importer plus de membres.",
     },
     memberCards: {
       title: "Cartes des Membres",
@@ -3721,6 +3726,11 @@ const translations = {
       ignore: "Ignore",
       rowNumber: "Row",
       errorMessage: "Error",
+      // Plan limits
+      planCapacityInfo: "Remaining capacity: {remaining} members out of {max}",
+      planLimitPartialImport: "Your plan allows {max} members. You have {current}. Only {remaining} members will be imported.",
+      planLimitReachedImport: "Plan limit reached. You can no longer import members. Upgrade your plan.",
+      upgradePlanForMore: "Upgrade your plan to import more members.",
     },
     memberCards: {
       title: "Member Cards",
@@ -6798,6 +6808,11 @@ const translations = {
       ignore: "Inyore",
       rowNumber: "Liy",
       errorMessage: "Erè",
+      // Plan limits
+      planCapacityInfo: "Kapasite ki rete: {remaining} manm sou {max}",
+      planLimitPartialImport: "Plan ou a pèmèt {max} manm. Ou gen {current}. Se sèlman {remaining} manm ki ap enpòte.",
+      planLimitReachedImport: "Limite plan rive. Ou pa ka enpòte plis manm. Mete ajou plan ou.",
+      upgradePlanForMore: "Mete ajou plan ou pou enpòte plis manm.",
     },
     memberCards: {
       title: "Kat Manm yo",
