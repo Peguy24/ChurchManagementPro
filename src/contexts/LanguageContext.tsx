@@ -636,6 +636,11 @@ const translations = {
       ignore: "Ignorer",
       rowNumber: "Ligne",
       errorMessage: "Erreur",
+      // Plan limits
+      planCapacityInfo: "Capacité restante : {remaining} membres sur {max}",
+      planLimitPartialImport: "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.",
+      planLimitReachedImport: "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan.",
+      upgradePlanForMore: "Mettez à niveau votre plan pour importer plus de membres.",
     },
     memberCards: {
       title: "Cartes des Membres",
