@@ -813,24 +813,24 @@ export default function MemberImportDialog({
               <div className="flex gap-4 flex-wrap">
                 <Badge variant="outline" className="text-sm">
                   <CheckCircle className="h-4 w-4 mr-1 text-success" />
-                  {importResult.imported} importés
+                  {importResult.imported} {t("members.imported")}
                 </Badge>
                 {importResult.skipped > 0 && (
                   <Badge variant="outline" className="text-sm">
-                    <AlertTriangle className="h-4 w-4 mr-1 text-yellow-500" />
-                    {importResult.skipped} doublons ignorés
+                    <AlertTriangle className="h-4 w-4 mr-1 text-warning" />
+                    {importResult.skipped} {t("members.duplicatesIgnored")}
                   </Badge>
                 )}
                 {importResult.limitReached > 0 && (
                   <Badge variant="outline" className="text-sm">
-                    <Crown className="h-4 w-4 mr-1 text-orange-500" />
-                    {importResult.limitReached} limite du plan
+                    <Crown className="h-4 w-4 mr-1 text-warning" />
+                    {importResult.limitReached} {t("members.planLimitLabel")}
                   </Badge>
                 )}
                 {importResult.failed.length > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <XCircle className="h-4 w-4 mr-1 text-destructive" />
-                    {importResult.failed.length} échoués
+                    {importResult.failed.length} {t("members.failedRows")}
                   </Badge>
                 )}
               </div>
