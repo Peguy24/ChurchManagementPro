@@ -6827,6 +6827,13 @@ const translations = {
       planLimitPartialImport: "Plan ou a pèmèt {max} manm. Ou gen {current}. Se sèlman {remaining} manm ki ap enpòte.",
       planLimitReachedImport: "Limite plan rive. Ou pa ka enpòte plis manm. Mete ajou plan ou.",
       upgradePlanForMore: "Mete ajou plan ou pou enpòte plis manm.",
+      // Import results
+      imported: "enpòte",
+      duplicatesIgnored: "doublons inyore",
+      planLimitLabel: "limit plan",
+      failedRows: "echwe",
+      retryFailed: "Re-eseye {count} echwe yo",
+      upgrade: "Mete ajou",
     },
     memberCards: {
       title: "Kat Manm yo",
