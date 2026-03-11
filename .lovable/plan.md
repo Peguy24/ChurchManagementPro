@@ -1,26 +1,32 @@
 
 
-## Plan: Auto-Logout After 2 Minutes of Inactivity
+## Current Situation
 
-### Overview
-Create an inactivity tracker that monitors user interactions (mouse, keyboard, touch, scroll). After 2 minutes without activity, automatically sign the user out and redirect to the login page.
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-### Implementation
+## What Needs to Be Done
 
-**New hook: `src/hooks/useInactivityLogout.tsx`**
-- Track user activity events: `mousemove`, `keydown`, `click`, `scroll`, `touchstart`
-- Reset a 2-minute timer on each event
-- When the timer expires, call `supabase.auth.signOut()` and redirect to `/auth`
-- Only activate when a user is authenticated
-- Show a toast notification informing the user they were logged out due to inactivity
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-**Integration: `src/App.tsx`**
-- Add an `InactivityGuard` wrapper component inside `BrowserRouter` that uses the hook
-- It runs globally so inactivity is tracked across all pages
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### Technical Details
-- Uses `setTimeout` with 120,000ms (2 minutes)
-- Event listeners are throttled to avoid performance issues (update last-activity timestamp at most every 1 second)
-- Cleanup on unmount removes all listeners and timers
-- Does not interfere with the existing `useAuth` hook or `ProtectedRoute`
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
