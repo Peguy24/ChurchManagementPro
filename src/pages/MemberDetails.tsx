@@ -87,6 +87,8 @@ const statusColors: Record<string, string> = {
   active: "bg-success/10 text-success border-success/20",
   inactive: "bg-muted text-muted-foreground border-border",
   transferred: "bg-info/10 text-info border-info/20",
+  deceased: "bg-destructive/10 text-destructive border-destructive/20",
+  archived: "bg-muted text-muted-foreground border-border",
 };
 
 export default function MemberDetails() {

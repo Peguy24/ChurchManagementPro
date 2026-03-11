@@ -1147,6 +1147,8 @@ export default function MemberDialog({
                       <SelectItem value="active">{lt.active}</SelectItem>
                       <SelectItem value="inactive">{lt.inactive}</SelectItem>
                       <SelectItem value="transferred">{lt.transferred}</SelectItem>
+                      <SelectItem value="deceased">{lt.deceased}</SelectItem>
+                      <SelectItem value="archived">{lt.archived}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
