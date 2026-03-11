@@ -821,6 +821,12 @@ export default function MemberImportDialog({
                     {importResult.skipped} doublons ignorés
                   </Badge>
                 )}
+                {importResult.limitReached > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <Crown className="h-4 w-4 mr-1 text-orange-500" />
+                    {importResult.limitReached} limite du plan
+                  </Badge>
+                )}
                 {importResult.failed.length > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <XCircle className="h-4 w-4 mr-1 text-destructive" />
@@ -828,6 +834,18 @@ export default function MemberImportDialog({
                   </Badge>
                 )}
               </div>
+
+              {importResult.limitReached > 0 && (
+                <Alert>
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription className="flex items-center justify-between">
+                    <span>{t("members.upgradePlanForMore") || "Mettez à niveau votre plan pour importer plus de membres."}</span>
+                    <Button variant="outline" size="sm" onClick={() => { onOpenChange(false); resetState(); navigate("/subscription"); }}>
+                      {t("subscription.upgrade") || "Mettre à niveau"}
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {importResult.failed.length > 0 && (
                 <ScrollArea className="h-[250px] border rounded-lg">
