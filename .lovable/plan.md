@@ -1,32 +1,47 @@
 
 
-## Current Situation
+## Problem
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+Plan limits for members are only enforced on the "Add Member" button in `Members.tsx`. The **bulk import** (`MemberImportDialog.tsx`) has zero plan limit checks — it imports all valid rows even if the tenant is over their limit. Additionally, when a plan reaches its maximum, there's no clear feedback during import about *why* rows were rejected.
 
-## What Needs to Be Done
+## Plan
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### 1. Enforce plan limits in MemberImportDialog
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+**File: `src/components/MemberImportDialog.tsx`**
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+- Import `usePlanLimits` hook
+- Before starting import, calculate `remainingCapacity = limits.maxMembers - usage.membersCount`
+- If `remainingCapacity <= 0`: show limit dialog, block import entirely
+- If `remainingCapacity < validRows.length`: show a warning that only the first N rows will be imported, truncate the import batch
+- During import loop, track running count and stop inserting once capacity is reached — remaining rows marked as "limit reached" failures
+- Add plan limit info to the preview step (e.g., "Your plan allows 200 members, you currently have 185. You can import up to 15 more.")
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### 2. Add limit check to the import button on Members page
+
+**File: `src/pages/Members.tsx`**
+
+- The "Import" button currently opens the dialog without checking limits
+- Add a `canAddMember()` check before opening import dialog; if at limit, show `PlanLimitDialog` instead
+
+### 3. Improve feedback when limit is reached
+
+**File: `src/components/MemberImportDialog.tsx`**
+
+- In the import results, distinguish "limit reached" rows from other failures
+- Show a clear message: "X members imported. Y skipped (plan limit reached). Upgrade to import more."
+- Include a link/button to the subscription page when limit is the blocker
+
+### Summary of changes
+
+```text
+Members.tsx
+  └─ Import button → check canAddMember() before opening dialog
+
+MemberImportDialog.tsx
+  └─ usePlanLimits() → get remaining capacity
+  └─ Preview step → show "X of Y will be imported (plan limit)"
+  └─ Import loop → stop at capacity, mark excess as "limit reached"
+  └─ Results → separate "limit reached" from other errors
+```
 
