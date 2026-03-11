@@ -467,7 +467,7 @@ export default function MemberImportDialog({
           marital_status: row.data.marital_status || null,
           marriage_date: row.data.marriage_date || null,
           spouse_name: row.data.spouse_name || null,
-          number_of_children: row.data.number_of_children ? parseInt(row.data.number_of_children) : null,
+          number_of_children: row.data.number_of_children ? (isNaN(parseInt(row.data.number_of_children)) ? null : parseInt(row.data.number_of_children)) : null,
           children_names: row.data.children_names || null,
           origin_church: row.data.origin_church || null,
           christian_experience: row.data.christian_experience || null,
