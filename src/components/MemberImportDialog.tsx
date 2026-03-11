@@ -448,6 +448,7 @@ export default function MemberImportDialog({
     let imported = 0;
 
     try {
+      const failedRows: { row: number; error: string }[] = [];
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
