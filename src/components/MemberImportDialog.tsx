@@ -31,7 +31,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -52,26 +53,86 @@ interface ColumnMapping {
   [sourceColumn: string]: string;
 }
 
-const TARGET_FIELDS = [
-  { key: "ignore", label: "Ignorer" },
-  { key: "first_name", label: "Prénom", required: true },
-  { key: "last_name", label: "Nom", required: true },
-  { key: "email", label: "Email" },
-  { key: "phone", label: "Téléphone" },
-  { key: "gender", label: "Sexe" },
-  { key: "date_of_birth", label: "Date de naissance" },
-  { key: "address", label: "Adresse" },
-  { key: "status", label: "Statut" },
-  { key: "join_date", label: "Date d'entrée" },
-  { key: "baptism_status", label: "Statut baptême" },
-  { key: "baptism_date", label: "Date de baptême" },
-  { key: "marital_status", label: "État civil" },
-  { key: "spouse_name", label: "Nom du conjoint" },
-  { key: "number_of_children", label: "Nombre d'enfants" },
-  { key: "origin_church", label: "Église d'origine" },
-  { key: "role", label: "Rôle" },
-  { key: "emergency_phone", label: "Contact d'urgence" },
-];
+const TARGET_FIELDS_I18N: Record<Language, { key: string; label: string; required?: boolean }[]> = {
+  fr: [
+    { key: "ignore", label: "Ignorer" },
+    { key: "first_name", label: "Prénom", required: true },
+    { key: "last_name", label: "Nom", required: true },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Téléphone" },
+    { key: "gender", label: "Sexe" },
+    { key: "date_of_birth", label: "Date de naissance" },
+    { key: "address", label: "Adresse" },
+    { key: "status", label: "Statut" },
+    { key: "join_date", label: "Date d'entrée" },
+    { key: "baptism_status", label: "Statut baptême" },
+    { key: "baptism_date", label: "Date de baptême" },
+    { key: "conversion_date", label: "Date de conversion" },
+    { key: "marital_status", label: "État civil" },
+    { key: "marriage_date", label: "Date de mariage" },
+    { key: "spouse_name", label: "Nom du conjoint" },
+    { key: "number_of_children", label: "Nombre d'enfants" },
+    { key: "children_names", label: "Noms des enfants" },
+    { key: "origin_church", label: "Église d'origine" },
+    { key: "christian_experience", label: "Expérience chrétienne" },
+    { key: "academic_formation", label: "Formation académique" },
+    { key: "professional_formation", label: "Formation professionnelle" },
+    { key: "role", label: "Rôle" },
+    { key: "emergency_phone", label: "Contact d'urgence" },
+  ],
+  en: [
+    { key: "ignore", label: "Ignore" },
+    { key: "first_name", label: "First Name", required: true },
+    { key: "last_name", label: "Last Name", required: true },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "gender", label: "Gender" },
+    { key: "date_of_birth", label: "Date of Birth" },
+    { key: "address", label: "Address" },
+    { key: "status", label: "Status" },
+    { key: "join_date", label: "Join Date" },
+    { key: "baptism_status", label: "Baptism Status" },
+    { key: "baptism_date", label: "Baptism Date" },
+    { key: "conversion_date", label: "Conversion Date" },
+    { key: "marital_status", label: "Marital Status" },
+    { key: "marriage_date", label: "Marriage Date" },
+    { key: "spouse_name", label: "Spouse Name" },
+    { key: "number_of_children", label: "Number of Children" },
+    { key: "children_names", label: "Children Names" },
+    { key: "origin_church", label: "Origin Church" },
+    { key: "christian_experience", label: "Christian Experience" },
+    { key: "academic_formation", label: "Academic Education" },
+    { key: "professional_formation", label: "Professional Training" },
+    { key: "role", label: "Role" },
+    { key: "emergency_phone", label: "Emergency Contact" },
+  ],
+  ht: [
+    { key: "ignore", label: "Inyore" },
+    { key: "first_name", label: "Prenon", required: true },
+    { key: "last_name", label: "Non", required: true },
+    { key: "email", label: "Imèl" },
+    { key: "phone", label: "Telefòn" },
+    { key: "gender", label: "Sèks" },
+    { key: "date_of_birth", label: "Dat nesans" },
+    { key: "address", label: "Adrès" },
+    { key: "status", label: "Estati" },
+    { key: "join_date", label: "Dat antre" },
+    { key: "baptism_status", label: "Estati batèm" },
+    { key: "baptism_date", label: "Dat batèm" },
+    { key: "conversion_date", label: "Dat konvèsyon" },
+    { key: "marital_status", label: "Eta sivil" },
+    { key: "marriage_date", label: "Dat maryaj" },
+    { key: "spouse_name", label: "Non konjwen" },
+    { key: "number_of_children", label: "Kantite timoun" },
+    { key: "children_names", label: "Non timoun yo" },
+    { key: "origin_church", label: "Legliz orijin" },
+    { key: "christian_experience", label: "Eksperyans kretyen" },
+    { key: "academic_formation", label: "Fòmasyon akademik" },
+    { key: "professional_formation", label: "Fòmasyon pwofesyonèl" },
+    { key: "role", label: "Wòl" },
+    { key: "emergency_phone", label: "Kontak ijans" },
+  ],
+};
 
 // Auto-mapping based on common column names
 const AUTO_MAPPING: Record<string, string> = {
