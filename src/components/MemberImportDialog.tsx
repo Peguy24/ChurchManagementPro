@@ -229,36 +229,35 @@ export default function MemberImportDialog({
     setInputKey(prev => prev + 1);
     setFileName(fileNameLocal);
 
-      const data = readData;
+    const data = readData;
 
-      if (data.length < 2) {
-        throw new Error("Le fichier doit contenir au moins une ligne d'en-tête et une ligne de données");
-      }
-
-      const fileHeaders = data[0].map(h => String(h || '').trim());
-      const rows = data.slice(1).filter(row => row.some(cell => cell));
-
-      setHeaders(fileHeaders);
-      setRawData(rows);
-
-      // Auto-map columns
-      const autoMapping: ColumnMapping = {};
-      fileHeaders.forEach(header => {
-        const normalizedHeader = header.toLowerCase().trim();
-        if (AUTO_MAPPING[normalizedHeader]) {
-          autoMapping[header] = AUTO_MAPPING[normalizedHeader];
-        }
-      });
-      setColumnMapping(autoMapping);
-
-      setStep("mapping");
-    } catch (error: any) {
+    if (data.length < 2) {
       toast({
         title: t("members.parseError"),
-        description: error.message,
+        description: "The file must contain at least a header row and one data row",
         variant: "destructive",
       });
+      return;
     }
+
+    const fileHeaders = data[0].map(h => String(h || '').trim());
+    const rows = data.slice(1).filter(row => row.some(cell => cell));
+
+    setHeaders(fileHeaders);
+    setRawData(rows);
+
+    // Auto-map columns
+    const autoMapping: ColumnMapping = {};
+    fileHeaders.forEach(header => {
+      const normalizedHeader = header.toLowerCase().trim();
+      if (AUTO_MAPPING[normalizedHeader]) {
+        autoMapping[header] = AUTO_MAPPING[normalizedHeader];
+      }
+    });
+    setColumnMapping(autoMapping);
+
+    setStep("mapping");
+  };
   };
 
   const parseCSV = (text: string): string[][] => {
