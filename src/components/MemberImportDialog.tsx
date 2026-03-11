@@ -33,7 +33,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
-import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 interface MemberImportDialogProps {
@@ -201,6 +203,8 @@ export default function MemberImportDialog({
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
+  const { limits, usage } = usePlanLimits();
+  const navigate = useNavigate();
   const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [inputKey, setInputKey] = useState(0);
@@ -213,7 +217,7 @@ export default function MemberImportDialog({
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [fileName, setFileName] = useState("");
-  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; failed: { rowNumber: number; error: string; data: Record<string, string> }[] } | null>(null);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; limitReached: number; failed: { rowNumber: number; error: string; data: Record<string, string> }[] } | null>(null);
 
   const resetState = () => {
     setStep("upload");
@@ -450,11 +454,24 @@ export default function MemberImportDialog({
     setImportResult(null);
     let imported = 0;
     let skipped = 0;
+    let limitReached = 0;
     const failedRows: { rowNumber: number; error: string; data: Record<string, string> }[] = [];
+
+    // Calculate remaining capacity
+    const remainingCapacity = limits.maxMembers === Infinity 
+      ? Infinity 
+      : Math.max(0, limits.maxMembers - usage.membersCount);
 
     try {
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
+
+        // --- Plan limit check ---
+        if (remainingCapacity !== Infinity && imported >= remainingCapacity) {
+          limitReached++;
+          setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
+          continue;
+        }
         
         // --- Duplicate detection ---
         let query = supabase
@@ -523,9 +540,10 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
-      setImportResult({ imported, skipped, failed: failedRows });
+      setImportResult({ imported, skipped, limitReached, failed: failedRows });
 
-      if (failedRows.length === 0) {
+      const hasIssues = failedRows.length > 0 || limitReached > 0;
+      if (!hasIssues) {
         toast({
           title: t("common.confirm"),
           description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} doublons ignorés)` : ''}`,
@@ -534,9 +552,13 @@ export default function MemberImportDialog({
         onOpenChange(false);
         resetState();
       } else {
+        const parts = [`${imported} importés`];
+        if (skipped > 0) parts.push(`${skipped} doublons ignorés`);
+        if (limitReached > 0) parts.push(`${limitReached} limite du plan atteinte`);
+        if (failedRows.length > 0) parts.push(`${failedRows.length} échoués`);
         toast({
           title: t("members.importError"),
-          description: `${imported} importés, ${skipped} doublons ignorés, ${failedRows.length} échoués`,
+          description: parts.join(", "),
           variant: "destructive",
         });
         onSuccess?.();
@@ -679,9 +701,16 @@ export default function MemberImportDialog({
             </div>
           )}
 
-          {step === "preview" && (
+          {step === "preview" && (() => {
+            const remainingCapacity = limits.maxMembers === Infinity 
+              ? Infinity 
+              : Math.max(0, limits.maxMembers - usage.membersCount);
+            const willImport = remainingCapacity === Infinity ? validCount : Math.min(validCount, remainingCapacity);
+            const willBeLimited = remainingCapacity !== Infinity && validCount > remainingCapacity;
+
+            return (
             <div className="space-y-4">
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <Badge variant="outline" className="text-sm">
                   <CheckCircle className="h-4 w-4 mr-1 text-success" />
                   {validCount} {t("members.validRows")}
@@ -693,6 +722,26 @@ export default function MemberImportDialog({
                   </Badge>
                 )}
               </div>
+
+              {/* Plan capacity info */}
+              {remainingCapacity !== Infinity && (
+                <Alert variant={willBeLimited ? "destructive" : "default"}>
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription>
+                    {remainingCapacity <= 0 
+                      ? t("members.planLimitReachedImport") || "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan."
+                      : willBeLimited
+                        ? (t("members.planLimitPartialImport") || "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.")
+                            .replace("{max}", String(limits.maxMembers))
+                            .replace("{current}", String(usage.membersCount))
+                            .replace("{remaining}", String(remainingCapacity))
+                        : (t("members.planCapacityInfo") || "Capacité restante : {remaining} membres sur {max}.")
+                            .replace("{remaining}", String(remainingCapacity))
+                            .replace("{max}", String(limits.maxMembers))
+                    }
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {invalidCount > 0 && (
                 <Alert variant="destructive">
@@ -741,7 +790,8 @@ export default function MemberImportDialog({
                 </Table>
               </ScrollArea>
             </div>
-          )}
+            );
+          })()}
 
           {step === "importing" && !importResult && (
             <div className="space-y-4 py-8">
@@ -771,6 +821,12 @@ export default function MemberImportDialog({
                     {importResult.skipped} doublons ignorés
                   </Badge>
                 )}
+                {importResult.limitReached > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <Crown className="h-4 w-4 mr-1 text-orange-500" />
+                    {importResult.limitReached} limite du plan
+                  </Badge>
+                )}
                 {importResult.failed.length > 0 && (
                   <Badge variant="outline" className="text-sm">
                     <XCircle className="h-4 w-4 mr-1 text-destructive" />
@@ -778,6 +834,18 @@ export default function MemberImportDialog({
                   </Badge>
                 )}
               </div>
+
+              {importResult.limitReached > 0 && (
+                <Alert>
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription className="flex items-center justify-between">
+                    <span>{t("members.upgradePlanForMore") || "Mettez à niveau votre plan pour importer plus de membres."}</span>
+                    <Button variant="outline" size="sm" onClick={() => { onOpenChange(false); resetState(); navigate("/subscription"); }}>
+                      {t("subscription.upgrade") || "Mettre à niveau"}
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {importResult.failed.length > 0 && (
                 <ScrollArea className="h-[250px] border rounded-lg">
@@ -819,16 +887,22 @@ export default function MemberImportDialog({
             </>
           )}
 
-          {step === "preview" && (
+          {step === "preview" && (() => {
+            const remainingCapacity = limits.maxMembers === Infinity 
+              ? Infinity 
+              : Math.max(0, limits.maxMembers - usage.membersCount);
+            const willImport = remainingCapacity === Infinity ? validCount : Math.min(validCount, remainingCapacity);
+            return (
             <>
               <Button variant="outline" onClick={() => setStep("mapping")}>
                 {t("common.cancel")}
               </Button>
-              <Button onClick={() => handleImport()} disabled={validCount === 0}>
-                {t("members.importNow")} ({validCount})
+              <Button onClick={() => handleImport()} disabled={validCount === 0 || remainingCapacity <= 0}>
+                {t("members.importNow")} ({willImport})
               </Button>
             </>
-          )}
+            );
+          })()}
 
           {step === "importing" && importResult && importResult.failed.length > 0 && (
             <>
