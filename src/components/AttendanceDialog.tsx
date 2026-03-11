@@ -163,6 +163,15 @@ export default function AttendanceDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedEventId) {
+      toast({
+        title: t("attendance.error"),
+        description: t("attendance.selectAnEvent"),
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (checkedMembers.length === 0) {
       toast({
         title: t("attendance.error"),
