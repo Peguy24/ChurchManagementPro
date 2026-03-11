@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -18,12 +18,30 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const hadUserRef = useRef(false);
 
   const loading = authLoading || roleLoading || tenantLoading;
 
+  // Track if user was ever authenticated in this session
   useEffect(() => {
-    if (!loading && !user) {
+    if (user) hadUserRef.current = true;
+  }, [user]);
+
+  useEffect(() => {
+    // Only redirect to commercial if we never had a user (not a transient state)
+    if (!loading && !user && !hadUserRef.current) {
       navigate('/commercial');
+    }
+    // If user was previously authenticated but is now null, wait briefly for token refresh
+    if (!loading && !user && hadUserRef.current) {
+      const timeout = setTimeout(() => {
+        // Re-check after delay
+        if (!user) {
+          hadUserRef.current = false;
+          navigate('/commercial');
+        }
+      }, 2000);
+      return () => clearTimeout(timeout);
     }
   }, [user, loading, navigate]);
 
