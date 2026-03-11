@@ -729,13 +729,13 @@ export default function MemberImportDialog({
                   <Crown className="h-4 w-4" />
                   <AlertDescription>
                     {remainingCapacity <= 0 
-                      ? t("members.planLimitReachedImport") || "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan."
+                      ? t("members.planLimitReachedImport")
                       : willBeLimited
-                        ? (t("members.planLimitPartialImport") || "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.")
+                        ? t("members.planLimitPartialImport")
                             .replace("{max}", String(limits.maxMembers))
                             .replace("{current}", String(usage.membersCount))
                             .replace("{remaining}", String(remainingCapacity))
-                        : (t("members.planCapacityInfo") || "Capacité restante : {remaining} membres sur {max}.")
+                        : t("members.planCapacityInfo")
                             .replace("{remaining}", String(remainingCapacity))
                             .replace("{max}", String(limits.maxMembers))
                     }
