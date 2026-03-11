@@ -156,10 +156,26 @@ export function usePlanLimits() {
     enabled: !!tenantId && !tenantLoading,
   });
 
-  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (free)
-  const isDbFreePlan = !subscribed && dbSubscription?.plan === "free" && dbSubscription?.status === "active";
-  const effectiveSubscribed = subscribed || isDbFreePlan;
-  const effectivePlan = subscribed ? (plan as PlanKey | null) : (isDbFreePlan ? "free" : null);
+  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (free/trialing)
+  const isDbActivePlan = !subscribed && dbSubscription?.plan && 
+    (dbSubscription?.status === "active" || dbSubscription?.status === "trialing");
+  const effectiveSubscribed = subscribed || !!isDbActivePlan;
+  
+  // Map DB plan names to frontend plan names
+  const DB_TO_FRONTEND_PLAN: Record<string, PlanKey> = {
+    basic: "essentiel",
+    standard: "professionnel",
+    premium: "entreprise",
+    free: "free",
+    essentiel: "essentiel",
+    professionnel: "professionnel",
+    entreprise: "entreprise",
+  };
+  
+  const resolvedDbPlan = isDbActivePlan && dbSubscription?.plan 
+    ? (DB_TO_FRONTEND_PLAN[dbSubscription.plan] || dbSubscription.plan as PlanKey) 
+    : null;
+  const effectivePlan = subscribed ? (plan as PlanKey | null) : resolvedDbPlan;
 
   // Get current plan limits - use "none" plan if not subscribed
   const limits: PlanLimits = effectiveSubscribed && effectivePlan && PLAN_LIMITS[effectivePlan] 
