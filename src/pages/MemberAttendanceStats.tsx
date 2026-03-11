@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDateInputValue, toSafeDate } from "@/lib/date";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
 
 import {
   Card,
@@ -37,6 +38,87 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const localT: Record<Language, Record<string, string>> = {
+  fr: {
+    loading: "Chargement...",
+    back: "Retour",
+    noMemberSelected: "Aucun membre sélectionné",
+    noMemberSelectedDesc: "Veuillez sélectionner un membre pour voir ses statistiques",
+    selectMember: "Sélectionner un membre",
+    attendanceStats: "Statistiques de Présence",
+    attendanceRate: "Taux de Présence",
+    presencesOver: "présences sur",
+    months: "mois",
+    trend: "Tendance",
+    vsPreviousMonth: "vs mois précédent",
+    eventsAttended: "Événements Assistés",
+    monthlyEvolution: "Évolution Mensuelle",
+    monthlyEvolutionDesc: "Présence aux événements par mois",
+    presences: "Présences",
+    noData: "Aucune donnée disponible",
+    byEventType: "Par Type d'Événement",
+    distribution: "Répartition des présences",
+    comparisonByType: "Comparaison par Type",
+    attendanceCount: "Nombre de présences",
+    threeMonths: "3 mois",
+    sixMonths: "6 mois",
+    twelveMonths: "12 mois",
+    monthLocale: "fr-FR",
+  },
+  en: {
+    loading: "Loading...",
+    back: "Back",
+    noMemberSelected: "No member selected",
+    noMemberSelectedDesc: "Please select a member to view their statistics",
+    selectMember: "Select a member",
+    attendanceStats: "Attendance Statistics",
+    attendanceRate: "Attendance Rate",
+    presencesOver: "attendances over",
+    months: "months",
+    trend: "Trend",
+    vsPreviousMonth: "vs previous month",
+    eventsAttended: "Events Attended",
+    monthlyEvolution: "Monthly Evolution",
+    monthlyEvolutionDesc: "Event attendance per month",
+    presences: "Attendances",
+    noData: "No data available",
+    byEventType: "By Event Type",
+    distribution: "Attendance distribution",
+    comparisonByType: "Comparison by Type",
+    attendanceCount: "Number of attendances",
+    threeMonths: "3 months",
+    sixMonths: "6 months",
+    twelveMonths: "12 months",
+    monthLocale: "en-US",
+  },
+  ht: {
+    loading: "Ap chaje...",
+    back: "Retounen",
+    noMemberSelected: "Pa gen manm chwazi",
+    noMemberSelectedDesc: "Tanpri chwazi yon manm pou wè estatistik li yo",
+    selectMember: "Chwazi yon manm",
+    attendanceStats: "Estatistik Prezans",
+    attendanceRate: "To Prezans",
+    presencesOver: "prezans sou",
+    months: "mwa",
+    trend: "Tandans",
+    vsPreviousMonth: "vs mwa anvan",
+    eventsAttended: "Evènman Asiste",
+    monthlyEvolution: "Evolisyon Mansyèl",
+    monthlyEvolutionDesc: "Prezans nan evènman pa mwa",
+    presences: "Prezans",
+    noData: "Pa gen done disponib",
+    byEventType: "Pa Tip Evènman",
+    distribution: "Distribisyon prezans",
+    comparisonByType: "Konparezon pa Tip",
+    attendanceCount: "Kantite prezans",
+    threeMonths: "3 mwa",
+    sixMonths: "6 mwa",
+    twelveMonths: "12 mwa",
+    monthLocale: "fr-FR",
+  },
+};
+
 interface Member {
   id: string;
   first_name: string;
@@ -64,6 +146,8 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--succe
 export default function MemberAttendanceStats() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const lt = localT[language];
   const memberId = searchParams.get("memberId");
 
   const [member, setMember] = useState<Member | null>(null);
@@ -72,7 +156,7 @@ export default function MemberAttendanceStats() {
   const [monthlyData, setMonthlyData] = useState<MonthlyStats[]>([]);
   const [eventTypeData, setEventTypeData] = useState<EventTypeStats[]>([]);
   const [loading, setLoading] = useState(false);
-  const [period, setPeriod] = useState("6"); // 6 months by default
+  const [period, setPeriod] = useState("6");
 
   useEffect(() => {
     loadAllMembers();
@@ -82,7 +166,6 @@ export default function MemberAttendanceStats() {
     if (memberId) {
       loadMemberData(memberId);
     } else {
-      // No member selected — reset state
       setMember(null);
       setAttendanceRecords([]);
       setMonthlyData([]);
@@ -101,7 +184,7 @@ export default function MemberAttendanceStats() {
       if (error) throw error;
       setAllMembers(data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des membres:", error);
+      console.error("Error loading members:", error);
     }
   };
 
@@ -109,7 +192,6 @@ export default function MemberAttendanceStats() {
     try {
       setLoading(true);
 
-      // Load member info
       const { data: memberData, error: memberError } = await supabase
         .from("members")
         .select("id, first_name, last_name")
@@ -119,12 +201,10 @@ export default function MemberAttendanceStats() {
       if (memberError) throw memberError;
       setMember(memberData);
 
-      // Calculate date range based on period
       const endDate = new Date();
       const startDate = new Date();
       startDate.setMonth(startDate.getMonth() - parseInt(period));
 
-      // Load attendance records
       const { data: attendanceData, error: attendanceError } = await supabase
         .from("attendance_records")
         .select("event_date, event_type")
@@ -133,15 +213,13 @@ export default function MemberAttendanceStats() {
         .lte("event_date", formatDateInputValue(endDate))
         .order("event_date");
 
-
       if (attendanceError) throw attendanceError;
       setAttendanceRecords(attendanceData || []);
 
-      // Process monthly statistics
       processMonthlyStats(attendanceData || [], startDate, endDate);
       processEventTypeStats(attendanceData || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des données:", error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -152,7 +230,7 @@ export default function MemberAttendanceStats() {
     const current = new Date(start);
 
     while (current <= end) {
-      const monthStr = current.toLocaleDateString("fr-FR", {
+      const monthStr = current.toLocaleDateString(lt.monthLocale, {
         month: "short",
         year: "numeric",
       });
@@ -165,11 +243,10 @@ export default function MemberAttendanceStats() {
         );
       });
 
-
       months.push({
         month: monthStr,
         present: monthRecords.length,
-        total: monthRecords.length, // Simplified - could add expected events
+        total: monthRecords.length,
       });
 
       current.setMonth(current.getMonth() + 1);
@@ -195,7 +272,6 @@ export default function MemberAttendanceStats() {
 
   const calculateAttendanceRate = () => {
     if (!attendanceRecords.length) return 0;
-    // Simplified calculation - you can enhance this based on total expected events
     return Math.round((attendanceRecords.length / (parseInt(period) * 4)) * 100);
   };
 
@@ -214,7 +290,7 @@ export default function MemberAttendanceStats() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{lt.loading}</p>
         </div>
       </Layout>
     );
@@ -226,19 +302,17 @@ export default function MemberAttendanceStats() {
         <div className="space-y-6">
           <Button variant="ghost" onClick={() => navigate("/attendance")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            {lt.back}
           </Button>
           <Card>
             <CardHeader>
-              <CardTitle>Aucun membre sélectionné</CardTitle>
-              <CardDescription>
-                Veuillez sélectionner un membre pour voir ses statistiques
-              </CardDescription>
+              <CardTitle>{lt.noMemberSelected}</CardTitle>
+              <CardDescription>{lt.noMemberSelectedDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <Select onValueChange={handleMemberChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un membre" />
+                  <SelectValue placeholder={lt.selectMember} />
                 </SelectTrigger>
                 <SelectContent>
                   {allMembers.map((m) => (
@@ -266,11 +340,11 @@ export default function MemberAttendanceStats() {
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/attendance")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
+              {lt.back}
             </Button>
             <div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Statistiques de Présence
+                {lt.attendanceStats}
               </h2>
               <p className="text-muted-foreground">
                 {member.first_name} {member.last_name}
@@ -295,9 +369,9 @@ export default function MemberAttendanceStats() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3">3 mois</SelectItem>
-                <SelectItem value="6">6 mois</SelectItem>
-                <SelectItem value="12">12 mois</SelectItem>
+                <SelectItem value="3">{lt.threeMonths}</SelectItem>
+                <SelectItem value="6">{lt.sixMonths}</SelectItem>
+                <SelectItem value="12">{lt.twelveMonths}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -308,21 +382,21 @@ export default function MemberAttendanceStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Taux de Présence
+                {lt.attendanceRate}
               </CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{attendanceRate}%</div>
               <p className="text-xs text-muted-foreground">
-                {attendanceRecords.length} présences sur {period} mois
+                {attendanceRecords.length} {lt.presencesOver} {period} {lt.months}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tendance</CardTitle>
+              <CardTitle className="text-sm font-medium">{lt.trend}</CardTitle>
               {trend >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-success" />
               ) : (
@@ -335,7 +409,7 @@ export default function MemberAttendanceStats() {
                 {trend}
               </div>
               <p className="text-xs text-muted-foreground">
-                vs mois précédent
+                {lt.vsPreviousMonth}
               </p>
             </CardContent>
           </Card>
@@ -343,7 +417,7 @@ export default function MemberAttendanceStats() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Événements Assistés
+                {lt.eventsAttended}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -362,10 +436,8 @@ export default function MemberAttendanceStats() {
         {/* Monthly Trend Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Évolution Mensuelle</CardTitle>
-            <CardDescription>
-              Présence aux événements par mois
-            </CardDescription>
+            <CardTitle>{lt.monthlyEvolution}</CardTitle>
+            <CardDescription>{lt.monthlyEvolutionDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             {monthlyData.length > 0 ? (
@@ -395,7 +467,7 @@ export default function MemberAttendanceStats() {
                   <Line
                     type="monotone"
                     dataKey="present"
-                    name="Présences"
+                    name={lt.presences}
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--primary))", r: 4 }}
@@ -404,7 +476,7 @@ export default function MemberAttendanceStats() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-[300px]">
-                <p className="text-muted-foreground">Aucune donnée disponible</p>
+                <p className="text-muted-foreground">{lt.noData}</p>
               </div>
             )}
           </CardContent>
@@ -414,8 +486,8 @@ export default function MemberAttendanceStats() {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Par Type d'Événement</CardTitle>
-              <CardDescription>Répartition des présences</CardDescription>
+              <CardTitle>{lt.byEventType}</CardTitle>
+              <CardDescription>{lt.distribution}</CardDescription>
             </CardHeader>
             <CardContent>
               {eventTypeData.length > 0 ? (
@@ -446,7 +518,7 @@ export default function MemberAttendanceStats() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <p className="text-muted-foreground">{lt.noData}</p>
                 </div>
               )}
             </CardContent>
@@ -454,8 +526,8 @@ export default function MemberAttendanceStats() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Comparaison par Type</CardTitle>
-              <CardDescription>Nombre de présences</CardDescription>
+              <CardTitle>{lt.comparisonByType}</CardTitle>
+              <CardDescription>{lt.attendanceCount}</CardDescription>
             </CardHeader>
             <CardContent>
               {eventTypeData.length > 0 ? (
@@ -479,12 +551,12 @@ export default function MemberAttendanceStats() {
                         color: "hsl(var(--foreground))"
                       }}
                     />
-                    <Bar dataKey="count" name="Présences" fill="hsl(var(--secondary))" />
+                    <Bar dataKey="count" name={lt.presences} fill="hsl(var(--secondary))" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px]">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <p className="text-muted-foreground">{lt.noData}</p>
                 </div>
               )}
             </CardContent>
