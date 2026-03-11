@@ -163,6 +163,26 @@ export default function Members() {
     setDialogOpen(true);
   };
 
+  const handleStatusChange = async (memberId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("members")
+        .update({ status: newStatus })
+        .eq("id", memberId);
+      if (error) throw error;
+      toast({ title: t("common.success"), description: t("common.statusChanged") });
+      refetch();
+    } catch {
+      toast({ title: t("common.error"), description: t("common.error"), variant: "destructive" });
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return;
+    await handleStatusChange(confirmAction.member.id, confirmAction.type);
+    setConfirmAction(null);
+  };
+
   const { data: members = [], refetch } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -176,11 +196,17 @@ export default function Members() {
     },
   });
 
-  const filteredMembers = members.filter(
-    (member: any) =>
+  const filteredMembers = members.filter((member: any) => {
+    if (!showArchived && (member.status === "archived" || member.status === "deceased")) {
+      return false;
+    }
+    return (
       `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    );
+  });
+
+  const activeCount = members.filter((m: any) => m.status !== "archived" && m.status !== "deceased").length;
 
   const getStatusLabel = (status: string) => {
     switch (status) {
