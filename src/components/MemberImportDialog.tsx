@@ -258,7 +258,6 @@ export default function MemberImportDialog({
 
     setStep("mapping");
   };
-  };
 
   const parseCSV = (text: string): string[][] => {
     // Normalize all line endings to \n
