@@ -171,6 +171,7 @@ export default function MemberImportDialog({
   const { tenantId } = useCurrentTenant();
   const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [inputKey, setInputKey] = useState(0);
   
   const [step, setStep] = useState<"upload" | "mapping" | "preview" | "importing">("upload");
   const [rawData, setRawData] = useState<string[][]>([]);
@@ -190,9 +191,7 @@ export default function MemberImportDialog({
     setImporting(false);
     setImportProgress(0);
     setFileName("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    setInputKey(prev => prev + 1);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
