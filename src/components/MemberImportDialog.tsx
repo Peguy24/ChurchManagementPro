@@ -485,7 +485,8 @@ export default function MemberImportDialog({
           .single();
 
         if (error) {
-          console.error(`Error importing row ${row.rowNumber}:`, error);
+          console.error(`Error importing row ${row.rowNumber}:`, error, 'Data:', JSON.stringify(memberData));
+          failedRows.push({ row: row.rowNumber, error: error.message });
         } else if (data) {
           // Update with QR code
           const qrCodeData = `MEMBER-${data.id}`;
@@ -499,9 +500,14 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
+      const failedCount = failedRows.length;
+      if (failedCount > 0) {
+        console.warn(`[IMPORT] ${failedCount} rows failed:`, failedRows);
+      }
+
       toast({
         title: t("common.confirm"),
-        description: `${imported} ${t("members.importSuccess")}`,
+        description: `${imported} ${t("members.importSuccess")}${failedCount > 0 ? ` (${failedCount} failed)` : ''}`,
       });
 
       onSuccess?.();
