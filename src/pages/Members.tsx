@@ -213,6 +213,8 @@ export default function Members() {
       case "active": return t("common.active");
       case "inactive": return t("common.inactive");
       case "transferred": return t("common.transferred");
+      case "deceased": return t("common.deceased");
+      case "archived": return t("common.archived");
       default: return status;
     }
   };
