@@ -166,8 +166,10 @@ export default function MemberImportDialog({
   onOpenChange,
   onSuccess,
 }: MemberImportDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
+  const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [step, setStep] = useState<"upload" | "mapping" | "preview" | "importing">("upload");
