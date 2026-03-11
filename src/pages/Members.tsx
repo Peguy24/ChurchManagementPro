@@ -18,8 +18,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Download, Upload, Edit, BarChart, Eye } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
@@ -38,6 +60,8 @@ const statusColors: Record<string, string> = {
   active: "bg-success/10 text-success border-success/20",
   inactive: "bg-muted text-muted-foreground border-border",
   transferred: "bg-info/10 text-info border-info/20",
+  deceased: "bg-destructive/10 text-destructive border-destructive/20",
+  archived: "bg-muted text-muted-foreground border-border",
 };
 
 export default function Members() {
