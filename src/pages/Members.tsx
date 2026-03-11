@@ -395,27 +395,30 @@ export default function Members() {
                   </div>
                   
                   <div className="flex gap-2 pt-2 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => navigate(`/members/details?memberId=${member.id}`)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      {t("members.viewDetails")}
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/members/details?memberId=${member.id}`)}>
+                      <Eye className="h-4 w-4 mr-1" /> {t("members.viewDetails")}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      {t("common.edit")}
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { setSelectedMember(member); setDialogOpen(true); }}>
+                      <Edit className="h-4 w-4 mr-1" /> {t("common.edit")}
                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>{t("common.changeStatus")}</DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "active")}>{t("common.active")}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "inactive")}>{t("common.inactive")}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "transferred")}>{t("common.transferred")}</DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased", member })}>{t("common.markDeceased")}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive", member })} className="text-destructive">{t("common.archiveMember")}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               ))}
