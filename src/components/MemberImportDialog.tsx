@@ -852,10 +852,10 @@ export default function MemberImportDialog({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Ligne</TableHead>
+                        <TableHead className="w-16">{t("members.rowNumber")}</TableHead>
                         <TableHead>{t("members.firstName")}</TableHead>
                         <TableHead>{t("members.lastName")}</TableHead>
-                        <TableHead>Erreur</TableHead>
+                        <TableHead>{t("members.errorMessage")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
