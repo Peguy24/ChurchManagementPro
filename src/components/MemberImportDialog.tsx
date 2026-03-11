@@ -31,7 +31,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -52,72 +53,112 @@ interface ColumnMapping {
   [sourceColumn: string]: string;
 }
 
-const TARGET_FIELDS = [
-  { key: "ignore", label: "Ignorer" },
-  { key: "first_name", label: "Prénom", required: true },
-  { key: "last_name", label: "Nom", required: true },
-  { key: "email", label: "Email" },
-  { key: "phone", label: "Téléphone" },
-  { key: "gender", label: "Sexe" },
-  { key: "date_of_birth", label: "Date de naissance" },
-  { key: "address", label: "Adresse" },
-  { key: "status", label: "Statut" },
-  { key: "join_date", label: "Date d'entrée" },
-  { key: "baptism_status", label: "Statut baptême" },
-  { key: "baptism_date", label: "Date de baptême" },
-  { key: "marital_status", label: "État civil" },
-  { key: "spouse_name", label: "Nom du conjoint" },
-  { key: "number_of_children", label: "Nombre d'enfants" },
-  { key: "origin_church", label: "Église d'origine" },
-  { key: "role", label: "Rôle" },
-  { key: "emergency_phone", label: "Contact d'urgence" },
-];
+const TARGET_FIELDS_I18N: Record<Language, { key: string; label: string; required?: boolean }[]> = {
+  fr: [
+    { key: "ignore", label: "Ignorer" },
+    { key: "first_name", label: "Prénom", required: true },
+    { key: "last_name", label: "Nom", required: true },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Téléphone" },
+    { key: "gender", label: "Sexe" },
+    { key: "date_of_birth", label: "Date de naissance" },
+    { key: "address", label: "Adresse" },
+    { key: "status", label: "Statut" },
+    { key: "join_date", label: "Date d'entrée" },
+    { key: "baptism_status", label: "Statut baptême" },
+    { key: "baptism_date", label: "Date de baptême" },
+    { key: "conversion_date", label: "Date de conversion" },
+    { key: "marital_status", label: "État civil" },
+    { key: "marriage_date", label: "Date de mariage" },
+    { key: "spouse_name", label: "Nom du conjoint" },
+    { key: "number_of_children", label: "Nombre d'enfants" },
+    { key: "children_names", label: "Noms des enfants" },
+    { key: "origin_church", label: "Église d'origine" },
+    { key: "christian_experience", label: "Expérience chrétienne" },
+    { key: "academic_formation", label: "Formation académique" },
+    { key: "professional_formation", label: "Formation professionnelle" },
+    { key: "role", label: "Rôle" },
+    { key: "emergency_phone", label: "Contact d'urgence" },
+  ],
+  en: [
+    { key: "ignore", label: "Ignore" },
+    { key: "first_name", label: "First Name", required: true },
+    { key: "last_name", label: "Last Name", required: true },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "gender", label: "Gender" },
+    { key: "date_of_birth", label: "Date of Birth" },
+    { key: "address", label: "Address" },
+    { key: "status", label: "Status" },
+    { key: "join_date", label: "Join Date" },
+    { key: "baptism_status", label: "Baptism Status" },
+    { key: "baptism_date", label: "Baptism Date" },
+    { key: "conversion_date", label: "Conversion Date" },
+    { key: "marital_status", label: "Marital Status" },
+    { key: "marriage_date", label: "Marriage Date" },
+    { key: "spouse_name", label: "Spouse Name" },
+    { key: "number_of_children", label: "Number of Children" },
+    { key: "children_names", label: "Children Names" },
+    { key: "origin_church", label: "Origin Church" },
+    { key: "christian_experience", label: "Christian Experience" },
+    { key: "academic_formation", label: "Academic Education" },
+    { key: "professional_formation", label: "Professional Training" },
+    { key: "role", label: "Role" },
+    { key: "emergency_phone", label: "Emergency Contact" },
+  ],
+  ht: [
+    { key: "ignore", label: "Inyore" },
+    { key: "first_name", label: "Prenon", required: true },
+    { key: "last_name", label: "Non", required: true },
+    { key: "email", label: "Imèl" },
+    { key: "phone", label: "Telefòn" },
+    { key: "gender", label: "Sèks" },
+    { key: "date_of_birth", label: "Dat nesans" },
+    { key: "address", label: "Adrès" },
+    { key: "status", label: "Estati" },
+    { key: "join_date", label: "Dat antre" },
+    { key: "baptism_status", label: "Estati batèm" },
+    { key: "baptism_date", label: "Dat batèm" },
+    { key: "conversion_date", label: "Dat konvèsyon" },
+    { key: "marital_status", label: "Eta sivil" },
+    { key: "marriage_date", label: "Dat maryaj" },
+    { key: "spouse_name", label: "Non konjwen" },
+    { key: "number_of_children", label: "Kantite timoun" },
+    { key: "children_names", label: "Non timoun yo" },
+    { key: "origin_church", label: "Legliz orijin" },
+    { key: "christian_experience", label: "Eksperyans kretyen" },
+    { key: "academic_formation", label: "Fòmasyon akademik" },
+    { key: "professional_formation", label: "Fòmasyon pwofesyonèl" },
+    { key: "role", label: "Wòl" },
+    { key: "emergency_phone", label: "Kontak ijans" },
+  ],
+};
 
-// Auto-mapping based on common column names
+// Auto-mapping based on common column names (all languages)
 const AUTO_MAPPING: Record<string, string> = {
-  "prénom": "first_name",
-  "prenom": "first_name",
-  "first name": "first_name",
-  "firstname": "first_name",
-  "nom": "last_name",
-  "last name": "last_name",
-  "lastname": "last_name",
-  "email": "email",
-  "e-mail": "email",
-  "téléphone": "phone",
-  "telephone": "phone",
-  "phone": "phone",
-  "tel": "phone",
-  "sexe": "gender",
-  "gender": "gender",
-  "date de naissance": "date_of_birth",
-  "birth date": "date_of_birth",
-  "date of birth": "date_of_birth",
-  "birthdate": "date_of_birth",
-  "adresse": "address",
-  "address": "address",
-  "statut": "status",
-  "status": "status",
-  "date d'entrée": "join_date",
-  "join date": "join_date",
-  "date entrée": "join_date",
-  "baptisé": "baptism_status",
-  "baptism": "baptism_status",
-  "baptized": "baptism_status",
-  "date baptême": "baptism_date",
-  "baptism date": "baptism_date",
-  "état civil": "marital_status",
-  "marital status": "marital_status",
-  "conjoint": "spouse_name",
-  "spouse": "spouse_name",
-  "enfants": "number_of_children",
-  "children": "number_of_children",
-  "église d'origine": "origin_church",
-  "origin church": "origin_church",
-  "rôle": "role",
-  "role": "role",
-  "urgence": "emergency_phone",
-  "emergency": "emergency_phone",
+  "prénom": "first_name", "prenom": "first_name", "first name": "first_name", "firstname": "first_name", "prenon": "first_name",
+  "nom": "last_name", "last name": "last_name", "lastname": "last_name", "non": "last_name",
+  "email": "email", "e-mail": "email", "imèl": "email",
+  "téléphone": "phone", "telephone": "phone", "phone": "phone", "tel": "phone", "telefòn": "phone",
+  "sexe": "gender", "gender": "gender", "sèks": "gender",
+  "date de naissance": "date_of_birth", "birth date": "date_of_birth", "date of birth": "date_of_birth", "birthdate": "date_of_birth", "dat nesans": "date_of_birth",
+  "adresse": "address", "address": "address", "adrès": "address",
+  "statut": "status", "status": "status", "estati": "status",
+  "date d'entrée": "join_date", "join date": "join_date", "date entrée": "join_date", "dat antre": "join_date",
+  "baptisé": "baptism_status", "baptism": "baptism_status", "baptized": "baptism_status", "baptism status": "baptism_status", "estati batèm": "baptism_status",
+  "date baptême": "baptism_date", "baptism date": "baptism_date", "dat batèm": "baptism_date",
+  "date de conversion": "conversion_date", "conversion date": "conversion_date", "dat konvèsyon": "conversion_date",
+  "état civil": "marital_status", "marital status": "marital_status", "eta sivil": "marital_status",
+  "date de mariage": "marriage_date", "marriage date": "marriage_date", "dat maryaj": "marriage_date",
+  "conjoint": "spouse_name", "spouse": "spouse_name", "spouse name": "spouse_name", "non konjwen": "spouse_name",
+  "enfants": "number_of_children", "children": "number_of_children", "number of children": "number_of_children", "nombre d'enfants": "number_of_children", "kantite timoun": "number_of_children",
+  "noms des enfants": "children_names", "children names": "children_names", "non timoun yo": "children_names",
+  "église d'origine": "origin_church", "origin church": "origin_church", "legliz orijin": "origin_church",
+  "expérience chrétienne": "christian_experience", "christian experience": "christian_experience", "eksperyans kretyen": "christian_experience",
+  "formation académique": "academic_formation", "academic education": "academic_formation", "fòmasyon akademik": "academic_formation",
+  "formation professionnelle": "professional_formation", "professional training": "professional_formation", "fòmasyon pwofesyonèl": "professional_formation",
+  "rôle": "role", "role": "role", "wòl": "role",
+  "urgence": "emergency_phone", "emergency": "emergency_phone", "emergency contact": "emergency_phone", "contact d'urgence": "emergency_phone", "kontak ijans": "emergency_phone",
 };
 
 export default function MemberImportDialog({
@@ -125,8 +166,10 @@ export default function MemberImportDialog({
   onOpenChange,
   onSuccess,
 }: MemberImportDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
+  const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [step, setStep] = useState<"upload" | "mapping" | "preview" | "importing">("upload");
@@ -309,7 +352,7 @@ export default function MemberImportDialog({
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
-        const memberData = {
+        const memberData: Record<string, any> = {
           first_name: row.data.first_name,
           last_name: row.data.last_name,
           email: row.data.email || null,
@@ -321,17 +364,24 @@ export default function MemberImportDialog({
           join_date: row.data.join_date || null,
           baptism_status: row.data.baptism_status || null,
           baptism_date: row.data.baptism_date || null,
+          conversion_date: row.data.conversion_date || null,
           marital_status: row.data.marital_status || null,
+          marriage_date: row.data.marriage_date || null,
           spouse_name: row.data.spouse_name || null,
           number_of_children: row.data.number_of_children ? parseInt(row.data.number_of_children) : null,
+          children_names: row.data.children_names || null,
           origin_church: row.data.origin_church || null,
+          christian_experience: row.data.christian_experience || null,
+          academic_formation: row.data.academic_formation || null,
+          professional_formation: row.data.professional_formation || null,
           role: row.data.role || null,
           emergency_phone: row.data.emergency_phone || null,
         };
+        if (tenantId) memberData.tenant_id = tenantId;
 
         const { data, error } = await supabase
           .from("members")
-          .insert([memberData])
+          .insert([memberData as any])
           .select()
           .single();
 
@@ -370,15 +420,25 @@ export default function MemberImportDialog({
   };
 
   const downloadTemplate = () => {
-    const templateData = [
-      ["Prénom", "Nom", "Email", "Téléphone", "Sexe", "Date de naissance", "Adresse", "Statut", "Date d'entrée", "Baptisé", "État civil"],
-      ["Jean", "Dupont", "jean@exemple.com", "+509 1234-5678", "M", "1990-01-15", "123 Rue Example", "Actif", "2020-01-01", "Oui", "Marié"],
-    ];
-
+    const headersMap: Record<Language, string[]> = {
+      fr: ["Prénom", "Nom", "Email", "Téléphone", "Sexe", "Date de naissance", "Adresse", "Statut", "Date d'entrée", "Statut baptême", "Date de baptême", "Date de conversion", "État civil", "Date de mariage", "Nom du conjoint", "Nombre d'enfants", "Noms des enfants", "Église d'origine", "Expérience chrétienne", "Formation académique", "Formation professionnelle", "Rôle", "Contact d'urgence"],
+      en: ["First Name", "Last Name", "Email", "Phone", "Gender", "Date of Birth", "Address", "Status", "Join Date", "Baptism Status", "Baptism Date", "Conversion Date", "Marital Status", "Marriage Date", "Spouse Name", "Number of Children", "Children Names", "Origin Church", "Christian Experience", "Academic Education", "Professional Training", "Role", "Emergency Contact"],
+      ht: ["Prenon", "Non", "Imèl", "Telefòn", "Sèks", "Dat nesans", "Adrès", "Estati", "Dat antre", "Estati batèm", "Dat batèm", "Dat konvèsyon", "Eta sivil", "Dat maryaj", "Non konjwen", "Kantite timoun", "Non timoun yo", "Legliz orijin", "Eksperyans kretyen", "Fòmasyon akademik", "Fòmasyon pwofesyonèl", "Wòl", "Kontak ijans"],
+    };
+    const samplesMap: Record<Language, string[]> = {
+      fr: ["Jean", "Dupont", "jean@exemple.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Actif", "2020-01-01", "Oui", "2015-06-20", "2010-03-10", "Marié", "2018-07-14", "Marie Dupont", "2", "Pierre, Sophie", "First Baptist Church", "5 ans", "Licence en Théologie", "Enseignant", "Membre", "+1 (555) 987-6543"],
+      en: ["John", "Smith", "john@example.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Active", "2020-01-01", "Yes", "2015-06-20", "2010-03-10", "Married", "2018-07-14", "Jane Smith", "2", "Peter, Sophie", "First Baptist Church", "5 years", "Bachelor in Theology", "Teacher", "Member", "+1 (555) 987-6543"],
+      ht: ["Jean", "Dupont", "jean@egzanp.com", "+1 (555) 123-4567", "M", "1990-01-15", "123 Main Street, New York, NY 10001", "Aktif", "2020-01-01", "Wi", "2015-06-20", "2010-03-10", "Marye", "2018-07-14", "Marie Dupont", "2", "Pierre, Sophie", "Premye Legliz Batis", "5 ane", "Lisans nan Teyoloji", "Pwofesè", "Manm", "+1 (555) 987-6543"],
+    };
+    const templateData = [headersMap[language], samplesMap[language]];
     const ws = XLSX.utils.aoa_to_sheet(templateData);
+    // Auto-size columns
+    const colWidths = templateData[0].map((h, i) => Math.max(h.length, (templateData[1][i] || "").length) + 2);
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "modele_import_membres.xlsx");
+    const fileNames: Record<Language, string> = { fr: "modele_import_membres.xlsx", en: "member_import_template.xlsx", ht: "modèl_enpòte_manm.xlsx" };
+    XLSX.writeFile(wb, fileNames[language]);
   };
 
   const validCount = parsedRows.filter(r => r.isValid).length;
