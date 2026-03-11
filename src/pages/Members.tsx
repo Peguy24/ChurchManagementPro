@@ -320,32 +320,40 @@ export default function Members() {
 
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/members/details?memberId=${member.id}`)}
-                            title={t("members.viewDetails")}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/members/details?memberId=${member.id}`)} title={t("members.viewDetails")}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/attendance/stats?memberId=${member.id}`)}
-                            title={t("attendance.statistics")}
-                          >
-                            <BarChart className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedMember(member);
-                              setDialogOpen(true);
-                            }}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedMember(member); setDialogOpen(true); }}>
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm"><MoreHorizontal className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>{t("common.changeStatus")}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "active")}>
+                                    <UserCheck className="mr-2 h-4 w-4" /> {t("common.active")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "inactive")}>
+                                    <UserX className="mr-2 h-4 w-4" /> {t("common.inactive")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "transferred")}>
+                                    <ArrowRightLeft className="mr-2 h-4 w-4" /> {t("common.transferred")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased", member })}>
+                                <Skull className="mr-2 h-4 w-4" /> {t("common.markDeceased")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive", member })} className="text-destructive">
+                                <Archive className="mr-2 h-4 w-4" /> {t("common.archiveMember")}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
