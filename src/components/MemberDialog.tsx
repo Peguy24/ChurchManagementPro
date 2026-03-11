@@ -996,7 +996,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    placeholder="+33 1 23 45 67 89"
+                    placeholder="+1 (555) 123-4567"
                     required
                   />
                 </div>
