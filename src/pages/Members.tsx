@@ -74,6 +74,8 @@ export default function Members() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{ type: "archive" | "deceased"; member: any } | null>(null);
   
   const dateLocale = language === "en" ? "en-US" : "fr-FR";
   
