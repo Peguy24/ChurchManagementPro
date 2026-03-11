@@ -18,8 +18,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Download, Upload, Edit, BarChart, Eye } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
@@ -38,6 +60,8 @@ const statusColors: Record<string, string> = {
   active: "bg-success/10 text-success border-success/20",
   inactive: "bg-muted text-muted-foreground border-border",
   transferred: "bg-info/10 text-info border-info/20",
+  deceased: "bg-destructive/10 text-destructive border-destructive/20",
+  archived: "bg-muted text-muted-foreground border-border",
 };
 
 export default function Members() {
@@ -50,6 +74,8 @@ export default function Members() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>();
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{ type: "archive" | "deceased"; member: any } | null>(null);
   
   const dateLocale = language === "en" ? "en-US" : "fr-FR";
   
@@ -137,6 +163,26 @@ export default function Members() {
     setDialogOpen(true);
   };
 
+  const handleStatusChange = async (memberId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("members")
+        .update({ status: newStatus })
+        .eq("id", memberId);
+      if (error) throw error;
+      toast({ title: t("common.success"), description: t("common.statusChanged") });
+      refetch();
+    } catch {
+      toast({ title: t("common.error"), description: t("common.error"), variant: "destructive" });
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return;
+    await handleStatusChange(confirmAction.member.id, confirmAction.type);
+    setConfirmAction(null);
+  };
+
   const { data: members = [], refetch } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -150,17 +196,25 @@ export default function Members() {
     },
   });
 
-  const filteredMembers = members.filter(
-    (member: any) =>
+  const filteredMembers = members.filter((member: any) => {
+    if (!showArchived && (member.status === "archived" || member.status === "deceased")) {
+      return false;
+    }
+    return (
       `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    );
+  });
+
+  const activeCount = members.filter((m: any) => m.status !== "archived" && m.status !== "deceased").length;
 
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "active": return t("common.active");
       case "inactive": return t("common.inactive");
       case "transferred": return t("common.transferred");
+      case "deceased": return t("common.deceased");
+      case "archived": return t("common.archived");
       default: return status;
     }
   };
@@ -201,8 +255,12 @@ export default function Members() {
           <CardHeader>
             <CardTitle>{t("members.title")}</CardTitle>
             <CardDescription>
-              {t("common.total")}: {members.length} {t("nav.members").toLowerCase()}
+              {t("common.total")}: {activeCount} {t("nav.members").toLowerCase()}
             </CardDescription>
+            <div className="flex items-center gap-2 pt-2">
+              <Switch id="show-archived" checked={showArchived} onCheckedChange={setShowArchived} />
+              <Label htmlFor="show-archived" className="text-sm cursor-pointer">{t("common.showArchived")}</Label>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
@@ -262,32 +320,40 @@ export default function Members() {
 
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/members/details?memberId=${member.id}`)}
-                            title={t("members.viewDetails")}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/members/details?memberId=${member.id}`)} title={t("members.viewDetails")}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/attendance/stats?memberId=${member.id}`)}
-                            title={t("attendance.statistics")}
-                          >
-                            <BarChart className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedMember(member);
-                              setDialogOpen(true);
-                            }}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedMember(member); setDialogOpen(true); }}>
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm"><MoreHorizontal className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>{t("common.changeStatus")}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "active")}>
+                                    <UserCheck className="mr-2 h-4 w-4" /> {t("common.active")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "inactive")}>
+                                    <UserX className="mr-2 h-4 w-4" /> {t("common.inactive")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(member.id, "transferred")}>
+                                    <ArrowRightLeft className="mr-2 h-4 w-4" /> {t("common.transferred")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased", member })}>
+                                <Skull className="mr-2 h-4 w-4" /> {t("common.markDeceased")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive", member })} className="text-destructive">
+                                <Archive className="mr-2 h-4 w-4" /> {t("common.archiveMember")}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -329,27 +395,30 @@ export default function Members() {
                   </div>
                   
                   <div className="flex gap-2 pt-2 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => navigate(`/members/details?memberId=${member.id}`)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      {t("members.viewDetails")}
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/members/details?memberId=${member.id}`)}>
+                      <Eye className="h-4 w-4 mr-1" /> {t("members.viewDetails")}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      {t("common.edit")}
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { setSelectedMember(member); setDialogOpen(true); }}>
+                      <Edit className="h-4 w-4 mr-1" /> {t("common.edit")}
                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>{t("common.changeStatus")}</DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "active")}>{t("common.active")}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "inactive")}>{t("common.inactive")}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(member.id, "transferred")}>{t("common.transferred")}</DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased", member })}>{t("common.markDeceased")}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive", member })} className="text-destructive">{t("common.archiveMember")}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               ))}
@@ -376,6 +445,22 @@ export default function Members() {
           onOpenChange={setImportDialogOpen}
           onSuccess={refetch}
         />
+        <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {confirmAction?.type === "archive" ? t("common.confirmArchiveTitle") : t("common.confirmDeceasedTitle")}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirmAction?.type === "archive" ? t("common.confirmArchive") : t("common.confirmDeceased")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmAction}>{t("common.confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </Layout>
   );
 }

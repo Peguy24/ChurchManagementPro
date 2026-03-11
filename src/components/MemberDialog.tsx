@@ -114,6 +114,8 @@ const localT: Record<Language, Record<string, string>> = {
     active: "Actif",
     inactive: "Inactif",
     transferred: "Transféré",
+    deceased: "Décédé",
+    archived: "Archivé",
     status: "Statut",
     none: "Aucun",
     yes: "Oui",
@@ -205,6 +207,8 @@ const localT: Record<Language, Record<string, string>> = {
     active: "Active",
     inactive: "Inactive",
     transferred: "Transferred",
+    deceased: "Deceased",
+    archived: "Archived",
     status: "Status",
     none: "None",
     yes: "Yes",
@@ -296,6 +300,8 @@ const localT: Record<Language, Record<string, string>> = {
     active: "Aktif",
     inactive: "Inaktif",
     transferred: "Transfère",
+    deceased: "Desede",
+    archived: "Achive",
     status: "Estati",
     none: "Okenn",
     yes: "Wi",
@@ -1141,6 +1147,8 @@ export default function MemberDialog({
                       <SelectItem value="active">{lt.active}</SelectItem>
                       <SelectItem value="inactive">{lt.inactive}</SelectItem>
                       <SelectItem value="transferred">{lt.transferred}</SelectItem>
+                      <SelectItem value="deceased">{lt.deceased}</SelectItem>
+                      <SelectItem value="archived">{lt.archived}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

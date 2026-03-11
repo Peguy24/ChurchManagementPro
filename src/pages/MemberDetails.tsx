@@ -25,7 +25,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode } from "lucide-react";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
@@ -87,6 +107,8 @@ const statusColors: Record<string, string> = {
   active: "bg-success/10 text-success border-success/20",
   inactive: "bg-muted text-muted-foreground border-border",
   transferred: "bg-info/10 text-info border-info/20",
+  deceased: "bg-destructive/10 text-destructive border-destructive/20",
+  archived: "bg-muted text-muted-foreground border-border",
 };
 
 export default function MemberDetails() {
@@ -105,6 +127,7 @@ export default function MemberDetails() {
   const [joinedDate, setJoinedDate] = useState(todayInputValue());
   const [addingMinistry, setAddingMinistry] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: "archive" | "deceased" } | null>(null);
 
   const locale = language === 'en' ? 'en-US' : language === 'ht' ? 'fr-FR' : 'fr-FR';
 
@@ -157,6 +180,24 @@ export default function MemberDetails() {
     } catch (error) {
       console.error("Error loading members:", error);
     }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!memberId) return;
+    try {
+      const { error } = await supabase.from("members").update({ status: newStatus }).eq("id", memberId);
+      if (error) throw error;
+      toast.success(t("common.statusChanged"));
+      loadMemberDetails(memberId);
+    } catch {
+      toast.error(t("common.error"));
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return;
+    await handleStatusChange(confirmAction.type);
+    setConfirmAction(null);
   };
 
   const loadMemberDetails = async (id: string) => {
@@ -360,6 +401,31 @@ export default function MemberDetails() {
             </div>
           </div>
           <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreHorizontal className="mr-2 h-4 w-4" /> {t("common.changeStatus")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleStatusChange("active")}>
+                  <UserCheck className="mr-2 h-4 w-4" /> {t("common.active")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange("inactive")}>
+                  <UserX className="mr-2 h-4 w-4" /> {t("common.inactive")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange("transferred")}>
+                  <ArrowRightLeft className="mr-2 h-4 w-4" /> {t("common.transferred")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased" })}>
+                  <Skull className="mr-2 h-4 w-4" /> {t("common.markDeceased")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive" })} className="text-destructive">
+                  <Archive className="mr-2 h-4 w-4" /> {t("common.archiveMember")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Select value={memberId || ""} onValueChange={handleMemberChange}>
               <SelectTrigger className="w-[250px]">
                 <SelectValue />
@@ -395,7 +461,7 @@ export default function MemberDetails() {
                     variant="outline"
                     className={statusColors[member.status || "active"]}
                   >
-                    {member.status || "active"}
+                    {t(`common.${member.status || "active"}`)}
                   </Badge>
                 </div>
                 <div className="flex gap-4 text-sm text-muted-foreground">
@@ -747,6 +813,22 @@ export default function MemberDetails() {
           </div>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.type === "archive" ? t("common.confirmArchiveTitle") : t("common.confirmDeceasedTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.type === "archive" ? t("common.confirmArchive") : t("common.confirmDeceased")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAction}>{t("common.confirm")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
