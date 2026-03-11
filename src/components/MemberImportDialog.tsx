@@ -790,7 +790,8 @@ export default function MemberImportDialog({
                 </Table>
               </ScrollArea>
             </div>
-          )}
+            );
+          })()}
 
           {step === "importing" && !importResult && (
             <div className="space-y-4 py-8">
