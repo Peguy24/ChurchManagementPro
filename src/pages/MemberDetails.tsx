@@ -182,6 +182,24 @@ export default function MemberDetails() {
     }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!memberId) return;
+    try {
+      const { error } = await supabase.from("members").update({ status: newStatus }).eq("id", memberId);
+      if (error) throw error;
+      toast.success(t("common.statusChanged"));
+      loadMemberDetails(memberId);
+    } catch {
+      toast.error(t("common.error"));
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return;
+    await handleStatusChange(confirmAction.type);
+    setConfirmAction(null);
+  };
+
   const loadMemberDetails = async (id: string) => {
     try {
       setLoading(true);
