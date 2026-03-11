@@ -14,7 +14,49 @@ import { Progress } from "@/components/ui/progress";
 import { ZoomIn, ZoomOut, RotateCcw, Sparkles } from "lucide-react";
 import { removeBackground, loadImage } from "@/lib/backgroundRemoval";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
+
+const localT: Record<Language, Record<string, string>> = {
+  fr: {
+    cropTitle: "Recadrer la Photo",
+    removeBackground: "Supprimer l'arrière-plan",
+    removing: "Suppression en cours...",
+    dragHint: "Glissez pour positionner • Utilisez le zoom pour ajuster",
+    cancel: "Annuler",
+    processing: "Traitement...",
+    apply: "Appliquer",
+    bgRemoved: "Arrière-plan supprimé",
+    bgRemovedDesc: "L'arrière-plan a été supprimé avec succès.",
+    bgError: "Erreur",
+    bgErrorDesc: "La suppression de l'arrière-plan a échoué. Veuillez réessayer.",
+  },
+  en: {
+    cropTitle: "Crop Photo",
+    removeBackground: "Remove background",
+    removing: "Removing...",
+    dragHint: "Drag to position • Use zoom to adjust",
+    cancel: "Cancel",
+    processing: "Processing...",
+    apply: "Apply",
+    bgRemoved: "Background removed",
+    bgRemovedDesc: "The background was removed successfully.",
+    bgError: "Error",
+    bgErrorDesc: "Background removal failed. Please try again.",
+  },
+  ht: {
+    cropTitle: "Koupe Foto",
+    removeBackground: "Retire fon an",
+    removing: "Ap retire...",
+    dragHint: "Glise pou pozisyone • Itilize zoom pou ajiste",
+    cancel: "Anile",
+    processing: "Ap trete...",
+    apply: "Aplike",
+    bgRemoved: "Fon retire",
+    bgRemovedDesc: "Fon an retire avèk siksè.",
+    bgError: "Erè",
+    bgErrorDesc: "Retire fon an pa mache. Tanpri eseye ankò.",
+  },
+};
 
 interface PhotoCropperProps {
   open: boolean;
@@ -30,7 +72,8 @@ export default function PhotoCropper({
   onCropComplete,
 }: PhotoCropperProps) {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = localT[language];
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [processedImage, setProcessedImage] = useState<HTMLImageElement | null>(null);
@@ -46,7 +89,6 @@ export default function PhotoCropper({
   const CANVAS_SIZE = 300;
   const OUTPUT_SIZE = 400;
 
-  // Load image when file changes
   useEffect(() => {
     if (!imageFile) return;
 
@@ -70,7 +112,6 @@ export default function PhotoCropper({
     };
   }, [imageFile]);
 
-  // Handle background removal toggle
   useEffect(() => {
     const processBackgroundRemoval = async () => {
       if (!removeBackgroundEnabled || !image || processedImage) return;
@@ -87,14 +128,14 @@ export default function PhotoCropper({
         setProcessedImage(newImg);
         
         toast({
-          title: t("members.cropBgRemoved"),
-          description: t("members.cropBgRemovedDesc"),
+          title: lt.bgRemoved,
+          description: lt.bgRemovedDesc,
         });
       } catch (error) {
         console.error("Background removal failed:", error);
         toast({
-          title: t("members.cropBgError"),
-          description: t("members.cropBgErrorDesc"),
+          title: lt.bgError,
+          description: lt.bgErrorDesc,
           variant: "destructive",
         });
         setRemoveBackgroundEnabled(false);
@@ -105,22 +146,18 @@ export default function PhotoCropper({
     };
 
     processBackgroundRemoval();
-  }, [removeBackgroundEnabled, image, processedImage, toast, t]);
+  }, [removeBackgroundEnabled, image, processedImage, toast, lt]);
 
-  // Get the current image to display
   const currentImage = removeBackgroundEnabled && processedImage ? processedImage : image;
 
-  // Draw image on canvas
   const drawImage = useCallback(() => {
     if (!canvasRef.current || !currentImage) return;
 
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    // Draw checkerboard pattern for transparency
     if (removeBackgroundEnabled && processedImage) {
       const tileSize = 10;
       for (let y = 0; y < CANVAS_SIZE; y += tileSize) {
@@ -134,18 +171,13 @@ export default function PhotoCropper({
       ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     }
 
-    // Calculate scaled dimensions
     const scaledWidth = currentImage.naturalWidth * scale;
     const scaledHeight = currentImage.naturalHeight * scale;
-
-    // Calculate position to center the image
     const x = (CANVAS_SIZE - scaledWidth) / 2 + position.x;
     const y = (CANVAS_SIZE - scaledHeight) / 2 + position.y;
 
-    // Draw image
     ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
 
-    // Draw circular overlay guide
     ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -227,7 +259,6 @@ export default function PhotoCropper({
 
       if (!ctx) throw new Error("Could not get canvas context");
 
-      // Fill with white or transparent background
       if (removeBackgroundEnabled && processedImage) {
         ctx.clearRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
       } else {
@@ -286,16 +317,15 @@ export default function PhotoCropper({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>{t("members.cropTitle")}</DialogTitle>
+          <DialogTitle>{lt.cropTitle}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Background Removal Toggle */}
           <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <Label htmlFor="remove-bg" className="text-sm font-medium cursor-pointer">
-                {t("members.cropRemoveBackground")}
+                {lt.removeBackground}
               </Label>
             </div>
             <Switch
@@ -306,18 +336,16 @@ export default function PhotoCropper({
             />
           </div>
 
-          {/* Progress bar for background removal */}
           {removingBackground && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t("members.cropRemoving")}</span>
+                <span className="text-muted-foreground">{lt.removing}</span>
                 <span className="font-medium">{bgRemovalProgress}%</span>
               </div>
               <Progress value={bgRemovalProgress} className="h-2" />
             </div>
           )}
 
-          {/* Canvas for cropping */}
           <div className="flex justify-center">
             <div className="relative rounded-lg overflow-hidden border-2 border-primary/20 shadow-inner bg-muted">
               <canvas
@@ -345,10 +373,9 @@ export default function PhotoCropper({
           </div>
 
           <p className="text-sm text-muted-foreground text-center">
-            {t("members.cropDragHint")}
+            {lt.dragHint}
           </p>
 
-          {/* Zoom controls */}
           <div className="flex items-center gap-3">
             <ZoomOut className="h-4 w-4 text-muted-foreground" />
             <Slider
@@ -380,13 +407,13 @@ export default function PhotoCropper({
             onClick={() => onOpenChange(false)}
             disabled={processing || removingBackground}
           >
-            {t("members.cropCancel")}
+            {lt.cancel}
           </Button>
           <Button
             onClick={handleCrop}
             disabled={processing || !currentImage || removingBackground}
           >
-            {processing ? t("members.cropProcessing") : t("members.cropApply")}
+            {processing ? lt.processing : lt.apply}
           </Button>
         </DialogFooter>
       </DialogContent>
