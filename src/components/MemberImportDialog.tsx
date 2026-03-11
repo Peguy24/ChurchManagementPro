@@ -907,11 +907,11 @@ export default function MemberImportDialog({
           {step === "importing" && importResult && importResult.failed.length > 0 && (
             <>
               <Button variant="outline" onClick={() => { onOpenChange(false); resetState(); }}>
-                Fermer
+                {t("common.close")}
               </Button>
               <Button onClick={handleRetryFailed} disabled={importing}>
                 {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Réessayer les {importResult.failed.length} échoués
+                {t("members.retryFailed").replace("{count}", String(importResult.failed.length))}
               </Button>
             </>
           )}
