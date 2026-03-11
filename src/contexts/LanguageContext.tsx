@@ -3726,6 +3726,11 @@ const translations = {
       ignore: "Ignore",
       rowNumber: "Row",
       errorMessage: "Error",
+      // Plan limits
+      planCapacityInfo: "Remaining capacity: {remaining} members out of {max}",
+      planLimitPartialImport: "Your plan allows {max} members. You have {current}. Only {remaining} members will be imported.",
+      planLimitReachedImport: "Plan limit reached. You can no longer import members. Upgrade your plan.",
+      upgradePlanForMore: "Upgrade your plan to import more members.",
     },
     memberCards: {
       title: "Member Cards",
