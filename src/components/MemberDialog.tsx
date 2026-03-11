@@ -1009,7 +1009,7 @@ export default function MemberDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    placeholder="jean@example.com"
+                    placeholder="john@example.com"
                   />
                 </div>
               </div>
