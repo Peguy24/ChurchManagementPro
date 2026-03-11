@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { ZoomIn, ZoomOut, RotateCcw, Sparkles } from "lucide-react";
 import { removeBackground, loadImage } from "@/lib/backgroundRemoval";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PhotoCropperProps {
   open: boolean;
@@ -29,6 +30,7 @@ export default function PhotoCropper({
   onCropComplete,
 }: PhotoCropperProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [processedImage, setProcessedImage] = useState<HTMLImageElement | null>(null);
@@ -85,14 +87,14 @@ export default function PhotoCropper({
         setProcessedImage(newImg);
         
         toast({
-          title: "Arrière-plan supprimé",
-          description: "L'arrière-plan a été supprimé avec succès.",
+          title: t("members.cropBgRemoved"),
+          description: t("members.cropBgRemovedDesc"),
         });
       } catch (error) {
         console.error("Background removal failed:", error);
         toast({
-          title: "Erreur",
-          description: "La suppression de l'arrière-plan a échoué. Veuillez réessayer.",
+          title: t("members.cropBgError"),
+          description: t("members.cropBgErrorDesc"),
           variant: "destructive",
         });
         setRemoveBackgroundEnabled(false);
@@ -103,7 +105,7 @@ export default function PhotoCropper({
     };
 
     processBackgroundRemoval();
-  }, [removeBackgroundEnabled, image, processedImage, toast]);
+  }, [removeBackgroundEnabled, image, processedImage, toast, t]);
 
   // Get the current image to display
   const currentImage = removeBackgroundEnabled && processedImage ? processedImage : image;
@@ -284,7 +286,7 @@ export default function PhotoCropper({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Recadrer la Photo</DialogTitle>
+          <DialogTitle>{t("members.cropTitle")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -293,7 +295,7 @@ export default function PhotoCropper({
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <Label htmlFor="remove-bg" className="text-sm font-medium cursor-pointer">
-                Supprimer l'arrière-plan
+                {t("members.cropRemoveBackground")}
               </Label>
             </div>
             <Switch
@@ -308,7 +310,7 @@ export default function PhotoCropper({
           {removingBackground && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Suppression en cours...</span>
+                <span className="text-muted-foreground">{t("members.cropRemoving")}</span>
                 <span className="font-medium">{bgRemovalProgress}%</span>
               </div>
               <Progress value={bgRemovalProgress} className="h-2" />
@@ -343,7 +345,7 @@ export default function PhotoCropper({
           </div>
 
           <p className="text-sm text-muted-foreground text-center">
-            Glissez pour positionner • Utilisez le zoom pour ajuster
+            {t("members.cropDragHint")}
           </p>
 
           {/* Zoom controls */}
@@ -378,13 +380,13 @@ export default function PhotoCropper({
             onClick={() => onOpenChange(false)}
             disabled={processing || removingBackground}
           >
-            Annuler
+            {t("members.cropCancel")}
           </Button>
           <Button
             onClick={handleCrop}
             disabled={processing || !currentImage || removingBackground}
           >
-            {processing ? "Traitement..." : "Appliquer"}
+            {processing ? t("members.cropProcessing") : t("members.cropApply")}
           </Button>
         </DialogFooter>
       </DialogContent>
