@@ -641,6 +641,13 @@ const translations = {
       planLimitPartialImport: "Votre plan permet {max} membres. Vous en avez {current}. Seuls {remaining} membres seront importés.",
       planLimitReachedImport: "Limite du plan atteinte. Vous ne pouvez plus importer de membres. Mettez à niveau votre plan.",
       upgradePlanForMore: "Mettez à niveau votre plan pour importer plus de membres.",
+      // Import results
+      imported: "importés",
+      duplicatesIgnored: "doublons ignorés",
+      planLimitLabel: "limite du plan",
+      failedRows: "échoués",
+      retryFailed: "Réessayer les {count} échoués",
+      upgrade: "Mettre à niveau",
     },
     memberCards: {
       title: "Cartes des Membres",
