@@ -401,6 +401,31 @@ export default function MemberDetails() {
             </div>
           </div>
           <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreHorizontal className="mr-2 h-4 w-4" /> {t("common.changeStatus")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleStatusChange("active")}>
+                  <UserCheck className="mr-2 h-4 w-4" /> {t("common.active")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange("inactive")}>
+                  <UserX className="mr-2 h-4 w-4" /> {t("common.inactive")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange("transferred")}>
+                  <ArrowRightLeft className="mr-2 h-4 w-4" /> {t("common.transferred")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setConfirmAction({ type: "deceased" })}>
+                  <Skull className="mr-2 h-4 w-4" /> {t("common.markDeceased")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setConfirmAction({ type: "archive" })} className="text-destructive">
+                  <Archive className="mr-2 h-4 w-4" /> {t("common.archiveMember")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Select value={memberId || ""} onValueChange={handleMemberChange}>
               <SelectTrigger className="w-[250px]">
                 <SelectValue />
