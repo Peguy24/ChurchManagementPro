@@ -454,11 +454,24 @@ export default function MemberImportDialog({
     setImportResult(null);
     let imported = 0;
     let skipped = 0;
+    let limitReached = 0;
     const failedRows: { rowNumber: number; error: string; data: Record<string, string> }[] = [];
+
+    // Calculate remaining capacity
+    const remainingCapacity = limits.maxMembers === Infinity 
+      ? Infinity 
+      : Math.max(0, limits.maxMembers - usage.membersCount);
 
     try {
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
+
+        // --- Plan limit check ---
+        if (remainingCapacity !== Infinity && imported >= remainingCapacity) {
+          limitReached++;
+          setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
+          continue;
+        }
         
         // --- Duplicate detection ---
         let query = supabase
@@ -527,7 +540,7 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
-      setImportResult({ imported, skipped, failed: failedRows });
+      setImportResult({ imported, skipped, limitReached, failed: failedRows });
 
       if (failedRows.length === 0) {
         toast({
