@@ -245,7 +245,9 @@ export default function MemberImportDialog({
   };
 
   const parseCSV = (text: string): string[][] => {
-    const lines = text.split('\n');
+    // Normalize all line endings to \n
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = normalized.split('\n').filter(line => line.trim().length > 0);
     return lines.map(line => {
       const result: string[] = [];
       let current = '';
