@@ -255,8 +255,12 @@ export default function Members() {
           <CardHeader>
             <CardTitle>{t("members.title")}</CardTitle>
             <CardDescription>
-              {t("common.total")}: {members.length} {t("nav.members").toLowerCase()}
+              {t("common.total")}: {activeCount} {t("nav.members").toLowerCase()}
             </CardDescription>
+            <div className="flex items-center gap-2 pt-2">
+              <Switch id="show-archived" checked={showArchived} onCheckedChange={setShowArchived} />
+              <Label htmlFor="show-archived" className="text-sm cursor-pointer">{t("common.showArchived")}</Label>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
