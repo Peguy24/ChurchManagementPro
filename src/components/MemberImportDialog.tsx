@@ -171,6 +171,7 @@ export default function MemberImportDialog({
   const { tenantId } = useCurrentTenant();
   const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [inputKey, setInputKey] = useState(0);
   
   const [step, setStep] = useState<"upload" | "mapping" | "preview" | "importing">("upload");
   const [rawData, setRawData] = useState<string[][]>([]);
@@ -190,83 +191,72 @@ export default function MemberImportDialog({
     setImporting(false);
     setImportProgress(0);
     setFileName("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    setInputKey(prev => prev + 1);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read file content BEFORE clearing input to keep the File reference valid
+    // Read file content BEFORE anything else
     const fileNameLocal = file.name;
     const extension = fileNameLocal.split('.').pop()?.toLowerCase();
     
-    let fileContent: string | ArrayBuffer;
+    let readData: string[][] = [];
+    
     try {
       if (extension === 'csv') {
-        fileContent = await file.text();
+        const text = await file.text();
+        readData = parseCSV(text);
+      } else if (['xlsx', 'xls'].includes(extension || '')) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        readData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
       } else {
-        fileContent = await file.arrayBuffer();
+        throw new Error("Format non supporté");
       }
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: t("members.parseError"),
-        description: "Failed to read file",
+        description: err.message || "Failed to read file",
         variant: "destructive",
       });
       return;
     }
 
-    // Now safe to reset input for re-selection
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
+    // Force new input element for next selection
+    setInputKey(prev => prev + 1);
     setFileName(fileNameLocal);
 
-    try {
-      let data: string[][] = [];
+    const data = readData;
 
-      if (extension === 'csv') {
-        data = parseCSV(fileContent as string);
-      } else if (['xlsx', 'xls'].includes(extension || '')) {
-        const workbook = XLSX.read(fileContent as ArrayBuffer, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
-      } else {
-        throw new Error("Format non supporté");
-      }
-
-      if (data.length < 2) {
-        throw new Error("Le fichier doit contenir au moins une ligne d'en-tête et une ligne de données");
-      }
-
-      const fileHeaders = data[0].map(h => String(h || '').trim());
-      const rows = data.slice(1).filter(row => row.some(cell => cell));
-
-      setHeaders(fileHeaders);
-      setRawData(rows);
-
-      // Auto-map columns
-      const autoMapping: ColumnMapping = {};
-      fileHeaders.forEach(header => {
-        const normalizedHeader = header.toLowerCase().trim();
-        if (AUTO_MAPPING[normalizedHeader]) {
-          autoMapping[header] = AUTO_MAPPING[normalizedHeader];
-        }
-      });
-      setColumnMapping(autoMapping);
-
-      setStep("mapping");
-    } catch (error: any) {
+    if (data.length < 2) {
       toast({
         title: t("members.parseError"),
-        description: error.message,
+        description: "The file must contain at least a header row and one data row",
         variant: "destructive",
       });
+      return;
     }
+
+    const fileHeaders = data[0].map(h => String(h || '').trim());
+    const rows = data.slice(1).filter(row => row.some(cell => cell));
+
+    setHeaders(fileHeaders);
+    setRawData(rows);
+
+    // Auto-map columns
+    const autoMapping: ColumnMapping = {};
+    fileHeaders.forEach(header => {
+      const normalizedHeader = header.toLowerCase().trim();
+      if (AUTO_MAPPING[normalizedHeader]) {
+        autoMapping[header] = AUTO_MAPPING[normalizedHeader];
+      }
+    });
+    setColumnMapping(autoMapping);
+
+    setStep("mapping");
   };
 
   const parseCSV = (text: string): string[][] => {
@@ -500,6 +490,7 @@ export default function MemberImportDialog({
                   {t("members.supportedFormats")}
                 </p>
                 <Input
+                  key={inputKey}
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.xlsx,.xls"
@@ -509,7 +500,7 @@ export default function MemberImportDialog({
               </div>
 
               <div className="flex justify-center">
-                <Button variant="outline" onClick={downloadTemplate}>
+                <Button variant="outline" onClick={(e) => { e.stopPropagation(); downloadTemplate(); }}>
                   <Download className="mr-2 h-4 w-4" />
                   {t("members.downloadTemplate")}
                 </Button>
