@@ -887,16 +887,22 @@ export default function MemberImportDialog({
             </>
           )}
 
-          {step === "preview" && (
+          {step === "preview" && (() => {
+            const remainingCapacity = limits.maxMembers === Infinity 
+              ? Infinity 
+              : Math.max(0, limits.maxMembers - usage.membersCount);
+            const willImport = remainingCapacity === Infinity ? validCount : Math.min(validCount, remainingCapacity);
+            return (
             <>
               <Button variant="outline" onClick={() => setStep("mapping")}>
                 {t("common.cancel")}
               </Button>
-              <Button onClick={() => handleImport()} disabled={validCount === 0}>
-                {t("members.importNow")} ({validCount})
+              <Button onClick={() => handleImport()} disabled={validCount === 0 || remainingCapacity <= 0}>
+                {t("members.importNow")} ({willImport})
               </Button>
             </>
-          )}
+            );
+          })()}
 
           {step === "importing" && importResult && importResult.failed.length > 0 && (
             <>

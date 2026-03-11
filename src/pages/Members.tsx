@@ -176,7 +176,13 @@ export default function Members() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setImportDialogOpen(true)}>
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => {
+              if (!canAddMember()) {
+                setLimitDialogOpen(true);
+                return;
+              }
+              setImportDialogOpen(true);
+            }}>
               <Upload className="mr-2 h-4 w-4" />
               {t("common.import")}
             </Button>
