@@ -199,12 +199,32 @@ export default function MemberImportDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Reset input so same file can be re-selected
+    // Read file content BEFORE clearing input to keep the File reference valid
+    const fileNameLocal = file.name;
+    const extension = fileNameLocal.split('.').pop()?.toLowerCase();
+    
+    let fileContent: string | ArrayBuffer;
+    try {
+      if (extension === 'csv') {
+        fileContent = await file.text();
+      } else {
+        fileContent = await file.arrayBuffer();
+      }
+    } catch (err) {
+      toast({
+        title: t("members.parseError"),
+        description: "Failed to read file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Now safe to reset input for re-selection
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
 
-    setFileName(file.name);
+    setFileName(fileNameLocal);
 
     try {
       const extension = file.name.split('.').pop()?.toLowerCase();
