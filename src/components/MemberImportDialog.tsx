@@ -374,6 +374,20 @@ export default function MemberImportDialog({
         data.status = 'active';
       }
 
+      // Normalize date fields to ISO format (YYYY-MM-DD)
+      const dateFields = ['date_of_birth', 'join_date', 'baptism_date', 'conversion_date', 'marriage_date'];
+      dateFields.forEach(field => {
+        if (data[field]) {
+          data[field] = normalizeDate(data[field]);
+        }
+      });
+
+      // Normalize number_of_children
+      if (data.number_of_children) {
+        const num = parseInt(data.number_of_children);
+        data.number_of_children = isNaN(num) ? '' : String(num);
+      }
+
       return {
         rowNumber: index + 2, // +2 because row 1 is header, and we're 0-indexed
         data,
