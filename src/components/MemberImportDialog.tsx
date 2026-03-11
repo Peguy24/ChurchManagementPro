@@ -546,16 +546,16 @@ export default function MemberImportDialog({
       if (!hasIssues) {
         toast({
           title: t("common.confirm"),
-          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} doublons ignorés)` : ''}`,
+          description: `${imported} ${t("members.importSuccess")}${skipped > 0 ? ` (${skipped} ${t("members.duplicatesIgnored")})` : ''}`,
         });
         onSuccess?.();
         onOpenChange(false);
         resetState();
       } else {
-        const parts = [`${imported} importés`];
-        if (skipped > 0) parts.push(`${skipped} doublons ignorés`);
-        if (limitReached > 0) parts.push(`${limitReached} limite du plan atteinte`);
-        if (failedRows.length > 0) parts.push(`${failedRows.length} échoués`);
+        const parts = [`${imported} ${t("members.imported")}`];
+        if (skipped > 0) parts.push(`${skipped} ${t("members.duplicatesIgnored")}`);
+        if (limitReached > 0) parts.push(`${limitReached} ${t("members.planLimitLabel")}`);
+        if (failedRows.length > 0) parts.push(`${failedRows.length} ${t("members.failedRows")}`);
         toast({
           title: t("members.importError"),
           description: parts.join(", "),
