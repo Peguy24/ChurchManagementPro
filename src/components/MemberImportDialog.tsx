@@ -381,7 +381,7 @@ export default function MemberImportDialog({
 
         const { data, error } = await supabase
           .from("members")
-          .insert([memberData])
+          .insert([memberData as any])
           .select()
           .single();
 
