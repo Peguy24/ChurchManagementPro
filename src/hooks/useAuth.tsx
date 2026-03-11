@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -9,32 +9,35 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const initializedRef = useRef(false);
+  const lastKnownUserRef = useRef<User | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        // Don't clear user on transient events like TOKEN_REFRESHED with null session
         if (event === 'SIGNED_OUT') {
+          lastKnownUserRef.current = null;
           setSession(null);
           setUser(null);
           setLoading(false);
         } else if (newSession) {
+          lastKnownUserRef.current = newSession.user;
           setSession(newSession);
           setUser(newSession.user);
           setLoading(false);
           initializedRef.current = true;
+        } else if (event === 'TOKEN_REFRESHED' && !newSession) {
+          // Token refresh returned null session — likely transient, keep current user
+          // Do NOT clear user state here; wait for a definitive SIGNED_OUT event
+          console.warn('TOKEN_REFRESHED with null session — keeping current user state');
         } else if (!initializedRef.current) {
-          // Only set null on initial load if there's truly no session
           setLoading(false);
         }
-        // Ignore null session on TOKEN_REFRESHED or other events after initialization
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       if (existingSession) {
+        lastKnownUserRef.current = existingSession.user;
         setSession(existingSession);
         setUser(existingSession.user);
         initializedRef.current = true;
