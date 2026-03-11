@@ -300,6 +300,8 @@ const localT: Record<Language, Record<string, string>> = {
     active: "Aktif",
     inactive: "Inaktif",
     transferred: "Transfère",
+    deceased: "Desede",
+    archived: "Achive",
     status: "Estati",
     none: "Okenn",
     yes: "Wi",
