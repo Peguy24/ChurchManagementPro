@@ -461,7 +461,7 @@ export default function MemberDetails() {
                     variant="outline"
                     className={statusColors[member.status || "active"]}
                   >
-                    {member.status || "active"}
+                    {t(`common.${member.status || "active"}`)}
                   </Badge>
                 </div>
                 <div className="flex gap-4 text-sm text-muted-foreground">
