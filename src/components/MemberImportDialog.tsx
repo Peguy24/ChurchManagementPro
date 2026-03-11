@@ -227,15 +227,12 @@ export default function MemberImportDialog({
     setFileName(fileNameLocal);
 
     try {
-      const extension = file.name.split('.').pop()?.toLowerCase();
       let data: string[][] = [];
 
       if (extension === 'csv') {
-        const text = await file.text();
-        data = parseCSV(text);
+        data = parseCSV(fileContent as string);
       } else if (['xlsx', 'xls'].includes(extension || '')) {
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: 'array' });
+        const workbook = XLSX.read(fileContent as ArrayBuffer, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as string[][];
       } else {
