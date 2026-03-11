@@ -203,6 +203,8 @@ export default function MemberImportDialog({
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
+  const { limits, usage } = usePlanLimits();
+  const navigate = useNavigate();
   const TARGET_FIELDS = TARGET_FIELDS_I18N[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [inputKey, setInputKey] = useState(0);
