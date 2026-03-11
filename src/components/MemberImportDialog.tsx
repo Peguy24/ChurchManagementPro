@@ -161,6 +161,38 @@ const AUTO_MAPPING: Record<string, string> = {
   "urgence": "emergency_phone", "emergency": "emergency_phone", "emergency contact": "emergency_phone", "contact d'urgence": "emergency_phone", "kontak ijans": "emergency_phone",
 };
 
+// Normalize dates from various formats to ISO YYYY-MM-DD
+function normalizeDate(value: string): string {
+  if (!value || !value.trim()) return '';
+  const v = value.trim();
+  
+  // Already ISO format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  
+  // DD/MM/YYYY or DD-MM-YYYY
+  let match = v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (match) {
+    const [, d, m, y] = match;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  
+  // MM/DD/YYYY (if month > 12, swap)
+  // YYYY/MM/DD
+  match = v.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  if (match) {
+    const [, y, m, d] = match;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // Try JS Date parse as fallback
+  const parsed = new Date(v);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+  
+  return ''; // Invalid date - return empty to avoid DB error
+}
+
 export default function MemberImportDialog({
   open,
   onOpenChange,
@@ -374,6 +406,20 @@ export default function MemberImportDialog({
         data.status = 'active';
       }
 
+      // Normalize date fields to ISO format (YYYY-MM-DD)
+      const dateFields = ['date_of_birth', 'join_date', 'baptism_date', 'conversion_date', 'marriage_date'];
+      dateFields.forEach(field => {
+        if (data[field]) {
+          data[field] = normalizeDate(data[field]);
+        }
+      });
+
+      // Normalize number_of_children
+      if (data.number_of_children) {
+        const num = parseInt(data.number_of_children);
+        data.number_of_children = isNaN(num) ? '' : String(num);
+      }
+
       return {
         rowNumber: index + 2, // +2 because row 1 is header, and we're 0-indexed
         data,
@@ -402,6 +448,7 @@ export default function MemberImportDialog({
     let imported = 0;
 
     try {
+      const failedRows: { row: number; error: string }[] = [];
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
@@ -421,7 +468,7 @@ export default function MemberImportDialog({
           marital_status: row.data.marital_status || null,
           marriage_date: row.data.marriage_date || null,
           spouse_name: row.data.spouse_name || null,
-          number_of_children: row.data.number_of_children ? parseInt(row.data.number_of_children) : null,
+          number_of_children: row.data.number_of_children ? (isNaN(parseInt(row.data.number_of_children)) ? null : parseInt(row.data.number_of_children)) : null,
           children_names: row.data.children_names || null,
           origin_church: row.data.origin_church || null,
           christian_experience: row.data.christian_experience || null,
@@ -439,7 +486,8 @@ export default function MemberImportDialog({
           .single();
 
         if (error) {
-          console.error(`Error importing row ${row.rowNumber}:`, error);
+          console.error(`Error importing row ${row.rowNumber}:`, error, 'Data:', JSON.stringify(memberData));
+          failedRows.push({ row: row.rowNumber, error: error.message });
         } else if (data) {
           // Update with QR code
           const qrCodeData = `MEMBER-${data.id}`;
@@ -453,9 +501,14 @@ export default function MemberImportDialog({
         setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
       }
 
+      const failedCount = failedRows.length;
+      if (failedCount > 0) {
+        console.warn(`[IMPORT] ${failedCount} rows failed:`, failedRows);
+      }
+
       toast({
         title: t("common.confirm"),
-        description: `${imported} ${t("members.importSuccess")}`,
+        description: `${imported} ${t("members.importSuccess")}${failedCount > 0 ? ` (${failedCount} failed)` : ''}`,
       });
 
       onSuccess?.();
