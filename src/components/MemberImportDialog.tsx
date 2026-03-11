@@ -352,7 +352,7 @@ export default function MemberImportDialog({
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
         
-        const memberData = {
+        const memberData: Record<string, any> = {
           first_name: row.data.first_name,
           last_name: row.data.last_name,
           email: row.data.email || null,
@@ -364,13 +364,20 @@ export default function MemberImportDialog({
           join_date: row.data.join_date || null,
           baptism_status: row.data.baptism_status || null,
           baptism_date: row.data.baptism_date || null,
+          conversion_date: row.data.conversion_date || null,
           marital_status: row.data.marital_status || null,
+          marriage_date: row.data.marriage_date || null,
           spouse_name: row.data.spouse_name || null,
           number_of_children: row.data.number_of_children ? parseInt(row.data.number_of_children) : null,
+          children_names: row.data.children_names || null,
           origin_church: row.data.origin_church || null,
+          christian_experience: row.data.christian_experience || null,
+          academic_formation: row.data.academic_formation || null,
+          professional_formation: row.data.professional_formation || null,
           role: row.data.role || null,
           emergency_phone: row.data.emergency_phone || null,
         };
+        if (tenantId) memberData.tenant_id = tenantId;
 
         const { data, error } = await supabase
           .from("members")
