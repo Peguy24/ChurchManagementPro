@@ -743,7 +743,7 @@ export default function MemberImportDialog({
             </div>
           )}
 
-          {step === "importing" && (
+          {step === "importing" && !importResult && (
             <div className="space-y-4 py-8">
               <div className="flex items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -755,6 +755,54 @@ export default function MemberImportDialog({
               <p className="text-center text-sm text-muted-foreground">
                 {importProgress}%
               </p>
+            </div>
+          )}
+
+          {step === "importing" && importResult && (
+            <div className="space-y-4 py-4">
+              <div className="flex gap-4 flex-wrap">
+                <Badge variant="outline" className="text-sm">
+                  <CheckCircle className="h-4 w-4 mr-1 text-success" />
+                  {importResult.imported} importés
+                </Badge>
+                {importResult.skipped > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <AlertTriangle className="h-4 w-4 mr-1 text-yellow-500" />
+                    {importResult.skipped} doublons ignorés
+                  </Badge>
+                )}
+                {importResult.failed.length > 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    <XCircle className="h-4 w-4 mr-1 text-destructive" />
+                    {importResult.failed.length} échoués
+                  </Badge>
+                )}
+              </div>
+
+              {importResult.failed.length > 0 && (
+                <ScrollArea className="h-[250px] border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Ligne</TableHead>
+                        <TableHead>{t("members.firstName")}</TableHead>
+                        <TableHead>{t("members.lastName")}</TableHead>
+                        <TableHead>Erreur</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importResult.failed.map((f) => (
+                        <TableRow key={f.rowNumber} className="bg-destructive/10">
+                          <TableCell>{f.rowNumber}</TableCell>
+                          <TableCell>{f.data.first_name || "-"}</TableCell>
+                          <TableCell>{f.data.last_name || "-"}</TableCell>
+                          <TableCell className="text-xs text-destructive">{f.error}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
             </div>
           )}
         </div>
@@ -776,8 +824,20 @@ export default function MemberImportDialog({
               <Button variant="outline" onClick={() => setStep("mapping")}>
                 {t("common.cancel")}
               </Button>
-              <Button onClick={handleImport} disabled={validCount === 0}>
+              <Button onClick={() => handleImport()} disabled={validCount === 0}>
                 {t("members.importNow")} ({validCount})
+              </Button>
+            </>
+          )}
+
+          {step === "importing" && importResult && importResult.failed.length > 0 && (
+            <>
+              <Button variant="outline" onClick={() => { onOpenChange(false); resetState(); }}>
+                Fermer
+              </Button>
+              <Button onClick={handleRetryFailed} disabled={importing}>
+                {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Réessayer les {importResult.failed.length} échoués
               </Button>
             </>
           )}
