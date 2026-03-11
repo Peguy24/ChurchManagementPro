@@ -158,7 +158,7 @@ export function usePlanLimits() {
 
   // Determine effective plan: Stripe subscription takes priority, then DB-only plans (free/trialing)
   const isDbActivePlan = !subscribed && dbSubscription?.plan && 
-    (dbSubscription?.status === "active" || dbSubscription?.status === "trialing");
+    (dbSubscription?.status === "active" || dbSubscription?.status === "trial");
   const effectiveSubscribed = subscribed || !!isDbActivePlan;
   
   // Map DB plan names to frontend plan names
