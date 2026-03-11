@@ -813,6 +813,22 @@ export default function MemberDetails() {
           </div>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.type === "archive" ? t("common.confirmArchiveTitle") : t("common.confirmDeceasedTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.type === "archive" ? t("common.confirmArchive") : t("common.confirmDeceased")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAction}>{t("common.confirm")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
