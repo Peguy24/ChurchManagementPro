@@ -33,7 +33,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
-import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 interface MemberImportDialogProps {
