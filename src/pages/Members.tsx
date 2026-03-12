@@ -232,6 +232,10 @@ export default function Members() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setJoinDialogOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {t("members.joinAsMember")}
+            </Button>
             <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => {
               if (!canAddMember()) {
                 setLimitDialogOpen(true);
