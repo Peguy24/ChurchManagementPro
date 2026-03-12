@@ -44,14 +44,31 @@ function saveCachedRoles(state: CachedRoleState) {
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
 
-  // Initialize from sessionStorage for instant menu render
-  const cached = user ? loadCachedRoles(user.id) : null;
-  const [roles, setRoles] = useState<AppRole[]>(cached?.roles ?? []);
-  const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(cached?.permissions ?? DEFAULT_ROLE_PERMISSIONS);
-  const [loading, setLoading] = useState(!cached);
-  const [isApproved, setIsApproved] = useState(cached?.isApproved ?? false);
-  const [isAdmin, setIsAdmin] = useState(cached?.isAdmin ?? false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(cached?.isSuperAdmin ?? false);
+  // Use lazy initializers to read sessionStorage only once
+  const [roles, setRoles] = useState<AppRole[]>(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return c?.roles ?? [];
+  });
+  const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return c?.permissions ?? DEFAULT_ROLE_PERMISSIONS;
+  });
+  const [loading, setLoading] = useState(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return !c;
+  });
+  const [isApproved, setIsApproved] = useState(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return c?.isApproved ?? false;
+  });
+  const [isAdmin, setIsAdmin] = useState(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return c?.isAdmin ?? false;
+  });
+  const [isSuperAdmin, setIsSuperAdmin] = useState(() => {
+    const c = user ? loadCachedRoles(user.id) : null;
+    return c?.isSuperAdmin ?? false;
+  });
 
   useEffect(() => {
     async function fetchRolesAndPermissions() {
