@@ -1,58 +1,43 @@
 project_id = "ihwhbtmnyhhceiwdcfsc"
 
-[functions.send-welcome-email]
-verify_jwt = true
-
-[functions.send-absence-alert]
-verify_jwt = true
-
-[functions.send-expense-notification]
-verify_jwt = true
-
-[functions.send-birthday-notification]
-verify_jwt = false
-
-[functions.send-event-reminder]
-verify_jwt = false
-
-[functions.check-attendance-alerts]
-verify_jwt = false
-
-[functions.send-admin-invite]
-verify_jwt = false
-
-[functions.send-user-invite]
-verify_jwt = false
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.check-subscription]
-verify_jwt = false
-
-[functions.customer-portal]
-verify_jwt = false
-
-[functions.get-invoices]
-verify_jwt = false
-
-[functions.calculate-engagement-scores]
-verify_jwt = false
-
-[functions.predict-churn-risk]
-verify_jwt = false
-
-[functions.generate-pastoral-alerts]
-verify_jwt = false
-
-[functions.send-superadmin-invite]
-verify_jwt = false
-
-[functions.send-support-email]
-verify_jwt = false
-
-[functions.auto-provision-tenant]
-verify_jwt = false
-
-[functions.send-weekly-digest]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.auto-provision-tenant]
+    verify_jwt = false
+  [functions.calculate-engagement-scores]
+    verify_jwt = false
+  [functions.check-attendance-alerts]
+    verify_jwt = false
+  [functions.check-subscription]
+    verify_jwt = false
+  [functions.create-checkout]
+    verify_jwt = false
+  [functions.customer-portal]
+    verify_jwt = false
+  [functions.generate-pastoral-alerts]
+    verify_jwt = false
+  [functions.get-invoices]
+    verify_jwt = false
+  [functions.predict-churn-risk]
+    verify_jwt = false
+  [functions.send-absence-alert]
+    verify_jwt = true
+  [functions.send-admin-invite]
+    verify_jwt = false
+  [functions.send-birthday-notification]
+    verify_jwt = false
+  [functions.send-event-reminder]
+    verify_jwt = false
+  [functions.send-expense-notification]
+    verify_jwt = true
+  [functions.send-superadmin-invite]
+    verify_jwt = false
+  [functions.send-support-email]
+    verify_jwt = false
+  [functions.send-user-invite]
+    verify_jwt = false
+  [functions.send-weekly-digest]
+    verify_jwt = false
+  [functions.send-welcome-email]
+    verify_jwt = true
