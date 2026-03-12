@@ -45,19 +45,31 @@ function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) 
 
 export function useCurrentTenant(): UseCurrentTenantReturn {
   const { user } = useAuth();
+
+  // Try cached userId from sessionStorage even before auth resolves
+  const [cachedUserId] = useState<string | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(TENANT_CACHE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw).userId ?? null;
+    } catch { return null; }
+  });
   
   // Initialize from sessionStorage for instant render
   const [tenantId, setTenantId] = useState<string | null>(() => {
-    if (!user) return null;
-    return loadCachedTenant(user.id)?.tenantId ?? null;
+    const uid = user?.id ?? cachedUserId;
+    if (!uid) return null;
+    return loadCachedTenant(uid)?.tenantId ?? null;
   });
   const [tenant, setTenant] = useState<TenantInfo | null>(() => {
-    if (!user) return null;
-    return loadCachedTenant(user.id)?.tenant ?? null;
+    const uid = user?.id ?? cachedUserId;
+    if (!uid) return null;
+    return loadCachedTenant(uid)?.tenant ?? null;
   });
   const [loading, setLoading] = useState(() => {
-    if (!user) return false;
-    return !loadCachedTenant(user.id);
+    const uid = user?.id ?? cachedUserId;
+    if (!uid) return false;
+    return !loadCachedTenant(uid);
   });
   const [error, setError] = useState<string | null>(null);
   const lastUserIdRef = useRef<string | null>(null);
