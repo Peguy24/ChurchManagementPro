@@ -14,15 +14,44 @@ import type { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const APPROVED_ROLES: AppRole[] = ["admin", "pastor", "treasurer", "secretary", "volunteer"];
+const ROLE_CACHE_KEY = 'user_role_cache';
+
+interface CachedRoleState {
+  userId: string;
+  roles: AppRole[];
+  isApproved: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  permissions: Record<AppRole, RouteGroup[]>;
+}
+
+function loadCachedRoles(userId: string): CachedRoleState | null {
+  try {
+    const raw = sessionStorage.getItem(ROLE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedRoleState;
+    if (parsed.userId === userId) return parsed;
+  } catch {}
+  return null;
+}
+
+function saveCachedRoles(state: CachedRoleState) {
+  try {
+    sessionStorage.setItem(ROLE_CACHE_KEY, JSON.stringify(state));
+  } catch {}
+}
 
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(DEFAULT_ROLE_PERMISSIONS);
-  const [loading, setLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // Initialize from sessionStorage for instant menu render
+  const cached = user ? loadCachedRoles(user.id) : null;
+  const [roles, setRoles] = useState<AppRole[]>(cached?.roles ?? []);
+  const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(cached?.permissions ?? DEFAULT_ROLE_PERMISSIONS);
+  const [loading, setLoading] = useState(!cached);
+  const [isApproved, setIsApproved] = useState(cached?.isApproved ?? false);
+  const [isAdmin, setIsAdmin] = useState(cached?.isAdmin ?? false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(cached?.isSuperAdmin ?? false);
 
   useEffect(() => {
     async function fetchRolesAndPermissions() {
