@@ -282,9 +282,13 @@ export function useUserRole() {
     return hasPermissionWithPerms(roles, group, permissions);
   };
 
+  // If we have cached data, don't wait for auth to resolve
+  const hasCachedData = roles.length > 0;
+  const effectiveLoading = hasCachedData ? false : (authLoading || loading);
+
   return {
     roles,
-    loading: authLoading || loading,
+    loading: effectiveLoading,
     isApproved,
     isAdmin,
     isSuperAdmin,
