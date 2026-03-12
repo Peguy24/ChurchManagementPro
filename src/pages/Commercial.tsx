@@ -24,43 +24,6 @@ const Commercial = () => {
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
 
-  const handleChurchSearch = async (searchTerm: string) => {
-    setChurchSearch(searchTerm);
-    
-    if (searchTerm.length < 2) {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('id, name, slug')
-        .ilike('name', `%${searchTerm}%`)
-        .limit(5);
-
-      if (error) throw error;
-      
-      setSearchResults(data || []);
-      setShowSearchResults(true);
-    } catch (error) {
-      console.error('Error searching churches:', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleChurchSelect = (slug: string) => {
-    navigate(`/t/${slug}/auth`);
-  };
-
-  const handleDirectSlugAccess = () => {
-    if (churchSearch.trim()) {
-      navigate(`/t/${churchSearch.toLowerCase().replace(/\s+/g, '-')}/auth`);
-    } else {
-      toast({
         title: t("commercial.enterChurchName"),
         description: t("commercial.enterChurchNameDesc"),
         variant: "destructive"
