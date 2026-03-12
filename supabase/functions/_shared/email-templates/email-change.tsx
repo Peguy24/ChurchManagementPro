@@ -10,16 +10,18 @@ import {
   Heading,
   Html,
   Img,
-  Link,
   Preview,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+
+import { emailTranslations, type EmailLang } from './translations.ts'
 
 interface EmailChangeEmailProps {
   siteName: string
   email: string
   newEmail: string
   confirmationUrl: string
+  lang?: EmailLang
 }
 
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
@@ -29,38 +31,28 @@ export const EmailChangeEmail = ({
   email,
   newEmail,
   confirmationUrl,
-}: EmailChangeEmailProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Confirmez le changement de votre adresse email pour {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
-        <Heading style={h1}>Changement d'adresse email</Heading>
-        <Text style={text}>
-          Vous avez demandé à changer votre adresse email pour {siteName} de{' '}
-          <Link href={`mailto:${email}`} style={link}>
-            {email}
-          </Link>{' '}
-          à{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
-        </Text>
-        <Text style={text}>
-          Cliquez sur le bouton ci-dessous pour confirmer ce changement :
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Confirmer le changement
-        </Button>
-        <Text style={footer}>
-          Si vous n'avez pas demandé ce changement, veuillez sécuriser votre compte immédiatement.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+  lang = 'en',
+}: EmailChangeEmailProps) => {
+  const t = emailTranslations.email_change[lang]
+  return (
+    <Html lang={lang} dir="ltr">
+      <Head />
+      <Preview>{t.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
+          <Heading style={h1}>{t.heading}</Heading>
+          <Text style={text}>{t.text(siteName, email, newEmail)}</Text>
+          <Text style={text}>{t.confirmText}</Text>
+          <Button style={button} href={confirmationUrl}>
+            {t.button}
+          </Button>
+          <Text style={footer}>{t.footer}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export default EmailChangeEmail
 
@@ -79,7 +71,6 @@ const text = {
   lineHeight: '1.6',
   margin: '0 0 25px',
 }
-const link = { color: 'hsl(221, 83%, 40%)', textDecoration: 'underline' }
 const button = {
   backgroundColor: 'hsl(221, 83%, 40%)',
   color: '#ffffff',

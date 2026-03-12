@@ -15,11 +15,14 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
+import { emailTranslations, type EmailLang } from './translations.ts'
+
 interface SignupEmailProps {
   siteName: string
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  lang?: EmailLang
 }
 
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
@@ -29,38 +32,34 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
-}: SignupEmailProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Confirmez votre adresse email pour {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
-        <Heading style={h1}>Confirmez votre adresse email</Heading>
-        <Text style={text}>
-          Merci de vous être inscrit sur{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>{' '}
-          !
-        </Text>
-        <Text style={text}>
-          Veuillez confirmer votre adresse email (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) en cliquant sur le bouton ci-dessous :
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Vérifier mon email
-        </Button>
-        <Text style={footer}>
-          Si vous n'avez pas créé de compte, vous pouvez ignorer cet email en toute sécurité.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+  lang = 'en',
+}: SignupEmailProps) => {
+  const t = emailTranslations.signup[lang]
+  return (
+    <Html lang={lang} dir="ltr">
+      <Head />
+      <Preview>{t.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
+          <Heading style={h1}>{t.heading}</Heading>
+          <Text style={text}>
+            {t.thanks(siteName)}{' '}
+            <Link href={siteUrl} style={link}>
+              <strong>{siteName}</strong>
+            </Link>{' '}
+            !
+          </Text>
+          <Text style={text}>{t.confirmText(recipient)}</Text>
+          <Button style={button} href={confirmationUrl}>
+            {t.button}
+          </Button>
+          <Text style={footer}>{t.footer}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export default SignupEmail
 
