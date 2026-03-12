@@ -119,13 +119,24 @@ export default function MemberRequests() {
       // Send welcome email if the member has an email
       if (request.email) {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
-          await supabase.functions.invoke("send-welcome-email", {
+          // Get tenant name
+          let tenantName = "Church Manager Pro";
+          if (request.tenant_id) {
+            const { data: tenantData } = await supabase
+              .from("tenants")
+              .select("name")
+              .eq("id", request.tenant_id)
+              .maybeSingle();
+            if (tenantData?.name) tenantName = tenantData.name;
+          }
+
+          await supabase.functions.invoke("send-member-approved", {
             body: {
-              memberId: request.id,
               firstName: request.first_name,
               lastName: request.last_name,
               email: request.email,
+              tenantName,
+              language,
             },
           });
         } catch (emailError) {

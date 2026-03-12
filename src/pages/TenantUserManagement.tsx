@@ -154,6 +154,29 @@ export default function TenantUserManagement() {
 
       if (error) throw error;
 
+      // Send approval notification email
+      const approvedUser = users.find(u => u.user_id === userId);
+      if (approvedUser?.email) {
+        try {
+          const finalRole = roleOverride 
+            ? (roleOverride.startsWith('custom:') ? 'volunteer' : roleOverride)
+            : approvedUser.role;
+          await supabase.functions.invoke("send-role-approved", {
+            body: {
+              userEmail: approvedUser.email,
+              firstName: approvedUser.first_name,
+              lastName: approvedUser.last_name,
+              role: finalRole,
+              tenantName: tenant?.name,
+              tenantSlug: tenant?.slug,
+              language,
+            },
+          });
+        } catch (emailErr) {
+          console.error("Failed to send approval email:", emailErr);
+        }
+      }
+
       toast({
         title: t('tenant.userApproved'),
         description: t('tenant.userCanAccess'),
