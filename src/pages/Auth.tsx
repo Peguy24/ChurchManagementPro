@@ -309,39 +309,140 @@ export default function Auth() {
           : error.message,
         variant: 'destructive',
       });
-    } else {
-      // Check if user has roles in multiple tenants
-      try {
-        const { data: { user: loggedInUser } } = await supabase.auth.getUser();
-        if (loggedInUser) {
-          const { data: approvedRoles } = await supabase
-            .from('tenant_user_roles')
-            .select('tenant_id')
-            .eq('user_id', loggedInUser.id)
-            .eq('is_approved', true);
+      setIsLoading(false);
+      return;
+    }
 
-          if (approvedRoles && approvedRoles.length > 1) {
-            toast({
-              title: lt('loginSuccess'),
-              description: lt('welcomeMessage'),
+    // Successful password — check if user is admin/superadmin to require OTP
+    try {
+      const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+      if (loggedInUser) {
+        // Check if user is a tenant admin or super admin
+        const { data: tenantRoles } = await supabase
+          .from('tenant_user_roles')
+          .select('role')
+          .eq('user_id', loggedInUser.id)
+          .eq('is_approved', true);
+
+        const { data: platformRoles } = await supabase
+          .from('platform_user_roles')
+          .select('role')
+          .eq('user_id', loggedInUser.id);
+
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', loggedInUser.id);
+
+        const isTenantAdmin = tenantRoles?.some(r => r.role === 'admin');
+        const isPlatformRole = platformRoles && platformRoles.length > 0;
+        const isSuperAdmin = userRoles?.some(r => r.role === 'admin');
+
+        if (isTenantAdmin || isPlatformRole || isSuperAdmin) {
+          // Sign out temporarily — user must verify OTP first
+          await supabase.auth.signOut();
+          
+          // Send verification code
+          try {
+            await supabase.functions.invoke('send-login-verification', {
+              body: { action: 'send', email: loginForm.email, userId: loggedInUser.id },
             });
-            navigate('/select-church');
-            setIsLoading(false);
-            return;
+          } catch (sendErr) {
+            console.error('Failed to send verification code:', sendErr);
           }
-        }
-      } catch (err) {
-        console.error('Error checking multi-tenant roles:', err);
-      }
 
-      toast({
-        title: lt('loginSuccess'),
-        description: lt('welcomeMessage'),
-      });
+          setOtpPending({ email: loginForm.email, userId: loggedInUser.id });
+          setIsLoading(false);
+          return;
+        }
+
+        // Not admin — proceed normally
+        const { data: approvedRoles } = await supabase
+          .from('tenant_user_roles')
+          .select('tenant_id')
+          .eq('user_id', loggedInUser.id)
+          .eq('is_approved', true);
+
+        if (approvedRoles && approvedRoles.length > 1) {
+          toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
+          navigate('/select-church');
+          setIsLoading(false);
+          return;
+        }
+
+        toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Error in login flow:', err);
+      toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
       navigate('/');
     }
 
     setIsLoading(false);
+  };
+
+  const handleOtpVerified = async () => {
+    if (!otpPending) return;
+    // Re-sign in the user after OTP verification
+    const { error } = await signIn(loginForm.email, loginForm.password);
+    if (error) {
+      toast({ title: lt('loginError'), description: error.message, variant: 'destructive' });
+      setOtpPending(null);
+      return;
+    }
+
+    // Check multi-tenant
+    try {
+      const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+      if (loggedInUser) {
+        const { data: approvedRoles } = await supabase
+          .from('tenant_user_roles')
+          .select('tenant_id')
+          .eq('user_id', loggedInUser.id)
+          .eq('is_approved', true);
+
+        if (approvedRoles && approvedRoles.length > 1) {
+          toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
+          navigate('/select-church');
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error checking multi-tenant:', err);
+    }
+
+    toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
+    setOtpPending(null);
+    navigate('/');
+  };
+
+  const handleOtpResend = async () => {
+    if (!otpPending) return;
+    try {
+      await supabase.functions.invoke('send-login-verification', {
+        body: { action: 'send', email: otpPending.email, userId: otpPending.userId },
+      });
+    } catch (err) {
+      console.error('Failed to resend code:', err);
+    }
+  };
+
+  const handleOtpVerify = async (code: string): Promise<boolean> => {
+    if (!otpPending) return false;
+    try {
+      const { data, error } = await supabase.functions.invoke('send-login-verification', {
+        body: { action: 'verify', email: otpPending.email, userId: otpPending.userId, code },
+      });
+      return data?.valid === true;
+    } catch (err) {
+      console.error('Failed to verify code:', err);
+      return false;
+    }
+  };
+
+  const handleOtpCancel = async () => {
+    setOtpPending(null);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
