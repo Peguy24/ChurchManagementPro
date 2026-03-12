@@ -300,6 +300,9 @@ export default function Auth() {
       return;
     }
 
+    // Set flag BEFORE signIn to prevent redirect during OTP check
+    setIsCheckingOtp(true);
+    
     const { error } = await signIn(loginForm.email, loginForm.password);
 
     if (error) {
@@ -310,6 +313,7 @@ export default function Auth() {
           : error.message,
         variant: 'destructive',
       });
+      setIsCheckingOtp(false);
       setIsLoading(false);
       return;
     }
