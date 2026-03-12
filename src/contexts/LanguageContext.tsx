@@ -552,6 +552,7 @@ const translations = {
     members: {
       title: "Gestion des Membres",
       subtitle: "Gérez les membres de votre église",
+      joinAsMember: "Rejoindre comme membre",
       addMember: "Ajouter un Membre",
       editMember: "Modifier le Membre",
       memberAdded: "Membre ajouté avec succès",
