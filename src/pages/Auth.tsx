@@ -362,6 +362,7 @@ export default function Auth() {
         }
 
         // Not admin — proceed normally
+        setIsCheckingOtp(false);
         const { data: approvedRoles } = await supabase
           .from('tenant_user_roles')
           .select('tenant_id')
@@ -380,6 +381,7 @@ export default function Auth() {
       }
     } catch (err) {
       console.error('Error in login flow:', err);
+      setIsCheckingOtp(false);
       toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
       navigate('/');
     }
