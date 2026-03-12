@@ -271,37 +271,37 @@ export default function AttendanceKiosk() {
                   feedback === "error" ? "bg-red-50 dark:bg-red-950/30" : "bg-background";
 
   return (
-    <div className={cn("min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500", bgColor)}>
-      {/* Header */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className={cn("min-h-[100dvh] flex flex-col transition-colors duration-500", bgColor)}>
+      {/* Header - compact on mobile */}
+      <div className="flex items-center justify-between px-3 py-2 sm:px-6 sm:py-3 border-b border-border/40 bg-card/50 backdrop-blur-sm">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {wl.logo_url ? (
-            <img src={wl.logo_url} alt="" className="h-10 w-10 object-contain rounded" />
+            <img src={wl.logo_url} alt="" className="h-8 w-8 sm:h-10 sm:w-10 object-contain rounded shrink-0" />
           ) : (
-            <Church className="h-8 w-8 text-primary" />
+            <Church className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
           )}
-          <div>
-            <h2 className="font-bold text-lg">{wl.app_name}</h2>
-            <p className="text-xs text-muted-foreground">{t("kiosk.title")}</p>
+          <div className="min-w-0">
+            <h2 className="font-bold text-sm sm:text-lg truncate">{wl.app_name}</h2>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t("kiosk.title")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="text-right mr-2">
-            <div className="text-2xl font-bold text-primary">{totalCheckins}</div>
-            <div className="text-[10px] text-muted-foreground">{t("kiosk.checkins")}</div>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="text-right mr-1 sm:mr-2">
+            <div className="text-lg sm:text-2xl font-bold text-primary leading-tight">{totalCheckins}</div>
+            <div className="text-[9px] sm:text-[10px] text-muted-foreground">{t("kiosk.checkins")}</div>
           </div>
-          <Button variant="outline" size="icon" onClick={toggleFullscreen}>
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={toggleFullscreen}>
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </Button>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex flex-col items-center gap-6 mt-16 w-full max-w-md">
-        {/* Event selector */}
-        <div className="w-full">
+      {/* Main content - fills remaining space */}
+      <div className="flex-1 flex flex-col items-center px-3 py-3 sm:px-6 sm:py-4 overflow-y-auto">
+        <div className="w-full max-w-lg flex flex-col gap-3 sm:gap-4 flex-1">
+          {/* Event selector */}
           <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base">
               <SelectValue placeholder={events.length === 0 ? t("kiosk.noEventsToday") : t("kiosk.selectEventPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-background">
@@ -312,100 +312,101 @@ export default function AttendanceKiosk() {
               ))}
             </SelectContent>
           </Select>
-        </div>
 
-        {/* Time window status */}
-        {!windowStatus.allowed && selectedEventId && (
-          <Card className="w-full border-2 border-yellow-500">
-            <CardContent className="flex items-center gap-3 py-4">
-              <AlertTriangle className="h-6 w-6 text-yellow-500 shrink-0" />
-              <div>
-                <p className="font-semibold text-sm">{t("kiosk.scanUnavailable")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {windowStatus.reasonParams
-                    ? t(windowStatus.reasonKey).replace(/\{(\w+)\}/g, (_, k) => windowStatus.reasonParams?.[k] || "")
-                    : t(windowStatus.reasonKey)}
+          {/* Time window status */}
+          {!windowStatus.allowed && selectedEventId && (
+            <Card className="w-full border-2 border-yellow-500">
+              <CardContent className="flex items-center gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6">
+                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-xs sm:text-sm">{t("kiosk.scanUnavailable")}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                    {windowStatus.reasonParams
+                      ? t(windowStatus.reasonKey).replace(/\{(\w+)\}/g, (_, k) => windowStatus.reasonParams?.[k] || "")
+                      : t(windowStatus.reasonKey)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Feedback card */}
+          {feedback !== "idle" && (
+            <Card className={cn(
+              "w-full border-2 transition-all animate-in fade-in zoom-in duration-300",
+              feedback === "success" && "border-green-500",
+              feedback === "duplicate" && "border-yellow-500",
+              feedback === "error" && "border-destructive",
+            )}>
+              <CardContent className="flex flex-col items-center py-4 sm:py-6 px-3 sm:px-6">
+                {feedback === "success" ? (
+                  <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-500 mb-2 sm:mb-3" />
+                ) : feedback === "duplicate" ? (
+                  <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-yellow-500 mb-2 sm:mb-3" />
+                ) : (
+                  <XCircle className="h-12 w-12 sm:h-16 sm:w-16 text-destructive mb-2 sm:mb-3" />
+                )}
+                {memberName && (
+                  <h3 className="text-xl sm:text-2xl font-bold text-center mb-1">{memberName}</h3>
+                )}
+                {feedback === "success" && selectedEvent && (() => {
+                  const scanTime = formatScanTime(new Date().toISOString());
+                  const arrivalStatus = getArrivalStatus(new Date().toISOString(), selectedEvent.event_time);
+                  const statusKey = getStatusTranslationKey(arrivalStatus);
+                  return (
+                    <div className="flex flex-col items-center gap-1 mb-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("attendance.scanTime")}: {scanTime}</p>
+                      {arrivalStatus && (
+                        <Badge variant={getStatusBadgeVariant(arrivalStatus)} className="text-xs sm:text-sm">
+                          {t(statusKey)}
+                        </Badge>
+                      )}
+                    </div>
+                  );
+                })()}
+                <p className="text-base sm:text-lg text-center text-muted-foreground">
+                  {feedbackMessage}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Scanner - takes maximum available space */}
+          {feedback === "idle" && windowStatus.allowed && (
+            <div className="w-full flex-1 flex flex-col min-h-0">
+              <div className="text-center mb-2 sm:mb-3">
+                <Scan className="h-8 w-8 sm:h-10 sm:w-10 text-primary mx-auto mb-1" />
+                <h3 className="text-base sm:text-xl font-semibold">{t("kiosk.scanPrompt")}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {selectedEvent?.name} — {selectedEvent?.event_time?.substring(0, 5)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Feedback card */}
-        {feedback !== "idle" && (
-          <Card className={cn(
-            "w-full border-2 transition-all animate-in fade-in zoom-in duration-300",
-            feedback === "success" && "border-green-500",
-            feedback === "duplicate" && "border-yellow-500",
-            feedback === "error" && "border-destructive",
-          )}>
-            <CardContent className="flex flex-col items-center py-6">
-              {feedback === "success" ? (
-                <CheckCircle className="h-16 w-16 text-green-500 mb-3" />
-              ) : feedback === "duplicate" ? (
-                <CheckCircle className="h-16 w-16 text-yellow-500 mb-3" />
-              ) : (
-                <XCircle className="h-16 w-16 text-destructive mb-3" />
-              )}
-              {memberName && (
-                <h3 className="text-2xl font-bold text-center mb-1">{memberName}</h3>
-              )}
-              {feedback === "success" && selectedEvent && (() => {
-                const scanTime = formatScanTime(new Date().toISOString());
-                const arrivalStatus = getArrivalStatus(new Date().toISOString(), selectedEvent.event_time);
-                const statusKey = getStatusTranslationKey(arrivalStatus);
-                return (
-                  <div className="flex flex-col items-center gap-1 mb-1">
-                    <p className="text-sm text-muted-foreground">{t("attendance.scanTime")}: {scanTime}</p>
-                    {arrivalStatus && (
-                      <Badge variant={getStatusBadgeVariant(arrivalStatus)} className="text-sm">
-                        {t(statusKey)}
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })()}
-              <p className="text-lg text-center text-muted-foreground">
-                {feedbackMessage}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Scanner - only show when window is open */}
-        {feedback === "idle" && windowStatus.allowed && (
-          <div className="w-full">
-            <div className="text-center mb-4">
-              <Scan className="h-12 w-12 text-primary mx-auto mb-2" />
-              <h3 className="text-xl font-semibold">{t("kiosk.scanPrompt")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {selectedEvent?.name} — {selectedEvent?.event_time?.substring(0, 5)}
-              </p>
+              <div className="rounded-xl overflow-hidden border-2 border-primary/20 flex-1 min-h-[250px] sm:min-h-[320px]">
+                <CameraScanner
+                  onScan={handleScan}
+                  isActive={scannerActive}
+                  onActiveChange={setScannerActive}
+                />
+              </div>
             </div>
-            <div className="rounded-xl overflow-hidden border-2 border-primary/20">
-              <CameraScanner
-                onScan={handleScan}
-                isActive={scannerActive}
-                onActiveChange={setScannerActive}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* No events today */}
-        {events.length === 0 && feedback === "idle" && (
-          <Card className="w-full">
-            <CardContent className="flex flex-col items-center py-8">
-              <Clock className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-lg font-semibold">{t("kiosk.noEventsToday")}</p>
-              <p className="text-sm text-muted-foreground">{t("kiosk.createEventToActivate")}</p>
-            </CardContent>
-          </Card>
-        )}
+          {/* No events today */}
+          {events.length === 0 && feedback === "idle" && (
+            <Card className="w-full flex-1 flex items-center justify-center">
+              <CardContent className="flex flex-col items-center py-6 sm:py-8">
+                <Clock className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-2 sm:mb-3" />
+                <p className="text-base sm:text-lg font-semibold">{t("kiosk.noEventsToday")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("kiosk.createEventToActivate")}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
-      <div className="absolute bottom-4 left-4">
-        <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+      {/* Footer back button */}
+      <div className="px-3 py-2 sm:px-6 sm:py-3">
+        <Button variant="ghost" size="sm" className="text-xs sm:text-sm" onClick={() => window.history.back()}>
           ← {t("common.back")}
         </Button>
       </div>
