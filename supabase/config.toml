@@ -43,3 +43,9 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = true
   [functions.send-login-verification]
     verify_jwt = false
+  [functions.send-role-approved]
+    verify_jwt = false
+  [functions.notify-admin-member-request]
+    verify_jwt = false
+  [functions.send-member-approved]
+    verify_jwt = false
