@@ -138,6 +138,27 @@ serve(async (req) => {
     let plan: string | null = null;
     let subscriptionEnd: string | null = null;
 
+    // Get previous DB state for change detection
+    let previousDbStatus: string | null = null;
+    let previousDbPlan: string | null = null;
+    let tenantName = "Unknown";
+    if (userTenantId) {
+      const { data: prevSub } = await supabaseClient
+        .from("tenant_subscriptions")
+        .select("status, plan")
+        .eq("tenant_id", userTenantId)
+        .single();
+      previousDbStatus = prevSub?.status || null;
+      previousDbPlan = prevSub?.plan || null;
+
+      const { data: tenant } = await supabaseClient
+        .from("tenants")
+        .select("name")
+        .eq("id", userTenantId)
+        .single();
+      tenantName = tenant?.name || "Unknown";
+    }
+
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
@@ -177,10 +198,61 @@ serve(async (req) => {
           } else {
             logStep("Plan synced to tenant_subscriptions", { tenantId: userTenantId, dbPlan: dbPlan.plan });
           }
+
+          // Detect renewal: was expired/cancelled, now active again
+          if (previousDbStatus && ["expired", "cancelled", "canceled"].includes(previousDbStatus)) {
+            logStep("Renewal detected", { previousStatus: previousDbStatus });
+            try {
+              await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-superadmin-subscription-event`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
+                body: JSON.stringify({
+                  eventType: "plan_renewed",
+                  tenantName,
+                  tenantEmail: user.email,
+                  newPlan: plan,
+                  language: "en",
+                }),
+              });
+            } catch (e) { logStep("Failed to notify renewal", { error: String(e) }); }
+          }
         }
       }
     } else {
       logStep("No active subscription found");
+
+      // Check for cancelled subscriptions
+      const cancelledSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "canceled",
+        limit: 1,
+      });
+
+      if (userTenantId && previousDbStatus === "active") {
+        // Was active, now not active → cancelled or expired
+        const eventType = cancelledSubs.data.length > 0 ? "plan_cancelled" : "plan_expired";
+        logStep(`Detected ${eventType}`, { previousPlan: previousDbPlan });
+
+        // Update DB status
+        await supabaseClient
+          .from("tenant_subscriptions")
+          .update({ status: eventType === "plan_cancelled" ? "cancelled" : "expired" })
+          .eq("tenant_id", userTenantId);
+
+        try {
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-superadmin-subscription-event`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
+            body: JSON.stringify({
+              eventType,
+              tenantName,
+              tenantEmail: user.email,
+              previousPlan: previousDbPlan,
+              language: "en",
+            }),
+          });
+        } catch (e) { logStep(`Failed to notify ${eventType}`, { error: String(e) }); }
+      }
     }
 
     return new Response(JSON.stringify({
