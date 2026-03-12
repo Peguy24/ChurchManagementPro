@@ -259,12 +259,12 @@ export default function Auth() {
     fetchTenantInfo();
   }, [tenantId]);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (skip during OTP check flow)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !otpPending && !isCheckingOtp) {
       navigate('/');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, otpPending, isCheckingOtp]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
