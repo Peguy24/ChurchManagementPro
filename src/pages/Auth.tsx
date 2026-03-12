@@ -628,6 +628,19 @@ export default function Auth() {
     setIsLoading(false);
   };
 
+  // Show OTP verification screen
+  if (otpPending) {
+    return (
+      <LoginOtpVerification
+        email={otpPending.email}
+        onVerified={handleOtpVerified}
+        onCancel={handleOtpCancel}
+        onResend={handleOtpResend}
+        onVerify={handleOtpVerify}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
