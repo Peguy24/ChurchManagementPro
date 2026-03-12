@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { 
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
-  Church, Heart, Clock, Smartphone, Search, LogIn, Copy, ExternalLink,
+  Church, Heart, Clock, Smartphone,
   Sparkles, Zap, ChevronRight, Play, TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,54 +22,8 @@ const Commercial = () => {
   const { t } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
-  const [churchSearch, setChurchSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; slug: string }>>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  const handleChurchSearch = async (searchTerm: string) => {
-    setChurchSearch(searchTerm);
-    
-    if (searchTerm.length < 2) {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
 
-    setIsSearching(true);
-    try {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('id, name, slug')
-        .ilike('name', `%${searchTerm}%`)
-        .limit(5);
-
-      if (error) throw error;
-      
-      setSearchResults(data || []);
-      setShowSearchResults(true);
-    } catch (error) {
-      console.error('Error searching churches:', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleChurchSelect = (slug: string) => {
-    navigate(`/t/${slug}/auth`);
-  };
-
-  const handleDirectSlugAccess = () => {
-    if (churchSearch.trim()) {
-      navigate(`/t/${churchSearch.toLowerCase().replace(/\s+/g, '-')}/auth`);
-    } else {
-      toast({
-        title: t("commercial.enterChurchName"),
-        description: t("commercial.enterChurchNameDesc"),
-        variant: "destructive"
-      });
-    }
-  };
 
   const features = [
     {
@@ -363,124 +316,6 @@ const Commercial = () => {
         </div>
       </section>
 
-      {/* Church Finder Section */}
-      <section className="py-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-secondary/5 to-transparent" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-2xl mx-auto">
-            <Card className="border-2 border-primary/20 shadow-xl shadow-primary/5 overflow-visible">
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 border-b">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <LogIn className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-center">{t("commercial.churchFinder")}</h2>
-                <p className="text-muted-foreground text-center mt-2">
-                  {t("commercial.churchFinderDesc")}
-                </p>
-              </div>
-              <CardContent className="p-6">
-                <div className="relative">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        placeholder={t("commercial.searchPlaceholder")}
-                        value={churchSearch}
-                        onChange={(e) => handleChurchSearch(e.target.value)}
-                        className="pl-11 h-12 text-lg border-2 focus:border-primary text-foreground bg-background"
-                      />
-                      {isSearching && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      size="lg"
-                      onClick={handleDirectSlugAccess}
-                      className="h-12 bg-gradient-to-r from-primary to-primary-dark hover:opacity-90"
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </Button>
-                  </div>
-                  
-                  {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-border rounded-xl shadow-2xl z-[100] overflow-hidden">
-                      <div className="p-2 bg-muted border-b border-border">
-                        <p className="text-sm text-foreground font-medium">
-                          {searchResults.length} {t("commercial.churchesFound")}
-                        </p>
-                      </div>
-                      {searchResults.map((church) => {
-                        const churchUrl = `${window.location.origin}/t/${church.slug}/auth`;
-                        return (
-                          <div
-                            key={church.id}
-                            className="p-4 hover:bg-accent transition-colors border-b last:border-b-0 cursor-pointer"
-                            onClick={() => handleChurchSelect(church.slug)}
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                                  <Church className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="font-semibold truncate">{church.name}</p>
-                                  <p className="text-xs text-muted-foreground truncate">{church.slug}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-9 w-9 p-0"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(churchUrl);
-                                    toast({
-                                      title: t("commercial.linkCopied"),
-                                      description: t("commercial.linkCopiedDesc"),
-                                    });
-                                  }}
-                                >
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleChurchSelect(church.slug);
-                                  }}
-                                  className="bg-gradient-to-r from-primary to-primary-dark"
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-1" />
-                                  {t("commercial.open")}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  
-                  {searchResults.length === 0 && churchSearch.length >= 2 && !isSearching && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl z-[100] p-6 text-center">
-                      <Church className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-muted-foreground">{t("commercial.noChurchFound")}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t("commercial.noChurchFoundDesc")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section id="features" className="py-24">
