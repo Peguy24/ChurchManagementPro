@@ -25,10 +25,11 @@ const languages: { code: Language; label: string; flag: string }[] = [
 ];
 
 export default function JoinChurch() {
-  const { tenantId } = useParams<{ tenantId: string }>();
+  const { tenantIdOrSlug } = useParams<{ tenantIdOrSlug: string }>();
   const { t, language, setLanguage } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
   const [churchName, setChurchName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [ministries, setMinistries] = useState<any[]>([]);
@@ -42,32 +43,57 @@ export default function JoinChurch() {
     message: "", desiredMinistryId: "",
   });
 
+  // Fetch tenant by slug (or UUID) and resolve to tenant_id
   useEffect(() => {
-    if (tenantId) {
+    if (tenantIdOrSlug) {
       supabase
         .from("tenants")
-        .select("name, logo_url")
-        .eq("id", tenantId)
+        .select("id, name, logo_url, slug")
+        .or(`slug.eq.${tenantIdOrSlug},id.eq.${tenantIdOrSlug}`)
         .single()
-        .then(({ data }) => {
-          if (data) {
+        .then(({ data, error }) => {
+          if (data && !error) {
+            setTenantId(data.id);
             setChurchName(data.name);
             setLogoUrl(data.logo_url);
+          } else {
+            // Try to fetch by ID if slug lookup failed (backward compatibility)
+            supabase
+              .from("tenants")
+              .select("id, name, logo_url, slug")
+              .eq("id", tenantIdOrSlug)
+              .single()
+              .then(({ data }) => {
+                if (data) {
+                  setTenantId(data.id);
+                  setChurchName(data.name);
+                  setLogoUrl(data.logo_url);
+                }
+              });
           }
         });
 
-      // Fetch active ministries for this tenant
+      // Fetch active ministries for this tenant (will use resolved tenantId)
       supabase
-        .from("ministries")
-        .select("id, name")
-        .eq("tenant_id", tenantId)
-        .eq("status", "active")
-        .order("name")
+        .from("tenants")
+        .select("id")
+        .or(`slug.eq.${tenantIdOrSlug},id.eq.${tenantIdOrSlug}`)
+        .single()
         .then(({ data }) => {
-          if (data) setMinistries(data);
+          if (data?.id) {
+            supabase
+              .from("ministries")
+              .select("id, name")
+              .eq("tenant_id", data.id)
+              .eq("status", "active")
+              .order("name")
+              .then(({ data: ministriesData }) => {
+                if (ministriesData) setMinistries(ministriesData);
+              });
+          }
         });
     }
-  }, [tenantId]);
+  }, [tenantIdOrSlug]);
 
   const updateField = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
