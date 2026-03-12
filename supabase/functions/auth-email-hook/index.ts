@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "cogmpw-sys"
+const SITE_NAME = "Church Management Pro"
 const SENDER_DOMAIN = "notify.churchmanagementpro.com"
 const ROOT_DOMAIN = "churchmanagementpro.com"
 const FROM_DOMAIN = "churchmanagementpro.com" // Domain shown in From address (may be root or sender subdomain)
