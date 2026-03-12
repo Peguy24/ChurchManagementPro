@@ -25,11 +25,40 @@ interface UseCurrentTenantReturn {
   refresh: () => Promise<void>;
 }
 
+const TENANT_CACHE_KEY = 'tenant_cache';
+
+function loadCachedTenant(userId: string): { tenantId: string; tenant: TenantInfo } | null {
+  try {
+    const raw = sessionStorage.getItem(TENANT_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed.userId === userId) return { tenantId: parsed.tenantId, tenant: parsed.tenant };
+  } catch {}
+  return null;
+}
+
+function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) {
+  try {
+    sessionStorage.setItem(TENANT_CACHE_KEY, JSON.stringify({ userId, tenantId, tenant }));
+  } catch {}
+}
+
 export function useCurrentTenant(): UseCurrentTenantReturn {
   const { user } = useAuth();
-  const [tenantId, setTenantId] = useState<string | null>(null);
-  const [tenant, setTenant] = useState<TenantInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Initialize from sessionStorage for instant render
+  const [tenantId, setTenantId] = useState<string | null>(() => {
+    if (!user) return null;
+    return loadCachedTenant(user.id)?.tenantId ?? null;
+  });
+  const [tenant, setTenant] = useState<TenantInfo | null>(() => {
+    if (!user) return null;
+    return loadCachedTenant(user.id)?.tenant ?? null;
+  });
+  const [loading, setLoading] = useState(() => {
+    if (!user) return false;
+    return !loadCachedTenant(user.id);
+  });
   const [error, setError] = useState<string | null>(null);
   const lastUserIdRef = useRef<string | null>(null);
   const cachedTenantRef = useRef<{ tenantId: string; tenant: TenantInfo } | null>(null);
@@ -43,7 +72,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       return;
     }
 
-    // Skip if same user and we already have cached data
+    // Skip if same user and we already have cached data in memory
     if (lastUserIdRef.current === user.id && cachedTenantRef.current) {
       setTenantId(cachedTenantRef.current.tenantId);
       setTenant(cachedTenantRef.current.tenant);
@@ -51,7 +80,11 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       return;
     }
 
-    setLoading(true);
+    // Only show loading if we have no cached data at all
+    const sessionCached = loadCachedTenant(user.id);
+    if (!sessionCached) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -90,6 +123,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       setTenant(tenantData);
       lastUserIdRef.current = user.id;
       cachedTenantRef.current = { tenantId: profile.tenant_id, tenant: tenantData };
+      saveCachedTenant(user.id, profile.tenant_id, tenantData);
     } catch (err) {
       console.error('Error fetching tenant info:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
