@@ -6764,6 +6764,7 @@ const translations = {
     members: {
       title: "Jesyon Manm",
       subtitle: "Jere manm legliz ou yo",
+      joinAsMember: "Antre kòm manm",
       addMember: "Ajoute yon Manm",
       editMember: "Modifye Manm",
       memberAdded: "Manm ajoute avèk siksè",

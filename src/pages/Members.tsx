@@ -451,6 +451,10 @@ export default function Members() {
           onOpenChange={setImportDialogOpen}
           onSuccess={refetch}
         />
+        <JoinAsMemberDialog
+          open={joinDialogOpen}
+          onOpenChange={setJoinDialogOpen}
+        />
         <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
