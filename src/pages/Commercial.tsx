@@ -2,19 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { 
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
-  Church, Heart, Clock, Smartphone, Search, LogIn, Copy, ExternalLink,
+  Church, Heart, Clock, Smartphone,
   Sparkles, Zap, ChevronRight, Play, TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-abstract.png";
 
 const Commercial = () => {
