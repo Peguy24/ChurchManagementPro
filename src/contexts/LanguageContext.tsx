@@ -3662,6 +3662,7 @@ const translations = {
     members: {
       title: "Member Management",
       subtitle: "Manage your church members",
+      joinAsMember: "Join as Member",
       addMember: "Add Member",
       editMember: "Edit Member",
       memberAdded: "Member added successfully",
