@@ -222,6 +222,49 @@ serve(async (req) => {
 
         logStep("Subscription updated to new plan", { subscriptionId, newPriceId: priceId });
 
+        // Notify super admins about plan change
+        try {
+          const { data: tenantProfile } = await supabaseClient
+            .from("profiles")
+            .select("tenant_id")
+            .eq("id", user.id)
+            .single();
+          
+          let tenantName = "Unknown";
+          if (tenantProfile?.tenant_id) {
+            const { data: tenant } = await supabaseClient
+              .from("tenants")
+              .select("name")
+              .eq("id", tenantProfile.tenant_id)
+              .single();
+            tenantName = tenant?.name || "Unknown";
+          }
+
+          const PRODUCT_TO_PLAN: Record<string, string> = {
+            "prod_Tqetfpt7pnhNFf": "essentiel",
+            "prod_TqetHNAL0zc5kD": "professionnel",
+            "prod_TqeuZk0jVNwjEp": "entreprise",
+          };
+          const currentProduct = existingSubs.data[0].items.data[0].price.product as string;
+          const previousPlanName = PRODUCT_TO_PLAN[currentProduct] || "unknown";
+
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-superadmin-subscription-event`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
+            body: JSON.stringify({
+              eventType: "plan_updated",
+              tenantName,
+              tenantEmail: user.email,
+              previousPlan: previousPlanName,
+              newPlan: plan,
+              language: "en",
+            }),
+          });
+          logStep("Super admin notified of plan change");
+        } catch (notifyErr) {
+          logStep("Failed to notify super admins", { error: String(notifyErr) });
+        }
+
         return new Response(JSON.stringify({ updated: true, message: "Votre abonnement a été mis à jour." }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,

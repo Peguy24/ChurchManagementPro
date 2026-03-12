@@ -49,3 +49,5 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.send-member-approved]
     verify_jwt = false
+  [functions.notify-superadmin-subscription-event]
+    verify_jwt = false
