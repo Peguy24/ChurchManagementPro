@@ -1,32 +1,24 @@
 
 
-## Current Situation
+## Current State
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+The member request form at `/join/:tenantId` is already **publicly accessible** — there are no authentication restrictions. Any tenant admin or super admin can navigate to this URL and fill it out. The RLS INSERT policy on `member_requests` allows anyone (authenticated or not) to insert rows as long as `tenant_id`, `first_name`, `last_name` are provided and `status = 'pending'`.
 
-## What Needs to Be Done
+The MemberRequests page already shows the join URL and a QR code that admins can share or use themselves.
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+## So What's the Issue?
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+There is **no issue to fix**. The architecture already supports this:
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+1. **Tenant admin wants to become a member of their own church** — They visit `/join/{their-tenant-id}`, fill the form, and their request appears in the Member Requests page for approval by another admin.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+2. **Super admin wants to become a member of any church** — They visit `/join/{any-tenant-id}` and submit the form. The church's admin reviews and approves it.
+
+3. **The form works for both anonymous and authenticated users** — The insert policy has no `auth.uid()` check.
+
+## No Code Changes Needed
+
+The current system correctly handles this use case. If you'd like, I can add a convenience button inside the admin dashboard (e.g., on the Members page) that says "Join as Member" and opens the join form for the current tenant — but functionally, everything already works as you described.
+
+Would you like me to add that convenience button, or is there a specific problem you're encountering when trying to submit the form as an admin?
 
