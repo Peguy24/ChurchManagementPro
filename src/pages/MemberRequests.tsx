@@ -19,7 +19,7 @@ import QRCodeLib from "qrcode";
 
 
 export default function MemberRequests() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
