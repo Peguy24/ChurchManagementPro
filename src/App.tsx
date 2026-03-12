@@ -102,7 +102,7 @@ const App = () => (
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/join/:tenantId" element={<JoinChurch />} />
+              <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
