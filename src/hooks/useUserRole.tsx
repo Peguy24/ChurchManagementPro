@@ -210,6 +210,20 @@ export function useUserRole() {
     }
   }, [user, authLoading]);
 
+  // Persist to sessionStorage whenever roles settle
+  useEffect(() => {
+    if (!loading && user && roles.length > 0) {
+      saveCachedRoles({
+        userId: user.id,
+        roles,
+        isApproved,
+        isAdmin,
+        isSuperAdmin,
+        permissions,
+      });
+    }
+  }, [loading, user, roles, isApproved, isAdmin, isSuperAdmin, permissions]);
+
   const hasRole = (role: AppRole): boolean => {
     return roles.includes(role);
   };
