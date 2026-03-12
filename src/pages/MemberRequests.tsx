@@ -31,9 +31,8 @@ export default function MemberRequests() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
-  const publishedOrigin = "https://churchmanagementpro.com";
   const tenantSlug = tenant?.slug || tenantId;
-  const joinUrl = `${publishedOrigin}/join/${tenantSlug}`;
+  const joinUrl = `${window.location.origin}/join/${tenantSlug}`;
 
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
