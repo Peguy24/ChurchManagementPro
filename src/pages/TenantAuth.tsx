@@ -337,13 +337,42 @@ export default function TenantAuth() {
     
     const { data: role } = await supabase
       .from('tenant_user_roles')
-      .select('is_approved')
+      .select('id, is_approved')
       .eq('tenant_id', tenant.id)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
     
     if (role?.is_approved) {
       navigate('/');
+      return;
+    }
+
+    // If no role exists but user has tenant metadata, create the missing entry
+    if (!role) {
+      const metadata = user.user_metadata;
+      const metaTenantId = metadata?.tenant_id;
+      const metaRole = metadata?.tenant_role;
+
+      if (metaTenantId === tenant.id && metaRole) {
+        const validRoles = ['admin', 'pastor', 'treasurer', 'secretary', 'volunteer', 'user'] as const;
+        const roleToInsert = validRoles.includes(metaRole as typeof validRoles[number]) ? metaRole : 'user';
+        const isAutoApproved = metadata?.tenant_auto_approved === true;
+
+        try {
+          await supabase.from('tenant_user_roles').insert({
+            tenant_id: tenant.id,
+            user_id: user.id,
+            role: roleToInsert as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+            is_approved: isAutoApproved,
+          });
+          console.log('Created missing tenant_user_roles entry from metadata fallback');
+          if (isAutoApproved) {
+            navigate('/');
+          }
+        } catch (err) {
+          console.error('Error creating fallback tenant role:', err);
+        }
+      }
     }
   }
 
