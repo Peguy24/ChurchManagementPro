@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import LoginOtpVerification from '@/components/LoginOtpVerification';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
