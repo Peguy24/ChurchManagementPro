@@ -156,16 +156,16 @@ export default function TenantUserManagement() {
 
       // Send approval notification email
       const approvedUser = users.find(u => u.user_id === userId);
-      if (approvedUser?.email) {
+      if (approvedUser?.user_email) {
         try {
           const finalRole = roleOverride 
             ? (roleOverride.startsWith('custom:') ? 'volunteer' : roleOverride)
             : approvedUser.role;
           await supabase.functions.invoke("send-role-approved", {
             body: {
-              userEmail: approvedUser.email,
-              firstName: approvedUser.first_name,
-              lastName: approvedUser.last_name,
+              userEmail: approvedUser.user_email,
+              firstName: approvedUser.profile?.first_name,
+              lastName: approvedUser.profile?.last_name,
               role: finalRole,
               tenantName: tenant?.name,
               tenantSlug: tenant?.slug,
