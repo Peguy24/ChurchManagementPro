@@ -23,10 +23,6 @@ const Commercial = () => {
   const { t } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
-  const [churchSearch, setChurchSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; slug: string }>>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const handleChurchSearch = async (searchTerm: string) => {
     setChurchSearch(searchTerm);
