@@ -123,6 +123,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       setTenant(tenantData);
       lastUserIdRef.current = user.id;
       cachedTenantRef.current = { tenantId: profile.tenant_id, tenant: tenantData };
+      saveCachedTenant(user.id, profile.tenant_id, tenantData);
     } catch (err) {
       console.error('Error fetching tenant info:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
