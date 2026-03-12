@@ -33,6 +33,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app-language", lang);
+    // Sync language to profile for email template localization
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.id) {
+        supabase.from('profiles').update({ language: lang }).eq('id', data.user.id).then(() => {});
+      }
+    });
   };
 
   const t = (key: string): string => {
