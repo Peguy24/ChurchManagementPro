@@ -24,12 +24,7 @@ const Commercial = () => {
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
 
-        title: t("commercial.enterChurchName"),
-        description: t("commercial.enterChurchNameDesc"),
-        variant: "destructive"
-      });
-    }
-  };
+
 
   const features = [
     {
