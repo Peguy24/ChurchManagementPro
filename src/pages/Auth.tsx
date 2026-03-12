@@ -195,6 +195,7 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [otpPending, setOtpPending] = useState<{ email: string; userId: string } | null>(null);
+  const [isCheckingOtp, setIsCheckingOtp] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
@@ -258,12 +259,12 @@ export default function Auth() {
     fetchTenantInfo();
   }, [tenantId]);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (skip during OTP check flow)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !otpPending && !isCheckingOtp) {
       navigate('/');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, otpPending, isCheckingOtp]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -299,6 +300,9 @@ export default function Auth() {
       return;
     }
 
+    // Set flag BEFORE signIn to prevent redirect during OTP check
+    setIsCheckingOtp(true);
+    
     const { error } = await signIn(loginForm.email, loginForm.password);
 
     if (error) {
@@ -309,6 +313,7 @@ export default function Auth() {
           : error.message,
         variant: 'destructive',
       });
+      setIsCheckingOtp(false);
       setIsLoading(false);
       return;
     }
@@ -357,6 +362,7 @@ export default function Auth() {
         }
 
         // Not admin — proceed normally
+        setIsCheckingOtp(false);
         const { data: approvedRoles } = await supabase
           .from('tenant_user_roles')
           .select('tenant_id')
@@ -375,6 +381,7 @@ export default function Auth() {
       }
     } catch (err) {
       console.error('Error in login flow:', err);
+      setIsCheckingOtp(false);
       toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
       navigate('/');
     }
