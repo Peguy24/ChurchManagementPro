@@ -194,6 +194,7 @@ export default function Auth() {
   const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [otpPending, setOtpPending] = useState<{ email: string; userId: string } | null>(null);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
