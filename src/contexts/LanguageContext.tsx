@@ -1,5 +1,6 @@
-// Language context with FR/EN/HT support - v2
+// Language context with FR/EN/HT support - v3 (syncs to profile)
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Language = "fr" | "en" | "ht";
 
