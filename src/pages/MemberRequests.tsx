@@ -21,7 +21,7 @@ import QRCodeLib from "qrcode";
 export default function MemberRequests() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { tenantId } = useCurrentTenant();
+  const { tenantId, tenant } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -32,7 +32,8 @@ export default function MemberRequests() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   const publishedOrigin = "https://churchmanagementpro.com";
-  const joinUrl = `${publishedOrigin}/join/${tenantId}`;
+  const tenantSlug = tenant?.slug || tenantId;
+  const joinUrl = `${publishedOrigin}/join/${tenantSlug}`;
 
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
