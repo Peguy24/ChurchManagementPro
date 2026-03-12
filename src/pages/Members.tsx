@@ -41,10 +41,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
+import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
+import JoinAsMemberDialog from "@/components/JoinAsMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDateForDisplay, todayInputValue } from "@/lib/date";
@@ -76,6 +77,7 @@ export default function Members() {
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ type: "archive" | "deceased"; member: any } | null>(null);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   
   const dateLocale = language === "en" ? "en-US" : "fr-FR";
   
@@ -230,6 +232,10 @@ export default function Members() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setJoinDialogOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {t("members.joinAsMember")}
+            </Button>
             <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => {
               if (!canAddMember()) {
                 setLimitDialogOpen(true);
@@ -444,6 +450,10 @@ export default function Members() {
           open={importDialogOpen}
           onOpenChange={setImportDialogOpen}
           onSuccess={refetch}
+        />
+        <JoinAsMemberDialog
+          open={joinDialogOpen}
+          onOpenChange={setJoinDialogOpen}
         />
         <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
           <AlertDialogContent>

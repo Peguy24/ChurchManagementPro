@@ -552,6 +552,7 @@ const translations = {
     members: {
       title: "Gestion des Membres",
       subtitle: "Gérez les membres de votre église",
+      joinAsMember: "Rejoindre comme membre",
       addMember: "Ajouter un Membre",
       editMember: "Modifier le Membre",
       memberAdded: "Membre ajouté avec succès",
@@ -3661,6 +3662,7 @@ const translations = {
     members: {
       title: "Member Management",
       subtitle: "Manage your church members",
+      joinAsMember: "Join as Member",
       addMember: "Add Member",
       editMember: "Edit Member",
       memberAdded: "Member added successfully",
@@ -6762,6 +6764,7 @@ const translations = {
     members: {
       title: "Jesyon Manm",
       subtitle: "Jere manm legliz ou yo",
+      joinAsMember: "Antre kòm manm",
       addMember: "Ajoute yon Manm",
       editMember: "Modifye Manm",
       memberAdded: "Manm ajoute avèk siksè",
