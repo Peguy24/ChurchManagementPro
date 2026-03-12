@@ -110,6 +110,24 @@ export default function JoinChurch() {
       });
 
       if (error) throw error;
+
+      // Notify tenant admins about new member request
+      try {
+        await supabase.functions.invoke("notify-admin-member-request", {
+          body: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email || null,
+            phone: formData.phone || null,
+            tenantId,
+            tenantName: churchName,
+            language,
+          },
+        });
+      } catch (emailErr) {
+        console.error("Failed to notify admins:", emailErr);
+      }
+
       setSubmitted(true);
       toast.success(t("joinForm.successToast"));
     } catch (error: any) {
