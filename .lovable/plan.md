@@ -1,24 +1,27 @@
 
 
-## Current State
+## Plan: Add "Join as Member" Button on Members Page
 
-The member request form at `/join/:tenantId` is already **publicly accessible** — there are no authentication restrictions. Any tenant admin or super admin can navigate to this URL and fill it out. The RLS INSERT policy on `member_requests` allows anyone (authenticated or not) to insert rows as long as `tenant_id`, `first_name`, `last_name` are provided and `status = 'pending'`.
+### What
+Add a button on the Members page that opens the full member request form (same as `/join/:tenantId`) inside a dialog, so admins can submit a membership request for themselves or on behalf of someone without navigating to the public URL.
 
-The MemberRequests page already shows the join URL and a QR code that admins can share or use themselves.
+### Changes
 
-## So What's the Issue?
+**1. Create `src/components/JoinAsMemberDialog.tsx`**
+- A dialog component that embeds the same multi-tab form from `JoinChurch.tsx` (personal info, address, spiritual life, family)
+- Uses the current `tenantId` from `useCurrentTenant()`
+- On submit, inserts into `member_requests` table (same logic as JoinChurch)
+- Fully translated using `useLanguage()` and existing `joinForm.*` translation keys
+- No language switcher needed since the admin dashboard already has one
 
-There is **no issue to fix**. The architecture already supports this:
+**2. Update `src/pages/Members.tsx`**
+- Add a "Join as Member" button (with `UserPlus` icon) in the button toolbar alongside Import/Export/Add
+- Opens the new `JoinAsMemberDialog`
+- Add translation keys: `members.joinAsMember`
 
-1. **Tenant admin wants to become a member of their own church** — They visit `/join/{their-tenant-id}`, fill the form, and their request appears in the Member Requests page for approval by another admin.
+**3. Add translations** in `LanguageContext.tsx`
+- `members.joinAsMember`: "Join as Member" / "Rejoindre comme membre" / "Antre kòm manm"
 
-2. **Super admin wants to become a member of any church** — They visit `/join/{any-tenant-id}` and submit the form. The church's admin reviews and approves it.
-
-3. **The form works for both anonymous and authenticated users** — The insert policy has no `auth.uid()` check.
-
-## No Code Changes Needed
-
-The current system correctly handles this use case. If you'd like, I can add a convenience button inside the admin dashboard (e.g., on the Members page) that says "Join as Member" and opens the join form for the current tenant — but functionally, everything already works as you described.
-
-Would you like me to add that convenience button, or is there a specific problem you're encountering when trying to submit the form as an admin?
+### How the form works for admins
+The dialog reuses the exact same form fields and tabs as the public join form — personal info, address, spiritual/church background, and family details. The admin fills it out completely, submits, and it appears in the Member Requests page for approval (another admin can approve it, or the same admin can self-approve from the requests page).
 
