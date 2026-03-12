@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,11 +31,22 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastUserIdRef = useRef<string | null>(null);
+  const cachedTenantRef = useRef<{ tenantId: string; tenant: TenantInfo } | null>(null);
 
   const fetchTenantInfo = useCallback(async () => {
     if (!user) {
       setTenantId(null);
       setTenant(null);
+      setLoading(false);
+      lastUserIdRef.current = null;
+      return;
+    }
+
+    // Skip if same user and we already have cached data
+    if (lastUserIdRef.current === user.id && cachedTenantRef.current) {
+      setTenantId(cachedTenantRef.current.tenantId);
+      setTenant(cachedTenantRef.current.tenant);
       setLoading(false);
       return;
     }
@@ -58,6 +69,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       if (!profile?.tenant_id) {
         setTenantId(null);
         setTenant(null);
+        lastUserIdRef.current = user.id;
         setLoading(false);
         return;
       }
@@ -76,6 +88,8 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       }
 
       setTenant(tenantData);
+      lastUserIdRef.current = user.id;
+      cachedTenantRef.current = { tenantId: profile.tenant_id, tenant: tenantData };
     } catch (err) {
       console.error('Error fetching tenant info:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');

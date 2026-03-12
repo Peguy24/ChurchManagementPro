@@ -36,12 +36,28 @@ const TenantContext = createContext<TenantContextType | undefined>(undefined);
 function detectTenantSlug(): string | null {
   const hostname = window.location.hostname;
   
+  // Skip detection on known platform domains (Lovable preview, localhost, etc.)
+  if (
+    hostname.endsWith('.lovable.app') ||
+    hostname.endsWith('.lovableproject.com') ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1'
+  ) {
+    // Only check path-based tenant on platform domains
+    const pathMatch = window.location.pathname.match(/^\/t\/([^\/]+)/);
+    if (pathMatch) {
+      return pathMatch[1];
+    }
+    return null;
+  }
+
   // Check for subdomain (e.g., mon-eglise.app.com)
   const parts = hostname.split('.');
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    // Exclude common subdomains
-    if (!['www', 'app', 'api', 'admin', 'localhost'].includes(subdomain)) {
+    // Exclude common subdomains and UUID-like strings
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(subdomain);
+    if (!isUUID && !['www', 'app', 'api', 'admin', 'localhost'].includes(subdomain)) {
       return subdomain;
     }
   }
