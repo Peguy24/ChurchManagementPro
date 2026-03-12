@@ -45,6 +45,7 @@ import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Ar
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
+import JoinAsMemberDialog from "@/components/JoinAsMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDateForDisplay, todayInputValue } from "@/lib/date";
