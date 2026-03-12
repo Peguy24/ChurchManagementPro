@@ -41,7 +41,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
+import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
