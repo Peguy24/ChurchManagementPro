@@ -44,29 +44,45 @@ function saveCachedRoles(state: CachedRoleState) {
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
 
+  // Try to load cached roles for any user found in sessionStorage
+  const [cachedUserId] = useState<string | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(ROLE_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as CachedRoleState;
+      return parsed.userId;
+    } catch { return null; }
+  });
+
   // Use lazy initializers to read sessionStorage only once
   const [roles, setRoles] = useState<AppRole[]>(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return c?.roles ?? [];
   });
   const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return c?.permissions ?? DEFAULT_ROLE_PERMISSIONS;
   });
   const [loading, setLoading] = useState(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return !c;
   });
   const [isApproved, setIsApproved] = useState(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return c?.isApproved ?? false;
   });
   const [isAdmin, setIsAdmin] = useState(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return c?.isAdmin ?? false;
   });
   const [isSuperAdmin, setIsSuperAdmin] = useState(() => {
-    const c = user ? loadCachedRoles(user.id) : null;
+    const uid = user?.id ?? cachedUserId;
+    const c = uid ? loadCachedRoles(uid) : null;
     return c?.isSuperAdmin ?? false;
   });
 
@@ -266,9 +282,13 @@ export function useUserRole() {
     return hasPermissionWithPerms(roles, group, permissions);
   };
 
+  // If we have cached data, don't wait for auth to resolve
+  const hasCachedData = roles.length > 0;
+  const effectiveLoading = hasCachedData ? false : (authLoading || loading);
+
   return {
     roles,
-    loading: authLoading || loading,
+    loading: effectiveLoading,
     isApproved,
     isAdmin,
     isSuperAdmin,
