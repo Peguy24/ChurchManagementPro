@@ -13,29 +13,33 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
+import { emailTranslations, type EmailLang } from './translations.ts'
+
 interface ReauthenticationEmailProps {
   token: string
+  lang?: EmailLang
 }
 
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Votre code de vérification</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt="Church Management Pro" width="180" height="auto" style={logo} />
-        <Heading style={h1}>Confirmation de réauthentification</Heading>
-        <Text style={text}>Utilisez le code ci-dessous pour confirmer votre identité :</Text>
-        <Text style={codeStyle}>{token}</Text>
-        <Text style={footer}>
-          Ce code expirera sous peu. Si vous n'avez pas fait cette demande, vous pouvez ignorer cet email.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+export const ReauthenticationEmail = ({ token, lang = 'en' }: ReauthenticationEmailProps) => {
+  const t = emailTranslations.reauthentication[lang]
+  return (
+    <Html lang={lang} dir="ltr">
+      <Head />
+      <Preview>{t.preview}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img src={LOGO_URL} alt="Church Management Pro" width="180" height="auto" style={logo} />
+          <Heading style={h1}>{t.heading}</Heading>
+          <Text style={text}>{t.text}</Text>
+          <Text style={codeStyle}>{token}</Text>
+          <Text style={footer}>{t.footer}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export default ReauthenticationEmail
 

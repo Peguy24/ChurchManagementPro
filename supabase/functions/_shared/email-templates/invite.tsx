@@ -15,10 +15,13 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
+import { emailTranslations, type EmailLang } from './translations.ts'
+
 interface InviteEmailProps {
   siteName: string
   siteUrl: string
   confirmationUrl: string
+  lang?: EmailLang
 }
 
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
@@ -27,31 +30,33 @@ export const InviteEmail = ({
   siteName,
   siteUrl,
   confirmationUrl,
-}: InviteEmailProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Vous avez été invité à rejoindre {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
-        <Heading style={h1}>Vous avez été invité</Heading>
-        <Text style={text}>
-          Vous avez été invité à rejoindre{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Cliquez sur le bouton ci-dessous pour accepter l'invitation et créer votre compte.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Accepter l'invitation
-        </Button>
-        <Text style={footer}>
-          Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet email en toute sécurité.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+  lang = 'en',
+}: InviteEmailProps) => {
+  const t = emailTranslations.invite[lang]
+  return (
+    <Html lang={lang} dir="ltr">
+      <Head />
+      <Preview>{t.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
+          <Heading style={h1}>{t.heading}</Heading>
+          <Text style={text}>
+            {t.joinText}{' '}
+            <Link href={siteUrl} style={link}>
+              <strong>{siteName}</strong>
+            </Link>
+            . {t.text}
+          </Text>
+          <Button style={button} href={confirmationUrl}>
+            {t.button}
+          </Button>
+          <Text style={footer}>{t.footer}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export default InviteEmail
 

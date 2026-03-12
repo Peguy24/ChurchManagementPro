@@ -1,5 +1,6 @@
-// Language context with FR/EN/HT support - v2
+// Language context with FR/EN/HT support - v3 (syncs to profile)
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Language = "fr" | "en" | "ht";
 
@@ -32,6 +33,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app-language", lang);
+    // Sync language to profile for email template localization
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.id) {
+        supabase.from('profiles').update({ language: lang }).eq('id', data.user.id).then(() => {});
+      }
+    });
   };
 
   const t = (key: string): string => {

@@ -14,9 +14,12 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
+import { emailTranslations, type EmailLang } from './translations.ts'
+
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
+  lang?: EmailLang
 }
 
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
@@ -24,27 +27,27 @@ const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/pub
 export const RecoveryEmail = ({
   siteName,
   confirmationUrl,
-}: RecoveryEmailProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Réinitialisez votre mot de passe pour {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
-        <Heading style={h1}>Réinitialisation du mot de passe</Heading>
-        <Text style={text}>
-          Nous avons reçu une demande de réinitialisation de votre mot de passe pour {siteName}. Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Réinitialiser le mot de passe
-        </Button>
-        <Text style={footer}>
-          Si vous n'avez pas demandé de réinitialisation, vous pouvez ignorer cet email. Votre mot de passe ne sera pas modifié.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+  lang = 'en',
+}: RecoveryEmailProps) => {
+  const t = emailTranslations.recovery[lang]
+  return (
+    <Html lang={lang} dir="ltr">
+      <Head />
+      <Preview>{t.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img src={LOGO_URL} alt={siteName} width="180" height="auto" style={logo} />
+          <Heading style={h1}>{t.heading}</Heading>
+          <Text style={text}>{t.text(siteName)}</Text>
+          <Button style={button} href={confirmationUrl}>
+            {t.button}
+          </Button>
+          <Text style={footer}>{t.footer}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export default RecoveryEmail
 
