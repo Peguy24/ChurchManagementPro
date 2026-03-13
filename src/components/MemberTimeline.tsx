@@ -180,6 +180,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
           event_date: a.event_date,
           scan_method: a.scan_method,
         })),
+        arrivals: arrivalRecords,
         donations: donations.map((d) => ({
           amount: Number(d.amount),
           donation_type: d.donation_type,
