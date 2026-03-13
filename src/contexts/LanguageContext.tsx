@@ -5941,6 +5941,7 @@ const translations = {
       qrCodeUnavailable: "QR Code unavailable",
       timeline: "Timeline",
       attendanceTab: "Attendance",
+      arrivalsTab: "Arrivals",
       donationsTab: "Donations",
       documentsTab: "Documents",
       ministries: "Ministries",
