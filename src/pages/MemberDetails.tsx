@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft } from "lucide-react";
+import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft, Clock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
