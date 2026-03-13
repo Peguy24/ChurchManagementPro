@@ -2838,6 +2838,7 @@ const translations = {
       qrCodeUnavailable: "QR Code non disponible",
       timeline: "Historique",
       attendanceTab: "Présences",
+      arrivalsTab: "Arrivées",
       donationsTab: "Cotisations",
       documentsTab: "Documents",
       ministries: "Ministères",
