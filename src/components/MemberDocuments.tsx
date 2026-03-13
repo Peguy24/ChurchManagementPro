@@ -30,11 +30,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Plus, Upload, Download, Trash2, Eye, Calendar } from "lucide-react";
+import { FileText, Plus, Upload, Trash2, Eye, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { todayInputValue, parseDateOnly } from "@/lib/date";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 interface MemberDocumentsProps {
@@ -52,19 +53,9 @@ interface Document {
   created_at: string;
 }
 
-const DOCUMENT_TYPES = [
-  { value: "adhesion", label: "Formulaire d'adhésion" },
-  { value: "bapteme", label: "Certificat de baptême" },
-  { value: "mariage", label: "Certificat de mariage" },
-  { value: "transfert", label: "Lettre de transfert" },
-  { value: "engagement", label: "Engagement de service" },
-  { value: "formation", label: "Attestation de formation" },
-  { value: "identite", label: "Pièce d'identité" },
-  { value: "autre", label: "Autre document" },
-];
-
 export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -77,6 +68,57 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
     notes: "",
   });
 
+  // Local translation map for caching mitigation
+  const lt = {
+    title: language === "fr" ? "Documents" : language === "ht" ? "Dokiman" : "Documents",
+    count: language === "fr" ? "document(s) enregistré(s)" : language === "ht" ? "dokiman(s) anrejistre" : "document(s) registered",
+    addButton: language === "fr" ? "Ajouter un document" : language === "ht" ? "Ajoute yon dokiman" : "Add a document",
+    noDocuments: language === "fr" ? "Aucun document enregistré" : language === "ht" ? "Pa gen dokiman anrejistre" : "No documents registered",
+    noDocumentsHint: language === "fr" ? 'Cliquez sur "Ajouter un document" pour commencer' : language === "ht" ? 'Klike "Ajoute yon dokiman" pou kòmanse' : 'Click "Add a document" to start',
+    addDialogTitle: language === "fr" ? "Ajouter un Document" : language === "ht" ? "Ajoute yon Dokiman" : "Add Document",
+    addDialogDesc: language === "fr" ? "Enregistrez un document lié au membre" : language === "ht" ? "Anrejistre yon dokiman ki gen rapò ak manm nan" : "Register a document related to the member",
+    type: language === "fr" ? "Type" : language === "ht" ? "Kalite" : "Type",
+    name: language === "fr" ? "Nom" : language === "ht" ? "Non" : "Name",
+    date: language === "fr" ? "Date" : language === "ht" ? "Dat" : "Date",
+    notes: language === "fr" ? "Notes" : language === "ht" ? "Nòt" : "Notes",
+    file: language === "fr" ? "Fichier" : language === "ht" ? "Fichye" : "File",
+    fileHint: language === "fr" ? "PDF ou image, max 10 Mo" : language === "ht" ? "PDF oswa imaj, max 10 Mo" : "PDF or image, max 10 MB",
+    filePlaceholder: language === "fr" ? "Choisir un fichier" : language === "ht" ? "Chwazi yon fichye" : "Choose a file",
+    typeRequired: language === "fr" ? "Type de document *" : language === "ht" ? "Kalite dokiman *" : "Document type *",
+    nameRequired: language === "fr" ? "Nom du document *" : language === "ht" ? "Non dokiman *" : "Document name *",
+    selectType: language === "fr" ? "Sélectionner un type" : language === "ht" ? "Chwazi yon kalite" : "Select a type",
+    documentNamePlaceholder: language === "fr" ? "Ex: Formulaire d'adhésion signé" : language === "ht" ? "Egz: Fòmilè adhesyon siyen" : "e.g. Signed membership form",
+    notesPlaceholder: language === "fr" ? "Informations supplémentaires..." : language === "ht" ? "Enfòmasyon siplementè..." : "Additional information...",
+    cancel: language === "fr" ? "Annuler" : language === "ht" ? "Anile" : "Cancel",
+    save: language === "fr" ? "Enregistrer" : language === "ht" ? "Anrejistre" : "Save",
+    saving: language === "fr" ? "Enregistrement..." : language === "ht" ? "Anrejistreman..." : "Saving...",
+    view: language === "fr" ? "Voir" : language === "ht" ? "Gade" : "View",
+    confirmDelete: language === "fr" ? "Êtes-vous sûr de vouloir supprimer ce document ?" : language === "ht" ? "Èske ou sè ke ou vle siprime dokiman sa a?" : "Are you sure you want to delete this document?",
+    deletedSuccess: language === "fr" ? "Document supprimé" : language === "ht" ? "Dokiman siprime" : "Document deleted",
+    deletedDesc: language === "fr" ? "Le document a été supprimé." : language === "ht" ? "Dokiman an te siprime." : "The document has been deleted.",
+    addedSuccess: language === "fr" ? "Document ajouté" : language === "ht" ? "Dokiman ajoute" : "Document added",
+    addedDesc: language === "fr" ? "Le document a été enregistré avec succès." : language === "ht" ? "Dokiman an anrejistre avèk siksè." : "The document has been successfully saved.",
+    errorTitle: language === "fr" ? "Erreur" : language === "ht" ? "Erè" : "Error",
+    fileTooLarge: language === "fr" ? "Fichier trop volumineux" : language === "ht" ? "Fichye twò gwo" : "File too large",
+    fileTooLargeDesc: language === "fr" ? "Le fichier ne doit pas dépasser 10 Mo." : language === "ht" ? "Fichye a pa dwe depase 10 Mo." : "The file must not exceed 10 MB.",
+    requiredFields: language === "fr" ? "Champs requis" : language === "ht" ? "Champs obligatwa" : "Required fields",
+    requiredFieldsDesc: language === "fr" ? "Veuillez remplir le type et le nom du document." : language === "ht" ? "Tanpri ranpli kalite ak non dokiman an." : "Please fill in the document type and name.",
+    actions: language === "fr" ? "Actions" : language === "ht" ? "Aksyon" : "Actions",
+  };
+
+  // Document types translations
+  const DOCUMENT_TYPES = [
+    { value: "adhesion", label: language === "fr" ? "Formulaire d'adhésion" : language === "ht" ? "Fòmilè Adhesyon" : "Membership Form" },
+    { value: "bapteme", label: language === "fr" ? "Certificat de baptême" : language === "ht" ? "Sètifika Batèm" : "Baptism Certificate" },
+    { value: "mariage", label: language === "fr" ? "Certificat de mariage" : language === "ht" ? "Sètifika Maryaj" : "Marriage Certificate" },
+    { value: "transfert", label: language === "fr" ? "Lettre de transfert" : language === "ht" ? "Lèt Transfè" : "Transfer Letter" },
+    { value: "engagement", label: language === "fr" ? "Engagement de service" : language === "ht" ? "Angajman Sèvis" : "Service Commitment" },
+    { value: "formation", label: language === "fr" ? "Attestation de formation" : language === "ht" ? "Sètifika Fòmasyon" : "Training Certificate" },
+    { value: "identite", label: language === "fr" ? "Pièce d'identité" : language === "ht" ? "Dokiman Idantite" : "ID Document" },
+    { value: "autre", label: language === "fr" ? "Autre document" : language === "ht" ? "Lòt Dokiman" : "Other Document" },
+  ];
+
+  const dateFnsLocale = language === "fr" ? fr : enUS;
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["member-documents", memberId],
@@ -98,8 +140,8 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
         toast({
-          title: "Fichier trop volumineux",
-          description: "Le fichier ne doit pas dépasser 10 Mo.",
+          title: lt.fileTooLarge,
+          description: lt.fileTooLargeDesc,
           variant: "destructive",
         });
         return;
@@ -114,8 +156,8 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const uploadDocument = async () => {
     if (!formData.documentType || !formData.documentName) {
       toast({
-        title: "Champs requis",
-        description: "Veuillez remplir le type et le nom du document.",
+        title: lt.requiredFields,
+        description: lt.requiredFieldsDesc,
         variant: "destructive",
       });
       return;
@@ -160,8 +202,8 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       if (error) throw error;
 
       toast({
-        title: "Document ajouté",
-        description: "Le document a été enregistré avec succès.",
+        title: lt.addedSuccess,
+        description: lt.addedDesc,
       });
 
       // Reset form
@@ -181,7 +223,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
     } catch (error: any) {
       console.error("Error uploading document:", error);
       toast({
-        title: "Erreur",
+        title: lt.errorTitle,
         description: error.message || "Impossible d'ajouter le document.",
         variant: "destructive",
       });
@@ -191,7 +233,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   };
 
   const handleDelete = async (documentId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) return;
+    if (!confirm(lt.confirmDelete)) return;
 
     try {
       const { error } = await supabase
@@ -202,14 +244,14 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       if (error) throw error;
 
       toast({
-        title: "Document supprimé",
-        description: "Le document a été supprimé.",
+        title: lt.deletedSuccess,
+        description: lt.deletedDesc,
       });
 
       queryClient.invalidateQueries({ queryKey: ["member-documents", memberId] });
     } catch (error: any) {
       toast({
-        title: "Erreur",
+        title: lt.errorTitle,
         description: error.message || "Impossible de supprimer le document.",
         variant: "destructive",
       });
@@ -241,15 +283,15 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Documents
+              {lt.title}
             </CardTitle>
             <CardDescription>
-              {documents.length} document(s) enregistré(s)
+              {documents.length} {lt.count}
             </CardDescription>
           </div>
           <Button size="sm" onClick={() => setAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Ajouter un document
+            {lt.addButton}
           </Button>
         </div>
       </CardHeader>
@@ -261,18 +303,18 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
         ) : documents.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>Aucun document enregistré</p>
-            <p className="text-sm">Cliquez sur "Ajouter un document" pour commencer</p>
+            <p>{lt.noDocuments}</p>
+            <p className="text-sm">{lt.noDocumentsHint}</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{lt.type}</TableHead>
+                <TableHead>{lt.name}</TableHead>
+                <TableHead>{lt.date}</TableHead>
+                <TableHead>{lt.notes}</TableHead>
+                <TableHead className="text-right">{lt.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -290,7 +332,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                   <TableCell>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {format(parseDateOnly(doc.document_date) ?? new Date(doc.document_date), "dd MMM yyyy", { locale: fr })}
+                      {format(parseDateOnly(doc.document_date) ?? new Date(doc.document_date), "dd MMM yyyy", { locale: dateFnsLocale })}
                     </div>
 
                   </TableCell>
@@ -304,6 +346,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => window.open(doc.document_url!, "_blank")}
+                          title={lt.view}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -328,15 +371,15 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajouter un Document</DialogTitle>
+            <DialogTitle>{lt.addDialogTitle}</DialogTitle>
             <DialogDescription>
-              Enregistrez un document lié au membre
+              {lt.addDialogDesc}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="doc-type">Type de document *</Label>
+              <Label htmlFor="doc-type">{lt.typeRequired}</Label>
               <Select
                 value={formData.documentType}
                 onValueChange={(value) =>
@@ -344,7 +387,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                 }
               >
                 <SelectTrigger id="doc-type">
-                  <SelectValue placeholder="Sélectionner un type" />
+                  <SelectValue placeholder={lt.selectType} />
                 </SelectTrigger>
                 <SelectContent>
                   {DOCUMENT_TYPES.map((type) => (
@@ -357,19 +400,19 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="doc-name">Nom du document *</Label>
+              <Label htmlFor="doc-name">{lt.nameRequired}</Label>
               <Input
                 id="doc-name"
                 value={formData.documentName}
                 onChange={(e) =>
                   setFormData({ ...formData, documentName: e.target.value })
                 }
-                placeholder="Ex: Formulaire d'adhésion signé"
+                placeholder={lt.documentNamePlaceholder}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="doc-date">Date du document</Label>
+              <Label htmlFor="doc-date">{lt.date}</Label>
               <Input
                 id="doc-date"
                 type="date"
@@ -381,7 +424,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Fichier (optionnel)</Label>
+              <Label>{lt.file}</Label>
               <div className="flex items-center gap-2">
                 <input
                   ref={fileInputRef}
@@ -398,23 +441,23 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
                   className="flex-1"
                 >
                   <Upload className="mr-2 h-4 w-4" />
-                  {selectedFile ? selectedFile.name : "Choisir un fichier"}
+                  {selectedFile ? selectedFile.name : lt.filePlaceholder}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                PDF ou image, max 10 Mo
+                {lt.fileHint}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="doc-notes">Notes</Label>
+              <Label htmlFor="doc-notes">{lt.notes}</Label>
               <Textarea
                 id="doc-notes"
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                placeholder="Informations supplémentaires..."
+                placeholder={lt.notesPlaceholder}
                 rows={3}
               />
             </div>
@@ -426,10 +469,10 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
               onClick={() => setAddDialogOpen(false)}
               disabled={uploading}
             >
-              Annuler
+              {lt.cancel}
             </Button>
             <Button onClick={uploadDocument} disabled={uploading}>
-              {uploading ? "Enregistrement..." : "Enregistrer"}
+              {uploading ? lt.saving : lt.save}
             </Button>
           </DialogFooter>
         </DialogContent>
