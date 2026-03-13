@@ -21,6 +21,13 @@ export interface MemberHistoryData {
     event_date: string;
     scan_method: string | null;
   }>;
+  arrivals: Array<{
+    event_name: string;
+    event_date: string;
+    event_time: string | null;
+    scan_time: string | null;
+    arrival_status: string | null;
+  }>;
   donations: Array<{
     amount: number;
     donation_type: string;
@@ -39,10 +46,137 @@ export interface MemberHistoryData {
   }>;
 }
 
+type PDFLang = "fr" | "en" | "ht";
+
+const pdfTranslations: Record<PDFLang, Record<string, string>> = {
+  fr: {
+    title: "Historique Complet du Membre",
+    generatedOn: "Genere le",
+    memberInfo: "Informations du Membre",
+    email: "Email",
+    phone: "Telephone",
+    address: "Adresse",
+    status: "Statut",
+    role: "Role",
+    joinDate: "Date d'adhesion",
+    baptismDate: "Date de bapteme",
+    conversionDate: "Date de conversion",
+    attendance: "Presences",
+    arrivals: "Arrivees",
+    donations: "Cotisations",
+    ministries: "Ministeres",
+    documents: "Documents",
+    noRecords: "Aucun enregistrement",
+    event: "Evenement",
+    details: "Details",
+    date: "Date",
+    amount: "Montant",
+    manual: "Manuel",
+    member: "Membre",
+    andMore: "et {count} autres enregistrements",
+    footer: "ChurchCRM - Historique Membre",
+    page: "Page",
+    scheduledTime: "Heure prevue",
+    arrivalTime: "Heure d'arrivee",
+    arrivalStatus: "Statut",
+    early: "En avance",
+    onTime: "A l'heure",
+    late: "En retard",
+    totalScans: "Total Scans",
+    earlyCount: "En avance",
+    onTimeCount: "A l'heure",
+    lateCount: "En retard",
+  },
+  en: {
+    title: "Complete Member History",
+    generatedOn: "Generated on",
+    memberInfo: "Member Information",
+    email: "Email",
+    phone: "Phone",
+    address: "Address",
+    status: "Status",
+    role: "Role",
+    joinDate: "Join date",
+    baptismDate: "Baptism date",
+    conversionDate: "Conversion date",
+    attendance: "Attendance",
+    arrivals: "Arrivals",
+    donations: "Donations",
+    ministries: "Ministries",
+    documents: "Documents",
+    noRecords: "No records",
+    event: "Event",
+    details: "Details",
+    date: "Date",
+    amount: "Amount",
+    manual: "Manual",
+    member: "Member",
+    andMore: "and {count} more records",
+    footer: "ChurchCRM - Member History",
+    page: "Page",
+    scheduledTime: "Scheduled time",
+    arrivalTime: "Arrival time",
+    arrivalStatus: "Status",
+    early: "Early",
+    onTime: "On Time",
+    late: "Late",
+    totalScans: "Total Scans",
+    earlyCount: "Early",
+    onTimeCount: "On Time",
+    lateCount: "Late",
+  },
+  ht: {
+    title: "Istwa Konple Manm nan",
+    generatedOn: "Jenere le",
+    memberInfo: "Enfomasyon Manm",
+    email: "Imel",
+    phone: "Telefon",
+    address: "Adres",
+    status: "Estati",
+    role: "Wol",
+    joinDate: "Dat enskripsyon",
+    baptismDate: "Dat batem",
+    conversionDate: "Dat konvesyon",
+    attendance: "Prezans",
+    arrivals: "Arive",
+    donations: "Kotizasyon",
+    ministries: "Ministe",
+    documents: "Dokiman",
+    noRecords: "Pa gen anrejistreman",
+    event: "Evenman",
+    details: "Detay",
+    date: "Dat",
+    amount: "Montan",
+    manual: "Manyel",
+    member: "Manm",
+    andMore: "ak {count} lot anrejistreman",
+    footer: "ChurchCRM - Istwa Manm",
+    page: "Paj",
+    scheduledTime: "Le prevwa",
+    arrivalTime: "Le arive",
+    arrivalStatus: "Estati",
+    early: "Bone",
+    onTime: "Ale",
+    late: "An reta",
+    totalScans: "Total Eskanaj",
+    earlyCount: "Bone",
+    onTimeCount: "Ale",
+    lateCount: "An reta",
+  },
+};
+
+// Sanitize text for jsPDF (remove accents/emojis)
+const sanitize = (text: string): string => {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x00-\x7F]/g, "");
+};
+
 const formatDate = (dateStr: string | null): string => {
   if (!dateStr) return "-";
   try {
-    return format(new Date(dateStr), "dd/MM/yyyy", { locale: fr });
+    return format(new Date(dateStr), "dd/MM/yyyy");
   } catch {
     return dateStr;
   }
@@ -51,14 +185,20 @@ const formatDate = (dateStr: string | null): string => {
 const formatDateLong = (dateStr: string | null): string => {
   if (!dateStr) return "-";
   try {
-    return format(new Date(dateStr), "dd MMMM yyyy", { locale: fr });
+    return format(new Date(dateStr), "dd/MM/yyyy");
   } catch {
     return dateStr;
   }
 };
 
-export async function generateMemberHistoryPDF(data: MemberHistoryData, currencyFormatter?: (amount: number) => string): Promise<Blob> {
-  const fmtCurrency = currencyFormatter || ((amount: number) => `${amount.toLocaleString("fr-FR")} €`);
+export async function generateMemberHistoryPDF(
+  data: MemberHistoryData,
+  currencyFormatter?: (amount: number) => string,
+  lang: PDFLang = "fr"
+): Promise<Blob> {
+  const t = (key: string) => sanitize(pdfTranslations[lang]?.[key] || pdfTranslations.en[key] || key);
+  const fmtCurrency = currencyFormatter || ((amount: number) => `${amount.toLocaleString("en-US")} $`);
+  
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -71,7 +211,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
 
-  const primaryColor = [59, 130, 246] as const; // Blue
+  const primaryColor = [59, 130, 246] as const;
   const textColor = [55, 65, 81] as const;
   const mutedColor = [107, 114, 128] as const;
 
@@ -84,32 +224,29 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
     return false;
   };
 
-  // Header with background
+  // Header
   pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   pdf.rect(0, 0, pageWidth, 45, "F");
 
-  // Title
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(22);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Historique Complet du Membre", margin, 20);
+  pdf.text(t("title"), margin, 20);
 
-  // Member name
   pdf.setFontSize(16);
   pdf.setFont("helvetica", "normal");
-  pdf.text(`${data.member.first_name} ${data.member.last_name}`, margin, 32);
+  pdf.text(sanitize(`${data.member.first_name} ${data.member.last_name}`), margin, 32);
 
-  // Generation date
   pdf.setFontSize(10);
-  pdf.text(`Généré le ${formatDateLong(new Date().toISOString())}`, pageWidth - margin - 50, 32);
+  pdf.text(`${t("generatedOn")} ${formatDateLong(new Date().toISOString())}`, pageWidth - margin - 50, 32);
 
   y = 55;
 
-  // Member Info Section
+  // Member Info
   pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Informations du Membre", margin, y);
+  pdf.text(t("memberInfo"), margin, y);
   y += 8;
 
   pdf.setFontSize(10);
@@ -117,19 +254,19 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
   pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
 
   const infoLines = [
-    `Email: ${data.member.email || "-"}`,
-    `Téléphone: ${data.member.phone || "-"}`,
-    `Adresse: ${data.member.address || "-"}`,
-    `Statut: ${data.member.status || "-"}`,
-    `Rôle: ${data.member.role || "-"}`,
-    `Date d'adhésion: ${formatDate(data.member.join_date)}`,
+    `${t("email")}: ${data.member.email || "-"}`,
+    `${t("phone")}: ${data.member.phone || "-"}`,
+    `${t("address")}: ${sanitize(data.member.address || "-")}`,
+    `${t("status")}: ${data.member.status || "-"}`,
+    `${t("role")}: ${sanitize(data.member.role || "-")}`,
+    `${t("joinDate")}: ${formatDate(data.member.join_date)}`,
   ];
 
   if (data.member.baptism_date) {
-    infoLines.push(`Date de baptême: ${formatDate(data.member.baptism_date)}`);
+    infoLines.push(`${t("baptismDate")}: ${formatDate(data.member.baptism_date)}`);
   }
   if (data.member.conversion_date) {
-    infoLines.push(`Date de conversion: ${formatDate(data.member.conversion_date)}`);
+    infoLines.push(`${t("conversionDate")}: ${formatDate(data.member.conversion_date)}`);
   }
 
   infoLines.forEach((line) => {
@@ -141,118 +278,99 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
 
   // Summary Stats
   const totalDonations = data.donations.reduce((sum, d) => sum + Number(d.amount), 0);
-  
+
   pdf.setFillColor(249, 250, 251);
   pdf.roundedRect(margin, y, contentWidth, 20, 3, 3, "F");
-  
+
   pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
   pdf.setFontSize(11);
   pdf.setFont("helvetica", "bold");
-  
+
   const statsY = y + 13;
-  const statWidth = contentWidth / 4;
-  
+  const statWidth = contentWidth / 5;
+
   pdf.text(`${data.attendance.length}`, margin + statWidth * 0.5, statsY - 3, { align: "center" });
-  pdf.text(fmtCurrency(totalDonations), margin + statWidth * 1.5, statsY - 3, { align: "center" });
-  pdf.text(`${data.ministries.length}`, margin + statWidth * 2.5, statsY - 3, { align: "center" });
-  pdf.text(`${data.documents.length}`, margin + statWidth * 3.5, statsY - 3, { align: "center" });
-  
+  pdf.text(`${data.arrivals.length}`, margin + statWidth * 1.5, statsY - 3, { align: "center" });
+  pdf.text(fmtCurrency(totalDonations), margin + statWidth * 2.5, statsY - 3, { align: "center" });
+  pdf.text(`${data.ministries.length}`, margin + statWidth * 3.5, statsY - 3, { align: "center" });
+  pdf.text(`${data.documents.length}`, margin + statWidth * 4.5, statsY - 3, { align: "center" });
+
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-  
-  pdf.text("Présences", margin + statWidth * 0.5, statsY + 3, { align: "center" });
-  pdf.text("Cotisations", margin + statWidth * 1.5, statsY + 3, { align: "center" });
-  pdf.text("Ministères", margin + statWidth * 2.5, statsY + 3, { align: "center" });
-  pdf.text("Documents", margin + statWidth * 3.5, statsY + 3, { align: "center" });
-  
+
+  pdf.text(t("attendance"), margin + statWidth * 0.5, statsY + 3, { align: "center" });
+  pdf.text(t("arrivals"), margin + statWidth * 1.5, statsY + 3, { align: "center" });
+  pdf.text(t("donations"), margin + statWidth * 2.5, statsY + 3, { align: "center" });
+  pdf.text(t("ministries"), margin + statWidth * 3.5, statsY + 3, { align: "center" });
+  pdf.text(t("documents"), margin + statWidth * 4.5, statsY + 3, { align: "center" });
+
   y += 30;
 
-  // Section helper
-  const addSection = (title: string, items: Array<{ primary: string; secondary: string; date: string; amount?: string }>) => {
+  // Generic section helper for attendance/donations/ministries/documents
+  const addSection = (title: string, headers: string[], items: Array<string[]>, highlightCol?: number) => {
     addNewPageIfNeeded(30);
-    
+
     // Section header
     pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     pdf.roundedRect(margin, y, contentWidth, 8, 2, 2, "F");
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
-    pdf.text(title, margin + 4, y + 5.5);
+    pdf.text(sanitize(title), margin + 4, y + 5.5);
     y += 12;
 
     if (items.length === 0) {
       pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
-      pdf.text("Aucun enregistrement", margin + 4, y);
+      pdf.text(t("noRecords"), margin + 4, y);
       y += 8;
       return;
     }
 
-    // Table header
-    pdf.setFillColor(243, 244, 246);
-    pdf.rect(margin, y, contentWidth, 7, "F");
-    pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-    pdf.setFontSize(9);
-    pdf.setFont("helvetica", "bold");
-    
-    const col1 = margin + 4;
-    const col2 = margin + contentWidth * 0.4;
-    const col3 = margin + contentWidth * 0.65;
-    const col4 = margin + contentWidth * 0.85;
-    
-    pdf.text("Événement", col1, y + 5);
-    pdf.text("Détails", col2, y + 5);
-    pdf.text("Date", col3, y + 5);
-    if (items.some(i => i.amount)) {
-      pdf.text("Montant", col4, y + 5);
-    }
-    y += 9;
+    const colCount = headers.length;
+    const colWidth = contentWidth / colCount;
 
-    // Table rows
-    pdf.setFont("helvetica", "normal");
-    items.slice(0, 50).forEach((item, index) => {
+    const drawHeaders = () => {
+      pdf.setFillColor(243, 244, 246);
+      pdf.rect(margin, y, contentWidth, 7, "F");
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      headers.forEach((h, i) => {
+        pdf.text(sanitize(h), margin + 4 + colWidth * i, y + 5);
+      });
+      y += 9;
+      pdf.setFont("helvetica", "normal");
+    };
+
+    drawHeaders();
+
+    const truncate = (text: string, maxLen: number) =>
+      text.length > maxLen ? text.substring(0, maxLen - 2) + "..." : text;
+
+    items.slice(0, 50).forEach((row, index) => {
       if (addNewPageIfNeeded(7)) {
-        // Re-add header on new page
-        pdf.setFillColor(243, 244, 246);
-        pdf.rect(margin, y, contentWidth, 7, "F");
-        pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-        pdf.setFontSize(9);
-        pdf.setFont("helvetica", "bold");
-        pdf.text("Événement", col1, y + 5);
-        pdf.text("Détails", col2, y + 5);
-        pdf.text("Date", col3, y + 5);
-        if (items.some(i => i.amount)) {
-          pdf.text("Montant", col4, y + 5);
-        }
-        y += 9;
-        pdf.setFont("helvetica", "normal");
+        drawHeaders();
       }
 
-      // Alternate row colors
       if (index % 2 === 0) {
         pdf.setFillColor(249, 250, 251);
         pdf.rect(margin, y - 1, contentWidth, 6, "F");
       }
 
-      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
       pdf.setFontSize(9);
-      
-      // Truncate text if too long
-      const truncate = (text: string, maxLen: number) => 
-        text.length > maxLen ? text.substring(0, maxLen - 2) + "..." : text;
-      
-      pdf.text(truncate(item.primary, 30), col1, y + 3);
-      pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-      pdf.text(truncate(item.secondary, 20), col2, y + 3);
-      pdf.text(item.date, col3, y + 3);
-      if (item.amount) {
-        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.setFont("helvetica", "bold");
-        pdf.text(item.amount, col4, y + 3);
-        pdf.setFont("helvetica", "normal");
-      }
+      row.forEach((cell, i) => {
+        if (highlightCol !== undefined && i === highlightCol) {
+          pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setFont("helvetica", "bold");
+        } else {
+          pdf.setTextColor(i === 0 ? textColor[0] : mutedColor[0], i === 0 ? textColor[1] : mutedColor[1], i === 0 ? textColor[2] : mutedColor[2]);
+          pdf.setFont("helvetica", "normal");
+        }
+        pdf.text(truncate(sanitize(cell), 25), margin + 4 + colWidth * i, y + 3);
+      });
       y += 6;
     });
 
@@ -260,7 +378,7 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
       pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
       pdf.setFontSize(8);
       pdf.setFont("helvetica", "italic");
-      pdf.text(`... et ${items.length - 50} autres enregistrements`, margin + 4, y + 2);
+      pdf.text(sanitize(t("andMore").replace("{count}", String(items.length - 50))), margin + 4, y + 2);
       y += 6;
     }
 
@@ -269,59 +387,86 @@ export async function generateMemberHistoryPDF(data: MemberHistoryData, currency
 
   // Attendance Section
   addSection(
-    `Présences (${data.attendance.length})`,
-    data.attendance.map((a) => ({
-      primary: a.event_type,
-      secondary: a.scan_method || "Manuel",
-      date: formatDate(a.event_date),
-    }))
+    `${t("attendance")} (${data.attendance.length})`,
+    [t("event"), t("details"), t("date")],
+    data.attendance.map((a) => [
+      a.event_type,
+      a.scan_method || t("manual"),
+      formatDate(a.event_date),
+    ])
+  );
+
+  // Arrivals Section
+  const getStatusLabel = (status: string | null): string => {
+    if (!status) return "-";
+    switch (status) {
+      case "early": return t("early");
+      case "onTime": return t("onTime");
+      case "late": return t("late");
+      default: return "-";
+    }
+  };
+
+  addSection(
+    `${t("arrivals")} (${data.arrivals.length})`,
+    [t("event"), t("scheduledTime"), t("arrivalTime"), t("arrivalStatus")],
+    data.arrivals.map((a) => [
+      a.event_name,
+      a.event_time ? a.event_time.substring(0, 5) : "-",
+      a.scan_time || "-",
+      getStatusLabel(a.arrival_status),
+    ])
   );
 
   // Donations Section
   addSection(
-    `Cotisations (${data.donations.length})`,
-    data.donations.map((d) => ({
-      primary: d.donation_type,
-      secondary: d.payment_method,
-      date: formatDate(d.donation_date),
-      amount: fmtCurrency(Number(d.amount)),
-    }))
+    `${t("donations")} (${data.donations.length})`,
+    [t("event"), t("details"), t("date"), t("amount")],
+    data.donations.map((d) => [
+      d.donation_type,
+      d.payment_method,
+      formatDate(d.donation_date),
+      fmtCurrency(Number(d.amount)),
+    ]),
+    3 // highlight amount column
   );
 
   // Ministries Section
   addSection(
-    `Ministères (${data.ministries.length})`,
-    data.ministries.map((m) => ({
-      primary: m.ministry_name,
-      secondary: m.role || "Membre",
-      date: formatDate(m.joined_date),
-    }))
+    `${t("ministries")} (${data.ministries.length})`,
+    [t("event"), t("details"), t("date")],
+    data.ministries.map((m) => [
+      m.ministry_name,
+      m.role || t("member"),
+      formatDate(m.joined_date),
+    ])
   );
 
   // Documents Section
   addSection(
-    `Documents (${data.documents.length})`,
-    data.documents.map((d) => ({
-      primary: d.document_name,
-      secondary: d.document_type,
-      date: formatDate(d.document_date),
-    }))
+    `${t("documents")} (${data.documents.length})`,
+    [t("event"), t("details"), t("date")],
+    data.documents.map((d) => [
+      d.document_name,
+      d.document_type,
+      formatDate(d.document_date),
+    ])
   );
 
-  // Footer on last page
+  // Footer
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
     pdf.setFontSize(8);
     pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
     pdf.text(
-      `Page ${i} / ${totalPages}`,
+      `${t("page")} ${i} / ${totalPages}`,
       pageWidth / 2,
       pageHeight - 10,
       { align: "center" }
     );
     pdf.text(
-      "ChurchCRM - Historique Membre",
+      t("footer"),
       margin,
       pageHeight - 10
     );
@@ -334,7 +479,7 @@ export function downloadMemberHistoryPDF(blob: Blob, memberName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `historique_${memberName.replace(/\s+/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+  link.download = `history_${memberName.replace(/\s+/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
