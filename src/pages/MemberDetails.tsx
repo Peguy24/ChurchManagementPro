@@ -58,6 +58,7 @@ import MemberAttendanceStats from "@/components/MemberAttendanceStats";
 import MemberDonationStats from "@/components/MemberDonationStats";
 import MemberDocuments from "@/components/MemberDocuments";
 import MemberTimeline from "@/components/MemberTimeline";
+import MemberArrivalStats from "@/components/MemberArrivalStats";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDateForDisplay, todayInputValue } from "@/lib/date";
 import QRCode from "qrcode";
