@@ -9043,6 +9043,7 @@ const translations = {
       qrCodeUnavailable: "Kòd QR pa disponib",
       timeline: "Istwa",
       attendanceTab: "Prezans",
+      arrivalsTab: "Arive",
       donationsTab: "Kotizasyon",
       documentsTab: "Dokiman",
       ministries: "Ministè",
