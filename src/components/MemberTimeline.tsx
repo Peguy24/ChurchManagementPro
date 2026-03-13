@@ -61,6 +61,31 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     enabled: !!memberId,
   });
 
+  // Fetch arrival records (with event time for status calculation)
+  const { data: arrivalRecords = [] } = useQuery({
+    queryKey: ["member-arrivals-timeline", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance_records")
+        .select(`
+          id, event_date, event_type, marked_at,
+          event:events!attendance_records_event_id_fkey(name, event_time)
+        `)
+        .eq("member_id", memberId)
+        .order("event_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []).map((r: any) => ({
+        event_name: r.event?.name || r.event_type,
+        event_date: r.event_date,
+        event_time: r.event?.event_time || null,
+        scan_time: formatScanTime(r.marked_at),
+        arrival_status: getArrivalStatus(r.marked_at, r.event?.event_time),
+      }));
+    },
+    enabled: !!memberId,
+  });
+
   // Fetch donations
   const { data: donations = [] } = useQuery({
     queryKey: ["member-donations-timeline", memberId],
