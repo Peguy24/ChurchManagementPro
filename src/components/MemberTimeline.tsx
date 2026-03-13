@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { generateMemberHistoryPDF, downloadMemberHistoryPDF, MemberHistoryData } from "@/lib/memberHistoryPDF";
+import { getArrivalStatus, formatScanTime } from "@/lib/attendanceStatus";
 
 interface MemberTimelineProps {
   memberId: string;
@@ -42,6 +44,7 @@ interface TimelineEvent {
 export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const { formatAmount } = useCurrency();
+  const { language } = useLanguage();
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
@@ -54,6 +57,31 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         .limit(50);
       if (error) throw error;
       return data;
+    },
+    enabled: !!memberId,
+  });
+
+  // Fetch arrival records (with event time for status calculation)
+  const { data: arrivalRecords = [] } = useQuery({
+    queryKey: ["member-arrivals-timeline", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance_records")
+        .select(`
+          id, event_date, event_type, marked_at,
+          event:events!attendance_records_event_id_fkey(name, event_time)
+        `)
+        .eq("member_id", memberId)
+        .order("event_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []).map((r: any) => ({
+        event_name: r.event?.name || r.event_type,
+        event_date: r.event_date,
+        event_time: r.event?.event_time || null,
+        scan_time: formatScanTime(r.marked_at),
+        arrival_status: getArrivalStatus(r.marked_at, r.event?.event_time),
+      }));
     },
     enabled: !!memberId,
   });
@@ -152,6 +180,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
           event_date: a.event_date,
           scan_method: a.scan_method,
         })),
+        arrivals: arrivalRecords,
         donations: donations.map((d) => ({
           amount: Number(d.amount),
           donation_type: d.donation_type,
@@ -170,7 +199,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         })),
       };
 
-      const blob = await generateMemberHistoryPDF(historyData, formatAmount);
+      const blob = await generateMemberHistoryPDF(historyData, formatAmount, language);
       downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
       toast.success("PDF généré avec succès");
     } catch (error) {
