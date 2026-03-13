@@ -199,7 +199,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         })),
       };
 
-      const blob = await generateMemberHistoryPDF(historyData, formatAmount);
+      const blob = await generateMemberHistoryPDF(historyData, formatAmount, language);
       downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
       toast.success("PDF généré avec succès");
     } catch (error) {
