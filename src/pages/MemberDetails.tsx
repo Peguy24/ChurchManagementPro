@@ -627,22 +627,26 @@ export default function MemberDetails() {
         {/* Tabs for different sections */}
         {memberId && (
           <Tabs defaultValue="timeline" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="timeline" className="flex items-center gap-2">
                 <History className="h-4 w-4" />
-                {t("memberDetails.timeline")}
+                <span className="hidden sm:inline">{t("memberDetails.timeline")}</span>
               </TabsTrigger>
               <TabsTrigger value="attendance" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {t("memberDetails.attendanceTab")}
+                <span className="hidden sm:inline">{t("memberDetails.attendanceTab")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="arrivals" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("memberDetails.arrivalsTab")}</span>
               </TabsTrigger>
               <TabsTrigger value="donations" className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
-                {t("memberDetails.donationsTab")}
+                <span className="hidden sm:inline">{t("memberDetails.donationsTab")}</span>
               </TabsTrigger>
               <TabsTrigger value="documents" className="flex items-center gap-2">
                 <Book className="h-4 w-4" />
-                {t("memberDetails.documentsTab")}
+                <span className="hidden sm:inline">{t("memberDetails.documentsTab")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -652,6 +656,10 @@ export default function MemberDetails() {
 
             <TabsContent value="attendance" className="mt-6">
               <MemberAttendanceStats memberId={memberId} />
+            </TabsContent>
+
+            <TabsContent value="arrivals" className="mt-6">
+              <MemberArrivalStats memberId={memberId} />
             </TabsContent>
 
             <TabsContent value="donations" className="mt-6">
