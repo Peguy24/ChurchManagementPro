@@ -61,6 +61,7 @@ import {
   Zap,
   Monitor,
   Clock,
+  Handshake,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
