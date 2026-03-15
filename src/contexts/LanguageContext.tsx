@@ -9270,6 +9270,7 @@ const translations = {
       subscriptionUpdatedMsg: "Abònman ou te mete ajou avèk siksè.",
       checkoutError: "Enposib pou kreye sesyon peman. Tanpri eseye ankò.",
       portalError: "Enposib pou ouvri pòtay jesyon an. Tanpri eseye ankò.",
+      noStripeCustomer: "Pa jwenn abònman. Tanpri enskri nan yon plan dabò.",
     },
     memberDetails: {
       title: "Detay Manm",
