@@ -98,6 +98,21 @@ async function notifySuperAdmin(eventType: string, details: Record<string, unkno
   }
 }
 
+async function notifyTenantAdmins(eventType: string, tenantId: string, amount?: string) {
+  try {
+    await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-tenant-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+      },
+      body: JSON.stringify({ eventType, tenantId, amount, language: "fr" }),
+    });
+  } catch (e) {
+    logStep("Failed to notify tenant admins", { error: String(e) });
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
