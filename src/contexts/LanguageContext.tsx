@@ -157,6 +157,7 @@ const translations = {
       specialFunds: "Fonds Spéciaux",
       cashRegister: "Caisse",
       auditTrail: "Historique d'Audit",
+      creditAndLoans: "Crédits & Prêts",
       events: "Événements",
       ministries: "Ministères",
       branches: "Branches",
