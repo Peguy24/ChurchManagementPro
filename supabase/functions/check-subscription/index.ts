@@ -260,6 +260,7 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       plan,
       subscription_end: subscriptionEnd,
+      has_stripe_customer: true,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
