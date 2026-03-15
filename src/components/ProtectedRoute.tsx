@@ -124,9 +124,10 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   if (!planLoading && user && isApproved && !isSuperAdmin && tenantId) {
     const isExempt = SUBSCRIPTION_EXEMPT_PATHS.some(p => location.pathname.startsWith(p));
     if (!isExempt && !plan) {
-      const reason = subscriptionStatus === "past_due" ? "past_due"
-        : subscriptionStatus === "cancelled" ? "cancelled"
-        : subscriptionStatus === "trial" ? "trial_ended"
+      const status = subscriptionStatus as string;
+      const reason = status === "past_due" ? "past_due"
+        : status === "cancelled" ? "cancelled"
+        : status === "trial" ? "trial_ended"
         : "expired";
       return (
         <Layout>
