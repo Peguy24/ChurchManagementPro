@@ -240,6 +240,9 @@ serve(async (req) => {
           metadata: { invoice_id: invoice.id },
         });
 
+        const amountStr = invoice.amount_due ? (invoice.amount_due / 100).toFixed(2) : "0";
+        await notifyTenantAdmins("payment_failed", tenantId, amountStr);
+
         logStep("Payment failed processed", { email });
         break;
       }
