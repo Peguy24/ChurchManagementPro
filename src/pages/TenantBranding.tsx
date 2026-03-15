@@ -48,9 +48,12 @@ export default function TenantBranding() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["current-tenant"] });
       queryClient.invalidateQueries({ queryKey: ["white-label-settings"] });
+      // Clear tenant cache so Layout picks up new color
+      try { sessionStorage.removeItem('tenant_cache'); } catch {}
+      await refreshTenant();
       toast.success(t("tenant.settingsSaved"));
     },
     onError: (error) => {
