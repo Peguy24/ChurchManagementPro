@@ -381,13 +381,16 @@ const CreditAndLoans = () => {
                       </TableHeader>
                       <TableBody>
                         {filtered.map((op) => {
-                          const remaining = Number(op.total_amount) - Number(op.amount_paid);
-                          const pct = Number(op.total_amount) > 0 ? (Number(op.amount_paid) / Number(op.total_amount)) * 100 : 0;
+                          const effTotal = getEffectiveTotal(op);
+                          const remaining = effTotal - Number(op.amount_paid);
+                          const pct = effTotal > 0 ? (Number(op.amount_paid) / effTotal) * 100 : 0;
                           return (
                             <TableRow key={op.id}>
                               <TableCell className="font-medium">{op.counterparty}</TableCell>
                               <TableCell>{op.description}</TableCell>
                               <TableCell>{formatAmount(Number(op.total_amount))}</TableCell>
+                              <TableCell>{Number(op.interest_rate || 0)}%</TableCell>
+                              <TableCell className="font-semibold">{formatAmount(effTotal)}</TableCell>
                               <TableCell>{formatAmount(Number(op.amount_paid))}</TableCell>
                               <TableCell className="font-semibold">{formatAmount(remaining)}</TableCell>
                               <TableCell className="w-32">
