@@ -158,11 +158,13 @@ export function useSubscription() {
       if (data?.url) {
         window.open(data.url, '_blank');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error opening customer portal:', error);
+      const errorMsg = error?.message || error?.context?.body?.error || '';
+      const isNoCustomer = errorMsg.includes('No Stripe customer');
       toast({
         title: t("common.error"),
-        description: t("sub.portalError"),
+        description: isNoCustomer ? t("sub.noStripeCustomer") : t("sub.portalError"),
         variant: "destructive",
       });
     } finally {
