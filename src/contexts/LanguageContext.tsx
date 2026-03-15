@@ -6065,6 +6065,7 @@ const translations = {
       subscriptionUpdatedMsg: "Your subscription has been updated successfully.",
       checkoutError: "Unable to create payment session. Please try again.",
       portalError: "Unable to open management portal. Please try again.",
+      noStripeCustomer: "No subscription found. Please subscribe to a plan first.",
     },
     memberDetails: {
       title: "Member Details",
