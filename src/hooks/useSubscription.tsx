@@ -42,6 +42,7 @@ export function useSubscription() {
     subscribed: false,
     plan: null,
     subscriptionEnd: null,
+    hasStripeCustomer: false,
     loading: true,
   });
   const [checkoutLoading, setCheckoutLoading] = useState(false);
