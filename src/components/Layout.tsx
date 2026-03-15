@@ -133,6 +133,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/finance/cash", icon: Wallet, label: t("nav.cashRegister") },
         { to: "/finance/salaries", icon: Users, label: t("layout.salaries") },
         { to: "/finance/audit", icon: History, label: t("nav.auditTrail") },
+        { to: "/finance/credits", icon: Handshake, label: t("nav.creditAndLoans") },
       ],
     },
     {
