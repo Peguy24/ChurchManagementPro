@@ -3360,6 +3360,7 @@ const translations = {
       specialFunds: "Special Funds",
       cashRegister: "Cash Register",
       auditTrail: "Audit Trail",
+      creditAndLoans: "Credits & Loans",
       events: "Events",
       ministries: "Ministries",
       branches: "Branches",
