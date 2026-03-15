@@ -7,6 +7,7 @@ export interface SubscriptionState {
   subscribed: boolean;
   plan: string | null;
   subscriptionEnd: string | null;
+  hasStripeCustomer: boolean;
   loading: boolean;
 }
 
@@ -41,6 +42,7 @@ export function useSubscription() {
     subscribed: false,
     plan: null,
     subscriptionEnd: null,
+    hasStripeCustomer: false,
     loading: true,
   });
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -70,6 +72,7 @@ export function useSubscription() {
         subscribed: data.subscribed,
         plan: data.plan,
         subscriptionEnd: data.subscription_end,
+        hasStripeCustomer: data.has_stripe_customer ?? false,
         loading: false,
       });
     } catch (error) {

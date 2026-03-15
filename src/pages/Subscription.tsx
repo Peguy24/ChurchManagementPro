@@ -36,6 +36,7 @@ export default function Subscription() {
     subscribed, 
     plan, 
     subscriptionEnd, 
+    hasStripeCustomer,
     loading, 
     checkoutLoading, 
     portalLoading,
@@ -193,10 +194,18 @@ export default function Subscription() {
                   </div>
                 </div>
                 <Separator />
-                <Button onClick={openCustomerPortal} disabled={portalLoading} className="w-full">
-                  {portalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Settings className="h-4 w-4 mr-2" />}
-                  {t("sub.manageSub")}
-                </Button>
+                {hasStripeCustomer ? (
+                  <Button onClick={openCustomerPortal} disabled={portalLoading} className="w-full">
+                    {portalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Settings className="h-4 w-4 mr-2" />}
+                    {t("sub.manageSub")}
+                  </Button>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {t("sub.choosePlanBelow")}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-6">
@@ -258,7 +267,7 @@ export default function Subscription() {
                       <Button disabled className="w-full" variant="outline">
                         {t("sub.currentPlanLabel")}
                       </Button>
-                    ) : subscribed ? (
+                    ) : subscribed && hasStripeCustomer ? (
                       <Button onClick={openCustomerPortal} disabled={portalLoading} variant="outline" className="w-full">
                         {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("sub.switchPlan")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                       </Button>
