@@ -95,6 +95,7 @@ serve(async (req) => {
             subscribed: true,
             plan: mappedPlan,
             subscription_end: tenantSub.current_period_end,
+            has_stripe_customer: false,
           }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
