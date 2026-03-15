@@ -87,6 +87,21 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
+  // Subscription enforcement: redirect to subscription page if no active plan
+  // Exempt: super admins, subscription-exempt paths, and while still loading plan data
+  useEffect(() => {
+    if (loading || planLoading || !user || !isApproved || isSuperAdmin) return;
+    if (!tenantId) return; // No tenant selected yet
+
+    const isExempt = SUBSCRIPTION_EXEMPT_PATHS.some(p => location.pathname.startsWith(p));
+    if (isExempt) return;
+
+    // plan is null when there's no active subscription (trial expired or cancelled)
+    if (!plan) {
+      navigate('/settings/subscription');
+    }
+  }, [user, loading, planLoading, isApproved, isSuperAdmin, tenantId, plan, location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
