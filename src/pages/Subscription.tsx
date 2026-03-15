@@ -267,7 +267,7 @@ export default function Subscription() {
                       <Button disabled className="w-full" variant="outline">
                         {t("sub.currentPlanLabel")}
                       </Button>
-                    ) : subscribed ? (
+                    ) : subscribed && hasStripeCustomer ? (
                       <Button onClick={openCustomerPortal} disabled={portalLoading} variant="outline" className="w-full">
                         {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("sub.switchPlan")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                       </Button>
