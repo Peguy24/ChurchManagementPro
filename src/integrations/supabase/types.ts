@@ -554,6 +554,129 @@ export type Database = {
           },
         ]
       }
+      credit_operations: {
+        Row: {
+          amount_paid: number
+          branch_id: string | null
+          counterparty: string
+          created_at: string
+          created_by: string
+          description: string
+          due_date: string | null
+          id: string
+          interest_rate: number
+          notes: string | null
+          start_date: string
+          status: string
+          tenant_id: string
+          total_amount: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_paid?: number
+          branch_id?: string | null
+          counterparty: string
+          created_at?: string
+          created_by: string
+          description: string
+          due_date?: string | null
+          id?: string
+          interest_rate?: number
+          notes?: string | null
+          start_date?: string
+          status?: string
+          tenant_id: string
+          total_amount: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount_paid?: number
+          branch_id?: string | null
+          counterparty?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          interest_rate?: number
+          notes?: string | null
+          start_date?: string
+          status?: string
+          tenant_id?: string
+          total_amount?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_operations_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_operations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          credit_operation_id: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          credit_operation_id: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          credit_operation_id?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_payments_credit_operation_id_fkey"
+            columns: ["credit_operation_id"]
+            isOneToOne: false
+            referencedRelation: "credit_operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_field_values: {
         Row: {
           created_at: string | null

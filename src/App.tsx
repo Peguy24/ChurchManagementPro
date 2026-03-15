@@ -28,6 +28,7 @@ import BankReconciliation from "./pages/BankReconciliation";
 import SpecialFunds from "./pages/SpecialFunds";
 import CashRegister from "./pages/CashRegister";
 import FinancialAudit from "./pages/FinancialAudit";
+import CreditAndLoans from "./pages/CreditAndLoans";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
 import MinistryDetails from "./pages/MinistryDetails";
@@ -129,6 +130,7 @@ const App = () => (
               <Route path="/finance/funds" element={<ProtectedRoute><SpecialFunds /></ProtectedRoute>} />
               <Route path="/finance/cash" element={<ProtectedRoute><CashRegister /></ProtectedRoute>} />
               <Route path="/finance/audit" element={<ProtectedRoute><FinancialAudit /></ProtectedRoute>} />
+              <Route path="/finance/credits" element={<ProtectedRoute><CreditAndLoans /></ProtectedRoute>} />
               <Route path="/finance/salaries" element={<ProtectedRoute><Salaries /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
