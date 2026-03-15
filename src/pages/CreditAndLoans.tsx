@@ -429,8 +429,14 @@ const CreditAndLoans = () => {
                 <div className="p-3 rounded-lg border bg-muted/50">
                   <p className="font-medium">{selectedOperation.counterparty}</p>
                   <p className="text-sm text-muted-foreground">{selectedOperation.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("creditAndLoans.totalAmount")}: {formatAmount(Number(selectedOperation.total_amount))} | {t("creditAndLoans.interestRate")}: {Number(selectedOperation.interest_rate || 0)}%
+                  </p>
                   <p className="text-sm mt-1">
-                    {t("creditAndLoans.remaining")}: <span className="font-bold">{formatAmount(Number(selectedOperation.total_amount) - Number(selectedOperation.amount_paid))}</span>
+                    {t("creditAndLoans.totalWithInterest")}: <span className="font-semibold">{formatAmount(getEffectiveTotal(selectedOperation))}</span>
+                  </p>
+                  <p className="text-sm">
+                    {t("creditAndLoans.remaining")}: <span className="font-bold">{formatAmount(getEffectiveTotal(selectedOperation) - Number(selectedOperation.amount_paid))}</span>
                   </p>
                 </div>
                 <div>
