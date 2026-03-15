@@ -320,10 +320,10 @@ export default function Layout({ children }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Apply tenant primary color to CSS custom properties
+  // Use cached tenant color first (instant), then whiteLabel query result
   useEffect(() => {
-    const hex = whiteLabelSettings.primary_color;
+    const hex = tenant?.primary_color || whiteLabelSettings.primary_color;
     if (!hex || hex === '#6366f1') {
-      // Reset to default
       document.documentElement.style.removeProperty('--primary');
       document.documentElement.style.removeProperty('--primary-light');
       document.documentElement.style.removeProperty('--primary-dark');
@@ -337,7 +337,7 @@ export default function Layout({ children }: LayoutProps) {
       document.documentElement.style.setProperty('--primary-dark', `${hsl.h} ${hsl.s}% ${Math.max(hsl.l - 10, 10)}%`);
       document.documentElement.style.setProperty('--ring', `${hsl.h} ${hsl.s}% ${hsl.l}%`);
     }
-  }, [whiteLabelSettings.primary_color]);
+  }, [tenant?.primary_color, whiteLabelSettings.primary_color]);
 
   // Determine if user is a super admin (admin without tenant)
   const isSuperAdmin = isAdmin && !tenantId && !tenantLoading;
