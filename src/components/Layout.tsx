@@ -313,7 +313,7 @@ export default function Layout({ children }: LayoutProps) {
   const { signOut, user } = useAuth();
   const { canSeeNav, canSeeItem, isAdmin } = useUserRole();
   const { isTenantAdmin } = useTenantRole();
-  const { tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
