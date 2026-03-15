@@ -35,6 +35,41 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Apply cached tenant color BEFORE React mounts to prevent color flash
+      (function() {
+        try {
+          var raw = sessionStorage.getItem('tenant_cache');
+          if (raw) {
+            var cached = JSON.parse(raw);
+            var hex = cached && cached.tenant && cached.tenant.primary_color;
+            if (hex && hex !== '#6366f1') {
+              var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+              if (result) {
+                var r = parseInt(result[1], 16) / 255;
+                var g = parseInt(result[2], 16) / 255;
+                var b = parseInt(result[3], 16) / 255;
+                var max = Math.max(r, g, b), min = Math.min(r, g, b);
+                var h = 0, s = 0, l = (max + min) / 2;
+                if (max !== min) {
+                  var d = max - min;
+                  s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                  else if (max === g) h = ((b - r) / d + 2) / 6;
+                  else h = ((r - g) / d + 4) / 6;
+                }
+                h = Math.round(h * 360); s = Math.round(s * 100); l = Math.round(l * 100);
+                var root = document.documentElement;
+                root.style.setProperty('--primary', h + ' ' + s + '% ' + l + '%');
+                root.style.setProperty('--primary-light', h + ' ' + s + '% ' + Math.min(l + 30, 90) + '%');
+                root.style.setProperty('--primary-dark', h + ' ' + s + '% ' + Math.max(l - 10, 10) + '%');
+                root.style.setProperty('--ring', h + ' ' + s + '% ' + l + '%');
+              }
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
