@@ -102,6 +102,21 @@ const translations: Record<string, Record<string, Record<string, string>>> = {
       action: "Plan Renouvle",
     },
   },
+  payment_failed: {
+    en: { subject: "⚠️ Payment Failed", title: "Payment Failed", subtitle: "A tenant's payment could not be processed", label: "Payment Details", action: "Payment Failed" },
+    fr: { subject: "⚠️ Paiement Échoué", title: "Paiement Échoué", subtitle: "Le paiement d'un tenant n'a pas pu être traité", label: "Détails du Paiement", action: "Paiement Échoué" },
+    ht: { subject: "⚠️ Peman Echwe", title: "Peman Echwe", subtitle: "Peman yon tenant pa t kapab trete", label: "Detay Peman", action: "Peman Echwe" },
+  },
+  payment_succeeded: {
+    en: { subject: "💰 Payment Received", title: "Payment Received", subtitle: "A tenant's payment was successfully processed", label: "Payment Details", action: "Payment Received" },
+    fr: { subject: "💰 Paiement Reçu", title: "Paiement Reçu", subtitle: "Le paiement d'un tenant a été traité avec succès", label: "Détails du Paiement", action: "Paiement Reçu" },
+    ht: { subject: "💰 Peman Resevwa", title: "Peman Resevwa", subtitle: "Peman yon tenant trete ak siksè", label: "Detay Peman", action: "Peman Resevwa" },
+  },
+  checkout_completed: {
+    en: { subject: "🛒 Checkout Completed", title: "New Checkout", subtitle: "A tenant has completed a checkout session", label: "Checkout Details", action: "Checkout Completed" },
+    fr: { subject: "🛒 Paiement Complété", title: "Nouveau Paiement", subtitle: "Un tenant a complété une session de paiement", label: "Détails du Paiement", action: "Paiement Complété" },
+    ht: { subject: "🛒 Peman Konplete", title: "Nouvo Peman", subtitle: "Yon tenant konplete yon sesyon peman", label: "Detay Peman", action: "Peman Konplete" },
+  },
 };
 
 const colorSchemes: Record<EventType, { bg: string; accent: string }> = {
