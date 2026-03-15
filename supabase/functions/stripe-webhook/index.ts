@@ -278,6 +278,9 @@ serve(async (req) => {
           amount: invoice.amount_paid ? (invoice.amount_paid / 100).toFixed(2) : "0",
         });
 
+        const paidAmount = invoice.amount_paid ? (invoice.amount_paid / 100).toFixed(2) : "0";
+        await notifyTenantAdmins("payment_succeeded", tenantId, paidAmount);
+
         logStep("Payment succeeded processed", { email });
         break;
       }
