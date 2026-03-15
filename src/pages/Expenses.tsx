@@ -330,6 +330,12 @@ export default function Expenses() {
       queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast({ title: t("common.save") });
     },
+    onError: (error: any) => {
+      const description = error?.message === "INSUFFICIENT_BALANCE"
+        ? t("cashRegisterPage.insufficientBalance")
+        : t("common.error");
+      toast({ title: t("common.error"), description, variant: "destructive" });
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {

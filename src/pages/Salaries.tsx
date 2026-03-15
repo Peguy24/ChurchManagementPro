@@ -283,6 +283,9 @@ export default function Salaries() {
       if (data.cash_register_id) {
         const register = cashRegisters.find(r => r.id === data.cash_register_id);
         if (register) {
+          if (Number(register.current_balance) < amount) {
+            throw new Error("INSUFFICIENT_BALANCE");
+          }
           await supabase
             .from("cash_registers")
             .update({ current_balance: Number(register.current_balance) - amount })
