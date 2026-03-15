@@ -571,6 +571,34 @@ const FinancialDashboard = () => {
           </Card>
         </div>
 
+        {/* Credit & Loans Summary */}
+        {creditOperations && creditOperations.length > 0 && (
+          <Card className="border-l-4 border-l-orange-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Handshake className="h-5 w-5 text-orange-500" />
+                {t("creditAndLoans.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">{t("creditAndLoans.totalDebts")}</p>
+                  <p className="text-xl font-bold text-destructive">
+                    {formatCurrency(creditOperations.filter(o => o.type === "credit_purchase" || o.type === "loan_received").reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">{t("creditAndLoans.totalCredits")}</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {formatCurrency(creditOperations.filter(o => o.type === "loan_given").reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0))}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Total Available Funds */}
         <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
           <CardContent className="pt-6">
