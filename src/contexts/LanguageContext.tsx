@@ -6555,6 +6555,7 @@ const translations = {
       specialFunds: "Fon Espesyal",
       cashRegister: "Kès",
       auditTrail: "Istwa Odit",
+      creditAndLoans: "Kredi & Prè",
       events: "Evènman",
       ministries: "Ministè",
       branches: "Branch",
