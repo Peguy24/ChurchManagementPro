@@ -408,6 +408,7 @@ const translations = {
       insufficientBalance: "Solde insuffisant dans la source sélectionnée",
       balanceDeducted: "Le montant a été déduit de la source sélectionnée",
       balanceAdded: "Le montant a été ajouté à la source sélectionnée",
+      totalWithInterest: "Total avec intérêts",
     },
     transferDialog: {
       title: "Transfert entre comptes",
