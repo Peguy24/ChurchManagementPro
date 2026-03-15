@@ -104,6 +104,14 @@ const CashRegister = () => {
       const amount = Number(transactionForm.amount);
       const isExpense = transactionForm.transaction_type === "expense" || transactionForm.transaction_type === "transfer_out";
       
+      // Check sufficient balance for outgoing transactions
+      if (isExpense) {
+        const register = registers?.find((r) => r.id === selectedRegister);
+        if (register && Number(register.current_balance) < Math.abs(amount)) {
+          throw new Error("INSUFFICIENT_BALANCE");
+        }
+      }
+
       const { error } = await supabase.from("cash_transactions").insert({
         cash_register_id: selectedRegister,
         transaction_type: transactionForm.transaction_type,
@@ -128,8 +136,11 @@ const CashRegister = () => {
       setTransactionForm({ transaction_type: "income", amount: "", description: "", transaction_date: format(new Date(), "yyyy-MM-dd"), reference_number: "" });
       toast({ title: t("common.save"), description: t("cashRegisterPage.successTransaction") });
     },
-    onError: () => {
-      toast({ title: t("common.error"), description: t("cashRegisterPage.errorTransaction"), variant: "destructive" });
+    onError: (error: any) => {
+      const description = error?.message === "INSUFFICIENT_BALANCE" 
+        ? t("cashRegisterPage.insufficientBalance") 
+        : t("cashRegisterPage.errorTransaction");
+      toast({ title: t("common.error"), description, variant: "destructive" });
     },
   });
 

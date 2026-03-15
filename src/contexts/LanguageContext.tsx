@@ -355,6 +355,7 @@ const translations = {
       errorCreate: "Impossible de créer la caisse",
       successTransaction: "Transaction enregistrée",
       errorTransaction: "Impossible d'enregistrer la transaction",
+      insufficientBalance: "Cette caisse n'a pas assez de fonds pour cette opération",
     },
     transferDialog: {
       title: "Transfert entre comptes",
@@ -3514,6 +3515,7 @@ const translations = {
       errorCreate: "Unable to create register",
       successTransaction: "Transaction saved",
       errorTransaction: "Unable to save transaction",
+      insufficientBalance: "This cash register does not have enough funds for this operation",
     },
     transferDialog: {
       title: "Transfer between accounts",
@@ -6665,6 +6667,7 @@ const translations = {
       errorCreate: "Enposib pou kreye kès la",
       successTransaction: "Tranzaksyon anrejistre",
       errorTransaction: "Enposib pou anrejistre tranzaksyon an",
+      insufficientBalance: "Kès sa a pa gen ase lajan pou operasyon sa a",
     },
     transferDialog: {
       title: "Transfè ant kont yo",

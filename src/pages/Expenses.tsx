@@ -253,6 +253,9 @@ export default function Expenses() {
         if (expense.cash_register_id) {
           const register = cashRegisters.find(r => r.id === expense.cash_register_id);
           if (register) {
+            if (Number(register.current_balance) < amount) {
+              throw new Error("INSUFFICIENT_BALANCE");
+            }
             const newBalance = Number(register.current_balance) - amount;
             await supabase.from("cash_registers").update({ current_balance: newBalance }).eq("id", expense.cash_register_id);
             
@@ -326,6 +329,12 @@ export default function Expenses() {
       queryClient.invalidateQueries({ queryKey: ["cash-registers"] });
       queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast({ title: t("common.save") });
+    },
+    onError: (error: any) => {
+      const description = error?.message === "INSUFFICIENT_BALANCE"
+        ? t("cashRegisterPage.insufficientBalance")
+        : t("common.error");
+      toast({ title: t("common.error"), description, variant: "destructive" });
     },
   });
 
