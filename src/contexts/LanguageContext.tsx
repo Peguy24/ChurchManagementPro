@@ -355,6 +355,7 @@ const translations = {
       errorCreate: "Impossible de créer la caisse",
       successTransaction: "Transaction enregistrée",
       errorTransaction: "Impossible d'enregistrer la transaction",
+      insufficientBalance: "Cette caisse n'a pas assez de fonds pour cette opération",
     },
     transferDialog: {
       title: "Transfert entre comptes",
