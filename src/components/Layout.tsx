@@ -298,6 +298,26 @@ export default function Layout({ children }: LayoutProps) {
   const { settings: whiteLabelSettings } = useWhiteLabel();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Apply tenant primary color to CSS custom properties
+  useEffect(() => {
+    const hex = whiteLabelSettings.primary_color;
+    if (!hex || hex === '#6366f1') {
+      // Reset to default
+      document.documentElement.style.removeProperty('--primary');
+      document.documentElement.style.removeProperty('--primary-light');
+      document.documentElement.style.removeProperty('--primary-dark');
+      document.documentElement.style.removeProperty('--ring');
+      return;
+    }
+    const hsl = hexToHSL(hex);
+    if (hsl) {
+      document.documentElement.style.setProperty('--primary', `${hsl.h} ${hsl.s}% ${hsl.l}%`);
+      document.documentElement.style.setProperty('--primary-light', `${hsl.h} ${hsl.s}% ${Math.min(hsl.l + 30, 90)}%`);
+      document.documentElement.style.setProperty('--primary-dark', `${hsl.h} ${hsl.s}% ${Math.max(hsl.l - 10, 10)}%`);
+      document.documentElement.style.setProperty('--ring', `${hsl.h} ${hsl.s}% ${hsl.l}%`);
+    }
+  }, [whiteLabelSettings.primary_color]);
+
   // Determine if user is a super admin (admin without tenant)
   const isSuperAdmin = isAdmin && !tenantId && !tenantLoading;
   
