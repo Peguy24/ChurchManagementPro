@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   AlertTriangle,
-  Banknote
+  Banknote,
+  Handshake
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
