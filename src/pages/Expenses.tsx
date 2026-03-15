@@ -183,11 +183,32 @@ export default function Expenses() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       setDialogOpen(false);
       resetForm();
       toast({ title: t("common.save"), description: t("expense.created") });
+
+      // Notify admin(s) about the pending expense
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const creatorProfile = userProfiles.find((p) => p.id === userData?.user?.id);
+        const creatorName = creatorProfile
+          ? `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim()
+          : "";
+
+        await supabase.functions.invoke("notify-admin-pending-expense", {
+          body: {
+            tenantId,
+            description: variables.description,
+            amount: parseFloat(variables.amount),
+            expenseDate: variables.expense_date,
+            creatorName: creatorName || "Un membre",
+          },
+        });
+      } catch (emailErr) {
+        console.error("Failed to notify admin:", emailErr);
+      }
     },
     onError: () => {
       toast({ title: t("errors.serverError"), variant: "destructive" });
