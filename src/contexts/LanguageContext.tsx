@@ -2859,6 +2859,7 @@ const translations = {
       subscriptionUpdatedMsg: "Votre abonnement a été mis à jour avec succès.",
       checkoutError: "Impossible de créer la session de paiement. Veuillez réessayer.",
       portalError: "Impossible d'ouvrir le portail de gestion. Veuillez réessayer.",
+      noStripeCustomer: "Aucun abonnement trouvé. Veuillez d'abord souscrire à un plan.",
     },
     memberDetails: {
       title: "Détails du Membre",
@@ -6064,6 +6065,7 @@ const translations = {
       subscriptionUpdatedMsg: "Your subscription has been updated successfully.",
       checkoutError: "Unable to create payment session. Please try again.",
       portalError: "Unable to open management portal. Please try again.",
+      noStripeCustomer: "No subscription found. Please subscribe to a plan first.",
     },
     memberDetails: {
       title: "Member Details",
@@ -9268,6 +9270,7 @@ const translations = {
       subscriptionUpdatedMsg: "Abònman ou te mete ajou avèk siksè.",
       checkoutError: "Enposib pou kreye sesyon peman. Tanpri eseye ankò.",
       portalError: "Enposib pou ouvri pòtay jesyon an. Tanpri eseye ankò.",
+      noStripeCustomer: "Pa jwenn abònman. Tanpri enskri nan yon plan dabò.",
     },
     memberDetails: {
       title: "Detay Manm",

@@ -54,11 +54,12 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = "https://churchmanagementpro.com";
+    // Use origin from request or fallback
+    const reqOrigin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^\/]*$/, "") || "https://churchmanagementpro.com";
     
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${origin}/settings/subscription`,
+      return_url: `${reqOrigin}/settings/subscription`,
     });
 
     logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
