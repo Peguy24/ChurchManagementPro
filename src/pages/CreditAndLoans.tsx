@@ -365,10 +365,12 @@ const CreditAndLoans = () => {
                   ) : (
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                         <TableRow>
                           <TableHead>{t("creditAndLoans.counterparty")}</TableHead>
                           <TableHead>{t("creditAndLoans.description")}</TableHead>
                           <TableHead>{t("creditAndLoans.totalAmount")}</TableHead>
+                          <TableHead>{t("creditAndLoans.interestRate")}</TableHead>
+                          <TableHead>{t("creditAndLoans.totalWithInterest")}</TableHead>
                           <TableHead>{t("creditAndLoans.paid")}</TableHead>
                           <TableHead>{t("creditAndLoans.remaining")}</TableHead>
                           <TableHead>{t("creditAndLoans.progress")}</TableHead>
