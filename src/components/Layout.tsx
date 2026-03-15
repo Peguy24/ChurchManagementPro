@@ -477,10 +477,14 @@ export default function Layout({ children }: LayoutProps) {
     </nav>
   );
 
-  // Branding for super admin vs church users
-  const brandingName = showAsSuperAdmin ? "Church Manager Pro" : whiteLabelSettings.app_name;
+  // Use cached tenant data first to avoid flash, fall back to whiteLabel query
+  const brandingName = showAsSuperAdmin 
+    ? "Church Manager Pro" 
+    : (tenant?.name || whiteLabelSettings.app_name);
   const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
-  const brandingLogo = showAsSuperAdmin ? "/images/church-management-pro-logo.png" : whiteLabelSettings.logo_url;
+  const brandingLogo = showAsSuperAdmin 
+    ? "/images/church-management-pro-logo.png" 
+    : (tenant?.logo_url || whiteLabelSettings.logo_url);
 
   return (
     <div className="min-h-screen bg-background">
