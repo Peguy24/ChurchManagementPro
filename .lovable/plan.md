@@ -1,36 +1,32 @@
 
 
-# Plan: Require Login on Every Browser Session
+## Current Situation
 
-## Problem
-On shared computers (e.g., a church office PC), the persistent auth session means whoever opens the browser sees the last admin's dashboard without logging in. This is a security risk.
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-## Solution
-End the authentication session when the browser is closed, so users must always log in fresh. This is achieved by:
+## What Needs to Be Done
 
-1. **Detect new browser sessions** using `sessionStorage` (which is cleared when the browser closes, unlike `localStorage`).
-2. **Force sign-out on app load** if the session marker is missing — meaning the browser was closed and reopened.
-3. **Clear all caches** (role cache, tenant cache) on forced sign-out.
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-## Technical Changes
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### 1. `src/hooks/useAuth.tsx`
-- On mount, check for a `sessionStorage` marker (`app_session_active`).
-- If the marker is **missing** but a Supabase session exists → call `supabase.auth.signOut()` and clear all cached data from `sessionStorage`.
-- If the marker is present → proceed normally.
-- After successful login, set the `app_session_active` marker in `sessionStorage`.
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-### 2. `src/hooks/useUserRole.tsx`
-- When the forced sign-out clears `sessionStorage`, the cached role data (`user_role_cache`) is automatically gone, so no extra changes needed beyond what exists.
-
-### 3. `src/hooks/useCurrentTenant.tsx`
-- Same as above — the `tenant_cache` key in `sessionStorage` is already cleared when the browser closes.
-
-### Key Behavior
-- **Browser closed + reopened** → session marker gone → forced logout → login screen
-- **Page refresh (same browser session)** → session marker still present → stays logged in
-- **Tab closed but browser open** → `sessionStorage` persists per-tab origin, so opening a new tab will require login (safe default for shared computers)
-- **Explicit logout** → already clears the session
-
-This approach requires no UI changes — the login screen already exists. The only change is ensuring stale sessions from previous browser launches are invalidated on app startup.
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 

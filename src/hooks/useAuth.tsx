@@ -12,6 +12,29 @@ export function useAuth() {
   const lastKnownUserRef = useRef<User | null>(null);
 
   useEffect(() => {
+    const SESSION_MARKER = 'app_session_active';
+
+    // Force sign-out if browser was closed and reopened (sessionStorage is empty)
+    const isNewBrowserSession = !sessionStorage.getItem(SESSION_MARKER);
+    if (isNewBrowserSession) {
+      // Clear any cached data
+      sessionStorage.removeItem('user_role_cache');
+      sessionStorage.removeItem('tenant_cache');
+      // Sign out stale session from localStorage
+      supabase.auth.getSession().then(({ data: { session: staleSession } }) => {
+        if (staleSession) {
+          supabase.auth.signOut().then(() => {
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          });
+        }
+      });
+    }
+
+    // Mark this browser session as active
+    sessionStorage.setItem(SESSION_MARKER, 'true');
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         if (event === 'SIGNED_OUT') {
