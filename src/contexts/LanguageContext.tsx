@@ -408,6 +408,7 @@ const translations = {
       insufficientBalance: "Solde insuffisant dans la source sélectionnée",
       balanceDeducted: "Le montant a été déduit de la source sélectionnée",
       balanceAdded: "Le montant a été ajouté à la source sélectionnée",
+      totalWithInterest: "Total avec intérêts",
     },
     transferDialog: {
       title: "Transfert entre comptes",
@@ -3620,6 +3621,7 @@ const translations = {
       insufficientBalance: "Insufficient balance in selected source",
       balanceDeducted: "Amount has been deducted from the selected source",
       balanceAdded: "Amount has been added to the selected source",
+      totalWithInterest: "Total with interest",
     },
     transferDialog: {
       title: "Transfer between accounts",
@@ -6824,6 +6826,7 @@ const translations = {
       insufficientBalance: "Pa gen ase balans nan sous ki chwazi a",
       balanceDeducted: "Montan an dedui nan sous ki chwazi a",
       balanceAdded: "Montan an ajoute nan sous ki chwazi a",
+      totalWithInterest: "Total ak enterè",
     },
     transferDialog: {
       title: "Transfè ant kont yo",

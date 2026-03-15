@@ -136,9 +136,16 @@ const CreditAndLoans = () => {
     },
   });
 
+  const getEffectiveTotal = (op: any) => {
+    const total = Number(op.total_amount);
+    const rate = Number(op.interest_rate || 0);
+    return total + (total * rate / 100);
+  };
+
   const paymentMutation = useMutation({
     mutationFn: async () => {
-      const remaining = Number(selectedOperation.total_amount) - Number(selectedOperation.amount_paid);
+      const effectiveTotal = getEffectiveTotal(selectedOperation);
+      const remaining = effectiveTotal - Number(selectedOperation.amount_paid);
       const payAmount = Number(paymentForm.amount);
       if (payAmount > remaining) {
         throw new Error("EXCEEDS_REMAINING");
@@ -230,10 +237,10 @@ const CreditAndLoans = () => {
   const filtered = operations?.filter((o) => o.type === activeTab) || [];
 
   const totalDebts = operations?.filter((o) => (o.type === "credit_purchase" || o.type === "loan_received") && o.status === "active")
-    .reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0) || 0;
+    .reduce((s, o) => s + (getEffectiveTotal(o) - Number(o.amount_paid)), 0) || 0;
 
   const totalCredits = operations?.filter((o) => o.type === "loan_given" && o.status === "active")
-    .reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0) || 0;
+    .reduce((s, o) => s + (getEffectiveTotal(o) - Number(o.amount_paid)), 0) || 0;
 
   const statusBadge = (status: string) => {
     if (status === "completed") return <Badge className="bg-green-100 text-green-800">{t("creditAndLoans.statusCompleted")}</Badge>;
@@ -358,10 +365,12 @@ const CreditAndLoans = () => {
                   ) : (
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                         <TableRow>
                           <TableHead>{t("creditAndLoans.counterparty")}</TableHead>
                           <TableHead>{t("creditAndLoans.description")}</TableHead>
                           <TableHead>{t("creditAndLoans.totalAmount")}</TableHead>
+                          <TableHead>{t("creditAndLoans.interestRate")}</TableHead>
+                          <TableHead>{t("creditAndLoans.totalWithInterest")}</TableHead>
                           <TableHead>{t("creditAndLoans.paid")}</TableHead>
                           <TableHead>{t("creditAndLoans.remaining")}</TableHead>
                           <TableHead>{t("creditAndLoans.progress")}</TableHead>
@@ -372,13 +381,16 @@ const CreditAndLoans = () => {
                       </TableHeader>
                       <TableBody>
                         {filtered.map((op) => {
-                          const remaining = Number(op.total_amount) - Number(op.amount_paid);
-                          const pct = Number(op.total_amount) > 0 ? (Number(op.amount_paid) / Number(op.total_amount)) * 100 : 0;
+                          const effTotal = getEffectiveTotal(op);
+                          const remaining = effTotal - Number(op.amount_paid);
+                          const pct = effTotal > 0 ? (Number(op.amount_paid) / effTotal) * 100 : 0;
                           return (
                             <TableRow key={op.id}>
                               <TableCell className="font-medium">{op.counterparty}</TableCell>
                               <TableCell>{op.description}</TableCell>
                               <TableCell>{formatAmount(Number(op.total_amount))}</TableCell>
+                              <TableCell>{Number(op.interest_rate || 0)}%</TableCell>
+                              <TableCell className="font-semibold">{formatAmount(effTotal)}</TableCell>
                               <TableCell>{formatAmount(Number(op.amount_paid))}</TableCell>
                               <TableCell className="font-semibold">{formatAmount(remaining)}</TableCell>
                               <TableCell className="w-32">
@@ -417,8 +429,14 @@ const CreditAndLoans = () => {
                 <div className="p-3 rounded-lg border bg-muted/50">
                   <p className="font-medium">{selectedOperation.counterparty}</p>
                   <p className="text-sm text-muted-foreground">{selectedOperation.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("creditAndLoans.totalAmount")}: {formatAmount(Number(selectedOperation.total_amount))} | {t("creditAndLoans.interestRate")}: {Number(selectedOperation.interest_rate || 0)}%
+                  </p>
                   <p className="text-sm mt-1">
-                    {t("creditAndLoans.remaining")}: <span className="font-bold">{formatAmount(Number(selectedOperation.total_amount) - Number(selectedOperation.amount_paid))}</span>
+                    {t("creditAndLoans.totalWithInterest")}: <span className="font-semibold">{formatAmount(getEffectiveTotal(selectedOperation))}</span>
+                  </p>
+                  <p className="text-sm">
+                    {t("creditAndLoans.remaining")}: <span className="font-bold">{formatAmount(getEffectiveTotal(selectedOperation) - Number(selectedOperation.amount_paid))}</span>
                   </p>
                 </div>
                 <div>
