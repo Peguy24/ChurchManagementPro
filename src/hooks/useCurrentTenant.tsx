@@ -151,7 +151,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     withTenantId,
     forInsert,
     hasTenant: !!tenantId,
-    refresh: fetchTenantInfo,
+    refresh: forceRefresh,
   };
 }
 
