@@ -253,6 +253,9 @@ export default function Expenses() {
         if (expense.cash_register_id) {
           const register = cashRegisters.find(r => r.id === expense.cash_register_id);
           if (register) {
+            if (Number(register.current_balance) < amount) {
+              throw new Error("INSUFFICIENT_BALANCE");
+            }
             const newBalance = Number(register.current_balance) - amount;
             await supabase.from("cash_registers").update({ current_balance: newBalance }).eq("id", expense.cash_register_id);
             

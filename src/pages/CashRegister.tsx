@@ -128,8 +128,11 @@ const CashRegister = () => {
       setTransactionForm({ transaction_type: "income", amount: "", description: "", transaction_date: format(new Date(), "yyyy-MM-dd"), reference_number: "" });
       toast({ title: t("common.save"), description: t("cashRegisterPage.successTransaction") });
     },
-    onError: () => {
-      toast({ title: t("common.error"), description: t("cashRegisterPage.errorTransaction"), variant: "destructive" });
+    onError: (error: any) => {
+      const description = error?.message === "INSUFFICIENT_BALANCE" 
+        ? t("cashRegisterPage.insufficientBalance") 
+        : t("cashRegisterPage.errorTransaction");
+      toast({ title: t("common.error"), description, variant: "destructive" });
     },
   });
 

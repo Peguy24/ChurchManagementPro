@@ -6667,6 +6667,7 @@ const translations = {
       errorCreate: "Enposib pou kreye kès la",
       successTransaction: "Tranzaksyon anrejistre",
       errorTransaction: "Enposib pou anrejistre tranzaksyon an",
+      insufficientBalance: "Kès sa a pa gen ase lajan pou operasyon sa a",
     },
     transferDialog: {
       title: "Transfè ant kont yo",
