@@ -3,7 +3,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { Church } from 'lucide-react';
+
+// Paths that are accessible even without an active subscription
+const SUBSCRIPTION_EXEMPT_PATHS = [
+  '/settings/subscription',
+  '/pending-approval',
+  '/support',
+  '/system-guide',
+];
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,6 +24,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const { user, loading: authLoading } = useAuth();
   const { isApproved, isAdmin, isSuperAdmin, canAccess, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { plan, loading: planLoading } = usePlanLimits();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
@@ -76,6 +86,21 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
       }
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
+
+  // Subscription enforcement: redirect to subscription page if no active plan
+  // Exempt: super admins, subscription-exempt paths, and while still loading plan data
+  useEffect(() => {
+    if (loading || planLoading || !user || !isApproved || isSuperAdmin) return;
+    if (!tenantId) return; // No tenant selected yet
+
+    const isExempt = SUBSCRIPTION_EXEMPT_PATHS.some(p => location.pathname.startsWith(p));
+    if (isExempt) return;
+
+    // plan is null when there's no active subscription (trial expired or cancelled)
+    if (!plan) {
+      navigate('/settings/subscription');
+    }
+  }, [user, loading, planLoading, isApproved, isSuperAdmin, tenantId, plan, location.pathname, navigate]);
 
   if (loading) {
     return (
