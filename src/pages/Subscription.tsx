@@ -11,9 +11,10 @@ import {
 import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import Layout from "@/components/Layout";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Invoice {
   id: string;
@@ -30,6 +31,7 @@ interface Invoice {
 
 export default function Subscription() {
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const { 
     subscribed, 
     plan, 
@@ -44,6 +46,7 @@ export default function Subscription() {
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(true);
+  const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
   const fetchInvoices = async () => {
     try {
@@ -52,9 +55,7 @@ export default function Subscription() {
       if (!session) return;
 
       const { data, error } = await supabase.functions.invoke('get-invoices', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
       if (error) throw error;
@@ -66,9 +67,7 @@ export default function Subscription() {
     }
   };
 
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
+  useEffect(() => { fetchInvoices(); }, []);
 
   const currentPlan = plan ? PLAN_DETAILS[plan as PlanKey] : null;
 
@@ -78,14 +77,14 @@ export default function Subscription() {
         return (
           <Badge className="bg-primary/10 text-primary border-primary/20">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Paid
+            {t("sub.paid")}
           </Badge>
         );
       case 'open':
         return (
           <Badge variant="outline" className="border-warning/50 text-warning">
             <Clock className="w-3 h-3 mr-1" />
-            Pending
+            {t("sub.pending")}
           </Badge>
         );
       case 'void':
@@ -93,16 +92,35 @@ export default function Subscription() {
         return (
           <Badge variant="outline" className="border-destructive/50 text-destructive">
             <XCircle className="w-3 h-3 mr-1" />
-            Cancelled
+            {t("sub.cancelled")}
           </Badge>
         );
       default:
-        return (
-          <Badge variant="outline">
-            {status}
-          </Badge>
-        );
+        return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const planFeatures: Record<string, string[]> = {
+    essentiel: [
+      `${t("sub.upTo")} 200 ${t("sub.members")}`,
+      `1 ${t("sub.branches").toLowerCase()}`,
+      t("sub.attendanceMgmt"),
+      t("sub.emailSupport"),
+    ],
+    professionnel: [
+      `${t("sub.upTo")} 1,000 ${t("sub.members")}`,
+      `3 ${t("sub.branches").toLowerCase()}`,
+      t("sub.allFeatures"),
+      t("sub.advancedReports"),
+      t("sub.prioritySupport"),
+    ],
+    entreprise: [
+      `${t("sub.unlimited")} ${t("sub.members").toLowerCase()}`,
+      `${t("sub.unlimited")} ${t("sub.branches").toLowerCase()}`,
+      t("sub.prioritySupport"),
+      t("sub.trainingIncluded"),
+      t("sub.support247"),
+    ],
   };
 
   if (loading) {
@@ -121,9 +139,9 @@ export default function Subscription() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Subscription</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("sub.yourSubscription")}</h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Manage your subscription and view your payment history
+              {t("sub.invoiceDesc")}
             </p>
           </div>
           <Button 
@@ -132,12 +150,12 @@ export default function Subscription() {
             onClick={() => {
               refreshSubscription();
               fetchInvoices();
-              toast({ title: "Refreshing..." });
+              toast({ title: t("sub.refreshing") });
             }}
             className="self-start sm:self-auto"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t("sub.refresh")}
           </Button>
         </div>
 
@@ -147,11 +165,11 @@ export default function Subscription() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
-                <CardTitle>Your Current Subscription</CardTitle>
+                <CardTitle>{t("sub.currentSubscription")}</CardTitle>
               </div>
               {subscribed && (
                 <Badge className="bg-primary/10 text-primary border-primary/20">
-                  Active
+                  {t("sub.active")}
                 </Badge>
               )}
             </div>
@@ -162,175 +180,87 @@ export default function Subscription() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <p className="text-2xl sm:text-3xl font-bold">{currentPlan.name}</p>
-                    <p className="text-muted-foreground">
-                      ${currentPlan.price}/month
-                    </p>
+                    <p className="text-muted-foreground">${currentPlan.price}{t("sub.perMonth")}</p>
                   </div>
                   <div className="sm:text-right">
-                    <p className="text-sm text-muted-foreground">Next renewal</p>
+                    <p className="text-sm text-muted-foreground">{t("sub.nextRenewal")}</p>
                     <p className="font-medium text-base sm:text-lg">
                       {subscriptionEnd 
-                        ? format(new Date(subscriptionEnd), "MMMM d, yyyy", { locale: enUS })
+                        ? format(new Date(subscriptionEnd), "d MMMM yyyy", { locale: dateLocale })
                         : "—"
                       }
                     </p>
                   </div>
                 </div>
                 <Separator />
-                <Button 
-                  onClick={openCustomerPortal} 
-                  disabled={portalLoading}
-                  className="w-full"
-                >
-                  {portalLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Settings className="h-4 w-4 mr-2" />
-                  )}
-                  Manage subscription (change plan, cancel, payment method)
+                <Button onClick={openCustomerPortal} disabled={portalLoading} className="w-full">
+                  {portalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Settings className="h-4 w-4 mr-2" />}
+                  {t("sub.manageSub")}
                 </Button>
               </div>
             ) : (
               <div className="text-center py-6">
                 <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">No active subscription</p>
-                <p className="text-muted-foreground mb-4">
-                  Choose a plan below to unlock all features
-                </p>
+                <p className="text-lg font-medium mb-2">{t("sub.noActiveSubscription")}</p>
+                <p className="text-muted-foreground mb-4">{t("sub.choosePlanBelow")}</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Plans Comparison */}
+        {/* Plans */}
         <div>
           <h2 className="text-xl font-semibold mb-4">
-            {subscribed ? "Change Plan" : "Choose a Plan"}
+            {subscribed ? t("sub.changePlan") : t("sub.choosePlan")}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => {
               const isCurrentPlan = plan === key;
               const isProfessional = key === 'professionnel';
+              const features = planFeatures[key] || [];
               
               return (
                 <Card 
                   key={key}
                   className={`relative overflow-hidden transition-all ${
-                    isCurrentPlan 
-                      ? 'border-2 border-primary ring-2 ring-primary/20' 
-                      : isProfessional 
-                        ? 'border-2 border-secondary/50' 
-                        : ''
+                    isCurrentPlan ? 'border-2 border-primary ring-2 ring-primary/20' 
+                    : isProfessional ? 'border-2 border-secondary/50' : ''
                   }`}
                 >
                   {isProfessional && !isCurrentPlan && (
                     <div className="absolute top-0 right-0 bg-secondary text-secondary-foreground text-xs px-3 py-1 rounded-bl-lg font-medium">
-                      Popular
+                      {t("sub.popular")}
                     </div>
                   )}
                   {isCurrentPlan && (
                     <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-bl-lg font-medium">
-                      Your Plan
+                      {t("sub.yourPlan")}
                     </div>
                   )}
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{details.name}</CardTitle>
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl font-bold">${details.price}</span>
-                      <span className="text-muted-foreground">/month</span>
+                      <span className="text-muted-foreground">{t("sub.perMonth")}</span>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <ul className="space-y-2">
-                      {key === 'essentiel' && (
-                        <>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Up to 200 members
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            1 branch
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Attendance management
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Email support
-                          </li>
-                        </>
-                      )}
-                      {key === 'professionnel' && (
-                        <>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Up to 1,000 members
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            3 branches
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            All features included
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Advanced reports
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Priority support
-                          </li>
-                        </>
-                      )}
-                      {key === 'entreprise' && (
-                        <>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Unlimited members
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Unlimited branches
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Priority Support
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            Training included
-                          </li>
-                          <li className="flex items-center gap-2 text-sm">
-                            <Check className="h-4 w-4 text-primary" />
-                            24/7 support
-                          </li>
-                        </>
-                      )}
+                      {features.map((feat, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                          {feat}
+                        </li>
+                      ))}
                     </ul>
                     
                     {isCurrentPlan ? (
                       <Button disabled className="w-full" variant="outline">
-                        Current Plan
+                        {t("sub.currentPlanLabel")}
                       </Button>
                     ) : subscribed ? (
-                      <Button 
-                        onClick={openCustomerPortal} 
-                        disabled={portalLoading}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        {portalLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            Switch
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </>
-                        )}
+                      <Button onClick={openCustomerPortal} disabled={portalLoading} variant="outline" className="w-full">
+                        {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("sub.switchPlan")} <ArrowRight className="h-4 w-4 ml-2" /></>}
                       </Button>
                     ) : (
                       <Button 
@@ -339,14 +269,7 @@ export default function Subscription() {
                         className={isProfessional ? "w-full bg-secondary hover:bg-secondary/90" : "w-full"}
                         variant={isProfessional ? "default" : "outline"}
                       >
-                        {checkoutLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <CreditCard className="h-4 w-4 mr-2" />
-                            Subscribe
-                          </>
-                        )}
+                        {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CreditCard className="h-4 w-4 mr-2" />{t("sub.subscribe")}</>}
                       </Button>
                     )}
                   </CardContent>
@@ -356,16 +279,14 @@ export default function Subscription() {
           </div>
         </div>
 
-        {/* Payment History */}
+        {/* Payment History / Invoices */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>Payment History</CardTitle>
+              <CardTitle>{t("sub.invoiceTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              View your invoices and download receipts
-            </CardDescription>
+            <CardDescription>{t("sub.invoiceDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {invoicesLoading ? (
@@ -375,7 +296,7 @@ export default function Subscription() {
             ) : invoices.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No invoices yet</p>
+                <p>{t("sub.noInvoices")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -395,34 +316,24 @@ export default function Subscription() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
-                            {format(new Date(invoice.created), "MMM d, yyyy", { locale: enUS })}
+                            {format(new Date(invoice.created), "d MMM yyyy", { locale: dateLocale })}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-13 sm:ml-0">
                       <div className="sm:text-right">
-                        <p className="font-semibold text-sm sm:text-base">
-                          ${invoice.amount.toFixed(2)}
-                        </p>
+                        <p className="font-semibold text-sm sm:text-base">${invoice.amount.toFixed(2)}</p>
                         {getStatusBadge(invoice.status)}
                       </div>
                       <div className="flex items-center gap-1">
                         {invoice.invoice_pdf && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => window.open(invoice.invoice_pdf!, '_blank')}
-                          >
+                          <Button size="sm" variant="ghost" title={t("sub.download")} onClick={() => window.open(invoice.invoice_pdf!, '_blank')}>
                             <Download className="h-4 w-4" />
                           </Button>
                         )}
                         {invoice.hosted_invoice_url && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => window.open(invoice.hosted_invoice_url!, '_blank')}
-                          >
+                          <Button size="sm" variant="ghost" title={t("sub.viewInvoice")} onClick={() => window.open(invoice.hosted_invoice_url!, '_blank')}>
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         )}

@@ -236,6 +236,7 @@ export function usePlanLimits() {
     loading,
     subscribed,
     plan: effectivePlan,
+    subscriptionStatus: dbSubscription?.status || null,
     limits,
     usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0 },
     
