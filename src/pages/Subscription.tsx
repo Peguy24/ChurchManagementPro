@@ -36,6 +36,7 @@ export default function Subscription() {
     subscribed, 
     plan, 
     subscriptionEnd, 
+    hasStripeCustomer,
     loading, 
     checkoutLoading, 
     portalLoading,
