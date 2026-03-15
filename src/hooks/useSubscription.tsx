@@ -72,6 +72,7 @@ export function useSubscription() {
         subscribed: data.subscribed,
         plan: data.plan,
         subscriptionEnd: data.subscription_end,
+        hasStripeCustomer: data.has_stripe_customer ?? false,
         loading: false,
       });
     } catch (error) {
