@@ -124,6 +124,9 @@ const colorSchemes: Record<EventType, { bg: string; accent: string }> = {
   plan_cancelled: { bg: "#DC2626", accent: "#EF4444" },
   plan_expired: { bg: "#D97706", accent: "#F59E0B" },
   plan_renewed: { bg: "#059669", accent: "#10B981" },
+  payment_failed: { bg: "#DC2626", accent: "#EF4444" },
+  payment_succeeded: { bg: "#059669", accent: "#10B981" },
+  checkout_completed: { bg: "#7C3AED", accent: "#8B5CF6" },
 };
 
 const PLAN_LABELS: Record<string, string> = {
