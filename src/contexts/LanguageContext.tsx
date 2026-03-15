@@ -3601,6 +3601,7 @@ const translations = {
       exceedsRemaining: "Amount exceeds remaining balance",
       noOperations: "No operations",
     },
+    transferDialog: {
       title: "Transfer between accounts",
       button: "Transfer",
       sourceDebit: "Source (debit)",
