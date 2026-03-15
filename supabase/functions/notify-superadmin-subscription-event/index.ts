@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type EventType = "plan_updated" | "plan_cancelled" | "plan_expired" | "plan_renewed";
+type EventType = "plan_updated" | "plan_cancelled" | "plan_expired" | "plan_renewed" | "payment_failed" | "payment_succeeded" | "checkout_completed";
 
 const translations: Record<string, Record<string, Record<string, string>>> = {
   plan_updated: {
