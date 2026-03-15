@@ -135,6 +135,18 @@ const FinancialDashboard = () => {
     },
   });
 
+  // Fetch credit operations summary
+  const { data: creditOperations } = useQuery({
+    queryKey: ["credit-operations-summary"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("credit_operations")
+        .select("type, total_amount, amount_paid, status")
+        .eq("status", "active");
+      return data || [];
+    },
+  });
+
   // Fetch approved expenses by category for budget comparison
   const { data: approvedExpenses } = useQuery({
     queryKey: ["approved-expenses-current-year"],
