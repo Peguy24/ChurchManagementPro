@@ -334,10 +334,13 @@ export default function Salaries() {
       setPaymentDialogOpen(false);
       resetPaymentForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const description = error?.message === "INSUFFICIENT_BALANCE"
+        ? t("cashRegisterPage.insufficientBalance")
+        : t("salariesPage.paymentError");
       toast({
         title: t("salariesPage.error"),
-        description: t("salariesPage.paymentError"),
+        description,
         variant: "destructive",
       });
       console.error(error);
