@@ -7,6 +7,7 @@ export interface SubscriptionState {
   subscribed: boolean;
   plan: string | null;
   subscriptionEnd: string | null;
+  hasStripeCustomer: boolean;
   loading: boolean;
 }
 
