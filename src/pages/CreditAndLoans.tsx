@@ -136,9 +136,16 @@ const CreditAndLoans = () => {
     },
   });
 
+  const getEffectiveTotal = (op: any) => {
+    const total = Number(op.total_amount);
+    const rate = Number(op.interest_rate || 0);
+    return total + (total * rate / 100);
+  };
+
   const paymentMutation = useMutation({
     mutationFn: async () => {
-      const remaining = Number(selectedOperation.total_amount) - Number(selectedOperation.amount_paid);
+      const effectiveTotal = getEffectiveTotal(selectedOperation);
+      const remaining = effectiveTotal - Number(selectedOperation.amount_paid);
       const payAmount = Number(paymentForm.amount);
       if (payAmount > remaining) {
         throw new Error("EXCEEDS_REMAINING");
