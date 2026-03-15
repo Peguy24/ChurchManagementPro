@@ -104,6 +104,14 @@ const CashRegister = () => {
       const amount = Number(transactionForm.amount);
       const isExpense = transactionForm.transaction_type === "expense" || transactionForm.transaction_type === "transfer_out";
       
+      // Check sufficient balance for outgoing transactions
+      if (isExpense) {
+        const register = registers?.find((r) => r.id === selectedRegister);
+        if (register && Number(register.current_balance) < Math.abs(amount)) {
+          throw new Error("INSUFFICIENT_BALANCE");
+        }
+      }
+
       const { error } = await supabase.from("cash_transactions").insert({
         cash_register_id: selectedRegister,
         transaction_type: transactionForm.transaction_type,
