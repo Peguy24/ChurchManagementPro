@@ -313,7 +313,7 @@ export default function Layout({ children }: LayoutProps) {
   const { signOut, user } = useAuth();
   const { canSeeNav, canSeeItem, isAdmin } = useUserRole();
   const { isTenantAdmin } = useTenantRole();
-  const { tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
@@ -477,10 +477,14 @@ export default function Layout({ children }: LayoutProps) {
     </nav>
   );
 
-  // Branding for super admin vs church users
-  const brandingName = showAsSuperAdmin ? "Church Manager Pro" : whiteLabelSettings.app_name;
+  // Use cached tenant data first to avoid flash, fall back to whiteLabel query
+  const brandingName = showAsSuperAdmin 
+    ? "Church Manager Pro" 
+    : (tenant?.name || whiteLabelSettings.app_name);
   const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
-  const brandingLogo = showAsSuperAdmin ? "/images/church-management-pro-logo.png" : whiteLabelSettings.logo_url;
+  const brandingLogo = showAsSuperAdmin 
+    ? "/images/church-management-pro-logo.png" 
+    : (tenant?.logo_url || whiteLabelSettings.logo_url);
 
   return (
     <div className="min-h-screen bg-background">
