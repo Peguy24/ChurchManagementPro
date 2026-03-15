@@ -120,6 +120,11 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     }
   }, [user]);
 
+  const forceRefresh = useCallback(async () => {
+    lastUserIdRef.current = null;
+    await fetchTenantInfo();
+  }, [fetchTenantInfo]);
+
   useEffect(() => {
     fetchTenantInfo();
   }, [fetchTenantInfo]);
@@ -146,7 +151,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     withTenantId,
     forInsert,
     hasTenant: !!tenantId,
-    refresh: fetchTenantInfo,
+    refresh: forceRefresh,
   };
 }
 
