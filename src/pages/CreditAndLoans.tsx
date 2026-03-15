@@ -35,7 +35,6 @@ const CreditAndLoans = () => {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedOperation, setSelectedOperation] = useState<any>(null);
 
-  // Form state for new operation
   const [form, setForm] = useState({
     counterparty: "",
     description: "",
@@ -46,12 +45,13 @@ const CreditAndLoans = () => {
     notes: "",
   });
 
-  // Payment form
   const [paymentForm, setPaymentForm] = useState({
     amount: "",
     payment_date: format(new Date(), "yyyy-MM-dd"),
     payment_method: "",
     notes: "",
+    source_type: "" as "" | "cash_register" | "bank_account",
+    source_id: "",
   });
 
   const { data: operations, isLoading } = useQuery({
@@ -61,6 +61,34 @@ const CreditAndLoans = () => {
         .from("credit_operations")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  const { data: cashRegisters } = useQuery({
+    queryKey: ["cash-registers-active", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cash_registers")
+        .select("id, name, current_balance")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  const { data: bankAccounts } = useQuery({
+    queryKey: ["bank-accounts-active", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bank_accounts")
+        .select("id, name, current_balance")
+        .eq("is_active", true)
+        .order("name");
       if (error) throw error;
       return data;
     },
@@ -115,6 +143,26 @@ const CreditAndLoans = () => {
       if (payAmount > remaining) {
         throw new Error("EXCEEDS_REMAINING");
       }
+
+      // Determine if this is outgoing (church pays) or incoming (church receives)
+      const isOutgoing = selectedOperation.type === "credit_purchase" || selectedOperation.type === "loan_received";
+
+      // Validate balance for outgoing payments
+      if (isOutgoing && paymentForm.source_type && paymentForm.source_id) {
+        if (paymentForm.source_type === "cash_register") {
+          const reg = cashRegisters?.find((r) => r.id === paymentForm.source_id);
+          if (reg && payAmount > Number(reg.current_balance || 0)) {
+            throw new Error("INSUFFICIENT_BALANCE");
+          }
+        } else if (paymentForm.source_type === "bank_account") {
+          const acc = bankAccounts?.find((a) => a.id === paymentForm.source_id);
+          if (acc && payAmount > Number(acc.current_balance || 0)) {
+            throw new Error("INSUFFICIENT_BALANCE");
+          }
+        }
+      }
+
+      // 1. Record the credit payment
       const { error } = await supabase.from("credit_payments").insert({
         credit_operation_id: selectedOperation.id,
         tenant_id: tenantId!,
@@ -125,16 +173,56 @@ const CreditAndLoans = () => {
         created_by: user!.id,
       });
       if (error) throw error;
+
+      // 2. Update source balance
+      if (paymentForm.source_type === "cash_register" && paymentForm.source_id) {
+        const balanceChange = isOutgoing ? -payAmount : payAmount;
+        const reg = cashRegisters?.find((r) => r.id === paymentForm.source_id);
+        const newBalance = Number(reg?.current_balance || 0) + balanceChange;
+
+        const { error: updateErr } = await supabase
+          .from("cash_registers")
+          .update({ current_balance: newBalance })
+          .eq("id", paymentForm.source_id);
+        if (updateErr) throw updateErr;
+
+        // Record cash transaction
+        const { error: txErr } = await supabase.from("cash_transactions").insert({
+          cash_register_id: paymentForm.source_id,
+          tenant_id: tenantId!,
+          amount: payAmount,
+          transaction_type: isOutgoing ? "expense" : "income",
+          transaction_date: paymentForm.payment_date,
+          description: `${isOutgoing ? "Paiement" : "Remboursement"}: ${selectedOperation.counterparty} - ${selectedOperation.description}`,
+          created_by: user!.id,
+        });
+        if (txErr) throw txErr;
+      } else if (paymentForm.source_type === "bank_account" && paymentForm.source_id) {
+        const balanceChange = isOutgoing ? -payAmount : payAmount;
+        const acc = bankAccounts?.find((a) => a.id === paymentForm.source_id);
+        const newBalance = Number(acc?.current_balance || 0) + balanceChange;
+
+        const { error: updateErr } = await supabase
+          .from("bank_accounts")
+          .update({ current_balance: newBalance })
+          .eq("id", paymentForm.source_id);
+        if (updateErr) throw updateErr;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credit-operations"] });
       queryClient.invalidateQueries({ queryKey: ["credit-payments"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-registers-active"] });
+      queryClient.invalidateQueries({ queryKey: ["bank-accounts-active"] });
       setPaymentOpen(false);
-      setPaymentForm({ amount: "", payment_date: format(new Date(), "yyyy-MM-dd"), payment_method: "", notes: "" });
-      toast({ title: t("creditAndLoans.paymentRecorded") });
+      setPaymentForm({ amount: "", payment_date: format(new Date(), "yyyy-MM-dd"), payment_method: "", notes: "", source_type: "", source_id: "" });
+      const isOutgoing = selectedOperation?.type === "credit_purchase" || selectedOperation?.type === "loan_received";
+      toast({ title: t("creditAndLoans.paymentRecorded"), description: isOutgoing ? t("creditAndLoans.balanceDeducted") : t("creditAndLoans.balanceAdded") });
     },
     onError: (err: any) => {
-      const desc = err?.message === "EXCEEDS_REMAINING" ? t("creditAndLoans.exceedsRemaining") : t("common.error");
+      let desc = t("common.error");
+      if (err?.message === "EXCEEDS_REMAINING") desc = t("creditAndLoans.exceedsRemaining");
+      if (err?.message === "INSUFFICIENT_BALANCE") desc = t("creditAndLoans.insufficientBalance");
       toast({ title: t("common.error"), description: desc, variant: "destructive" });
     },
   });
@@ -152,6 +240,14 @@ const CreditAndLoans = () => {
     if (status === "cancelled") return <Badge variant="secondary">{t("creditAndLoans.statusCancelled")}</Badge>;
     return <Badge className="bg-orange-100 text-orange-800">{t("creditAndLoans.statusActive")}</Badge>;
   };
+
+  const selectedSourceBalance = (() => {
+    if (!paymentForm.source_type || !paymentForm.source_id) return null;
+    if (paymentForm.source_type === "cash_register") {
+      return cashRegisters?.find((r) => r.id === paymentForm.source_id)?.current_balance ?? null;
+    }
+    return bankAccounts?.find((a) => a.id === paymentForm.source_id)?.current_balance ?? null;
+  })();
 
   return (
     <Layout>
@@ -345,11 +441,60 @@ const CreditAndLoans = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Payment Source */}
+                <div>
+                  <Label>{t("creditAndLoans.paymentSource")}</Label>
+                  <Select value={paymentForm.source_type} onValueChange={(v) => setPaymentForm({ ...paymentForm, source_type: v as any, source_id: "" })}>
+                    <SelectTrigger><SelectValue placeholder={t("creditAndLoans.selectSource")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash_register">{t("creditAndLoans.cashRegisterSource")}</SelectItem>
+                      <SelectItem value="bank_account">{t("creditAndLoans.bankAccountSource")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {paymentForm.source_type === "cash_register" && (
+                  <div>
+                    <Select value={paymentForm.source_id} onValueChange={(v) => setPaymentForm({ ...paymentForm, source_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("creditAndLoans.selectCashRegister")} /></SelectTrigger>
+                      <SelectContent>
+                        {cashRegisters?.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>{r.name} ({formatAmount(Number(r.current_balance || 0))})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {paymentForm.source_type === "bank_account" && (
+                  <div>
+                    <Select value={paymentForm.source_id} onValueChange={(v) => setPaymentForm({ ...paymentForm, source_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("creditAndLoans.selectBankAccount")} /></SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts?.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>{a.name} ({formatAmount(Number(a.current_balance || 0))})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {selectedSourceBalance !== null && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("transferDialog.availableBalance")}: <span className="font-semibold">{formatAmount(Number(selectedSourceBalance))}</span>
+                  </p>
+                )}
+
                 <div>
                   <Label>{t("creditAndLoans.notes")}</Label>
                   <Textarea value={paymentForm.notes} onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })} />
                 </div>
-                <Button onClick={() => paymentMutation.mutate()} disabled={!paymentForm.amount || paymentMutation.isPending} className="w-full">
+                <Button
+                  onClick={() => paymentMutation.mutate()}
+                  disabled={!paymentForm.amount || !paymentForm.source_type || !paymentForm.source_id || paymentMutation.isPending}
+                  className="w-full"
+                >
                   {paymentMutation.isPending ? t("common.saving") : t("creditAndLoans.confirmPayment")}
                 </Button>
               </div>
