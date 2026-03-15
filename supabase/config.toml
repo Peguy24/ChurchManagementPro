@@ -55,3 +55,5 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.notify-tenant-payment]
     verify_jwt = false
+  [functions.check-subscription-alerts]
+    verify_jwt = false
