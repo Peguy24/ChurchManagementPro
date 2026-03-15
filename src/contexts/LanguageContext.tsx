@@ -6795,6 +6795,7 @@ const translations = {
       exceedsRemaining: "Montan an depase balans ki rete a",
       noOperations: "Pa gen operasyon",
     },
+    transferDialog: {
       title: "Transfè ant kont yo",
       button: "Transfè",
       sourceDebit: "Sous (debi)",
