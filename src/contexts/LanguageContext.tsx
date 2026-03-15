@@ -399,6 +399,7 @@ const translations = {
       exceedsRemaining: "Le montant dépasse le solde restant",
       noOperations: "Aucune opération",
     },
+    transferDialog: {
       title: "Transfert entre comptes",
       button: "Transfert",
       sourceDebit: "Source (débit)",
