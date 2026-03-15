@@ -28,6 +28,7 @@ import BankReconciliation from "./pages/BankReconciliation";
 import SpecialFunds from "./pages/SpecialFunds";
 import CashRegister from "./pages/CashRegister";
 import FinancialAudit from "./pages/FinancialAudit";
+import CreditAndLoans from "./pages/CreditAndLoans";
 import Events from "./pages/Events";
 import Ministries from "./pages/Ministries";
 import MinistryDetails from "./pages/MinistryDetails";
