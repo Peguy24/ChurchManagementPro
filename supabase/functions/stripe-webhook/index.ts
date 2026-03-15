@@ -201,6 +201,7 @@ serve(async (req) => {
 
         const tenantName = await getTenantName(supabase, tenantId);
         await notifySuperAdmin("plan_cancelled", { tenantName, tenantEmail: email });
+        await notifyTenantAdmins("subscription_cancelled", tenantId);
 
         logStep("Subscription cancelled", { email, tenantId });
         break;
