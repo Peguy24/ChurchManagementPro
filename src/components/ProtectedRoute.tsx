@@ -3,7 +3,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { Church } from 'lucide-react';
+
+// Paths that are accessible even without an active subscription
+const SUBSCRIPTION_EXEMPT_PATHS = [
+  '/settings/subscription',
+  '/pending-approval',
+  '/support',
+  '/system-guide',
+];
 
 interface ProtectedRouteProps {
   children: ReactNode;
