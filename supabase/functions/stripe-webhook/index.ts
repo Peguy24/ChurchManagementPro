@@ -98,6 +98,21 @@ async function notifySuperAdmin(eventType: string, details: Record<string, unkno
   }
 }
 
+async function notifyTenantAdmins(eventType: string, tenantId: string, amount?: string) {
+  try {
+    await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-tenant-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+      },
+      body: JSON.stringify({ eventType, tenantId, amount, language: "fr" }),
+    });
+  } catch (e) {
+    logStep("Failed to notify tenant admins", { error: String(e) });
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -186,6 +201,7 @@ serve(async (req) => {
 
         const tenantName = await getTenantName(supabase, tenantId);
         await notifySuperAdmin("plan_cancelled", { tenantName, tenantEmail: email });
+        await notifyTenantAdmins("subscription_cancelled", tenantId);
 
         logStep("Subscription cancelled", { email, tenantId });
         break;
@@ -224,6 +240,9 @@ serve(async (req) => {
           metadata: { invoice_id: invoice.id },
         });
 
+        const amountStr = invoice.amount_due ? (invoice.amount_due / 100).toFixed(2) : "0";
+        await notifyTenantAdmins("payment_failed", tenantId, amountStr);
+
         logStep("Payment failed processed", { email });
         break;
       }
@@ -258,6 +277,9 @@ serve(async (req) => {
           tenantEmail: email,
           amount: invoice.amount_paid ? (invoice.amount_paid / 100).toFixed(2) : "0",
         });
+
+        const paidAmount = invoice.amount_paid ? (invoice.amount_paid / 100).toFixed(2) : "0";
+        await notifyTenantAdmins("payment_succeeded", tenantId, paidAmount);
 
         logStep("Payment succeeded processed", { email });
         break;
