@@ -24,6 +24,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const { user, loading: authLoading } = useAuth();
   const { isApproved, isAdmin, isSuperAdmin, canAccess, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { plan, loading: planLoading } = usePlanLimits();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
