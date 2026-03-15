@@ -6826,6 +6826,7 @@ const translations = {
       insufficientBalance: "Pa gen ase balans nan sous ki chwazi a",
       balanceDeducted: "Montan an dedui nan sous ki chwazi a",
       balanceAdded: "Montan an ajoute nan sous ki chwazi a",
+      totalWithInterest: "Total ak enterè",
     },
     transferDialog: {
       title: "Transfè ant kont yo",
