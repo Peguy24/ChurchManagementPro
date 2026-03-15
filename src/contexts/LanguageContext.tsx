@@ -3515,6 +3515,7 @@ const translations = {
       errorCreate: "Unable to create register",
       successTransaction: "Transaction saved",
       errorTransaction: "Unable to save transaction",
+      insufficientBalance: "This cash register does not have enough funds for this operation",
     },
     transferDialog: {
       title: "Transfer between accounts",
