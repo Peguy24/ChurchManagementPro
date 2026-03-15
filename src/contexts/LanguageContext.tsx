@@ -2859,6 +2859,7 @@ const translations = {
       subscriptionUpdatedMsg: "Votre abonnement a été mis à jour avec succès.",
       checkoutError: "Impossible de créer la session de paiement. Veuillez réessayer.",
       portalError: "Impossible d'ouvrir le portail de gestion. Veuillez réessayer.",
+      noStripeCustomer: "Aucun abonnement trouvé. Veuillez d'abord souscrire à un plan.",
     },
     memberDetails: {
       title: "Détails du Membre",
