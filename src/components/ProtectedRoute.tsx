@@ -5,6 +5,8 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { Church } from 'lucide-react';
+import Layout from '@/components/Layout';
+import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
 
 // Paths that are accessible even without an active subscription
 const SUBSCRIPTION_EXEMPT_PATHS = [
@@ -24,7 +26,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const { user, loading: authLoading } = useAuth();
   const { isApproved, isAdmin, isSuperAdmin, canAccess, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
-  const { plan, loading: planLoading } = usePlanLimits();
+  const { plan, loading: planLoading, subscriptionStatus } = usePlanLimits();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
@@ -43,7 +45,6 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     if (!user) {
       // Give a generous grace period for token refresh before redirecting
       const timeout = setTimeout(() => {
-        // Check the REF (current value), not the stale closure value
         if (!userRef.current) {
           navigate('/commercial');
         }
@@ -87,21 +88,6 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
-  // Subscription enforcement: redirect to subscription page if no active plan
-  // Exempt: super admins, subscription-exempt paths, and while still loading plan data
-  useEffect(() => {
-    if (loading || planLoading || !user || !isApproved || isSuperAdmin) return;
-    if (!tenantId) return; // No tenant selected yet
-
-    const isExempt = SUBSCRIPTION_EXEMPT_PATHS.some(p => location.pathname.startsWith(p));
-    if (isExempt) return;
-
-    // plan is null when there's no active subscription (trial expired or cancelled)
-    if (!plan) {
-      navigate('/settings/subscription');
-    }
-  }, [user, loading, planLoading, isApproved, isSuperAdmin, tenantId, plan, location.pathname, navigate]);
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -114,7 +100,6 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   }
 
   if (!user) {
-    // Show loading instead of null while waiting for grace period
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -133,6 +118,23 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   if (requireAdmin && !isAdmin) return null;
   if (requireSuperAdmin && !isSuperAdmin) return null;
   if (!canAccess(location.pathname)) return null;
+
+  // Subscription enforcement: show block page if no active plan
+  // Exempt: super admins, subscription-exempt paths, and while still loading plan data
+  if (!planLoading && user && isApproved && !isSuperAdmin && tenantId) {
+    const isExempt = SUBSCRIPTION_EXEMPT_PATHS.some(p => location.pathname.startsWith(p));
+    if (!isExempt && !plan) {
+      const reason = subscriptionStatus === "past_due" ? "past_due"
+        : subscriptionStatus === "cancelled" ? "cancelled"
+        : subscriptionStatus === "trial" ? "trial_ended"
+        : "expired";
+      return (
+        <Layout>
+          <SubscriptionBlockPage reason={reason as any} />
+        </Layout>
+      );
+    }
+  }
 
   return <>{children}</>;
 }
