@@ -1,48 +1,32 @@
 
 
-# Plan: Link Credit Payments to Cash Registers & Bank Accounts
+## Current Situation
 
-## Current Problem
-Credit payments are recorded in isolation — no deduction from the church's cash register or bank account. Other financial modules (Expenses, Salaries, Donations) already integrate with `cash_registers` and `bank_accounts`.
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-## What Changes
+## What Needs to Be Done
 
-### 1. Payment Form — Add Payment Source Selection
-In the payment dialog of `CreditAndLoans.tsx`:
-- Add a **"Payment Source"** selector: Cash Register or Bank Account
-- When "Cash Register" is chosen, show a dropdown of active cash registers
-- When "Bank Account" is chosen, show a dropdown of bank accounts
-- **Validate**: Check sufficient balance before allowing the payment (same pattern as Expenses/Salaries)
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-### 2. Payment Mutation — Deduct from Source
-When recording a payment:
-- If paying from **cash register**: deduct amount from `cash_registers.current_balance` and insert a `cash_transactions` record (type: `expense`, description referencing the credit operation)
-- If paying from **bank account**: deduct from `bank_accounts.current_balance` (if tracked)
-- Apply the same `INSUFFICIENT_BALANCE` check used in CashRegister/Expenses/Salaries pages
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### 3. For Loans Given — Record Incoming Payments
-When receiving a repayment on a loan the church gave:
-- **Add** the amount to the selected cash register or bank account (it's money coming in)
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-### 4. Translations (3 languages)
-Add new keys to `LanguageContext.tsx`:
-- `paymentSource`, `selectCashRegister`, `selectBankAccount`, `cashRegister`, `bankAccount`, `insufficientBalance` (reuse existing key)
-
-### Files Modified
-| File | Change |
-|------|--------|
-| `src/pages/CreditAndLoans.tsx` | Add source selector in payment form, fetch cash registers & bank accounts, deduct/add balance on payment |
-| `src/contexts/LanguageContext.tsx` | Add ~6 new translation keys in creditAndLoans section |
-
-### Logic Summary
-
-```text
-Payment on credit_purchase or loan_received (church owes money):
-  → DEDUCT from selected cash register/bank account
-
-Payment on loan_given (church is owed money):
-  → ADD to selected cash register/bank account
-```
-
-No database schema changes needed — uses existing `cash_registers`, `bank_accounts`, and `cash_transactions` tables.
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
