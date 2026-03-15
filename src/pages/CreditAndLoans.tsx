@@ -237,10 +237,10 @@ const CreditAndLoans = () => {
   const filtered = operations?.filter((o) => o.type === activeTab) || [];
 
   const totalDebts = operations?.filter((o) => (o.type === "credit_purchase" || o.type === "loan_received") && o.status === "active")
-    .reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0) || 0;
+    .reduce((s, o) => s + (getEffectiveTotal(o) - Number(o.amount_paid)), 0) || 0;
 
   const totalCredits = operations?.filter((o) => o.type === "loan_given" && o.status === "active")
-    .reduce((s, o) => s + (Number(o.total_amount) - Number(o.amount_paid)), 0) || 0;
+    .reduce((s, o) => s + (getEffectiveTotal(o) - Number(o.amount_paid)), 0) || 0;
 
   const statusBadge = (status: string) => {
     if (status === "completed") return <Badge className="bg-green-100 text-green-800">{t("creditAndLoans.statusCompleted")}</Badge>;
