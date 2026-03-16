@@ -6,7 +6,7 @@ import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Downlo
 import { SuperAdminOnboardingOverview } from "@/components/SuperAdminOnboardingOverview";
 import { SupportTicketsSummary } from "@/components/superadmin/SupportTicketsSummary";
 import { PlatformAlertsWidget } from "@/components/superadmin/PlatformAlertsWidget";
-import { RecentActivityFeed } from "@/components/superadmin/RecentActivityFeed";
+
 import { MiniRevenueChart } from "@/components/superadmin/MiniRevenueChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -239,10 +239,7 @@ export default function SuperAdminDashboard() {
 
         <SuperAdminOnboardingOverview />
 
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <SupportTicketsSummary />
-          <RecentActivityFeed />
-        </div>
+        <SupportTicketsSummary />
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Card>

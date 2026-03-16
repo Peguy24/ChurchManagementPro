@@ -12,11 +12,92 @@ import {
   Shield, MessageSquare, Clock, ChevronDown, Filter 
 } from "lucide-react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { exportToCsv, formatDateForCsv } from "@/lib/csvExport";
 import { todayInputValue } from "@/lib/date";
 import { toast } from "sonner";
 
+const activityTranslations: Record<string, Record<string, string>> = {
+  en: {
+    title: "Activity Log",
+    subtitle: "Track all platform-level actions and events",
+    searchPlaceholder: "Search by description or email...",
+    catAuth: "Authentication",
+    catSubscription: "Subscription",
+    catTenant: "Church",
+    catUser: "User",
+    catSupport: "Support",
+    catGeneral: "General",
+    eventType: "Event Type",
+    category: "Category",
+    description: "Description",
+    userEmail: "User Email",
+    church: "Church",
+    showDetails: "Show details",
+    hideDetails: "Hide details",
+    empty: "No activity recorded yet",
+    showing: "Showing",
+    prev: "Previous",
+    next: "Next",
+    exportCsv: "Export CSV",
+    noDataToExport: "No data to export",
+    csvExported: "CSV exported successfully",
+    all: "All",
+  },
+  fr: {
+    title: "Journal d'activité",
+    subtitle: "Suivez toutes les actions et événements au niveau de la plateforme",
+    searchPlaceholder: "Rechercher par description ou email...",
+    catAuth: "Authentification",
+    catSubscription: "Abonnement",
+    catTenant: "Église",
+    catUser: "Utilisateur",
+    catSupport: "Support",
+    catGeneral: "Général",
+    eventType: "Type d'événement",
+    category: "Catégorie",
+    description: "Description",
+    userEmail: "Email utilisateur",
+    church: "Église",
+    showDetails: "Voir les détails",
+    hideDetails: "Masquer les détails",
+    empty: "Aucune activité enregistrée",
+    showing: "Affichage",
+    prev: "Précédent",
+    next: "Suivant",
+    exportCsv: "Exporter CSV",
+    noDataToExport: "Aucune donnée à exporter",
+    csvExported: "CSV exporté avec succès",
+    all: "Tous",
+  },
+  ht: {
+    title: "Jounal Aktivite",
+    subtitle: "Swiv tout aksyon ak evènman nan platfòm nan",
+    searchPlaceholder: "Chèche pa deskripsyon oswa imèl...",
+    catAuth: "Otantifikasyon",
+    catSubscription: "Abònman",
+    catTenant: "Legliz",
+    catUser: "Itilizatè",
+    catSupport: "Sipò",
+    catGeneral: "Jeneral",
+    eventType: "Tip Evènman",
+    category: "Kategori",
+    description: "Deskripsyon",
+    userEmail: "Imèl Itilizatè",
+    church: "Legliz",
+    showDetails: "Montre detay",
+    hideDetails: "Kache detay",
+    empty: "Pa gen aktivite anrejistre ankò",
+    showing: "Afichaj",
+    prev: "Presedan",
+    next: "Swivan",
+    exportCsv: "Ekspòte CSV",
+    noDataToExport: "Pa gen done pou ekspòte",
+    csvExported: "CSV ekspòte avèk siksè",
+    all: "Tout",
+  },
+};
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   auth: UserPlus,
@@ -39,7 +120,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 const PAGE_SIZE = 50;
 
 export default function PlatformActivityLog() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = activityTranslations[language] || activityTranslations.en;
+  const dateLocale = language === "fr" ? fr : undefined;
+
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -77,33 +161,32 @@ export default function PlatformActivityLog() {
 
   const getCategoryLabel = (cat: string) => {
     const map: Record<string, string> = {
-      auth: t("superAdmin.activityLog.catAuth"),
-      subscription: t("superAdmin.activityLog.catSubscription"),
-      tenant: t("superAdmin.activityLog.catTenant"),
-      user: t("superAdmin.activityLog.catUser"),
-      support: t("superAdmin.activityLog.catSupport"),
-      general: t("superAdmin.activityLog.catGeneral"),
+      auth: lt.catAuth,
+      subscription: lt.catSubscription,
+      tenant: lt.catTenant,
+      user: lt.catUser,
+      support: lt.catSupport,
+      general: lt.catGeneral,
     };
     return map[cat] || cat;
   };
 
   const handleExport = () => {
     if (!data?.logs?.length) {
-      toast.error(t("superAdmin.noDataToExport"));
+      toast.error(lt.noDataToExport);
       return;
     }
     const columns = [
-      { key: "created_at" as const, header: t("common.date"), formatter: (v: string) => formatDateForCsv(v) },
-      { key: "event_type" as const, header: t("superAdmin.activityLog.eventType") },
-      { key: "event_category" as const, header: t("superAdmin.activityLog.category") },
-      { key: "description" as const, header: t("superAdmin.activityLog.description") },
-      { key: "user_email" as const, header: t("superAdmin.activityLog.userEmail") },
-      { key: "tenants" as const, header: t("superAdmin.activityLog.church"), formatter: (v: any) => v?.name || "—" },
+      { key: "created_at" as const, header: lt.eventType, formatter: (v: string) => formatDateForCsv(v) },
+      { key: "event_type" as const, header: lt.eventType },
+      { key: "event_category" as const, header: lt.category },
+      { key: "description" as const, header: lt.description },
+      { key: "user_email" as const, header: lt.userEmail },
+      { key: "tenants" as const, header: lt.church, formatter: (v: any) => v?.name || "—" },
     ];
     exportToCsv(data.logs, columns, `activity-log_${todayInputValue()}`);
-    toast.success(t("superAdmin.csvExported"));
+    toast.success(lt.csvExported);
   };
-
 
   const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
 
@@ -113,12 +196,12 @@ export default function PlatformActivityLog() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("superAdmin.activityLog.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("superAdmin.activityLog.subtitle")}</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{lt.title}</h1>
+            <p className="text-sm text-muted-foreground">{lt.subtitle}</p>
           </div>
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            {t("superAdmin.exportCsv")}
+            {lt.exportCsv}
           </Button>
         </div>
 
@@ -129,7 +212,7 @@ export default function PlatformActivityLog() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t("superAdmin.activityLog.searchPlaceholder")}
+                  placeholder={lt.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
                   className="pl-9"
@@ -141,12 +224,12 @@ export default function PlatformActivityLog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all") || "Tous"}</SelectItem>
-                  <SelectItem value="auth">{t("superAdmin.activityLog.catAuth")}</SelectItem>
-                  <SelectItem value="subscription">{t("superAdmin.activityLog.catSubscription")}</SelectItem>
-                  <SelectItem value="tenant">{t("superAdmin.activityLog.catTenant")}</SelectItem>
-                  <SelectItem value="user">{t("superAdmin.activityLog.catUser")}</SelectItem>
-                  <SelectItem value="support">{t("superAdmin.activityLog.catSupport")}</SelectItem>
+                  <SelectItem value="all">{lt.all}</SelectItem>
+                  <SelectItem value="auth">{lt.catAuth}</SelectItem>
+                  <SelectItem value="subscription">{lt.catSubscription}</SelectItem>
+                  <SelectItem value="tenant">{lt.catTenant}</SelectItem>
+                  <SelectItem value="user">{lt.catUser}</SelectItem>
+                  <SelectItem value="support">{lt.catSupport}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -155,12 +238,12 @@ export default function PlatformActivityLog() {
 
         {/* Timeline */}
         {isLoading ? (
-          <div className="text-muted-foreground text-center py-12">{t("common.loading")}...</div>
+          <div className="text-muted-foreground text-center py-12">{lt.all}...</div>
         ) : !data?.logs?.length ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Activity className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold">{t("superAdmin.activityLog.empty")}</h3>
+              <h3 className="text-lg font-semibold">{lt.empty}</h3>
             </CardContent>
           </Card>
         ) : (
@@ -198,7 +281,7 @@ export default function PlatformActivityLog() {
                           </div>
                           <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {format(new Date(log.created_at), "dd/MM/yyyy HH:mm")}
+                            {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: dateLocale })}
                           </span>
                         </div>
 
@@ -208,7 +291,7 @@ export default function PlatformActivityLog() {
                             className="text-xs text-primary hover:underline mt-2 flex items-center gap-1"
                           >
                             <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                            {isExpanded ? t("superAdmin.activityLog.hideDetails") : t("superAdmin.activityLog.showDetails")}
+                            {isExpanded ? lt.hideDetails : lt.showDetails}
                           </button>
                         )}
 
@@ -237,14 +320,14 @@ export default function PlatformActivityLog() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
                 <p className="text-sm text-muted-foreground">
-                  {t("superAdmin.activityLog.showing")} {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, data.total)} / {data.total}
+                  {lt.showing} {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, data.total)} / {data.total}
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
-                    {t("superAdmin.activityLog.prev")}
+                    {lt.prev}
                   </Button>
                   <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
-                    {t("superAdmin.activityLog.next")}
+                    {lt.next}
                   </Button>
                 </div>
               </div>
