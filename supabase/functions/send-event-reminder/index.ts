@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { detectLang, eventReminderTranslations, formatServiceDate } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -48,7 +49,6 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get all active tenants
     const { data: tenants, error: tenantsError } = await supabaseClient
       .from("tenants")
       .select("id, name")
@@ -72,8 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    const serviceType = isSundayTomorrow ? "Dimanche" : "Mercredi";
-    const serviceDate = tomorrow.toLocaleDateString("fr-FR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const serviceTypeKey = isSundayTomorrow ? "Dimanche" : "Mercredi";
 
     let totalSuccess = 0;
     let totalError = 0;
@@ -94,7 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { data: members, error: membersError } = await supabaseClient
         .from("members")
-        .select("id, first_name, last_name, email")
+        .select("id, first_name, last_name, email, user_id")
         .eq("status", "active")
         .eq("tenant_id", tenant.id)
         .not("email", "is", null);
@@ -104,25 +103,36 @@ const handler = async (req: Request): Promise<Response> => {
         continue;
       }
 
+      // Batch-fetch language preferences
+      const userIds = (members || []).filter(m => m.user_id).map(m => m.user_id);
+      let langMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabaseClient
+          .from("profiles")
+          .select("id, language")
+          .in("id", userIds);
+        for (const p of profiles || []) {
+          if (p.language) langMap[p.id] = p.language;
+        }
+      }
+
       for (const member of members || []) {
         if (!member.email) continue;
 
+        const lang = detectLang(member.user_id ? langMap[member.user_id] : null);
+        const t = eventReminderTranslations[lang];
+        const localizedServiceType = t.serviceTypes[serviceTypeKey] || serviceTypeKey;
+        const serviceDate = formatServiceDate(tomorrow, lang);
         const memberName = `${escapeHtml(member.first_name)} ${escapeHtml(member.last_name)}`;
-        const variables = { member_name: memberName, service_type: serviceType, service_date: serviceDate };
+        const variables = { member_name: memberName, service_type: localizedServiceType, service_date: serviceDate };
 
         const emailSubject = template?.subject 
           ? replaceTemplateVariables(template.subject, variables)
-          : `📅 Rappel: Culte du ${serviceType} demain`;
+          : t.subject(localizedServiceType);
         
         const emailBody = template?.body_html 
           ? replaceTemplateVariables(template.body_html, variables)
-          : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4F46E5;">📅 Rappel de Service</h1>
-              <p style="font-size: 18px;">Bonjour ${memberName},</p>
-              <p>Nous vous rappelons notre culte de <strong>${serviceType}</strong> prévu le <strong>${serviceDate}</strong>.</p>
-              <p>Nous espérons vous voir!</p>
-              <p>${escapeHtml(tenant.name)}</p>
-            </div>`;
+          : t.body(memberName, localizedServiceType, serviceDate, escapeHtml(tenant.name));
 
         try {
           await resend.emails.send({
@@ -144,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Event reminders: ${totalSuccess} success, ${totalError} failed across ${tenants?.length || 0} tenants`);
 
     return new Response(
-      JSON.stringify({ message: `Sent ${totalSuccess} event reminders`, successCount: totalSuccess, errorCount: totalError, serviceType, serviceDate }),
+      JSON.stringify({ message: `Sent ${totalSuccess} event reminders`, successCount: totalSuccess, errorCount: totalError }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
