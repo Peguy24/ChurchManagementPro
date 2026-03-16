@@ -407,7 +407,7 @@ export default function AttendanceKiosk() {
       {/* Footer back button */}
       <div className="px-3 py-2 sm:px-6 sm:py-3">
         <Button variant="ghost" size="sm" className="text-xs sm:text-sm" onClick={() => window.history.back()}>
-          ← {t("common.back")}
+          ← {language === "fr" ? "Retour" : language === "ht" ? "Retounen" : "Back"}
         </Button>
       </div>
     </div>
