@@ -284,7 +284,9 @@ export default function SuperAdminDashboard() {
                         }`}>
                           {(() => {
                             const sub = Array.isArray(tenant.tenant_subscriptions) ? tenant.tenant_subscriptions?.[0] : tenant.tenant_subscriptions;
-                            return planDisplayName[sub?.plan] || sub?.plan || "Aucun";
+                            return sub?.status === "trial"
+                              ? t("superAdmin.statusTrial")
+                              : planDisplayName[sub?.plan] || sub?.plan || "Aucun";
                           })()}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">
