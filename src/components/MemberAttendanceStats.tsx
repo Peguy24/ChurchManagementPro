@@ -197,10 +197,10 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarCheck className="h-5 w-5" />
-          {t("attendance.statistics")}
+          {lt.statistics}
         </CardTitle>
         <CardDescription>
-          {t("memberStats.last6Months")}
+          {lt.last6Months}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
