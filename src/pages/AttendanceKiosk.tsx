@@ -69,7 +69,7 @@ function isWithinEventWindow(event: EventOption): { allowed: boolean; reasonKey:
 }
 
 export default function AttendanceKiosk() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { settings: wl } = useWhiteLabel();
   const [isFullscreen, setIsFullscreen] = useState(false);
