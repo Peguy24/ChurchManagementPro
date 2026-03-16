@@ -24,7 +24,13 @@ type FeatureKey =
   | "cashRegister"
   | "financialAudit"
   | "creditsLoans"
-  | "salaries";
+  | "salaries"
+  | "attendance"
+  | "donations"
+  | "emailNotifications"
+  | "inventory"
+  | "support"
+  | "financialReports";
 
 interface FeatureLockedCardProps {
   featureKey: FeatureKey;
