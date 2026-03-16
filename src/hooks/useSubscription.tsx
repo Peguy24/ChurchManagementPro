@@ -99,7 +99,7 @@ export function useSubscription() {
     }
   }, []);
 
-  const createCheckout = async (plan: PlanKey) => {
+  const createCheckout = async (plan: PlanKey, interval: BillingInterval = "monthly") => {
     try {
       setCheckoutLoading(true);
       
