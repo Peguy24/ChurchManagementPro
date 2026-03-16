@@ -114,7 +114,7 @@ export function useSubscription() {
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan },
+        body: { plan, interval },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
