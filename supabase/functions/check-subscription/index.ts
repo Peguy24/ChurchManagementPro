@@ -62,18 +62,30 @@ serve(async (req) => {
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    if (!userId || !userEmail) {
+      return new Response(JSON.stringify({ error: "Invalid token claims" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    logStep("User authenticated", { userId, email: userEmail });
 
     // Get user's tenant_id first (needed for DB fallback)
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("tenant_id")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
     const userTenantId = profile?.tenant_id;
 
@@ -94,7 +106,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Find customer by email
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer for this user, checking tenant subscription in DB");
@@ -232,7 +244,7 @@ serve(async (req) => {
                 body: JSON.stringify({
                   eventType: "plan_renewed",
                   tenantName,
-                  tenantEmail: user.email,
+                  tenantEmail: userEmail,
                   newPlan: plan,
                   language: "en",
                 }),
@@ -292,7 +304,7 @@ serve(async (req) => {
             body: JSON.stringify({
               eventType,
               tenantName,
-              tenantEmail: user.email,
+              tenantEmail: userEmail,
               previousPlan: previousDbPlan,
               language: "en",
             }),
