@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { FeatureGate } from "@/components/FeatureGate";
 import Commercial from "./pages/Commercial";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
