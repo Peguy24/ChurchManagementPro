@@ -114,6 +114,18 @@ export interface PlanLimits {
     inventory: boolean;
     prioritySupport: boolean;
     whiteLabel: boolean;
+    advancedFinance: boolean;
+    smartInsights: boolean;
+    bulkCommunication: boolean;
+    automations: boolean;
+    volunteerScheduling: boolean;
+    memberCards: boolean;
+    attendanceAlerts: boolean;
+    churchHealth: boolean;
+    customFields: boolean;
+    dataBackup: boolean;
+    churnPrevention: boolean;
+    branding: boolean;
   };
 }
 
