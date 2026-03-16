@@ -438,7 +438,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  Export PDF
+                  {tl.exportPdf}
                 </>
               )}
             </Button>
