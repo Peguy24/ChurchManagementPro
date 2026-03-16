@@ -416,6 +416,21 @@ function FeatureFlagsSettings({
     member_cards: t("platformSettings.featureMemberCards"),
     custom_fields: t("platformSettings.featureCustomFields"),
     salary_management: t("platformSettings.featureSalary"),
+    attendance: t("platformSettings.featureAttendance"),
+    donations: t("platformSettings.featureDonations"),
+    advanced_reports: t("platformSettings.featureAdvancedReports"),
+    email_notifications: t("platformSettings.featureEmailNotif"),
+    priority_support: t("platformSettings.featurePrioritySupport"),
+    white_label: t("platformSettings.featureWhiteLabel"),
+    advanced_finance: t("platformSettings.featureAdvancedFinance"),
+    automations: t("platformSettings.featureAutomations"),
+    volunteer_scheduling: t("platformSettings.featureVolunteerScheduling"),
+    attendance_alerts: t("platformSettings.featureAttendanceAlerts"),
+    church_health: t("platformSettings.featureChurchHealth"),
+    data_backup: t("platformSettings.featureDataBackup"),
+    churn_prevention: t("platformSettings.featureChurnPrevention"),
+    branding: t("platformSettings.featureBranding"),
+    cash_register: t("platformSettings.featureCashRegister"),
   };
 
   return (
