@@ -5,6 +5,8 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Settings, ArrowLeft } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { CustomFieldDialog } from "@/components/CustomFieldDialog";
 import { CustomFieldList } from "@/components/CustomFieldList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
