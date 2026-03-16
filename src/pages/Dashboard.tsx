@@ -193,7 +193,10 @@ export default function Dashboard() {
 
   const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
   
-  const paidThisWeek = weeklyDonations.filter(d => d.donation_type === 'tithe').length;
+  const weeklyAttendanceCount = attendanceRecords?.filter(a => {
+    const eventDate = toSafeDate(a.event_date);
+    return eventDate ? eventDate >= firstDayOfWeek : false;
+  }).length || 0;
 
   const stats = [
     {
