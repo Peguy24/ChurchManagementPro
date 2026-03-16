@@ -323,8 +323,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
       timelineEvents.push({
         id: `ministry-${mm.id}`,
         type: "ministry",
-        title: `Rejoint ${mm.ministry?.name || "Ministère"}`,
-        description: `Rôle: ${mm.role || "Membre"}`,
+        title: `${tl.joined} ${mm.ministry?.name || tl.ministry}`,
+        description: `${tl.role}: ${mm.role || tl.member}`,
         date: mm.joined_date,
         icon: Briefcase,
         color: "text-purple-600 bg-purple-100",
