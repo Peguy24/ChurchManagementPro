@@ -23,7 +23,49 @@ import {
   Bar,
 } from "recharts";
 import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+
+const attendanceTranslations = {
+  fr: {
+    statistics: "Statistiques de Présence",
+    last6Months: "Statistiques des 6 derniers mois",
+    totalPresences: "Total présences",
+    attendanceRate: "Taux de présence",
+    thisMonth: "Ce mois",
+    trend: "Tendance",
+    monthlyEvolution: "Évolution mensuelle",
+    presences: "Présences",
+    byEventType: "Par type d'événement",
+    noAttendanceRecords: "Aucun enregistrement de présence",
+    loading: "Chargement...",
+  },
+  en: {
+    statistics: "Attendance Statistics",
+    last6Months: "Last 6 months statistics",
+    totalPresences: "Total attendance",
+    attendanceRate: "Attendance rate",
+    thisMonth: "This month",
+    trend: "Trend",
+    monthlyEvolution: "Monthly evolution",
+    presences: "Attendance",
+    byEventType: "By event type",
+    noAttendanceRecords: "No attendance records",
+    loading: "Loading...",
+  },
+  ht: {
+    statistics: "Estatistik Prezans",
+    last6Months: "Estatistik 6 dènye mwa yo",
+    totalPresences: "Total prezans",
+    attendanceRate: "To prezans",
+    thisMonth: "Mwa sa a",
+    trend: "Tandans",
+    monthlyEvolution: "Evolisyon chak mwa",
+    presences: "Prezans",
+    byEventType: "Pa tip evènman",
+    noAttendanceRecords: "Pa gen anrejistreman prezans",
+    loading: "Ap chaje...",
+  },
+};
 
 interface MemberAttendanceStatsProps {
   memberId: string;
