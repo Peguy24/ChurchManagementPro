@@ -65,11 +65,18 @@ const Commercial = () => {
     }
   ];
 
+  const yearlyPrices: Record<string, string> = {
+    basic: "499",
+    standard: "1,009",
+    premium: "2,030",
+  };
+
   const pricingPlans = [
     {
       name: t("commercial.plan_essential"),
       price: "49",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.basic,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_essentialDesc"),
       planKey: "basic",
       features: [
@@ -84,7 +91,8 @@ const Commercial = () => {
     {
       name: t("commercial.plan_professional"),
       price: "99",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.standard,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_professionalDesc"),
       planKey: "standard",
       features: [
@@ -100,7 +108,8 @@ const Commercial = () => {
     {
       name: t("commercial.plan_enterprise"),
       price: "199",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.premium,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_enterpriseDesc"),
       planKey: "premium",
       features: [
