@@ -34,8 +34,11 @@ export function SubscriptionCard() {
   }
 
   const currentPlan = plan ? PLAN_DETAILS[plan as PlanKey] : null;
+  const isTrial = subscriptionStatus === "trial";
+  const statusLabel = isTrial ? t("superAdmin.statusTrial") : t("sub.active");
+  const endDateLabel = isTrial ? t("superAdmin.trialEndsOn") : t("sub.renewal");
 
-  if (subscribed && currentPlan) {
+  if (subscribed && (currentPlan || isTrial)) {
     return (
       <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <CardHeader className="pb-3">
