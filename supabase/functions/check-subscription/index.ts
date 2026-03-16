@@ -85,7 +85,7 @@ serve(async (req) => {
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("tenant_id")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
     const userTenantId = profile?.tenant_id;
 
@@ -106,7 +106,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Find customer by email
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer for this user, checking tenant subscription in DB");
@@ -244,7 +244,7 @@ serve(async (req) => {
                 body: JSON.stringify({
                   eventType: "plan_renewed",
                   tenantName,
-                  tenantEmail: user.email,
+                  tenantEmail: userEmail,
                   newPlan: plan,
                   language: "en",
                 }),
@@ -304,7 +304,7 @@ serve(async (req) => {
             body: JSON.stringify({
               eventType,
               tenantName,
-              tenantEmail: user.email,
+              tenantEmail: userEmail,
               previousPlan: previousDbPlan,
               language: "en",
             }),
