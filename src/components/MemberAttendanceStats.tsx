@@ -239,7 +239,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
                 {trend.percentage}%
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">{t("memberStats.trend")}</p>
+            <p className="text-xs text-muted-foreground">{lt.trend}</p>
           </div>
         </div>
 
