@@ -99,7 +99,7 @@ serve(async (req) => {
       premium: { price: 199, members: -1, branches: -1, users: -1, storage: -1 },
     };
 
-    const plan = requested_plan || "free";
+    const plan = requested_plan || "basic";
     const config = planConfig[plan] || planConfig.basic;
     const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
