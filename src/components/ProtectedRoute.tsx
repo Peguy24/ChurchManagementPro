@@ -4,9 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
+import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
 import { Church } from 'lucide-react';
 import Layout from '@/components/Layout';
 import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
+import MaintenancePage from '@/components/MaintenancePage';
 
 // Paths that are accessible even without an active subscription
 const SUBSCRIPTION_EXEMPT_PATHS = [
@@ -27,6 +29,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   const { isApproved, isAdmin, isSuperAdmin, canAccess, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { plan, loading: planLoading, subscriptionStatus } = usePlanLimits();
+  const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
@@ -118,6 +121,11 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   if (requireAdmin && !isAdmin) return null;
   if (requireSuperAdmin && !isSuperAdmin) return null;
   if (!canAccess(location.pathname)) return null;
+
+  // Maintenance mode: block non-super-admins
+  if (!maintenanceLoading && isMaintenanceMode && !isSuperAdmin) {
+    return <MaintenancePage />;
+  }
 
   // Subscription enforcement: show block page if no active plan
   // Exempt: super admins, subscription-exempt paths, and while still loading plan data

@@ -1,18 +1,21 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
 import { Church } from 'lucide-react';
 import Commercial from './Commercial';
 import Dashboard from './Dashboard';
 import SuperAdminDashboard from './SuperAdminDashboard';
 import PendingApproval from './PendingApproval';
+import MaintenancePage from '@/components/MaintenancePage';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const { isApproved, isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
+  const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
-  const loading = authLoading || roleLoading || tenantLoading;
+  const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
   // Show loading state
   if (loading) {
@@ -29,6 +32,11 @@ export default function Home() {
   // Not logged in → Show commercial/marketing page
   if (!user) {
     return <Commercial />;
+  }
+
+  // Maintenance mode: block non-super-admins
+  if (isMaintenanceMode && !isSuperAdmin) {
+    return <MaintenancePage />;
   }
 
   // Logged in but not approved → Show pending approval page
