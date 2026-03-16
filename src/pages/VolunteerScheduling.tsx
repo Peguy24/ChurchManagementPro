@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
+import { FeatureLockedCard } from '@/components/FeatureLockedCard';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
