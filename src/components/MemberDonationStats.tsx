@@ -189,7 +189,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   // Handle fiscal receipt generation
   const handleGenerateFiscalReceipt = async () => {
     if (!memberInfo || !yearDonations || yearDonations.length === 0) {
-      toast.error(t("memberDetails.fiscalReceiptNoDonations"));
+      toast.error(lt.noDonationsForReceipt);
       return;
     }
 
