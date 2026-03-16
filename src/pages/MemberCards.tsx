@@ -54,7 +54,16 @@ interface Member {
 }
 
 export default function MemberCards() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { toast } = useToast();
+
+  if (!planLoading && !hasFeature("memberCards")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Cartes de membres" featureDescription="Générez des cartes d'identification pour vos membres" requiredPlan="professionnel" />
+      </Layout>
+    );
+  }
   const { t, language } = useLanguage();
   const { tenant } = useCurrentTenant();
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});

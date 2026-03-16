@@ -46,9 +46,18 @@ interface Member {
 }
 
 export default function VolunteerScheduling() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { tenantId, forInsert } = useCurrentTenant();
   const { toast } = useToast();
   const { t, language } = useLanguage();
+
+  if (!planLoading && !hasFeature("volunteerScheduling")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Planification des bénévoles" featureDescription="Gérez les horaires et les rôles des bénévoles" requiredPlan="professionnel" icon={<Users className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const dateLocale = language === 'fr' || language === 'ht' ? fr : enUS;
 
   const v = (key: string) => t(`volunteers.${key}`);

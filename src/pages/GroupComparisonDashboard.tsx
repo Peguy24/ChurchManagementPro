@@ -75,8 +75,17 @@ interface GroupStats {
 }
 
 const GroupComparisonDashboard = () => {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const navigate = useNavigate();
   const { language } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedReports")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Comparaison des groupes" featureDescription="Rapports avancés et analyses comparatives" requiredPlan="professionnel" icon={<TrendingUp className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const [loading, setLoading] = useState(true);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);

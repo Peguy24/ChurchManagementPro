@@ -23,7 +23,16 @@ import { generateBankReconciliationPDF, BankTransaction } from "@/lib/bankReconc
 import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BankReconciliation() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Réconciliation bancaire" featureDescription="Rapprochement bancaire et gestion des comptes" requiredPlan="professionnel" />
+      </Layout>
+    );
+  }
   const { formatAmount } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();

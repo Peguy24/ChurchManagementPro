@@ -22,7 +22,16 @@ import TransferDialog from "@/components/TransferDialog";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const CashRegister = () => {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Caisse enregistreuse" featureDescription="Gestion des caisses et transactions en espèces" requiredPlan="professionnel" icon={<Wallet className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const { formatAmount } = useCurrency();

@@ -20,7 +20,16 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const FinancialAudit = () => {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Audit financier" featureDescription="Journal d'audit et traçabilité des opérations financières" requiredPlan="professionnel" icon={<History className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const { tenantId } = useCurrentTenant();
   const { isSuperAdmin } = useUserRole();
   const [entityFilter, setEntityFilter] = useState<string>("all");

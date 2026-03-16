@@ -61,7 +61,16 @@ interface HealthScore {
 }
 
 export default function ChurchHealthScores() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t } = useLanguage();
+
+  if (!planLoading && !hasFeature("churchHealth")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Church Health Scores" featureDescription="Scores de santé des églises et analyses avancées" requiredPlan="professionnel" icon={<Heart className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"overall_score" | "health_grade" | "total_members">("overall_score");

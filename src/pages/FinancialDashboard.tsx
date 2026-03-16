@@ -41,7 +41,16 @@ import {
 const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--secondary))", "hsl(var(--accent))"];
 
 const FinancialDashboard = () => {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Tableau de bord financier" featureDescription="Vue d'ensemble des finances avec graphiques et analyses" requiredPlan="professionnel" icon={<DollarSign className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const currentDate = new Date();
   const currentMonthStart = format(startOfMonth(currentDate), "yyyy-MM-dd");
   const currentMonthEnd = format(endOfMonth(currentDate), "yyyy-MM-dd");

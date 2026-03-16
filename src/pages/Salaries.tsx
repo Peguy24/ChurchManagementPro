@@ -74,7 +74,16 @@ interface SalaryPayment {
 }
 
 export default function Salaries() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { toast } = useToast();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Salaires" featureDescription="Gestion de la paie et des employés" requiredPlan="professionnel" />
+      </Layout>
+    );
+  }
   const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();

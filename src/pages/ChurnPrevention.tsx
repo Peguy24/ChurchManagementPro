@@ -93,8 +93,17 @@ const localTranslations: Record<string, Record<string, string>> = {
 };
 
 export default function ChurnPrevention() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { language } = useLanguage();
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
+
+  if (!planLoading && !hasFeature("churnPrevention")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName={lt("title")} featureDescription={lt("subtitle")} requiredPlan="entreprise" icon={<ShieldAlert className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const queryClient = useQueryClient();
   const [selectedTenant, setSelectedTenant] = useState<string>("all");
 

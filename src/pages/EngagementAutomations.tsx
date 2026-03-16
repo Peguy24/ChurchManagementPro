@@ -30,7 +30,16 @@ const DEFAULT_RULES: AutomationRule[] = [
 ];
 
 export default function EngagementAutomations() {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t } = useLanguage();
+
+  if (!planLoading && !hasFeature("automations")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Automations d'engagement" featureDescription="Automatisez les notifications et les rappels" requiredPlan="professionnel" icon={<Zap className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
   const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_RULES);

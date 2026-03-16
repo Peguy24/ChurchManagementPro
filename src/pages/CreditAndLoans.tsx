@@ -26,7 +26,16 @@ import { format } from "date-fns";
 type OperationType = "credit_purchase" | "loan_received" | "loan_given";
 
 const CreditAndLoans = () => {
+  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t } = useLanguage();
+
+  if (!planLoading && !hasFeature("advancedFinance")) {
+    return (
+      <Layout>
+        <FeatureLockedCard featureName="Crédits et prêts" featureDescription="Gestion des crédits, prêts et remboursements" requiredPlan="professionnel" icon={<Handshake className="w-8 h-8 text-muted-foreground" />} />
+      </Layout>
+    );
+  }
   const { tenantId } = useCurrentTenant();
   const { user } = useAuth();
   const { formatAmount } = useCurrency();
