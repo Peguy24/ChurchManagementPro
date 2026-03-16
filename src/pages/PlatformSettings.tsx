@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ALL_FEATURE_KEYS, FeatureKey } from "@/hooks/usePlanLimits";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -288,12 +289,12 @@ function PlanCard({
   const [mu, setMu] = useState(limits.max_users ?? 3);
   const [ms, setMs] = useState(limits.max_storage_mb ?? 200);
 
-  const defaultFeatures = {
-    attendance: true, donations: true, advancedReports: false,
-    emailNotifications: false, inventory: false, prioritySupport: false, whiteLabel: false,
-  };
+  const defaultFeatures = Object.fromEntries(
+    ALL_FEATURE_KEYS.map(k => [k, false])
+  ) as Record<FeatureKey, boolean>;
+
   const [features, setFeatures] = useState<Record<string, boolean>>(
-    typeof limits.features === "object" ? limits.features : defaultFeatures
+    typeof limits.features === "object" ? { ...defaultFeatures, ...limits.features } : defaultFeatures
   );
 
   useEffect(() => {
@@ -301,7 +302,7 @@ function PlanCard({
     setMb(limits.max_branches ?? 1);
     setMu(limits.max_users ?? 3);
     setMs(limits.max_storage_mb ?? 200);
-    if (typeof limits.features === "object") setFeatures(limits.features);
+    if (typeof limits.features === "object") setFeatures({ ...defaultFeatures, ...limits.features });
   }, [limits.max_members, limits.max_branches, limits.max_users, limits.max_storage_mb, limits.features]);
 
   const featureLabels: Record<string, string> = {
@@ -312,6 +313,20 @@ function PlanCard({
     inventory: t("platformSettings.featureInventory"),
     prioritySupport: t("platformSettings.featurePrioritySupport"),
     whiteLabel: t("platformSettings.featureWhiteLabel"),
+    advancedFinance: t("platformSettings.featureAdvancedFinance") || "Advanced Finance",
+    smartInsights: t("platformSettings.featureSmartInsights"),
+    bulkCommunication: t("platformSettings.featureBulkComm"),
+    automations: t("platformSettings.featureAutomations") || "Automations",
+    volunteerScheduling: t("platformSettings.featureVolunteerScheduling") || "Volunteer Scheduling",
+    memberCards: t("platformSettings.featureMemberCards"),
+    attendanceAlerts: t("platformSettings.featureAttendanceAlerts") || "Attendance Alerts",
+    churchHealth: t("platformSettings.featureChurchHealth") || "Church Health",
+    customFields: t("platformSettings.featureCustomFields"),
+    dataBackup: t("platformSettings.featureDataBackup") || "Data Backup",
+    churnPrevention: t("platformSettings.featureChurnPrevention") || "Churn Prevention",
+    branding: t("platformSettings.featureBranding") || "Branding",
+    bankReconciliation: t("platformSettings.featureBankRecon"),
+    cashRegister: t("platformSettings.featureCashRegister") || "Cash Register",
   };
 
   return (

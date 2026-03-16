@@ -3,102 +3,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSubscription, PlanKey } from "./useSubscription";
 import { useCurrentTenant } from "./useCurrentTenant";
 
-// Plan limits configuration
-const ALL_FEATURES_FALSE = {
-  attendance: false,
-  donations: false,
-  advancedReports: false,
-  emailNotifications: false,
-  inventory: false,
-  prioritySupport: false,
-  whiteLabel: false,
-  advancedFinance: false,
-  smartInsights: false,
-  bulkCommunication: false,
-  automations: false,
-  volunteerScheduling: false,
-  memberCards: false,
-  attendanceAlerts: false,
-  churchHealth: false,
-  customFields: false,
-  dataBackup: false,
-  churnPrevention: false,
-  branding: false,
-  bankReconciliation: false,
-  cashRegister: false,
-} as const;
+// All feature keys used across the platform
+export const ALL_FEATURE_KEYS = [
+  "attendance", "donations", "advancedReports", "emailNotifications",
+  "inventory", "prioritySupport", "whiteLabel", "advancedFinance",
+  "smartInsights", "bulkCommunication", "automations", "volunteerScheduling",
+  "memberCards", "attendanceAlerts", "churchHealth", "customFields",
+  "dataBackup", "churnPrevention", "branding", "bankReconciliation", "cashRegister",
+] as const;
 
-const BASIC_FEATURES = {
-  ...ALL_FEATURES_FALSE,
-  attendance: true,
-  donations: true,
-  bankReconciliation: true,
-  cashRegister: true,
-} as const;
+export type FeatureKey = typeof ALL_FEATURE_KEYS[number];
 
-const PRO_FEATURES = {
-  ...BASIC_FEATURES,
-  advancedReports: true,
-  emailNotifications: true,
-  inventory: true,
-  advancedFinance: true,
-  smartInsights: true,
-  bulkCommunication: true,
-  automations: true,
-  volunteerScheduling: true,
-  memberCards: true,
-  attendanceAlerts: true,
-  churchHealth: true,
-  customFields: true,
-  dataBackup: true,
-} as const;
-
-const ENTERPRISE_FEATURES = {
-  ...PRO_FEATURES,
-  prioritySupport: true,
-  whiteLabel: true,
-  churnPrevention: true,
-  branding: true,
-} as const;
-
-export const PLAN_LIMITS = {
-  free: {
-    maxMembers: 100,
-    maxBranches: 1,
-    maxUsers: 3,
-    features: BASIC_FEATURES,
-  },
-  essentiel: {
-    maxMembers: 200,
-    maxBranches: 1,
-    maxUsers: 5,
-    features: BASIC_FEATURES,
-  },
-  trial: {
-    maxMembers: 50,
-    maxBranches: 1,
-    maxUsers: 3,
-    features: BASIC_FEATURES,
-  },
-  none: {
-    maxMembers: 0,
-    maxBranches: 0,
-    maxUsers: 0,
-    features: ALL_FEATURES_FALSE,
-  },
-  professionnel: {
-    maxMembers: 1000,
-    maxBranches: 3,
-    maxUsers: 15,
-    features: PRO_FEATURES,
-  },
-  entreprise: {
-    maxMembers: Infinity,
-    maxBranches: Infinity,
-    maxUsers: Infinity,
-    features: ENTERPRISE_FEATURES,
-  },
-} as const;
+// Fallback defaults (used if DB fetch fails)
+const FALLBACK_PLAN_LIMITS: Record<string, { maxMembers: number; maxBranches: number; maxUsers: number; features: Record<FeatureKey, boolean> }> = {
+  free: { maxMembers: 100, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  essentiel: { maxMembers: 200, maxBranches: 1, maxUsers: 5, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  trial: { maxMembers: 50, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  none: { maxMembers: 0, maxBranches: 0, maxUsers: 0, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, false])) as Record<FeatureKey, boolean> },
+  professionnel: { maxMembers: 1000, maxBranches: 3, maxUsers: 15, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, !["prioritySupport","whiteLabel","churnPrevention","branding"].includes(k)])) as Record<FeatureKey, boolean> },
+  entreprise: { maxMembers: Infinity, maxBranches: Infinity, maxUsers: Infinity, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean> },
+};
 
 export interface UsageStats {
   membersCount: number;
@@ -110,34 +34,63 @@ export interface PlanLimits {
   maxMembers: number;
   maxBranches: number;
   maxUsers: number;
-  features: {
-    attendance: boolean;
-    donations: boolean;
-    advancedReports: boolean;
-    emailNotifications: boolean;
-    inventory: boolean;
-    prioritySupport: boolean;
-    whiteLabel: boolean;
-    advancedFinance: boolean;
-    smartInsights: boolean;
-    bulkCommunication: boolean;
-    automations: boolean;
-    volunteerScheduling: boolean;
-    memberCards: boolean;
-    attendanceAlerts: boolean;
-    churchHealth: boolean;
-    customFields: boolean;
-    dataBackup: boolean;
-    churnPrevention: boolean;
-    branding: boolean;
-    bankReconciliation: boolean;
-    cashRegister: boolean;
-  };
+  features: Record<FeatureKey, boolean>;
+}
+
+// Map DB setting keys to frontend plan names
+const SETTING_KEY_TO_PLAN: Record<string, string> = {
+  plan_gratuit_limits: "free",
+  plan_essentiel_limits: "essentiel",
+  plan_professionnel_limits: "professionnel",
+  plan_entreprise_limits: "entreprise",
+  trial_plan_limits: "trial",
+};
+
+function parsePlanFromSetting(settingValue: any): PlanLimits | null {
+  if (!settingValue || typeof settingValue !== "object") return null;
+  const maxMembers = settingValue.max_members === -1 ? Infinity : (settingValue.max_members ?? 0);
+  const maxBranches = settingValue.max_branches === -1 ? Infinity : (settingValue.max_branches ?? 0);
+  const maxUsers = settingValue.max_users === -1 ? Infinity : (settingValue.max_users ?? 0);
+  
+  // Build features from DB, defaulting to false for missing keys
+  const dbFeatures = typeof settingValue.features === "object" ? settingValue.features : {};
+  const features = Object.fromEntries(
+    ALL_FEATURE_KEYS.map(k => [k, dbFeatures[k] === true])
+  ) as Record<FeatureKey, boolean>;
+
+  return { maxMembers, maxBranches, maxUsers, features };
 }
 
 export function usePlanLimits() {
   const { plan, subscribed, loading: subscriptionLoading } = useSubscription();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
+
+  // Fetch dynamic plan limits from platform_settings
+  const { data: dynamicLimits } = useQuery({
+    queryKey: ["platform-plan-limits"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("platform_settings")
+        .select("setting_key, setting_value")
+        .in("setting_key", [
+          "plan_gratuit_limits", "plan_essentiel_limits",
+          "plan_professionnel_limits", "plan_entreprise_limits",
+          "trial_plan_limits",
+        ]);
+      if (error) throw error;
+      
+      const limitsMap: Record<string, PlanLimits> = {};
+      for (const row of (data || [])) {
+        const planName = SETTING_KEY_TO_PLAN[row.setting_key];
+        if (planName) {
+          const parsed = parsePlanFromSetting(row.setting_value);
+          if (parsed) limitsMap[planName] = parsed;
+        }
+      }
+      return limitsMap;
+    },
+    staleTime: 1000 * 60 * 5, // Cache 5 min
+  });
 
   // Check DB subscription for plans not managed by Stripe (e.g., "free")
   const { data: dbSubscription } = useQuery({
@@ -162,21 +115,18 @@ export function usePlanLimits() {
         return { membersCount: 0, branchesCount: 0, usersCount: 0 };
       }
 
-      // Count members
       const { count: membersCount } = await supabase
         .from("members")
         .select("*", { count: "exact", head: true })
         .eq("tenant_id", tenantId)
         .eq("status", "active");
 
-      // Count branches
       const { count: branchesCount } = await supabase
         .from("branches")
         .select("*", { count: "exact", head: true })
         .eq("tenant_id", tenantId)
         .eq("status", "active");
 
-      // Count users
       const { count: usersCount } = await supabase
         .from("tenant_user_roles")
         .select("*", { count: "exact", head: true })
@@ -199,20 +149,14 @@ export function usePlanLimits() {
 
   const isActiveTrial = dbSubscription?.status === "trial" && !isTrialExpired;
 
-  // Determine effective plan: Stripe subscription takes priority, then DB-only plans
+  // Determine effective plan
   const isDbActivePlan = !subscribed && dbSubscription?.plan && 
     (dbSubscription?.status === "active" || isActiveTrial);
   const effectiveSubscribed = subscribed || !!isDbActivePlan;
   
-  // Map DB plan names to frontend plan names
   const DB_TO_FRONTEND_PLAN: Record<string, PlanKey> = {
-    basic: "essentiel",
-    standard: "professionnel",
-    premium: "entreprise",
-    free: "free",
-    essentiel: "essentiel",
-    professionnel: "professionnel",
-    entreprise: "entreprise",
+    basic: "essentiel", standard: "professionnel", premium: "entreprise",
+    free: "free", essentiel: "essentiel", professionnel: "professionnel", entreprise: "entreprise",
   };
   
   const resolvedDbPlan = isDbActivePlan && dbSubscription?.plan 
@@ -220,20 +164,22 @@ export function usePlanLimits() {
     : null;
   const effectivePlan = subscribed ? (plan as PlanKey | null) : resolvedDbPlan;
 
-  // During trial, use trial limits. After paying, use the actual plan limits.
+  // Resolve limits: prefer dynamic DB values, fall back to hardcoded
+  const resolveLimits = (planKey: string): PlanLimits => {
+    return dynamicLimits?.[planKey] || FALLBACK_PLAN_LIMITS[planKey] || FALLBACK_PLAN_LIMITS.none;
+  };
+
   const getLimits = (): PlanLimits => {
-    if (!effectiveSubscribed || !effectivePlan) return PLAN_LIMITS.none;
-    if (isActiveTrial) return PLAN_LIMITS.trial;
-    return PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.none;
+    if (!effectiveSubscribed || !effectivePlan) return resolveLimits("none");
+    if (isActiveTrial) return resolveLimits("trial");
+    return resolveLimits(effectivePlan);
   };
 
   const limits: PlanLimits = getLimits();
-
   const loading = subscriptionLoading || tenantLoading || usageLoading;
 
-  // Check if user can add more of a resource
   const canAddMember = () => {
-    if (!usage) return true; // Allow if we can't check yet
+    if (!usage) return true;
     return usage.membersCount < limits.maxMembers;
   };
 
@@ -247,12 +193,10 @@ export function usePlanLimits() {
     return usage.usersCount < limits.maxUsers;
   };
 
-  // Check specific feature access
-  const hasFeature = (feature: keyof PlanLimits["features"]) => {
+  const hasFeature = (feature: FeatureKey) => {
     return limits.features[feature];
   };
 
-  // Get remaining capacity
   const getRemainingMembers = () => {
     if (!usage || limits.maxMembers === Infinity) return Infinity;
     return Math.max(0, limits.maxMembers - usage.membersCount);
@@ -268,7 +212,6 @@ export function usePlanLimits() {
     return Math.max(0, limits.maxUsers - usage.usersCount);
   };
 
-  // Get usage percentage
   const getMemberUsagePercent = () => {
     if (!usage || limits.maxMembers === Infinity) return 0;
     return Math.round((usage.membersCount / limits.maxMembers) * 100);
@@ -286,22 +229,12 @@ export function usePlanLimits() {
     subscriptionStatus: dbSubscription?.status || null,
     limits,
     usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0 },
-    
-    // Capacity checks
-    canAddMember,
-    canAddBranch,
-    canAddUser,
-    
-    // Feature checks
+    canAddMember, canAddBranch, canAddUser,
     hasFeature,
-    
-    // Remaining capacity
-    getRemainingMembers,
-    getRemainingBranches,
-    getRemainingUsers,
-    
-    // Usage percentages
-    getMemberUsagePercent,
-    getBranchUsagePercent,
+    getRemainingMembers, getRemainingBranches, getRemainingUsers,
+    getMemberUsagePercent, getBranchUsagePercent,
   };
 }
+
+// Re-export for backward compat
+export const PLAN_LIMITS = FALLBACK_PLAN_LIMITS;

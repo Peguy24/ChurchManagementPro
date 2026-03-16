@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
-import { usePlanLimits, PlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard, FeatureKey, uiTranslations } from "@/components/FeatureLockedCard";
+import { usePlanLimits, FeatureKey } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard, FeatureKey as UIFeatureKey, uiTranslations } from "@/components/FeatureLockedCard";
 import Layout from "@/components/Layout";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FeatureGateProps {
-  feature: keyof PlanLimits["features"];
-  featureKey: FeatureKey;
+  feature: FeatureKey;
+  featureKey: UIFeatureKey;
   requiredPlan: "essentiel" | "professionnel" | "entreprise";
   icon?: React.ReactNode;
   children: ReactNode;
