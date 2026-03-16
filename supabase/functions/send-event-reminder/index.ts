@@ -30,13 +30,15 @@ const handler = async (req: Request): Promise<Response> => {
 
   const authHeader = req.headers.get("Authorization");
   const expectedSecret = Deno.env.get("CRON_SECRET");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   
-  if (!expectedSecret) {
-    return new Response(JSON.stringify({ error: "Server configuration error" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
-  }
+  const bearerToken = authHeader?.replace("Bearer ", "");
+  const isAuthorized = bearerToken && (
+    (expectedSecret && bearerToken === expectedSecret) ||
+    (serviceRoleKey && bearerToken === serviceRoleKey)
+  );
   
-  if (authHeader !== `Bearer ${expectedSecret}`) {
+  if (!isAuthorized) {
     return new Response(JSON.stringify({ error: "Unauthorized" }),
       { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
