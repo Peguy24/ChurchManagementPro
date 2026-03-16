@@ -460,7 +460,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {/* Recent Donations List */}
         {donations && donations.length > 0 && (
           <div>
-            <h4 className="font-medium mb-3">{t("donations.recentDonations")}</h4>
+            <h4 className="font-medium mb-3">{lt.recentDonations}</h4>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {donations.slice(0, 10).map((donation) => (
                 <div
