@@ -405,7 +405,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                   <XAxis dataKey="month" className="text-xs" />
                   <YAxis className="text-xs" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
-                    formatter={(value: number) => [formatCurrency(value), t("donations.amount")]}
+                    formatter={(value: number) => [formatCurrency(value), lt.amount]}
                     contentStyle={{
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
