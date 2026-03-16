@@ -289,7 +289,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   });
 
   const pieData = Object.entries(categoryData).map(([name, value]) => ({
-    name: t(name) || name,
+    name,
     value,
   }));
 
