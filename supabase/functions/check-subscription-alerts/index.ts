@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type AlertType = "expiring_soon" | "expired" | "renewal_success";
+type AlertType = "expiring_soon" | "expired" | "renewal_success" | "trial_expiring";
 
 const translations: Record<AlertType, Record<string, { subject: string; title: string; body: string; cta: string; footer: string }>> = {
   expiring_soon: {
@@ -79,12 +79,36 @@ const translations: Record<AlertType, Record<string, { subject: string; title: s
       footer: "Mèsi paske ou chwazi Church Management Pro.",
     },
   },
+  trial_expiring: {
+    en: {
+      subject: "🎁 Your free trial expires soon",
+      title: "Your Free Trial Expires Soon",
+      body: "Your free trial ends on <strong>{date}</strong>. Upgrade now to keep access to all your church management features without interruption.",
+      cta: "Upgrade Now",
+      footer: "Don't lose your data — upgrade before your trial expires.",
+    },
+    fr: {
+      subject: "🎁 Votre essai gratuit expire bientôt",
+      title: "Votre Essai Gratuit Expire Bientôt",
+      body: "Votre essai gratuit se termine le <strong>{date}</strong>. Passez à un forfait payant maintenant pour conserver l'accès à toutes vos fonctionnalités de gestion d'église sans interruption.",
+      cta: "Passer au Forfait Payant",
+      footer: "Ne perdez pas vos données — passez à un forfait avant la fin de votre essai.",
+    },
+    ht: {
+      subject: "🎁 Esè gratis ou prèske fini",
+      title: "Esè Gratis Ou Prèske Fini",
+      body: "Esè gratis ou ap fini <strong>{date}</strong>. Mete ajou kounye a pou kenbe aksè nan tout fonksyonalite jesyon legliz ou yo san entèripsyon.",
+      cta: "Mete Ajou Kounye a",
+      footer: "Pa pèdi done ou yo — mete ajou anvan esè ou fini.",
+    },
+  },
 };
 
 const colorSchemes: Record<AlertType, { bg: string; accent: string }> = {
   expiring_soon: { bg: "#D97706", accent: "#F59E0B" },
   expired: { bg: "#DC2626", accent: "#EF4444" },
   renewal_success: { bg: "#059669", accent: "#10B981" },
+  trial_expiring: { bg: "#4F46E5", accent: "#6366F1" },
 };
 
 serve(async (req) => {
@@ -177,6 +201,38 @@ serve(async (req) => {
       const tenantName = await getTenantName(supabase, sub.tenant_id);
       const t = translations.expired[lang] || translations.expired.fr;
       const colors = colorSchemes.expired;
+      const dateStr = formatDate(endDate, lang);
+
+      await resend.emails.send({
+        from: `${tenantName} <noreply@churchmanagementpro.com>`,
+        to: emails,
+        subject: `${t.subject} — ${tenantName}`,
+        html: buildEmailHtml(t, colors, dateStr, tenantName),
+      });
+      emailsSent++;
+    }
+
+    // 3. Find trial subscriptions about to expire
+    const { data: trialSubs } = await supabase
+      .from("tenant_subscriptions")
+      .select("tenant_id, trial_ends_at")
+      .eq("status", "trial")
+      .not("trial_ends_at", "is", null);
+
+    for (const sub of trialSubs || []) {
+      if (!sub.trial_ends_at) continue;
+      const endDate = new Date(sub.trial_ends_at);
+      const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysUntilExpiry !== 7 && daysUntilExpiry !== 3 && daysUntilExpiry !== 1) continue;
+
+      const emails = await getTenantAdminEmails(supabase, sub.tenant_id);
+      if (emails.length === 0) continue;
+
+      const lang = await getTenantLanguage(supabase, sub.tenant_id);
+      const tenantName = await getTenantName(supabase, sub.tenant_id);
+      const t = translations.trial_expiring[lang] || translations.trial_expiring.fr;
+      const colors = colorSchemes.trial_expiring;
       const dateStr = formatDate(endDate, lang);
 
       await resend.emails.send({

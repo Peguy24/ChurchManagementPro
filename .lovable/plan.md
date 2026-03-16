@@ -1,29 +1,32 @@
 
 
-## Plan: Add Trial Expiry Reminder Emails
+## Current Situation
 
-The existing `check-subscription-alerts` Edge Function only handles `active` subscriptions (paid plans). It does not query for `trial` status subscriptions. We need to add a new alert type for trial expiry reminders.
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-### What to change
+## What Needs to Be Done
 
-**1. Update `supabase/functions/check-subscription-alerts/index.ts`**
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-- Add a new alert type `trial_expiring` to the `translations` object with EN/FR/HT translations (subject, title, body urging upgrade, CTA pointing to subscription page, footer)
-- Add corresponding color scheme (e.g., blue/indigo tones to differentiate from paid expiry warnings)
-- Add a new section (section 3) that queries `tenant_subscriptions` where `status = 'trial'` and `trial_ends_at IS NOT NULL`
-- Calculate days until trial expiry; send reminders at **7 days**, **3 days**, and **1 day** before `trial_ends_at`
-- Reuse existing helper functions (`getTenantAdminEmails`, `getTenantLanguage`, `getTenantName`, `formatDate`, `buildEmailHtml`)
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### Email content (trial-specific messaging)
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-- **Subject**: "Your free trial expires soon" (localized)
-- **Body**: "Your free trial ends on {date}. Upgrade now to keep access to all your church management features."
-- **CTA**: "Upgrade Now" → links to `/settings/subscription`
-- **Distinct from paid expiry**: Different wording focused on upgrading rather than renewing
-
-### No other changes needed
-
-- The cron job already calls this function daily, so trial reminders will be picked up automatically
-- No database migration required
-- No frontend changes needed
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
