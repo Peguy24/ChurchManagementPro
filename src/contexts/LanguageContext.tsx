@@ -9337,6 +9337,7 @@ const translations = {
       active: "Aktif",
       renewal: "Renouvèlman",
       manageSubscription: "Jere Abònman",
+      managedByAdmin: "Abònman sa a jere pa administratè platfòm nan.",
       upgradePremium: "Pase nan Premium",
       unlockFeatures: "Debloke tout fonksyonalite ak yon abònman",
       choose: "Chwazi",
