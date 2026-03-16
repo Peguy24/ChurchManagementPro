@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,28 @@ const Commercial = () => {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const isYearly = billingInterval === "yearly";
 
+  // Reset to default platform colors on Commercial page (override tenant branding)
+  useEffect(() => {
+    const root = document.documentElement;
+    const defaults = {
+      '--primary': '221 83% 40%',
+      '--primary-light': '221 83% 70%',
+      '--primary-dark': '221 83% 30%',
+      '--ring': '221 83% 40%',
+    };
+    // Save current values to restore on unmount
+    const saved: Record<string, string> = {};
+    for (const key of Object.keys(defaults)) {
+      saved[key] = root.style.getPropertyValue(key);
+      root.style.setProperty(key, defaults[key as keyof typeof defaults]);
+    }
+    return () => {
+      for (const [key, val] of Object.entries(saved)) {
+        if (val) root.style.setProperty(key, val);
+        else root.style.removeProperty(key);
+      }
+    };
+  }, []);
 
   const features = [
     {
