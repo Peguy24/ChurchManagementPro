@@ -72,6 +72,7 @@ export default function Subscription() {
   useEffect(() => { fetchInvoices(); }, []);
 
   const currentPlan = plan ? PLAN_DETAILS[plan as PlanKey] : null;
+  const isTrial = subscriptionStatus === "trial";
 
   const getStatusBadge = (status: string) => {
     switch (status) {
