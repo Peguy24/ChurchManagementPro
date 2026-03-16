@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Handshake, TrendingDown, TrendingUp, DollarSign } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { format } from "date-fns";
 
 type OperationType = "credit_purchase" | "loan_received" | "loan_given";
