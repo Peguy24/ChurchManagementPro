@@ -374,8 +374,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-conversion",
       type: "milestone",
-      title: "Conversion",
-      description: "Décision pour Christ",
+      title: tl.conversion,
+      description: tl.decisionForChrist,
       date: member.conversion_date,
       icon: Award,
       color: "text-amber-600 bg-amber-100",
