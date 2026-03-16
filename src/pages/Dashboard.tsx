@@ -298,7 +298,7 @@ export default function Dashboard() {
   // Filter members with birthdays today
   const todayBirthdays = members?.filter((member) => {
     if (!member.date_of_birth) return false;
-    const birthDate = new Date(member.date_of_birth);
+    const birthDate = parseDateOnly(member.date_of_birth) ?? new Date(member.date_of_birth);
     return (
       birthDate.getMonth() === today.getMonth() &&
       birthDate.getDate() === today.getDate()
