@@ -312,10 +312,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           <div>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
-              {t("donations.donationHistory")}
+              {lt.donationHistory}
             </CardTitle>
             <CardDescription>
-              {t("attendance.last6Months")}
+              {lt.last6Months}
             </CardDescription>
           </div>
           
