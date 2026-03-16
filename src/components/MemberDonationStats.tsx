@@ -477,7 +477,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                     </div>
                   </div>
                   <Badge variant="secondary">
-                    {t(`donations.${donation.donation_type}`) || donation.donation_type}
+                    {donation.donation_type}
                   </Badge>
                 </div>
               ))}
