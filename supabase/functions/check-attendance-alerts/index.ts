@@ -162,11 +162,9 @@ const handler = async (req: Request): Promise<Response> => {
         const safeName = escapeHtml(alert.memberName);
         const variables = { member_name: safeName, attendance_rate: `${alert.currentMonthRate.toFixed(0)}%` };
 
-        const emailSubject = template?.subject 
-          ? replaceTemplateVariables(template.subject, variables) : t.subject;
-        const emailBody = template?.body_html 
-          ? replaceTemplateVariables(template.body_html, variables)
-          : t.body(safeName, escapeHtml(tenant.name));
+        // Always use localized translations so each member gets the email in their language
+        const emailSubject = t.subject;
+        const emailBody = t.body(safeName, escapeHtml(tenant.name));
 
         try {
           await resend.emails.send({
