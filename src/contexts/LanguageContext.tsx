@@ -2840,6 +2840,7 @@ const translations = {
       active: "Actif",
       renewal: "Renouvellement",
       manageSubscription: "Gérer l'abonnement",
+      managedByAdmin: "Cet abonnement est géré par l'administrateur de la plateforme.",
       upgradePremium: "Passer à Premium",
       unlockFeatures: "Débloquez toutes les fonctionnalités avec un abonnement",
       choose: "Choisir",
