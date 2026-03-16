@@ -278,10 +278,10 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
 
       const blob = await generateMemberHistoryPDF(historyData, formatAmount, language);
       downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
-      toast.success("PDF généré avec succès");
+      toast.success(tl.pdfSuccess);
     } catch (error) {
-      console.error("Erreur lors de la génération du PDF:", error);
-      toast.error("Erreur lors de la génération du PDF");
+      console.error("Error generating PDF:", error);
+      toast.error(tl.pdfError);
     } finally {
       setGeneratingPDF(false);
     }
