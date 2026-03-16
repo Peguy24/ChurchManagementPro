@@ -13,6 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, TrendingDown, Target, AlertTriangle } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
