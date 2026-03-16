@@ -132,13 +132,9 @@ const handler = async (req: Request): Promise<Response> => {
         const variables = { member_name: memberName, age: age.toString() };
         const t = birthdayTranslations[lang];
 
-        const emailSubject = template?.subject 
-          ? replaceTemplateVariables(template.subject, variables)
-          : t.subject(memberName);
-        
-        const emailBody = template?.body_html 
-          ? replaceTemplateVariables(template.body_html, variables)
-          : t.body(memberName, age, escapeHtml(tenant.name));
+        // Always use localized translations so each member gets the email in their language
+        const emailSubject = t.subject(memberName);
+        const emailBody = t.body(memberName, age, escapeHtml(tenant.name));
 
         try {
           await resend.emails.send({

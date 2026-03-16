@@ -126,13 +126,9 @@ const handler = async (req: Request): Promise<Response> => {
         const memberName = `${escapeHtml(member.first_name)} ${escapeHtml(member.last_name)}`;
         const variables = { member_name: memberName, service_type: localizedServiceType, service_date: serviceDate };
 
-        const emailSubject = template?.subject 
-          ? replaceTemplateVariables(template.subject, variables)
-          : t.subject(localizedServiceType);
-        
-        const emailBody = template?.body_html 
-          ? replaceTemplateVariables(template.body_html, variables)
-          : t.body(memberName, localizedServiceType, serviceDate, escapeHtml(tenant.name));
+        // Always use localized translations so each member gets the email in their language
+        const emailSubject = t.subject(localizedServiceType);
+        const emailBody = t.body(memberName, localizedServiceType, serviceDate, escapeHtml(tenant.name));
 
         try {
           await resend.emails.send({
