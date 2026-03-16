@@ -117,9 +117,9 @@ const App = () => (
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
               <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
-              <Route path="/attendance/alerts" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceAlerts" requiredPlan="professionnel"><AttendanceAlerts /></FeatureGate></ProtectedRoute>} />
+              <Route path="/attendance/alerts" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceAlerts" requiredPlan="essentiel"><AttendanceAlerts /></FeatureGate></ProtectedRoute>} />
               <Route path="/attendance/comparison" element={<ProtectedRoute><FeatureGate feature="advancedReports" featureKey="advancedReports" requiredPlan="professionnel"><GroupComparisonDashboard /></FeatureGate></ProtectedRoute>} />
-              <Route path="/attendance/arrivals" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceArrivals" requiredPlan="professionnel"><AttendanceArrivalReport /></FeatureGate></ProtectedRoute>} />
+              <Route path="/attendance/arrivals" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceArrivals" requiredPlan="essentiel"><AttendanceArrivalReport /></FeatureGate></ProtectedRoute>} />
               <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
               <Route path="/donations/categories" element={<ProtectedRoute><IncomeCategories /></ProtectedRoute>} />
               <Route path="/donations/reports" element={<ProtectedRoute><FinancialReports /></ProtectedRoute>} />
