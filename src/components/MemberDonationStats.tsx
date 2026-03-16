@@ -365,19 +365,19 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.totalAllTime")}</p>
+            <p className="text-sm text-muted-foreground">{lt.totalAllTime}</p>
             <p className="text-2xl font-bold text-primary">{formatCurrency(totalAmount)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.last6MonthsTotal")}</p>
+            <p className="text-sm text-muted-foreground">{lt.last6MonthsTotal}</p>
             <p className="text-2xl font-bold">{formatCurrency(last6MonthsTotal)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.numberOfDonations")}</p>
+            <p className="text-sm text-muted-foreground">{lt.numberOfDonations}</p>
             <p className="text-2xl font-bold">{donationCount}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("attendance.monthlyTrend")}</p>
+            <p className="text-sm text-muted-foreground">{lt.monthlyTrend}</p>
             <div className="flex items-center gap-2">
               {trend > 0 ? (
                 <TrendingUp className="h-5 w-5 text-success" />
