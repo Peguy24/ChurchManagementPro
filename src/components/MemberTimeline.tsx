@@ -362,8 +362,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-baptism",
       type: "milestone",
-      title: "Baptême",
-      description: "Cérémonie de baptême",
+      title: tl.baptism,
+      description: tl.baptismCeremony,
       date: member.baptism_date,
       icon: Heart,
       color: "text-pink-600 bg-pink-100",
