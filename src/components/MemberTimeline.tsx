@@ -232,7 +232,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   // Export to PDF function
   const handleExportPDF = async () => {
     if (!member) {
-      toast.error("Données du membre non disponibles");
+      toast.error(tl.dataNotAvailable);
       return;
     }
 
