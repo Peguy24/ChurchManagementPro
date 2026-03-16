@@ -3865,6 +3865,10 @@ export type Database = {
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
+      mark_admin_invitation_used: {
+        Args: { _invitation_id: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
