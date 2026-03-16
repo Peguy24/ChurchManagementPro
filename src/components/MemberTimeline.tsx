@@ -421,7 +421,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
                 <p className="text-2xl font-bold text-blue-600">
                   {formatAmount(totalDonations)}
                 </p>
-                <p className="text-muted-foreground">Cotisations</p>
+                <p className="text-muted-foreground">{tl.donations}</p>
               </div>
             </div>
             <Button 
