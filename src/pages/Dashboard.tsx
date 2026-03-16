@@ -222,8 +222,8 @@ export default function Dashboard() {
     },
     {
       title: t("dashboard.weeklyAttendance"),
-      value: paidThisWeek.toString(),
-      detail: `${paidThisWeek} ${t("dashboard.membersPresent")}`,
+      value: weeklyAttendanceCount.toString(),
+      detail: `${weeklyAttendanceCount} ${t("dashboard.membersPresent")}`,
       icon: Calendar,
       bgColor: "bg-gradient-to-br from-orange-400 to-orange-500",
     },
