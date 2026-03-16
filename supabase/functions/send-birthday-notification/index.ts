@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { detectLang, birthdayTranslations, type EmailLang } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -53,7 +54,6 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get all active tenants
     const { data: tenants, error: tenantsError } = await supabaseClient
       .from("tenants")
       .select("id, name")
@@ -74,7 +74,6 @@ const handler = async (req: Request): Promise<Response> => {
     for (const tenant of tenants || []) {
       console.log(`Processing tenant: ${tenant.name} (${tenant.id})`);
 
-      // Get email template for this tenant (or global)
       const { data: template } = await supabaseClient
         .from("email_templates")
         .select("subject, body_html, is_active")
@@ -86,10 +85,9 @@ const handler = async (req: Request): Promise<Response> => {
         continue;
       }
 
-      // Query members for this tenant
       const { data: birthdayMembers, error: queryError } = await supabaseClient
         .from("members")
-        .select("id, first_name, last_name, email, date_of_birth")
+        .select("id, first_name, last_name, email, date_of_birth, user_id")
         .eq("status", "active")
         .eq("tenant_id", tenant.id)
         .not("email", "is", null)
@@ -108,9 +106,23 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log(`Found ${todaysBirthdays.length} birthdays for tenant ${tenant.name}`);
 
+      // Batch-fetch language preferences for members with user_id
+      const userIds = todaysBirthdays.filter(m => m.user_id).map(m => m.user_id);
+      let langMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabaseClient
+          .from("profiles")
+          .select("id, language")
+          .in("id", userIds);
+        for (const p of profiles || []) {
+          if (p.language) langMap[p.id] = p.language;
+        }
+      }
+
       for (const member of todaysBirthdays) {
         if (!member.email) continue;
 
+        const lang = detectLang(member.user_id ? langMap[member.user_id] : null);
         const safeFirstName = escapeHtml(member.first_name);
         const safeLastName = escapeHtml(member.last_name);
         const memberName = `${safeFirstName} ${safeLastName}`;
@@ -118,19 +130,15 @@ const handler = async (req: Request): Promise<Response> => {
         const age = today.getFullYear() - dob.getFullYear();
 
         const variables = { member_name: memberName, age: age.toString() };
+        const t = birthdayTranslations[lang];
 
         const emailSubject = template?.subject 
           ? replaceTemplateVariables(template.subject, variables)
-          : `🎂 Joyeux Anniversaire ${memberName}!`;
+          : t.subject(memberName);
         
         const emailBody = template?.body_html 
           ? replaceTemplateVariables(template.body_html, variables)
-          : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4F46E5;">🎉 Joyeux Anniversaire ${memberName}! 🎉</h1>
-              <p>En ce jour spécial, toute la communauté de ${escapeHtml(tenant.name)} vous souhaite un très joyeux ${age}ème anniversaire!</p>
-              <p>Que cette nouvelle année de vie soit remplie de bénédictions.</p>
-              <p>Avec amour,<br><strong>${escapeHtml(tenant.name)}</strong></p>
-            </div>`;
+          : t.body(memberName, age, escapeHtml(tenant.name));
 
         try {
           await resend.emails.send({

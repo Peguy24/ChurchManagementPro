@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { detectLang, absenceAlertTranslations, formatDateLocalized } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -106,16 +107,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending absence alert for member: ${safeMemberName} (${member_id})`);
 
-    // Create Supabase client to get member email
+    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get member email
+    // Get member email and user_id
     const { data: member, error: memberError } = await supabaseClient
       .from("members")
-      .select("email")
+      .select("email, user_id")
       .eq("id", member_id)
       .single();
 
@@ -130,25 +131,25 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const lastAttendanceText = last_attendance 
-      ? new Date(last_attendance).toLocaleDateString("fr-FR")
-      : "aucune présence récente";
+    // Detect member language
+    let lang = detectLang(null);
+    if (member.user_id) {
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("language")
+        .eq("id", member.user_id)
+        .maybeSingle();
+      lang = detectLang(profile?.language);
+    }
+
+    const t = absenceAlertTranslations[lang];
+    const lastAttendanceText = formatDateLocalized(last_attendance, lang);
 
     const emailResponse = await resend.emails.send({
       from: "Église <noreply@churchmanagementpro.com>",
       to: [member.email],
-      subject: "Nous remarquons votre absence",
-      html: `
-        <h1>Bonjour ${safeMemberName},</h1>
-        <p>Nous avons remarqué que votre présence à l'église a diminué récemment.</p>
-        <p><strong>Statistiques:</strong></p>
-        <ul>
-          <li>Baisse de présence: ${decline_percentage.toFixed(0)}%</li>
-          <li>Dernière présence: ${escapeHtml(lastAttendanceText)}</li>
-        </ul>
-        <p>Nous nous soucions de vous et aimerions savoir si tout va bien. N'hésitez pas à nous contacter si vous avez besoin de quoi que ce soit.</p>
-        <p>Que Dieu vous bénisse,<br>L'équipe de l'église</p>
-      `,
+      subject: t.subject,
+      html: t.body(safeMemberName, decline_percentage.toFixed(0), escapeHtml(lastAttendanceText)),
     });
 
     console.log("Email sent successfully:", emailResponse);
