@@ -557,7 +557,7 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingBirthdays.slice(0, 5).map((member) => {
-                    const birthDate = new Date(member.date_of_birth!);
+                    const birthDate = parseDateOnly(member.date_of_birth!) ?? new Date(member.date_of_birth!);
                     const thisYearBirthday = new Date(
                       today.getFullYear(),
                       birthDate.getMonth(),
