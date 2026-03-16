@@ -6157,6 +6157,11 @@ const translations = {
       prioritySupport: "Priority support",
       trainingIncluded: "Training included",
       support247: "24/7 support",
+      monthly: "Monthly",
+      yearly: "Yearly",
+      save15: "Save 15%",
+      perYear: "/yr",
+      billedAnnually: "Billed annually",
     },
     memberDetails: {
       title: "Member Details",
