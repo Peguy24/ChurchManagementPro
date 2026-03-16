@@ -34,6 +34,11 @@ export default function Home() {
     return <Commercial />;
   }
 
+  // Maintenance mode: block non-super-admins
+  if (isMaintenanceMode && !isSuperAdmin) {
+    return <MaintenancePage />;
+  }
+
   // Logged in but not approved → Show pending approval page
   if (!isApproved) {
     return <PendingApproval />;
