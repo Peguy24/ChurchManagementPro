@@ -350,8 +350,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-join",
       type: "milestone",
-      title: "Devenu membre",
-      description: "Inscription à l'église",
+      title: tl.becameMember,
+      description: tl.churchRegistration,
       date: member.join_date,
       icon: Church,
       color: "text-indigo-600 bg-indigo-100",
