@@ -12,11 +12,18 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs for each plan - synced with useSubscription.tsx
+// Monthly Price IDs for each plan - synced with useSubscription.tsx
 const PRICE_IDS = {
   essentiel: "price_1SsxZvF3VvKmdn5Gokml3EOt",
   professionnel: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
   entreprise: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
+};
+
+// Yearly Price IDs (15% discount)
+const YEARLY_PRICE_IDS = {
+  essentiel: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
+  professionnel: "price_1TBi3bF3VvKmdn5G51dRztux",
+  entreprise: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
 };
 
 // Plan limits for direct DB activation (free access)
@@ -56,13 +63,17 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get the plan from request body
-    const { plan } = await req.json();
+    // Get the plan and interval from request body
+    const { plan, interval } = await req.json();
+    const billingInterval = interval === "yearly" ? "yearly" : "monthly";
+    
     if (!plan || !PRICE_IDS[plan as keyof typeof PRICE_IDS]) {
       throw new Error(`Invalid plan: ${plan}. Valid plans: essentiel, professionnel, entreprise`);
     }
-    const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
-    logStep("Plan selected", { plan, priceId });
+    const priceId = billingInterval === "yearly" 
+      ? YEARLY_PRICE_IDS[plan as keyof typeof YEARLY_PRICE_IDS]
+      : PRICE_IDS[plan as keyof typeof PRICE_IDS];
+    logStep("Plan selected", { plan, priceId, interval: billingInterval });
 
     // Get user's tenant_id
     const { data: profile } = await supabaseClient

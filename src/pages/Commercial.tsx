@@ -22,7 +22,8 @@ const Commercial = () => {
   const { t } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
-
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const isYearly = billingInterval === "yearly";
 
 
   const features = [
@@ -64,11 +65,18 @@ const Commercial = () => {
     }
   ];
 
+  const yearlyPrices: Record<string, string> = {
+    basic: "499",
+    standard: "1,009",
+    premium: "2,030",
+  };
+
   const pricingPlans = [
     {
       name: t("commercial.plan_essential"),
       price: "49",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.basic,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_essentialDesc"),
       planKey: "basic",
       features: [
@@ -83,7 +91,8 @@ const Commercial = () => {
     {
       name: t("commercial.plan_professional"),
       price: "99",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.standard,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_professionalDesc"),
       planKey: "standard",
       features: [
@@ -99,7 +108,8 @@ const Commercial = () => {
     {
       name: t("commercial.plan_enterprise"),
       price: "199",
-      period: t("commercial.perMonth"),
+      yearlyPrice: yearlyPrices.premium,
+      period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_enterpriseDesc"),
       planKey: "premium",
       features: [
@@ -125,8 +135,9 @@ const Commercial = () => {
           'premium': 'entreprise'
         };
         
+        const interval = billingInterval;
         const { data, error } = await supabase.functions.invoke('create-checkout', {
-          body: { plan: planMap[planKey] || planKey },
+          body: { plan: planMap[planKey] || planKey, interval },
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
@@ -370,6 +381,28 @@ const Commercial = () => {
             <p className="text-xl text-muted-foreground">
               {t("commercial.pricingSubtitle")}
             </p>
+            {/* Billing toggle */}
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <button
+                onClick={() => setBillingInterval("monthly")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  !isYearly ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("sub.monthly")}
+              </button>
+              <button
+                onClick={() => setBillingInterval("yearly")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                  isYearly ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("sub.yearly")}
+                <Badge className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 border-green-500/20">
+                  {t("sub.save15")}
+                </Badge>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -392,9 +425,22 @@ const Commercial = () => {
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription className="text-base">{plan.description}</CardDescription>
                   <div className="mt-6">
-                    <span className="text-5xl font-bold">${plan.price}</span>
-                    <span className="text-muted-foreground text-lg">{plan.period}</span>
+                    {isYearly ? (
+                      <>
+                        <span className="text-2xl line-through text-muted-foreground mr-2">${parseInt(plan.price) * 12}</span>
+                        <span className="text-5xl font-bold">${plan.yearlyPrice}</span>
+                        <span className="text-muted-foreground text-lg">{plan.period}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-bold">${plan.price}</span>
+                        <span className="text-muted-foreground text-lg">{plan.period}</span>
+                      </>
+                    )}
                   </div>
+                  {isYearly && (
+                    <p className="text-xs text-muted-foreground mt-1">{t("sub.billedAnnually")}</p>
+                  )}
                 </CardHeader>
                 <CardContent className="pt-6">
                   <ul className="space-y-4">
