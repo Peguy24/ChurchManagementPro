@@ -321,7 +321,7 @@ export default function Subscription() {
                       </Button>
                     ) : (
                       <Button 
-                        onClick={() => createCheckout(key)}
+                        onClick={() => createCheckout(key, billingInterval)}
                         disabled={checkoutLoading}
                         className={isProfessional ? "w-full bg-secondary hover:bg-secondary/90" : "w-full"}
                         variant={isProfessional ? "default" : "outline"}
