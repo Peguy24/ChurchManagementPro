@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { ArrowLeft, Clock, Download, Filter, Users } from "lucide-react";
