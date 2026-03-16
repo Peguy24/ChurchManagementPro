@@ -33,7 +33,7 @@ export const PLAN_DETAILS = {
 } as const;
 
 export type StripePlanKey = keyof typeof PLAN_DETAILS;
-export type PlanKey = StripePlanKey | "free";
+export type PlanKey = StripePlanKey | "free" | "trial" | "none";
 
 export function useSubscription() {
   const { toast } = useToast();
