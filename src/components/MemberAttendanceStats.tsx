@@ -218,7 +218,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
             <p className="text-2xl font-bold text-primary">
               {monthlyStats[monthlyStats.length - 1]?.count || 0}
             </p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.thisMonth")}</p>
+            <p className="text-xs text-muted-foreground">{lt.thisMonth}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <div className="flex items-center justify-center gap-1">
