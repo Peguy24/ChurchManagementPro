@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, addDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { formatDateInputValue, toSafeDate } from "@/lib/date";
+import { formatDateInputValue, toSafeDate, parseDateOnly } from "@/lib/date";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/SignedAvatar";
 import { useState, useMemo } from "react";
@@ -298,7 +298,7 @@ export default function Dashboard() {
   // Filter members with birthdays today
   const todayBirthdays = members?.filter((member) => {
     if (!member.date_of_birth) return false;
-    const birthDate = new Date(member.date_of_birth);
+    const birthDate = parseDateOnly(member.date_of_birth) ?? new Date(member.date_of_birth);
     return (
       birthDate.getMonth() === today.getMonth() &&
       birthDate.getDate() === today.getDate()
@@ -308,7 +308,7 @@ export default function Dashboard() {
   // Filter members with upcoming birthdays (next 7 days, excluding today)
   const upcomingBirthdays = members?.filter((member) => {
     if (!member.date_of_birth) return false;
-    const birthDate = new Date(member.date_of_birth);
+    const birthDate = parseDateOnly(member.date_of_birth) ?? new Date(member.date_of_birth);
     
     // Create a date this year with the member's birth month/day
     const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
@@ -321,9 +321,10 @@ export default function Dashboard() {
     
     return isWithinInterval(thisYearBirthday, { start: addDays(today, 1), end: nextWeek });
   }).sort((a, b) => {
-    // Sort by upcoming date
-    const aDate = new Date(today.getFullYear(), new Date(a.date_of_birth!).getMonth(), new Date(a.date_of_birth!).getDate());
-    const bDate = new Date(today.getFullYear(), new Date(b.date_of_birth!).getMonth(), new Date(b.date_of_birth!).getDate());
+    const aBirth = parseDateOnly(a.date_of_birth!) ?? new Date(a.date_of_birth!);
+    const bBirth = parseDateOnly(b.date_of_birth!) ?? new Date(b.date_of_birth!);
+    const aDate = new Date(today.getFullYear(), aBirth.getMonth(), aBirth.getDate());
+    const bDate = new Date(today.getFullYear(), bBirth.getMonth(), bBirth.getDate());
     if (aDate < today) aDate.setFullYear(today.getFullYear() + 1);
     if (bDate < today) bDate.setFullYear(today.getFullYear() + 1);
     return aDate.getTime() - bDate.getTime();
@@ -556,7 +557,7 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingBirthdays.slice(0, 5).map((member) => {
-                    const birthDate = new Date(member.date_of_birth!);
+                    const birthDate = parseDateOnly(member.date_of_birth!) ?? new Date(member.date_of_birth!);
                     const thisYearBirthday = new Date(
                       today.getFullYear(),
                       birthDate.getMonth(),
