@@ -433,7 +433,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               {generatingPDF ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Génération...
+                  {tl.generating}
                 </>
               ) : (
                 <>
