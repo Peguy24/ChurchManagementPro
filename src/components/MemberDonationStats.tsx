@@ -89,7 +89,9 @@ interface MemberDonationStatsProps {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--info))'];
 
 export default function MemberDonationStats({ memberId }: MemberDonationStatsProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = donationTranslations[language] || donationTranslations.fr;
+  const dateLocaleStr = language === "en" ? "en-US" : language === "ht" ? "fr-FR" : "fr-FR";
   const { currencyCode } = useCurrency();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
