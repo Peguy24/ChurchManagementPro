@@ -14,9 +14,14 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 // Product IDs mapping to plan names
 const PRODUCT_TO_PLAN: Record<string, string> = {
+  // Monthly products
   "prod_Tqetfpt7pnhNFf": "essentiel",
   "prod_TqetHNAL0zc5kD": "professionnel",
   "prod_TqeuZk0jVNwjEp": "entreprise",
+  // Yearly products
+  "prod_UA271d9Xzge6lN": "essentiel",
+  "prod_UA2716VZhzrvjd": "professionnel",
+  "prod_UA28jB4cFz2aZ7": "entreprise",
 };
 
 // Map plan names to DB plan names for tenant_subscriptions sync
