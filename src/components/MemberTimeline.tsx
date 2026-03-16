@@ -120,6 +120,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const { formatAmount } = useCurrency();
   const { language } = useLanguage();
+  const tl = timelineTranslations[language] || timelineTranslations.fr;
+  const dateLocale = language === "en" ? enUS : fr;
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
