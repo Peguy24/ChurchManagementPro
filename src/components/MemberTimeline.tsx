@@ -486,7 +486,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
                             )}
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(event.date), "dd MMMM yyyy", { locale: fr })}
+                              {format(new Date(event.date), "dd MMMM yyyy", { locale: dateLocale })}
                             </p>
                           </div>
                         </div>
