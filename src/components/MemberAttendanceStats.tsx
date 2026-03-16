@@ -248,7 +248,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           <div>
             <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              {t("memberStats.monthlyEvolution")}
+              {lt.monthlyEvolution}
             </h4>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
