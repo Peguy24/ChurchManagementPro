@@ -33,11 +33,26 @@ export const PLAN_LIMITS = {
       whiteLabel: false,
     },
   },
-  // "none" plan for users without active subscription (after trial)
-  none: {
+  // Trial plan: limited access during trial period
+  trial: {
     maxMembers: 50,
     maxBranches: 1,
-    maxUsers: 2,
+    maxUsers: 3,
+    features: {
+      attendance: true,
+      donations: true,
+      advancedReports: false,
+      emailNotifications: false,
+      inventory: false,
+      prioritySupport: false,
+      whiteLabel: false,
+    },
+  },
+  // "none" plan for users without active subscription (after trial)
+  none: {
+    maxMembers: 0,
+    maxBranches: 0,
+    maxUsers: 0,
     features: {
       attendance: false,
       donations: false,
