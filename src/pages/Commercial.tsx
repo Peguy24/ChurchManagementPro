@@ -135,8 +135,9 @@ const Commercial = () => {
           'premium': 'entreprise'
         };
         
+        const interval = billingInterval;
         const { data, error } = await supabase.functions.invoke('create-checkout', {
-          body: { plan: planMap[planKey] || planKey },
+          body: { plan: planMap[planKey] || planKey, interval },
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },

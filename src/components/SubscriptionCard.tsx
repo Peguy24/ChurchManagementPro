@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Settings, Loader2, Crown, Sparkles } from "lucide-react";
-import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey } from "@/hooks/useSubscription";
-import { format } from "date-fns";
+import { useSubscription, PLAN_DETAILS, PlanKey, StripePlanKey, BillingInterval } from "@/hooks/useSubscription";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export function SubscriptionCard() {
   const { t, language } = useLanguage();
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
   const { 
     subscribed, 
     plan, 
@@ -100,6 +101,8 @@ export function SubscriptionCard() {
     );
   }
 
+  const isYearly = billingInterval === "yearly";
+
   return (
     <Card className="border-2 border-dashed border-muted-foreground/30">
       <CardHeader className="pb-3">
@@ -110,6 +113,28 @@ export function SubscriptionCard() {
         <CardDescription>
           {t("sub.unlockFeatures")}
         </CardDescription>
+        {/* Billing toggle */}
+        <div className="flex items-center justify-center gap-3 pt-3">
+          <button
+            onClick={() => setBillingInterval("monthly")}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              !isYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("sub.monthly")}
+          </button>
+          <button
+            onClick={() => setBillingInterval("yearly")}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              isYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("sub.yearly")}
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20">
+              {t("sub.save15")}
+            </Badge>
+          </button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => (
@@ -119,11 +144,18 @@ export function SubscriptionCard() {
           >
             <div>
               <p className="font-medium">{details.name}</p>
-              <p className="text-sm text-muted-foreground">${details.price}{t("sub.perMonth")}</p>
+              {isYearly ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm line-through text-muted-foreground">${details.price * 12}</span>
+                  <span className="text-sm text-foreground font-medium">${details.yearlyPrice}{t("sub.perYear")}</span>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">${details.price}{t("sub.perMonth")}</p>
+              )}
             </div>
             <Button 
               size="sm"
-              onClick={() => createCheckout(key)}
+              onClick={() => createCheckout(key, billingInterval)}
               disabled={checkoutLoading}
             >
               {checkoutLoading ? (
