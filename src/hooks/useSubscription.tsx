@@ -16,22 +16,30 @@ export const PLAN_DETAILS = {
   essentiel: {
     name: "Essential",
     price: 49,
+    yearlyPrice: 499,
     priceId: "price_1SsxZvF3VvKmdn5Gokml3EOt",
+    yearlyPriceId: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
     productId: "prod_Tqetfpt7pnhNFf",
   },
   professionnel: {
     name: "Professional", 
     price: 99,
+    yearlyPrice: 1009,
     priceId: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
+    yearlyPriceId: "price_1TBi3bF3VvKmdn5G51dRztux",
     productId: "prod_TqetHNAL0zc5kD",
   },
   entreprise: {
     name: "Enterprise",
     price: 199,
+    yearlyPrice: 2030,
     priceId: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
+    yearlyPriceId: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
     productId: "prod_TqeuZk0jVNwjEp",
   },
 } as const;
+
+export type BillingInterval = "monthly" | "yearly";
 
 export type StripePlanKey = keyof typeof PLAN_DETAILS;
 export type PlanKey = StripePlanKey | "free" | "trial" | "none";
