@@ -1,32 +1,77 @@
 
 
-## Current Situation
+# Plan: Implement Full Feature Gating Aligned with Commercial Page
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+## Summary
+Expand the feature flags in `usePlanLimits.tsx` and add `FeatureLockedCard` gating to ~20 ungated pages. The feature matrix will match what's advertised on the commercial page.
 
-## What Needs to Be Done
+## 1. Update `src/hooks/usePlanLimits.tsx` — Expand feature flags
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+Add these new feature keys to the `features` object in every plan:
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+```text
+Feature              | Trial/Free | Essentiel | Professionnel | Entreprise
+---------------------|------------|-----------|---------------|----------
+attendance           | ✅         | ✅        | ✅            | ✅
+donations            | ✅         | ✅        | ✅            | ✅
+advancedReports      | ❌         | ❌        | ✅            | ✅
+emailNotifications   | ❌         | ❌        | ✅            | ✅
+inventory            | ❌         | ❌        | ✅            | ✅
+advancedFinance      | ❌         | ❌        | ✅            | ✅
+smartInsights        | ❌         | ❌        | ✅            | ✅
+bulkCommunication    | ❌         | ❌        | ✅            | ✅
+automations          | ❌         | ❌        | ✅            | ✅
+volunteerScheduling  | ❌         | ❌        | ✅            | ✅
+memberCards          | ❌         | ❌        | ✅            | ✅
+attendanceAlerts     | ❌         | ❌        | ✅            | ✅
+churchHealth         | ❌         | ❌        | ✅            | ✅
+customFields         | ❌         | ❌        | ✅            | ✅
+dataBackup           | ❌         | ❌        | ✅            | ✅
+churnPrevention      | ❌         | ❌        | ❌            | ✅
+prioritySupport      | ❌         | ❌        | ❌            | ✅
+whiteLabel           | ❌         | ❌        | ❌            | ✅
+branding             | ❌         | ❌        | ❌            | ✅
+```
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+Update the `PlanLimits["features"]` TypeScript interface to include all new keys.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+## 2. Add `FeatureLockedCard` gating to ungated pages
+
+Each page gets the same pattern already used (e.g., in `Inventory.tsx`):
+```tsx
+const { hasFeature, loading: planLoading } = usePlanLimits();
+if (!planLoading && !hasFeature("featureKey")) {
+  return <Layout><FeatureLockedCard ... requiredPlan="professionnel" /></Layout>;
+}
+```
+
+Pages to gate:
+
+| Page file | Feature key | Required plan |
+|-----------|------------|---------------|
+| `SmartInsights.tsx` | `smartInsights` | professionnel |
+| `ChurnPrevention.tsx` | `churnPrevention` | entreprise |
+| `ChurchHealthScores.tsx` | `churchHealth` | professionnel |
+| `EngagementAutomations.tsx` | `automations` | professionnel |
+| `VolunteerScheduling.tsx` | `volunteerScheduling` | professionnel |
+| `BulkCommunication.tsx` | `bulkCommunication` | professionnel |
+| `Budgets.tsx` | `advancedFinance` | professionnel |
+| `BankReconciliation.tsx` | `advancedFinance` | professionnel |
+| `SpecialFunds.tsx` | `advancedFinance` | professionnel |
+| `CashRegister.tsx` | `advancedFinance` | professionnel |
+| `FinancialAudit.tsx` | `advancedFinance` | professionnel |
+| `CreditAndLoans.tsx` | `advancedFinance` | professionnel |
+| `Salaries.tsx` | `advancedFinance` | professionnel |
+| `FinancialDashboard.tsx` | `advancedFinance` | professionnel |
+| `MemberCards.tsx` | `memberCards` | professionnel |
+| `AttendanceAlerts.tsx` | `attendanceAlerts` | professionnel |
+| `AttendanceArrivalReport.tsx` | `attendanceAlerts` | professionnel |
+| `GroupComparisonDashboard.tsx` | `advancedReports` | professionnel |
+| `DataBackup.tsx` | `dataBackup` | professionnel |
+| `CustomFields.tsx` | `customFields` | professionnel |
+| `TenantBranding.tsx` | `branding` | entreprise |
+
+## 3. No database or backend changes needed
+
+This is purely frontend feature gating using existing patterns. The `FeatureLockedCard` component and `usePlanLimits` hook already exist — we just expand them.
 
