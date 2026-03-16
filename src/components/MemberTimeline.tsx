@@ -405,10 +405,10 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
-              Historique Complet
+              {tl.completeHistory}
             </CardTitle>
             <CardDescription>
-              Toutes les activités du membre
+              {tl.allActivities}
             </CardDescription>
           </div>
           <div className="flex items-center gap-4">
