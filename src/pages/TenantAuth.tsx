@@ -592,10 +592,7 @@ export default function TenantAuth() {
     // Mark token invitation as used (best-effort, will also be handled on login)
     if (isTokenInvite && invitation?.id) {
       try {
-        await supabase
-          .from('admin_invitations')
-          .update({ used_at: new Date().toISOString() })
-          .eq('id', invitation.id);
+        await (supabase.rpc as any)('mark_admin_invitation_used', { _invitation_id: invitation.id });
       } catch (err) {
         console.error('Error marking invitation as used:', err);
       }
