@@ -398,7 +398,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           <div className="grid md:grid-cols-2 gap-6">
             {/* Monthly Evolution */}
             <div>
-              <h4 className="font-medium mb-4">{t("donations.monthlyEvolution")}</h4>
+              <h4 className="font-medium mb-4">{lt.monthlyEvolution}</h4>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
