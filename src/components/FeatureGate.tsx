@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { usePlanLimits, PlanLimits } from "@/hooks/usePlanLimits";
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import Layout from "@/components/Layout";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface FeatureGateProps {
   feature: keyof PlanLimits["features"];
@@ -14,6 +15,10 @@ interface FeatureGateProps {
 
 export function FeatureGate({ feature, featureName, featureDescription, requiredPlan, icon, children }: FeatureGateProps) {
   const { hasFeature, loading } = usePlanLimits();
+  const { isSuperAdmin } = useUserRole();
+
+  // Super admins bypass all feature gates
+  if (isSuperAdmin) return <>{children}</>;
 
   if (loading) {
     return (
