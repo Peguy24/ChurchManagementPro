@@ -186,7 +186,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">{t("common.loading")}</p>
+          <p className="text-muted-foreground">{lt.loading}</p>
         </CardContent>
       </Card>
     );
