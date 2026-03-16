@@ -312,7 +312,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
         {totalAttendance === 0 && (
           <div className="text-center py-6 text-muted-foreground">
             <CalendarCheck className="h-12 w-12 mx-auto mb-2 opacity-20" />
-            <p>{t("memberStats.noAttendanceRecords")}</p>
+            <p>{lt.noAttendanceRecords}</p>
           </div>
         )}
       </CardContent>
