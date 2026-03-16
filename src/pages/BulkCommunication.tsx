@@ -16,13 +16,6 @@ import { format } from "date-fns";
 export default function BulkCommunication() {
   const { t } = useLanguage();
 
-  if (!planLoading && !hasFeature("bulkCommunication")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Communication en masse" featureDescription="Envoyez des annonces à tous vos membres" requiredPlan="professionnel" icon={<Megaphone className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");

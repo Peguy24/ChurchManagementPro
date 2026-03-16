@@ -23,13 +23,6 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 const SpecialFunds = () => {
   const { t, language } = useLanguage();
 
-  if (!planLoading && !hasFeature("advancedFinance")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Fonds spéciaux" featureDescription="Gestion des fonds dédiés et caisses spéciales" requiredPlan="professionnel" icon={<PiggyBank className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const { formatAmount } = useCurrency();

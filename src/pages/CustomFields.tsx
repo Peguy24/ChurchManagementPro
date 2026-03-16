@@ -18,13 +18,6 @@ export default function CustomFields() {
   const [selectedField, setSelectedField] = useState<any>(null);
   const { t } = useLanguage();
 
-  if (!planLoading && !hasFeature("customFields")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Champs personnalisés" featureDescription="Créez des champs sur mesure pour vos entités" requiredPlan="professionnel" icon={<Settings className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const navigate = useNavigate();
   const { tenantId } = useCurrentTenant();
 

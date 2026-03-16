@@ -29,13 +29,6 @@ import * as XLSX from "xlsx";
 export default function AttendanceArrivalReport() {
   const { t, language } = useLanguage();
 
-  if (!planLoading && !hasFeature("attendanceAlerts")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Rapport d'arrivée" featureDescription="Analysez les heures d'arrivée de vos membres" requiredPlan="professionnel" icon={<Clock className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const navigate = useNavigate();
   const { tenantId } = useCurrentTenant();
   const [statusFilter, setStatusFilter] = useState<string>("all");

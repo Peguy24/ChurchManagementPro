@@ -191,13 +191,6 @@ const DATA_MODULES: DataModule[] = [
 export default function DataBackup() {
   const { language } = useLanguage();
 
-  if (!planLoading && !hasFeature("dataBackup")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Sauvegarde des données" featureDescription="Exportez et sauvegardez toutes vos données" requiredPlan="professionnel" icon={<Database className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const { tenantId } = useCurrentTenant();
   const lt = (key: string) => localT[language]?.[key] || localT.en[key] || key;
 

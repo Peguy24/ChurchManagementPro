@@ -365,13 +365,6 @@ export default function SmartInsights() {
   const navigate = useNavigate();
   const { language } = useLanguage();
 
-  if (!planLoading && !hasFeature("smartInsights")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Smart Insights" featureDescription="Analyse intelligente de l'engagement et alertes pastorales" requiredPlan="professionnel" icon={<Brain className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const [activeTab, setActiveTab] = useState('overview');
 
   const lt = (key: string) => {

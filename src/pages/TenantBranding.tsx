@@ -15,13 +15,6 @@ import LogoUpload from "@/components/LogoUpload";
 export default function TenantBranding() {
   const queryClient = useQueryClient();
 
-  if (!planLoading && !hasFeature("branding")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Personnalisation de marque" featureDescription="Personnalisez les couleurs, le logo et le nom de votre église" requiredPlan="entreprise" icon={<Palette className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const { tenant, tenantId, loading: tenantLoading, refresh: refreshTenant } = useCurrentTenant();
   const { t } = useLanguage();
   

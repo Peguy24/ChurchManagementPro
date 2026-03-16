@@ -22,13 +22,6 @@ import { useCurrency } from "@/hooks/useCurrency";
 export default function Budgets() {
   const { t } = useLanguage();
 
-  if (!planLoading && !hasFeature("advancedFinance")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Budgets" featureDescription="Gestion avancée des budgets et prévisions financières" requiredPlan="professionnel" icon={<Target className="w-8 h-8 text-muted-foreground" />} />
-      </Layout>
-    );
-  }
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
