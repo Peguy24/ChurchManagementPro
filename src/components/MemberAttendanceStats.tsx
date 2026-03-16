@@ -137,8 +137,8 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
       });
 
       return {
-        month: format(month, "MMM", { locale: fr }),
-        fullMonth: format(month, "MMMM yyyy", { locale: fr }),
+        month: format(month, "MMM", { locale: dateLocale }),
+        fullMonth: format(month, "MMMM yyyy", { locale: dateLocale }),
         count: monthAttendance.length,
       };
     });
