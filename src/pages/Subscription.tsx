@@ -49,6 +49,8 @@ export default function Subscription() {
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(true);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
+  const isYearly = billingInterval === "yearly";
   const dateLocale = language === "fr" || language === "ht" ? fr : enUS;
 
   const fetchInvoices = async () => {
