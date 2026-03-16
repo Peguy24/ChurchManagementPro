@@ -72,7 +72,9 @@ interface MemberAttendanceStatsProps {
 }
 
 export default function MemberAttendanceStats({ memberId }: MemberAttendanceStatsProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = attendanceTranslations[language] || attendanceTranslations.fr;
+  const dateLocale = language === "en" ? enUS : fr;
 
   // Fetch attendance records for the last 6 months
   const { data: attendanceData, isLoading } = useQuery({
