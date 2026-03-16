@@ -15,6 +15,7 @@ import { format } from "date-fns";
 
 export default function BulkCommunication() {
   const { t } = useLanguage();
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");

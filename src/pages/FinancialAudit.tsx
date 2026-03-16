@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const FinancialAudit = () => {
   const { t, language } = useLanguage();
+
   const { tenantId } = useCurrentTenant();
   const { isSuperAdmin } = useUserRole();
   const [entityFilter, setEntityFilter] = useState<string>("all");

@@ -22,6 +22,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const SpecialFunds = () => {
   const { t, language } = useLanguage();
+
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const { formatAmount } = useCurrency();

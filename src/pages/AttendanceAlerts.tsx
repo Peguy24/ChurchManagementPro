@@ -23,6 +23,7 @@ interface AttendanceAlert {
 
 export default function AttendanceAlerts() {
   const [alerts, setAlerts] = useState<AttendanceAlert[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const navigate = useNavigate();

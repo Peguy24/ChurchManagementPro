@@ -190,6 +190,7 @@ const DATA_MODULES: DataModule[] = [
 
 export default function DataBackup() {
   const { language } = useLanguage();
+
   const { tenantId } = useCurrentTenant();
   const lt = (key: string) => localT[language]?.[key] || localT.en[key] || key;
 

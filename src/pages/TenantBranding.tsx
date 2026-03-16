@@ -14,6 +14,7 @@ import LogoUpload from "@/components/LogoUpload";
 
 export default function TenantBranding() {
   const queryClient = useQueryClient();
+
   const { tenant, tenantId, loading: tenantLoading, refresh: refreshTenant } = useCurrentTenant();
   const { t } = useLanguage();
   

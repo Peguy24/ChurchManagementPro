@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { FeatureGate } from "@/components/FeatureGate";
 import Commercial from "./pages/Commercial";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -112,40 +113,40 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
               <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
-              <Route path="/members/cards" element={<ProtectedRoute><MemberCards /></ProtectedRoute>} />
+              <Route path="/members/cards" element={<ProtectedRoute><FeatureGate feature="memberCards" featureName="Cartes de membres" featureDescription="Générez des cartes d'identification pour vos membres" requiredPlan="professionnel"><MemberCards /></FeatureGate></ProtectedRoute>} />
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
               <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
-              <Route path="/attendance/alerts" element={<ProtectedRoute><AttendanceAlerts /></ProtectedRoute>} />
-              <Route path="/attendance/comparison" element={<ProtectedRoute><GroupComparisonDashboard /></ProtectedRoute>} />
-              <Route path="/attendance/arrivals" element={<ProtectedRoute><AttendanceArrivalReport /></ProtectedRoute>} />
+              <Route path="/attendance/alerts" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureName="Alertes de présence" featureDescription="Alertes automatiques pour les membres absents" requiredPlan="professionnel"><AttendanceAlerts /></FeatureGate></ProtectedRoute>} />
+              <Route path="/attendance/comparison" element={<ProtectedRoute><FeatureGate feature="advancedReports" featureName="Comparaison des groupes" featureDescription="Rapports avancés et analyses comparatives" requiredPlan="professionnel"><GroupComparisonDashboard /></FeatureGate></ProtectedRoute>} />
+              <Route path="/attendance/arrivals" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureName="Rapport d'arrivée" featureDescription="Analysez les heures d'arrivée de vos membres" requiredPlan="professionnel"><AttendanceArrivalReport /></FeatureGate></ProtectedRoute>} />
               <Route path="/donations" element={<ProtectedRoute><Donations /></ProtectedRoute>} />
               <Route path="/donations/categories" element={<ProtectedRoute><IncomeCategories /></ProtectedRoute>} />
               <Route path="/donations/reports" element={<ProtectedRoute><FinancialReports /></ProtectedRoute>} />
-              <Route path="/finance" element={<ProtectedRoute><FinancialDashboard /></ProtectedRoute>} />
-              <Route path="/finance/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
+              <Route path="/finance" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Tableau de bord financier" featureDescription="Vue d'ensemble des finances avec graphiques et analyses" requiredPlan="professionnel"><FinancialDashboard /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/budgets" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Budgets" featureDescription="Gestion avancée des budgets et prévisions financières" requiredPlan="professionnel"><Budgets /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
               <Route path="/finance/expenses/categories" element={<ProtectedRoute><ExpenseCategories /></ProtectedRoute>} />
-              <Route path="/finance/bank" element={<ProtectedRoute><BankReconciliation /></ProtectedRoute>} />
-              <Route path="/finance/funds" element={<ProtectedRoute><SpecialFunds /></ProtectedRoute>} />
-              <Route path="/finance/cash" element={<ProtectedRoute><CashRegister /></ProtectedRoute>} />
-              <Route path="/finance/audit" element={<ProtectedRoute><FinancialAudit /></ProtectedRoute>} />
-              <Route path="/finance/credits" element={<ProtectedRoute><CreditAndLoans /></ProtectedRoute>} />
-              <Route path="/finance/salaries" element={<ProtectedRoute><Salaries /></ProtectedRoute>} />
+              <Route path="/finance/bank" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Réconciliation bancaire" featureDescription="Rapprochement bancaire et gestion des comptes" requiredPlan="professionnel"><BankReconciliation /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/funds" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Fonds spéciaux" featureDescription="Gestion des fonds dédiés et caisses spéciales" requiredPlan="professionnel"><SpecialFunds /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/cash" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Caisse enregistreuse" featureDescription="Gestion des caisses et transactions en espèces" requiredPlan="professionnel"><CashRegister /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/audit" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Audit financier" featureDescription="Journal d'audit et traçabilité des opérations financières" requiredPlan="professionnel"><FinancialAudit /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/credits" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Crédits et prêts" featureDescription="Gestion des crédits, prêts et remboursements" requiredPlan="professionnel"><CreditAndLoans /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/salaries" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureName="Salaires" featureDescription="Gestion de la paie et des employés" requiredPlan="professionnel"><Salaries /></FeatureGate></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
               <Route path="/events/calendar" element={<ProtectedRoute><EventCalendar /></ProtectedRoute>} />
               <Route path="/attendance/kiosk" element={<ProtectedRoute><AttendanceKiosk /></ProtectedRoute>} />
-              <Route path="/automations" element={<ProtectedRoute><EngagementAutomations /></ProtectedRoute>} />
+              <Route path="/automations" element={<ProtectedRoute><FeatureGate feature="automations" featureName="Automations d'engagement" featureDescription="Automatisez les notifications et les rappels" requiredPlan="professionnel"><EngagementAutomations /></FeatureGate></ProtectedRoute>} />
               <Route path="/events/registrations" element={<ProtectedRoute><EventRegistrations /></ProtectedRoute>} />
               <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />
               <Route path="/ministries/details" element={<ProtectedRoute><MinistryDetails /></ProtectedRoute>} />
               <Route path="/ministries/stats" element={<ProtectedRoute><MinistriesStats /></ProtectedRoute>} />
               <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
-              <Route path="/volunteers" element={<ProtectedRoute><VolunteerScheduling /></ProtectedRoute>} />
+              <Route path="/volunteers" element={<ProtectedRoute><FeatureGate feature="volunteerScheduling" featureName="Planification des bénévoles" featureDescription="Gérez les horaires et les rôles des bénévoles" requiredPlan="professionnel"><VolunteerScheduling /></FeatureGate></ProtectedRoute>} />
               <Route path="/visitors" element={<ProtectedRoute><Visitors /></ProtectedRoute>} />
-              <Route path="/insights" element={<ProtectedRoute><SmartInsights /></ProtectedRoute>} />
-              <Route path="/custom-fields" element={<ProtectedRoute><CustomFields /></ProtectedRoute>} />
+              <Route path="/insights" element={<ProtectedRoute><FeatureGate feature="smartInsights" featureName="Smart Insights" featureDescription="Analyse intelligente de l'engagement et alertes pastorales" requiredPlan="professionnel"><SmartInsights /></FeatureGate></ProtectedRoute>} />
+              <Route path="/custom-fields" element={<ProtectedRoute><FeatureGate feature="customFields" featureName="Champs personnalisés" featureDescription="Créez des champs sur mesure pour vos entités" requiredPlan="professionnel"><CustomFields /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
               <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
               
@@ -153,8 +154,8 @@ const App = () => (
               <Route path="/settings/tenants" element={<ProtectedRoute requireAdmin><TenantManagement /></ProtectedRoute>} />
               <Route path="/settings/invitations" element={<ProtectedRoute requireAdmin><AdminInvitations /></ProtectedRoute>} />
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
-              <Route path="/settings/branding" element={<ProtectedRoute><TenantBranding /></ProtectedRoute>} />
-              <Route path="/settings/backup" element={<ProtectedRoute><DataBackup /></ProtectedRoute>} />
+              <Route path="/settings/branding" element={<ProtectedRoute><FeatureGate feature="branding" featureName="Personnalisation de marque" featureDescription="Personnalisez les couleurs, le logo et le nom" requiredPlan="entreprise"><TenantBranding /></FeatureGate></ProtectedRoute>} />
+              <Route path="/settings/backup" element={<ProtectedRoute><FeatureGate feature="dataBackup" featureName="Sauvegarde des données" featureDescription="Exportez et sauvegardez toutes vos données" requiredPlan="professionnel"><DataBackup /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />

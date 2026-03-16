@@ -364,6 +364,7 @@ function AlertCard({ alert, onResolve, onView, lt, dateLocale, language }: { ale
 export default function SmartInsights() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+
   const [activeTab, setActiveTab] = useState('overview');
 
   const lt = (key: string) => {

@@ -4,92 +4,95 @@ import { useSubscription, PlanKey } from "./useSubscription";
 import { useCurrentTenant } from "./useCurrentTenant";
 
 // Plan limits configuration
+const ALL_FEATURES_FALSE = {
+  attendance: false,
+  donations: false,
+  advancedReports: false,
+  emailNotifications: false,
+  inventory: false,
+  prioritySupport: false,
+  whiteLabel: false,
+  advancedFinance: false,
+  smartInsights: false,
+  bulkCommunication: false,
+  automations: false,
+  volunteerScheduling: false,
+  memberCards: false,
+  attendanceAlerts: false,
+  churchHealth: false,
+  customFields: false,
+  dataBackup: false,
+  churnPrevention: false,
+  branding: false,
+} as const;
+
+const BASIC_FEATURES = {
+  ...ALL_FEATURES_FALSE,
+  attendance: true,
+  donations: true,
+} as const;
+
+const PRO_FEATURES = {
+  ...BASIC_FEATURES,
+  advancedReports: true,
+  emailNotifications: true,
+  inventory: true,
+  advancedFinance: true,
+  smartInsights: true,
+  bulkCommunication: true,
+  automations: true,
+  volunteerScheduling: true,
+  memberCards: true,
+  attendanceAlerts: true,
+  churchHealth: true,
+  customFields: true,
+  dataBackup: true,
+} as const;
+
+const ENTERPRISE_FEATURES = {
+  ...PRO_FEATURES,
+  prioritySupport: true,
+  whiteLabel: true,
+  churnPrevention: true,
+  branding: true,
+} as const;
+
 export const PLAN_LIMITS = {
   free: {
     maxMembers: 100,
     maxBranches: 1,
     maxUsers: 3,
-    features: {
-      attendance: true,
-      donations: true,
-      advancedReports: false,
-      emailNotifications: false,
-      inventory: false,
-      prioritySupport: false,
-      whiteLabel: false,
-    },
+    features: BASIC_FEATURES,
   },
   essentiel: {
     maxMembers: 200,
     maxBranches: 1,
     maxUsers: 5,
-    features: {
-      attendance: true,
-      donations: true,
-      advancedReports: false,
-      emailNotifications: false,
-      inventory: false,
-      prioritySupport: false,
-      whiteLabel: false,
-    },
+    features: BASIC_FEATURES,
   },
-  // Trial plan: limited access during trial period
   trial: {
     maxMembers: 50,
     maxBranches: 1,
     maxUsers: 3,
-    features: {
-      attendance: true,
-      donations: true,
-      advancedReports: false,
-      emailNotifications: false,
-      inventory: false,
-      prioritySupport: false,
-      whiteLabel: false,
-    },
+    features: BASIC_FEATURES,
   },
-  // "none" plan for users without active subscription (after trial)
   none: {
     maxMembers: 0,
     maxBranches: 0,
     maxUsers: 0,
-    features: {
-      attendance: false,
-      donations: false,
-      advancedReports: false,
-      emailNotifications: false,
-      inventory: false,
-      prioritySupport: false,
-      whiteLabel: false,
-    },
+    features: ALL_FEATURES_FALSE,
   },
   professionnel: {
     maxMembers: 1000,
     maxBranches: 3,
     maxUsers: 15,
-    features: {
-      attendance: true,
-      donations: true,
-      advancedReports: true,
-      emailNotifications: true,
-      inventory: true,
-      prioritySupport: false,
-      whiteLabel: false,
-    },
+    features: PRO_FEATURES,
   },
   entreprise: {
     maxMembers: Infinity,
     maxBranches: Infinity,
     maxUsers: Infinity,
-    features: {
-      attendance: true,
-      donations: true,
-      advancedReports: true,
-      emailNotifications: true,
-      inventory: true,
-      prioritySupport: true,
-      whiteLabel: true,
-    },
+    features: ENTERPRISE_FEATURES,
   },
 } as const;
 
@@ -111,6 +114,18 @@ export interface PlanLimits {
     inventory: boolean;
     prioritySupport: boolean;
     whiteLabel: boolean;
+    advancedFinance: boolean;
+    smartInsights: boolean;
+    bulkCommunication: boolean;
+    automations: boolean;
+    volunteerScheduling: boolean;
+    memberCards: boolean;
+    attendanceAlerts: boolean;
+    churchHealth: boolean;
+    customFields: boolean;
+    dataBackup: boolean;
+    churnPrevention: boolean;
+    branding: boolean;
   };
 }
 

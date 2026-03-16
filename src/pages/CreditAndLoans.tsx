@@ -25,6 +25,7 @@ type OperationType = "credit_purchase" | "loan_received" | "loan_given";
 
 const CreditAndLoans = () => {
   const { t } = useLanguage();
+
   const { tenantId } = useCurrentTenant();
   const { user } = useAuth();
   const { formatAmount } = useCurrency();

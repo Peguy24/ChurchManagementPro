@@ -28,6 +28,7 @@ import * as XLSX from "xlsx";
 
 export default function AttendanceArrivalReport() {
   const { t, language } = useLanguage();
+
   const navigate = useNavigate();
   const { tenantId } = useCurrentTenant();
   const [statusFilter, setStatusFilter] = useState<string>("all");

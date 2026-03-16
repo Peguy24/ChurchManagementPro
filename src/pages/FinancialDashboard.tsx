@@ -40,6 +40,7 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--sec
 
 const FinancialDashboard = () => {
   const { t, language } = useLanguage();
+
   const currentDate = new Date();
   const currentMonthStart = format(startOfMonth(currentDate), "yyyy-MM-dd");
   const currentMonthEnd = format(endOfMonth(currentDate), "yyyy-MM-dd");

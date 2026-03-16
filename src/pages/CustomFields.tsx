@@ -17,6 +17,7 @@ export default function CustomFields() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
   const { t } = useLanguage();
+
   const navigate = useNavigate();
   const { tenantId } = useCurrentTenant();
 

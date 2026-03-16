@@ -21,6 +21,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Budgets() {
   const { t } = useLanguage();
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();

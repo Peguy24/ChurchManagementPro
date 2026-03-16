@@ -29,6 +29,7 @@ const DEFAULT_RULES: AutomationRule[] = [
 
 export default function EngagementAutomations() {
   const { t } = useLanguage();
+
   const queryClient = useQueryClient();
   const { tenantId } = useCurrentTenant();
   const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_RULES);

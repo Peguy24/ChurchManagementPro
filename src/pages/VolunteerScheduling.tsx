@@ -47,6 +47,7 @@ export default function VolunteerScheduling() {
   const { tenantId, forInsert } = useCurrentTenant();
   const { toast } = useToast();
   const { t, language } = useLanguage();
+
   const dateLocale = language === 'fr' || language === 'ht' ? fr : enUS;
 
   const v = (key: string) => t(`volunteers.${key}`);

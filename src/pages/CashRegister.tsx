@@ -21,6 +21,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const CashRegister = () => {
   const { t, language } = useLanguage();
+
   const { tenantId } = useCurrentTenant();
   const { toast } = useToast();
   const { formatAmount } = useCurrency();

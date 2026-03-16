@@ -75,6 +75,7 @@ interface GroupStats {
 const GroupComparisonDashboard = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
+
   const [loading, setLoading] = useState(true);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);

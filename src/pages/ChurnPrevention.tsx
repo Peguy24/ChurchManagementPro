@@ -93,6 +93,7 @@ const localTranslations: Record<string, Record<string, string>> = {
 export default function ChurnPrevention() {
   const { language } = useLanguage();
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
+
   const queryClient = useQueryClient();
   const [selectedTenant, setSelectedTenant] = useState<string>("all");
 

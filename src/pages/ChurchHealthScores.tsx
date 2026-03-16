@@ -60,6 +60,7 @@ interface HealthScore {
 
 export default function ChurchHealthScores() {
   const { t } = useLanguage();
+
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"overall_score" | "health_grade" | "total_members">("overall_score");
