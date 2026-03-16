@@ -7,6 +7,7 @@ export interface SubscriptionState {
   subscribed: boolean;
   plan: string | null;
   subscriptionEnd: string | null;
+  subscriptionStatus: string | null;
   hasStripeCustomer: boolean;
   loading: boolean;
 }
@@ -42,6 +43,7 @@ export function useSubscription() {
     subscribed: false,
     plan: null,
     subscriptionEnd: null,
+    subscriptionStatus: null,
     hasStripeCustomer: false,
     loading: true,
   });

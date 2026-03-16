@@ -11,7 +11,8 @@ export function SubscriptionCard() {
   const { 
     subscribed, 
     plan, 
-    subscriptionEnd, 
+    subscriptionEnd,
+    subscriptionStatus,
     hasStripeCustomer,
     loading, 
     checkoutLoading, 

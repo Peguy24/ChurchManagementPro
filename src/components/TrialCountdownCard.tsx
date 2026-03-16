@@ -13,7 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export function TrialCountdownCard() {
   const { t } = useLanguage();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
-  const { subscribed, loading: subLoading, createCheckout, checkoutLoading } = useSubscription();
+  const { loading: subLoading, createCheckout, checkoutLoading } = useSubscription();
 
   const { data: subscription, isLoading } = useQuery({
     queryKey: ["tenant-subscription-trial", tenantId],

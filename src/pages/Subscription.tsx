@@ -35,7 +35,8 @@ export default function Subscription() {
   const { 
     subscribed, 
     plan, 
-    subscriptionEnd, 
+    subscriptionEnd,
+    subscriptionStatus,
     hasStripeCustomer,
     loading, 
     checkoutLoading, 
