@@ -120,7 +120,9 @@ export default function SuperAdminDashboard() {
       { 
         key: "tenant_subscriptions", 
         header: t("superAdmin.plan"),
-        formatter: (subs: any[]) => planDisplayName[subs?.[0]?.plan] || subs?.[0]?.plan || "Aucun"
+        formatter: (subs: any[]) => subs?.[0]?.status === "trial"
+          ? t("superAdmin.statusTrial")
+          : planDisplayName[subs?.[0]?.plan] || subs?.[0]?.plan || "Aucun"
       },
       { 
         key: "tenant_subscriptions", 

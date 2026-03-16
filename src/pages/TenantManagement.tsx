@@ -952,8 +952,10 @@ export default function TenantManagement() {
                           </TableCell>
                           <TableCell>
                             {tenant.subscription ? (
-                              <Badge className={PLAN_CONFIG[tenant.subscription.plan]?.color + " text-xs"}>
-                                {PLAN_CONFIG[tenant.subscription.plan]?.label}
+                              <Badge className={(tenant.subscription.status === "trial" ? "bg-blue-500" : PLAN_CONFIG[tenant.subscription.plan]?.color) + " text-xs"}>
+                                {tenant.subscription.status === "trial"
+                                  ? t("superAdmin.statusTrial")
+                                  : PLAN_CONFIG[tenant.subscription.plan]?.label}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-xs">{t("common.none")}</Badge>
