@@ -238,11 +238,11 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            {t("donations.donationHistory")}
+            {lt.donationHistory}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">{t("common.loading")}</p>
+          <p className="text-muted-foreground">{lt.loading}</p>
         </CardContent>
       </Card>
     );
