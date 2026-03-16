@@ -122,6 +122,11 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   if (requireSuperAdmin && !isSuperAdmin) return null;
   if (!canAccess(location.pathname)) return null;
 
+  // Maintenance mode: block non-super-admins
+  if (!maintenanceLoading && isMaintenanceMode && !isSuperAdmin) {
+    return <MaintenancePage />;
+  }
+
   // Subscription enforcement: show block page if no active plan
   // Exempt: super admins, subscription-exempt paths, and while still loading plan data
   if (!planLoading && user && isApproved && !isSuperAdmin && tenantId) {
