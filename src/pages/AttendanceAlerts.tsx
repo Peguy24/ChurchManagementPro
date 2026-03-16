@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, TrendingDown, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDateInputValue, toSafeDate } from "@/lib/date";
 
