@@ -388,7 +388,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   // Group by month/year
   const groupedEvents: Record<string, TimelineEvent[]> = {};
   timelineEvents.forEach((event) => {
-    const monthYear = format(new Date(event.date), "MMMM yyyy", { locale: fr });
+    const monthYear = format(new Date(event.date), "MMMM yyyy", { locale: dateLocale });
     if (!groupedEvents[monthYear]) {
       groupedEvents[monthYear] = [];
     }
