@@ -472,7 +472,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                     <div>
                       <p className="font-medium">{formatCurrency(Number(donation.amount))}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(donation.donation_date).toLocaleDateString("fr-FR")}
+                        {new Date(donation.donation_date).toLocaleDateString(dateLocaleStr)}
                       </p>
                     </div>
                   </div>
