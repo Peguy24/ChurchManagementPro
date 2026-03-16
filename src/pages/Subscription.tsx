@@ -232,9 +232,33 @@ export default function Subscription() {
 
         {/* Plans */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">
-            {subscribed ? t("sub.changePlan") : t("sub.choosePlan")}
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-xl font-semibold">
+              {subscribed ? t("sub.changePlan") : t("sub.choosePlan")}
+            </h2>
+            {/* Billing toggle */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setBillingInterval("monthly")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  !isYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("sub.monthly")}
+              </button>
+              <button
+                onClick={() => setBillingInterval("yearly")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  isYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("sub.yearly")}
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-600 border-green-500/20">
+                  {t("sub.save15")}
+                </Badge>
+              </button>
+            </div>
+          </div>
           <div className="grid gap-4 md:grid-cols-3">
             {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => {
               const isCurrentPlan = !isTrial && plan === key;
@@ -261,10 +285,21 @@ export default function Subscription() {
                   )}
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{details.name}</CardTitle>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold">${details.price}</span>
-                      <span className="text-muted-foreground">{t("sub.perMonth")}</span>
-                    </div>
+                    {isYearly ? (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl line-through text-muted-foreground">${details.price * 12}</span>
+                        <span className="text-3xl font-bold">${details.yearlyPrice}</span>
+                        <span className="text-muted-foreground">{t("sub.perYear")}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">${details.price}</span>
+                        <span className="text-muted-foreground">{t("sub.perMonth")}</span>
+                      </div>
+                    )}
+                    {isYearly && (
+                      <p className="text-xs text-muted-foreground">{t("sub.billedAnnually")}</p>
+                    )}
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <ul className="space-y-2">
