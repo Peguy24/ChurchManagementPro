@@ -24,6 +24,8 @@ const ALL_FEATURES_FALSE = {
   dataBackup: false,
   churnPrevention: false,
   branding: false,
+  bankReconciliation: false,
+  cashRegister: false,
 } as const;
 
 const BASIC_FEATURES = {
