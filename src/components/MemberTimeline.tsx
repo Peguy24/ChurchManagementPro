@@ -21,10 +21,85 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { generateMemberHistoryPDF, downloadMemberHistoryPDF, MemberHistoryData } from "@/lib/memberHistoryPDF";
 import { getArrivalStatus, formatScanTime } from "@/lib/attendanceStatus";
+
+const timelineTranslations = {
+  fr: {
+    completeHistory: "Historique Complet",
+    allActivities: "Toutes les activités du membre",
+    presences: "Présences",
+    donations: "Cotisations",
+    generating: "Génération...",
+    exportPdf: "Export PDF",
+    noActivity: "Aucune activité enregistrée",
+    method: "Méthode",
+    manual: "Manuel",
+    joined: "Rejoint",
+    ministry: "Ministère",
+    role: "Rôle",
+    member: "Membre",
+    becameMember: "Devenu membre",
+    churchRegistration: "Inscription à l'église",
+    baptism: "Baptême",
+    baptismCeremony: "Cérémonie de baptême",
+    conversion: "Conversion",
+    decisionForChrist: "Décision pour Christ",
+    dataNotAvailable: "Données du membre non disponibles",
+    pdfSuccess: "PDF généré avec succès",
+    pdfError: "Erreur lors de la génération du PDF",
+  },
+  en: {
+    completeHistory: "Complete History",
+    allActivities: "All member activities",
+    presences: "Attendance",
+    donations: "Donations",
+    generating: "Generating...",
+    exportPdf: "Export PDF",
+    noActivity: "No activity recorded",
+    method: "Method",
+    manual: "Manual",
+    joined: "Joined",
+    ministry: "Ministry",
+    role: "Role",
+    member: "Member",
+    becameMember: "Became a member",
+    churchRegistration: "Church registration",
+    baptism: "Baptism",
+    baptismCeremony: "Baptism ceremony",
+    conversion: "Conversion",
+    decisionForChrist: "Decision for Christ",
+    dataNotAvailable: "Member data not available",
+    pdfSuccess: "PDF generated successfully",
+    pdfError: "Error generating PDF",
+  },
+  ht: {
+    completeHistory: "Istwa Konplè",
+    allActivities: "Tout aktivite manm nan",
+    presences: "Prezans",
+    donations: "Kotizasyon",
+    generating: "Ap jenere...",
+    exportPdf: "Ekspòte PDF",
+    noActivity: "Pa gen aktivite anrejistre",
+    method: "Metòd",
+    manual: "Manyèl",
+    joined: "Rejwenn",
+    ministry: "Ministè",
+    role: "Wòl",
+    member: "Manm",
+    becameMember: "Vin manm",
+    churchRegistration: "Enskripsyon nan legliz",
+    baptism: "Batèm",
+    baptismCeremony: "Seremoni batèm",
+    conversion: "Konvèsyon",
+    decisionForChrist: "Desizyon pou Kris",
+    dataNotAvailable: "Done manm nan pa disponib",
+    pdfSuccess: "PDF jenere avèk siksè",
+    pdfError: "Erè pandan jenerasyon PDF",
+  },
+};
 
 interface MemberTimelineProps {
   memberId: string;
@@ -45,6 +120,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const { formatAmount } = useCurrency();
   const { language } = useLanguage();
+  const tl = timelineTranslations[language] || timelineTranslations.fr;
+  const dateLocale = language === "en" ? enUS : fr;
   // Fetch attendance records
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ["member-attendance-timeline", memberId],
@@ -155,7 +232,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   // Export to PDF function
   const handleExportPDF = async () => {
     if (!member) {
-      toast.error("Données du membre non disponibles");
+      toast.error(tl.dataNotAvailable);
       return;
     }
 
@@ -201,10 +278,10 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
 
       const blob = await generateMemberHistoryPDF(historyData, formatAmount, language);
       downloadMemberHistoryPDF(blob, `${member.first_name}_${member.last_name}`);
-      toast.success("PDF généré avec succès");
+      toast.success(tl.pdfSuccess);
     } catch (error) {
-      console.error("Erreur lors de la génération du PDF:", error);
-      toast.error("Erreur lors de la génération du PDF");
+      console.error("Error generating PDF:", error);
+      toast.error(tl.pdfError);
     } finally {
       setGeneratingPDF(false);
     }
@@ -219,7 +296,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
       id: `attendance-${record.id}`,
       type: "attendance",
       title: record.event_type,
-      description: `Méthode: ${record.scan_method || "Manuel"}`,
+      description: `${tl.method}: ${record.scan_method || tl.manual}`,
       date: record.event_date,
       icon: UserCheck,
       color: "text-green-600 bg-green-100",
@@ -246,8 +323,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
       timelineEvents.push({
         id: `ministry-${mm.id}`,
         type: "ministry",
-        title: `Rejoint ${mm.ministry?.name || "Ministère"}`,
-        description: `Rôle: ${mm.role || "Membre"}`,
+        title: `${tl.joined} ${mm.ministry?.name || tl.ministry}`,
+        description: `${tl.role}: ${mm.role || tl.member}`,
         date: mm.joined_date,
         icon: Briefcase,
         color: "text-purple-600 bg-purple-100",
@@ -273,8 +350,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-join",
       type: "milestone",
-      title: "Devenu membre",
-      description: "Inscription à l'église",
+      title: tl.becameMember,
+      description: tl.churchRegistration,
       date: member.join_date,
       icon: Church,
       color: "text-indigo-600 bg-indigo-100",
@@ -285,8 +362,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-baptism",
       type: "milestone",
-      title: "Baptême",
-      description: "Cérémonie de baptême",
+      title: tl.baptism,
+      description: tl.baptismCeremony,
       date: member.baptism_date,
       icon: Heart,
       color: "text-pink-600 bg-pink-100",
@@ -297,8 +374,8 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     timelineEvents.push({
       id: "milestone-conversion",
       type: "milestone",
-      title: "Conversion",
-      description: "Décision pour Christ",
+      title: tl.conversion,
+      description: tl.decisionForChrist,
       date: member.conversion_date,
       icon: Award,
       color: "text-amber-600 bg-amber-100",
@@ -311,7 +388,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
   // Group by month/year
   const groupedEvents: Record<string, TimelineEvent[]> = {};
   timelineEvents.forEach((event) => {
-    const monthYear = format(new Date(event.date), "MMMM yyyy", { locale: fr });
+    const monthYear = format(new Date(event.date), "MMMM yyyy", { locale: dateLocale });
     if (!groupedEvents[monthYear]) {
       groupedEvents[monthYear] = [];
     }
@@ -328,23 +405,23 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
-              Historique Complet
+              {tl.completeHistory}
             </CardTitle>
             <CardDescription>
-              Toutes les activités du membre
+              {tl.allActivities}
             </CardDescription>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-4 text-sm">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{totalAttendance}</p>
-                <p className="text-muted-foreground">Présences</p>
+                <p className="text-muted-foreground">{tl.presences}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">
                   {formatAmount(totalDonations)}
                 </p>
-                <p className="text-muted-foreground">Cotisations</p>
+                <p className="text-muted-foreground">{tl.donations}</p>
               </div>
             </div>
             <Button 
@@ -356,12 +433,12 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               {generatingPDF ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Génération...
+                  {tl.generating}
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  Export PDF
+                  {tl.exportPdf}
                 </>
               )}
             </Button>
@@ -372,7 +449,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         {timelineEvents.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>Aucune activité enregistrée</p>
+            <p>{tl.noActivity}</p>
           </div>
         ) : (
           <ScrollArea className="h-[400px] pr-4">
@@ -409,7 +486,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
                             )}
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(event.date), "dd MMMM yyyy", { locale: fr })}
+                              {format(new Date(event.date), "dd MMMM yyyy", { locale: dateLocale })}
                             </p>
                           </div>
                         </div>
