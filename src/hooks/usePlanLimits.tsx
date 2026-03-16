@@ -176,9 +176,11 @@ export function usePlanLimits() {
     ? new Date(dbSubscription.trial_ends_at) < new Date()
     : false;
 
-  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (active or valid trial)
+  const isActiveTrial = dbSubscription?.status === "trial" && !isTrialExpired;
+
+  // Determine effective plan: Stripe subscription takes priority, then DB-only plans
   const isDbActivePlan = !subscribed && dbSubscription?.plan && 
-    (dbSubscription?.status === "active" || (dbSubscription?.status === "trial" && !isTrialExpired));
+    (dbSubscription?.status === "active" || isActiveTrial);
   const effectiveSubscribed = subscribed || !!isDbActivePlan;
   
   // Map DB plan names to frontend plan names
@@ -197,10 +199,14 @@ export function usePlanLimits() {
     : null;
   const effectivePlan = subscribed ? (plan as PlanKey | null) : resolvedDbPlan;
 
-  // Get current plan limits - use "none" plan if not subscribed
-  const limits: PlanLimits = effectiveSubscribed && effectivePlan && PLAN_LIMITS[effectivePlan] 
-    ? PLAN_LIMITS[effectivePlan] 
-    : PLAN_LIMITS.none; // Default to "none" (locked) if no active subscription
+  // During trial, use trial limits. After paying, use the actual plan limits.
+  const getLimits = (): PlanLimits => {
+    if (!effectiveSubscribed || !effectivePlan) return PLAN_LIMITS.none;
+    if (isActiveTrial) return PLAN_LIMITS.trial;
+    return PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.none;
+  };
+
+  const limits: PlanLimits = getLimits();
 
   const loading = subscriptionLoading || tenantLoading || usageLoading;
 
