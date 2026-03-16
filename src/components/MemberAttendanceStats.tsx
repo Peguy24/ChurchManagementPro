@@ -270,7 +270,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px'
                     }}
-                    formatter={(value: number) => [value, t("memberStats.presences")]}
+                    formatter={(value: number) => [value, lt.presences]}
                     labelFormatter={(label) => {
                       const stat = monthlyStats.find(s => s.month === label);
                       return stat?.fullMonth || label;
