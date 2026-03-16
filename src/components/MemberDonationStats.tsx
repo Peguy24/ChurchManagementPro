@@ -223,10 +223,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
 
       const blob = await generateFiscalReceiptPDF(receiptData);
       downloadFiscalReceiptPDF(blob, `${memberInfo.first_name}_${memberInfo.last_name}`, selectedYear);
-      toast.success(t("memberDetails.fiscalReceiptSuccess"));
+      toast.success(lt.receiptSuccess);
     } catch (error) {
       console.error("Error generating fiscal receipt:", error);
-      toast.error(t("memberDetails.fiscalReceiptError"));
+      toast.error(lt.receiptError);
     } finally {
       setGeneratingReceipt(false);
     }
