@@ -127,9 +127,9 @@ const App = () => (
               <Route path="/finance/budgets" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="budgets" requiredPlan="professionnel"><Budgets /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
               <Route path="/finance/expenses/categories" element={<ProtectedRoute><ExpenseCategories /></ProtectedRoute>} />
-              <Route path="/finance/bank" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="bankReconciliation" requiredPlan="professionnel"><BankReconciliation /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/bank" element={<ProtectedRoute><FeatureGate feature="bankReconciliation" featureKey="bankReconciliation" requiredPlan="essentiel"><BankReconciliation /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/funds" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="specialFunds" requiredPlan="professionnel"><SpecialFunds /></FeatureGate></ProtectedRoute>} />
-              <Route path="/finance/cash" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="cashRegister" requiredPlan="professionnel"><CashRegister /></FeatureGate></ProtectedRoute>} />
+              <Route path="/finance/cash" element={<ProtectedRoute><FeatureGate feature="cashRegister" featureKey="cashRegister" requiredPlan="essentiel"><CashRegister /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/audit" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="financialAudit" requiredPlan="professionnel"><FinancialAudit /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/credits" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="creditsLoans" requiredPlan="professionnel"><CreditAndLoans /></FeatureGate></ProtectedRoute>} />
               <Route path="/finance/salaries" element={<ProtectedRoute><FeatureGate feature="advancedFinance" featureKey="salaries" requiredPlan="professionnel"><Salaries /></FeatureGate></ProtectedRoute>} />

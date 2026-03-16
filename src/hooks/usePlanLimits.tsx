@@ -24,12 +24,16 @@ const ALL_FEATURES_FALSE = {
   dataBackup: false,
   churnPrevention: false,
   branding: false,
+  bankReconciliation: false,
+  cashRegister: false,
 } as const;
 
 const BASIC_FEATURES = {
   ...ALL_FEATURES_FALSE,
   attendance: true,
   donations: true,
+  bankReconciliation: true,
+  cashRegister: true,
 } as const;
 
 const PRO_FEATURES = {
@@ -126,6 +130,8 @@ export interface PlanLimits {
     dataBackup: boolean;
     churnPrevention: boolean;
     branding: boolean;
+    bankReconciliation: boolean;
+    cashRegister: boolean;
   };
 }
 
