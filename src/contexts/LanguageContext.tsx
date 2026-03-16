@@ -6090,6 +6090,7 @@ const translations = {
       active: "Active",
       renewal: "Renewal",
       manageSubscription: "Manage Subscription",
+      managedByAdmin: "This subscription is managed by the platform administrator.",
       upgradePremium: "Upgrade to Premium",
       unlockFeatures: "Unlock all features with a subscription",
       choose: "Choose",
