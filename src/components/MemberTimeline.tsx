@@ -415,7 +415,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
             <div className="flex gap-4 text-sm">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{totalAttendance}</p>
-                <p className="text-muted-foreground">Présences</p>
+                <p className="text-muted-foreground">{tl.presences}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">
