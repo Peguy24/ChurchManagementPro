@@ -12,6 +12,7 @@ export function SubscriptionCard() {
     subscribed, 
     plan, 
     subscriptionEnd, 
+    hasStripeCustomer,
     loading, 
     checkoutLoading, 
     portalLoading,
