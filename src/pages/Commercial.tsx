@@ -22,7 +22,8 @@ const Commercial = () => {
   const { t } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
-
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const isYearly = billingInterval === "yearly";
 
 
   const features = [
