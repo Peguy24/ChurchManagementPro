@@ -420,7 +420,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
             {/* Category Distribution */}
             {pieData.length > 0 && (
               <div>
-                <h4 className="font-medium mb-4">{t("donations.distributionByType")}</h4>
+                <h4 className="font-medium mb-4">{lt.distributionByType}</h4>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
