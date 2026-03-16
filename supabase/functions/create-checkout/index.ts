@@ -12,11 +12,18 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs for each plan - synced with useSubscription.tsx
+// Monthly Price IDs for each plan - synced with useSubscription.tsx
 const PRICE_IDS = {
   essentiel: "price_1SsxZvF3VvKmdn5Gokml3EOt",
   professionnel: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
   entreprise: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
+};
+
+// Yearly Price IDs (15% discount)
+const YEARLY_PRICE_IDS = {
+  essentiel: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
+  professionnel: "price_1TBi3bF3VvKmdn5G51dRztux",
+  entreprise: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
 };
 
 // Plan limits for direct DB activation (free access)
