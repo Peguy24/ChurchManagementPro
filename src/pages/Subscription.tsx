@@ -35,7 +35,8 @@ export default function Subscription() {
   const { 
     subscribed, 
     plan, 
-    subscriptionEnd, 
+    subscriptionEnd,
+    subscriptionStatus,
     hasStripeCustomer,
     loading, 
     checkoutLoading, 
@@ -71,6 +72,7 @@ export default function Subscription() {
   useEffect(() => { fetchInvoices(); }, []);
 
   const currentPlan = plan ? PLAN_DETAILS[plan as PlanKey] : null;
+  const isTrial = subscriptionStatus === "trial";
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -169,22 +171,24 @@ export default function Subscription() {
                 <CardTitle>{t("sub.currentSubscription")}</CardTitle>
               </div>
               {subscribed && (
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  {t("sub.active")}
+                <Badge className={isTrial ? "bg-secondary text-secondary-foreground" : "bg-primary/10 text-primary border-primary/20"}>
+                  {isTrial ? t("superAdmin.statusTrial") : t("sub.active")}
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            {subscribed && currentPlan ? (
+            {subscribed && (currentPlan || isTrial) ? (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <p className="text-2xl sm:text-3xl font-bold">{currentPlan.name}</p>
-                    <p className="text-muted-foreground">${currentPlan.price}{t("sub.perMonth")}</p>
+                    <p className="text-2xl sm:text-3xl font-bold">{isTrial ? t("sub.freeTrial") : currentPlan?.name}</p>
+                    {!isTrial && currentPlan ? (
+                      <p className="text-muted-foreground">${currentPlan.price}{t("sub.perMonth")}</p>
+                    ) : null}
                   </div>
                   <div className="sm:text-right">
-                    <p className="text-sm text-muted-foreground">{t("sub.nextRenewal")}</p>
+                    <p className="text-sm text-muted-foreground">{isTrial ? t("superAdmin.trialEndsOn") : t("sub.nextRenewal")}</p>
                     <p className="font-medium text-base sm:text-lg">
                       {subscriptionEnd 
                         ? format(new Date(subscriptionEnd), "d MMMM yyyy", { locale: dateLocale })
@@ -194,7 +198,13 @@ export default function Subscription() {
                   </div>
                 </div>
                 <Separator />
-                {hasStripeCustomer ? (
+                {isTrial ? (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {t("sub.normalMsg")}
+                    </p>
+                  </div>
+                ) : hasStripeCustomer ? (
                   <Button onClick={openCustomerPortal} disabled={portalLoading} className="w-full">
                     {portalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Settings className="h-4 w-4 mr-2" />}
                     {t("sub.manageSub")}
@@ -224,7 +234,7 @@ export default function Subscription() {
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => {
-              const isCurrentPlan = plan === key;
+              const isCurrentPlan = !isTrial && plan === key;
               const isProfessional = key === 'professionnel';
               const features = planFeatures[key] || [];
               

@@ -26,6 +26,19 @@ const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number;
   "entreprise": { plan: "premium", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
 };
 
+const DB_TO_PLAN: Record<string, string> = {
+  "basic": "essentiel",
+  "standard": "professionnel",
+  "premium": "entreprise",
+  "free": "free",
+};
+
+const isDbTrialStatus = (status: string | null | undefined) => status === "trial" || status === "trialing";
+const isDbSubscribedStatus = (status: string | null | undefined) => status === "active" || isDbTrialStatus(status);
+const getDbSubscriptionEnd = (
+  subscription?: { status?: string | null; trial_ends_at?: string | null; current_period_end?: string | null } | null,
+) => (isDbTrialStatus(subscription?.status) ? subscription?.trial_ends_at ?? null : subscription?.current_period_end ?? null);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -51,7 +64,7 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    
+
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
@@ -63,49 +76,55 @@ serve(async (req) => {
       .eq("id", user.id)
       .single();
     const userTenantId = profile?.tenant_id;
-    logStep("User tenant", { tenantId: userTenantId });
+
+    const { data: tenantSub } = userTenantId
+      ? await supabaseClient
+          .from("tenant_subscriptions")
+          .select("plan, status, current_period_end, trial_ends_at")
+          .eq("tenant_id", userTenantId)
+          .maybeSingle()
+      : { data: null };
+
+    logStep("User tenant", {
+      tenantId: userTenantId,
+      tenantStatus: tenantSub?.status,
+      tenantPlan: tenantSub?.plan,
+    });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Find customer by email
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+
     if (customers.data.length === 0) {
       logStep("No Stripe customer for this user, checking tenant subscription in DB");
-      
-      // Fallback: check tenant_subscriptions table (subscription may be under admin's email)
-      if (userTenantId) {
-        const { data: tenantSub } = await supabaseClient
-          .from("tenant_subscriptions")
-          .select("plan, status, current_period_end")
-          .eq("tenant_id", userTenantId)
-          .single();
 
-        if (tenantSub && (tenantSub.status === "active" || tenantSub.status === "trialing" || tenantSub.status === "trial") && tenantSub.plan) {
-          // Map DB plan names back to frontend plan names
-          const DB_TO_PLAN: Record<string, string> = {
-            "basic": "essentiel",
-            "standard": "professionnel",
-            "premium": "entreprise",
-            "free": "free",
-          };
-          const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
-          logStep("Found active tenant subscription in DB", { plan: mappedPlan });
-          return new Response(JSON.stringify({ 
-            subscribed: true,
-            plan: mappedPlan,
-            subscription_end: tenantSub.current_period_end,
-            has_stripe_customer: false,
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
-        }
+      if (tenantSub && isDbSubscribedStatus(tenantSub.status) && tenantSub.plan) {
+        const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
+        const subscriptionEnd = getDbSubscriptionEnd(tenantSub);
+
+        logStep("Found tenant subscription in DB", {
+          plan: mappedPlan,
+          status: tenantSub.status,
+          subscriptionEnd,
+        });
+
+        return new Response(JSON.stringify({
+          subscribed: true,
+          plan: mappedPlan,
+          status: tenantSub.status,
+          subscription_end: subscriptionEnd,
+          has_stripe_customer: false,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
       }
 
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         subscribed: false,
         plan: null,
+        status: null,
         subscription_end: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -122,7 +141,7 @@ serve(async (req) => {
       status: "active",
       limit: 1,
     });
-    
+
     // If no active, check for trialing
     if (subscriptions.data.length === 0) {
       subscriptions = await stripe.subscriptions.list({
@@ -138,6 +157,7 @@ serve(async (req) => {
     const hasActiveSub = subscriptions.data.length > 0;
     let plan: string | null = null;
     let subscriptionEnd: string | null = null;
+    let subscriptionStatus: string | null = null;
 
     // Get previous DB state for change detection
     let previousDbStatus: string | null = null;
@@ -163,16 +183,18 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      
+      subscriptionStatus = subscription.status === "trialing" ? "trial" : "active";
+
       // Get the product ID to determine the plan
       const productId = subscription.items.data[0].price.product as string;
       plan = PRODUCT_TO_PLAN[productId] || null;
-      
-      logStep("Active subscription found", { 
-        subscriptionId: subscription.id, 
+
+      logStep("Active subscription found", {
+        subscriptionId: subscription.id,
         endDate: subscriptionEnd,
         productId,
         plan,
+        status: subscriptionStatus,
       });
 
       // Sync plan to tenant_subscriptions in database
@@ -183,21 +205,21 @@ serve(async (req) => {
             .from("tenant_subscriptions")
             .update({
               plan: dbPlan.plan,
-              status: "active",
+              status: subscriptionStatus === "trial" ? "trial" : "active",
               price_monthly: dbPlan.price,
               max_members: dbPlan.members,
               max_branches: dbPlan.branches,
               max_users: dbPlan.users,
               max_storage_mb: dbPlan.storage,
               current_period_end: subscriptionEnd,
-              trial_ends_at: null,
+              trial_ends_at: subscriptionStatus === "trial" ? subscriptionEnd : null,
             })
             .eq("tenant_id", userTenantId);
 
           if (syncError) {
             logStep("Failed to sync plan to DB", { error: syncError.message });
           } else {
-            logStep("Plan synced to tenant_subscriptions", { tenantId: userTenantId, dbPlan: dbPlan.plan });
+            logStep("Plan synced to tenant_subscriptions", { tenantId: userTenantId, dbPlan: dbPlan.plan, status: subscriptionStatus });
           }
 
           // Detect renewal: was expired/cancelled, now active again
@@ -215,12 +237,35 @@ serve(async (req) => {
                   language: "en",
                 }),
               });
-            } catch (e) { logStep("Failed to notify renewal", { error: String(e) }); }
+            } catch (e) {
+              logStep("Failed to notify renewal", { error: String(e) });
+            }
           }
         }
       }
     } else {
       logStep("No active subscription found");
+
+      if (tenantSub?.status === "trial" && tenantSub.plan) {
+        const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
+        const trialEnd = getDbSubscriptionEnd(tenantSub);
+
+        logStep("Using DB trial fallback for Stripe customer", {
+          plan: mappedPlan,
+          trialEnd,
+        });
+
+        return new Response(JSON.stringify({
+          subscribed: true,
+          plan: mappedPlan,
+          status: tenantSub.status,
+          subscription_end: trialEnd,
+          has_stripe_customer: true,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
 
       // Check for cancelled subscriptions
       const cancelledSubs = await stripe.subscriptions.list({
@@ -232,7 +277,7 @@ serve(async (req) => {
       if (userTenantId && previousDbStatus === "active") {
         // Was active, now not active → cancelled or expired
         const eventType = cancelledSubs.data.length > 0 ? "plan_cancelled" : "plan_expired";
-        logStep(`Detected ${eventType}`, { previousPlan: previousDbPlan });
+        logStep(`${eventType} detected`, { previousPlan: previousDbPlan });
 
         // Update DB status
         await supabaseClient
@@ -252,13 +297,16 @@ serve(async (req) => {
               language: "en",
             }),
           });
-        } catch (e) { logStep(`Failed to notify ${eventType}`, { error: String(e) }); }
+        } catch (e) {
+          logStep(`Failed to notify ${eventType}`, { error: String(e) });
+        }
       }
     }
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       plan,
+      status: subscriptionStatus,
       subscription_end: subscriptionEnd,
       has_stripe_customer: true,
     }), {

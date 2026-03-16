@@ -13,7 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export function TrialCountdownCard() {
   const { t } = useLanguage();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
-  const { subscribed, loading: subLoading, createCheckout, checkoutLoading } = useSubscription();
+  const { loading: subLoading, createCheckout, checkoutLoading } = useSubscription();
 
   const { data: subscription, isLoading } = useQuery({
     queryKey: ["tenant-subscription-trial", tenantId],
@@ -45,7 +45,6 @@ export function TrialCountdownCard() {
     );
   }
 
-  if (subscribed) return null;
   if (!subscription || subscription.status !== "trial" || !subscription.trial_ends_at) return null;
 
   const trialEndDate = new Date(subscription.trial_ends_at);

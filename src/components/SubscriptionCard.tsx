@@ -11,7 +11,8 @@ export function SubscriptionCard() {
   const { 
     subscribed, 
     plan, 
-    subscriptionEnd, 
+    subscriptionEnd,
+    subscriptionStatus,
     hasStripeCustomer,
     loading, 
     checkoutLoading, 
@@ -33,8 +34,11 @@ export function SubscriptionCard() {
   }
 
   const currentPlan = plan ? PLAN_DETAILS[plan as PlanKey] : null;
+  const isTrial = subscriptionStatus === "trial";
+  const statusLabel = isTrial ? t("superAdmin.statusTrial") : t("sub.active");
+  const endDateLabel = isTrial ? t("superAdmin.trialEndsOn") : t("sub.renewal");
 
-  if (subscribed && currentPlan) {
+  if (subscribed && (currentPlan || isTrial)) {
     return (
       <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <CardHeader className="pb-3">
@@ -43,21 +47,23 @@ export function SubscriptionCard() {
               <Crown className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">{t("sub.yourSubscription")}</CardTitle>
             </div>
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              {t("sub.active")}
+            <Badge className={isTrial ? "bg-secondary text-secondary-foreground" : "bg-primary/10 text-primary border-primary/20"}>
+              {statusLabel}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">{currentPlan.name}</p>
-              <p className="text-sm text-muted-foreground">
-                ${currentPlan.price}{t("sub.perMonth")}
-              </p>
+              <p className="text-2xl font-bold">{isTrial ? t("sub.freeTrial") : currentPlan?.name}</p>
+              {!isTrial && currentPlan ? (
+                <p className="text-sm text-muted-foreground">
+                  ${currentPlan.price}{t("sub.perMonth")}
+                </p>
+              ) : null}
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">{t("sub.renewal")}</p>
+              <p className="text-sm text-muted-foreground">{endDateLabel}</p>
               <p className="font-medium">
                 {subscriptionEnd 
                   ? new Date(subscriptionEnd).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
@@ -66,7 +72,11 @@ export function SubscriptionCard() {
               </p>
             </div>
           </div>
-          {hasStripeCustomer ? (
+          {isTrial ? (
+            <p className="text-xs text-center text-muted-foreground">
+              {t("sub.normalMsg")}
+            </p>
+          ) : hasStripeCustomer ? (
             <Button 
               onClick={openCustomerPortal} 
               disabled={portalLoading}
