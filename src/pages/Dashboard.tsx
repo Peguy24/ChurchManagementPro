@@ -193,7 +193,10 @@ export default function Dashboard() {
 
   const totalMonthlyAmount = monthlyDonations.reduce((sum, d) => sum + Number(d.amount), 0);
   
-  const paidThisWeek = weeklyDonations.filter(d => d.donation_type === 'tithe').length;
+  const weeklyAttendanceCount = attendanceRecords?.filter(a => {
+    const eventDate = toSafeDate(a.event_date);
+    return eventDate ? eventDate >= firstDayOfWeek : false;
+  }).length || 0;
 
   const stats = [
     {
@@ -219,8 +222,8 @@ export default function Dashboard() {
     },
     {
       title: t("dashboard.weeklyAttendance"),
-      value: paidThisWeek.toString(),
-      detail: `${paidThisWeek} ${t("dashboard.membersPresent")}`,
+      value: weeklyAttendanceCount.toString(),
+      detail: `${weeklyAttendanceCount} ${t("dashboard.membersPresent")}`,
       icon: Calendar,
       bgColor: "bg-gradient-to-br from-orange-400 to-orange-500",
     },
