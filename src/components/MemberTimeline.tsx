@@ -296,7 +296,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
       id: `attendance-${record.id}`,
       type: "attendance",
       title: record.event_type,
-      description: `Méthode: ${record.scan_method || "Manuel"}`,
+      description: `${tl.method}: ${record.scan_method || tl.manual}`,
       date: record.event_date,
       icon: UserCheck,
       color: "text-green-600 bg-green-100",
