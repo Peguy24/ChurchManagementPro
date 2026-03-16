@@ -74,8 +74,7 @@ export default function EmailTemplates() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("emailTemplatesPage.featureName")}
-          featureDescription={t("emailTemplatesPage.featureDescription")}
+          featureKey="emailNotifications"
           requiredPlan="professionnel"
           icon={<Mail className="w-8 h-8 text-muted-foreground" />}
         />

@@ -88,8 +88,7 @@ export default function Inventory() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("inventory.featureName")}
-          featureDescription={t("inventory.featureDesc")}
+          featureKey="inventory"
           requiredPlan="professionnel"
           icon={<Package className="w-8 h-8 text-muted-foreground" />}
         />

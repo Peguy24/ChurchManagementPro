@@ -65,8 +65,7 @@ export default function Donations() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("donations.title")}
-          featureDescription={t("donations.subtitle")}
+          featureKey="donations"
           requiredPlan="essentiel"
           icon={<DollarSign className="w-8 h-8 text-muted-foreground" />}
         />

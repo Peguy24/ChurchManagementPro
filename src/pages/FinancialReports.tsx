@@ -30,8 +30,7 @@ export default function FinancialReports() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("financialReports.advancedReports")}
-          featureDescription={t("financialReports.advancedReportsDesc")}
+          featureKey="financialReports"
           requiredPlan="professionnel"
         />
       </Layout>
