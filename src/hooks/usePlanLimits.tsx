@@ -130,6 +130,8 @@ export interface PlanLimits {
     dataBackup: boolean;
     churnPrevention: boolean;
     branding: boolean;
+    bankReconciliation: boolean;
+    cashRegister: boolean;
   };
 }
 
