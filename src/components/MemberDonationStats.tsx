@@ -13,6 +13,74 @@ import { generateFiscalReceiptPDF, downloadFiscalReceiptPDF, FiscalReceiptData }
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateInputValue } from "@/lib/date";
 
+const donationTranslations = {
+  fr: {
+    donationHistory: "Historique des Cotisations",
+    last6Months: "Statistiques des 6 derniers mois",
+    totalAllTime: "Total (tout)",
+    last6MonthsTotal: "6 derniers mois",
+    numberOfDonations: "Nombre de dons",
+    monthlyTrend: "Tendance mensuelle",
+    monthlyEvolution: "Évolution mensuelle",
+    distributionByType: "Répartition par type",
+    noDonationsRecorded: "Aucune cotisation enregistrée",
+    recentDonations: "Cotisations récentes",
+    amount: "Montant",
+    loading: "Chargement...",
+    noDonationsForReceipt: "Aucune cotisation pour cette année",
+    receiptSuccess: "Reçu fiscal généré avec succès",
+    receiptError: "Erreur lors de la génération du reçu",
+    generating: "Génération...",
+    fiscalReceipt: "Reçu fiscal",
+    contributions: "contributions",
+    total: "Total",
+    tithes: "Dîmes",
+  },
+  en: {
+    donationHistory: "Contribution History",
+    last6Months: "Last 6 months statistics",
+    totalAllTime: "Total (all time)",
+    last6MonthsTotal: "Last 6 months",
+    numberOfDonations: "Number of donations",
+    monthlyTrend: "Monthly trend",
+    monthlyEvolution: "Monthly evolution",
+    distributionByType: "Distribution by type",
+    noDonationsRecorded: "No donations recorded",
+    recentDonations: "Recent donations",
+    amount: "Amount",
+    loading: "Loading...",
+    noDonationsForReceipt: "No donations for this year",
+    receiptSuccess: "Fiscal receipt generated successfully",
+    receiptError: "Error generating receipt",
+    generating: "Generating...",
+    fiscalReceipt: "Fiscal receipt",
+    contributions: "contributions",
+    total: "Total",
+    tithes: "Tithes",
+  },
+  ht: {
+    donationHistory: "Istwa Kotizasyon",
+    last6Months: "Estatistik 6 dènye mwa yo",
+    totalAllTime: "Total (tout tan)",
+    last6MonthsTotal: "6 dènye mwa",
+    numberOfDonations: "Kantite don",
+    monthlyTrend: "Tandans chak mwa",
+    monthlyEvolution: "Evolisyon chak mwa",
+    distributionByType: "Distribisyon pa tip",
+    noDonationsRecorded: "Pa gen kotizasyon anrejistre",
+    recentDonations: "Dènye kotizasyon yo",
+    amount: "Montan",
+    loading: "Ap chaje...",
+    noDonationsForReceipt: "Pa gen kotizasyon pou ane sa a",
+    receiptSuccess: "Resi fiskal jenere avèk siksè",
+    receiptError: "Erè pandan jenerasyon resi a",
+    generating: "Ap jenere...",
+    fiscalReceipt: "Resi fiskal",
+    contributions: "kontribisyon",
+    total: "Total",
+    tithes: "Dim",
+  },
+};
 
 interface MemberDonationStatsProps {
   memberId: string;
@@ -21,7 +89,9 @@ interface MemberDonationStatsProps {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--info))'];
 
 export default function MemberDonationStats({ memberId }: MemberDonationStatsProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = donationTranslations[language] || donationTranslations.fr;
+  const dateLocaleStr = language === "en" ? "en-US" : language === "ht" ? "fr-FR" : "fr-FR";
   const { currencyCode } = useCurrency();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
@@ -119,7 +189,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   // Handle fiscal receipt generation
   const handleGenerateFiscalReceipt = async () => {
     if (!memberInfo || !yearDonations || yearDonations.length === 0) {
-      toast.error(t("memberDetails.fiscalReceiptNoDonations"));
+      toast.error(lt.noDonationsForReceipt);
       return;
     }
 
@@ -153,10 +223,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
 
       const blob = await generateFiscalReceiptPDF(receiptData);
       downloadFiscalReceiptPDF(blob, `${memberInfo.first_name}_${memberInfo.last_name}`, selectedYear);
-      toast.success(t("memberDetails.fiscalReceiptSuccess"));
+      toast.success(lt.receiptSuccess);
     } catch (error) {
       console.error("Error generating fiscal receipt:", error);
-      toast.error(t("memberDetails.fiscalReceiptError"));
+      toast.error(lt.receiptError);
     } finally {
       setGeneratingReceipt(false);
     }
@@ -168,11 +238,11 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            {t("donations.donationHistory")}
+            {lt.donationHistory}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">{t("common.loading")}</p>
+          <p className="text-muted-foreground">{lt.loading}</p>
         </CardContent>
       </Card>
     );
@@ -188,13 +258,13 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   const now = new Date();
   for (let i = 5; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = date.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" });
+    const key = date.toLocaleDateString(dateLocaleStr, { month: "short", year: "2-digit" });
     monthlyData[key] = 0;
   }
 
   donations?.forEach((donation) => {
     const date = new Date(donation.donation_date);
-    const key = date.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" });
+    const key = date.toLocaleDateString(dateLocaleStr, { month: "short", year: "2-digit" });
     if (monthlyData[key] !== undefined) {
       monthlyData[key] += Number(donation.amount);
     }
@@ -219,7 +289,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
   });
 
   const pieData = Object.entries(categoryData).map(([name, value]) => ({
-    name: t(name) || name,
+    name,
     value,
   }));
 
@@ -242,10 +312,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           <div>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
-              {t("donations.donationHistory")}
+              {lt.donationHistory}
             </CardTitle>
             <CardDescription>
-              {t("attendance.last6Months")}
+              {lt.last6Months}
             </CardDescription>
           </div>
           
@@ -273,10 +343,10 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                 {generatingReceipt ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    {t("memberDetails.fiscalReceiptGenerating")}
+                    {lt.generating}
                   </>
                 ) : (
-                  t("memberDetails.fiscalReceiptTitle")
+                  lt.fiscalReceipt
                 )}
               </Button>
             </div>
@@ -287,7 +357,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {yearDonations && yearDonations.length > 0 && (
           <div className="mt-3 p-2 bg-primary/10 rounded-md text-sm">
             <span className="font-medium">{selectedYear}:</span>{" "}
-            {yearDonations.length} {t("memberDetails.fiscalReceiptContributions")} | {t("memberDetails.fiscalReceiptTotal")}: {formatCurrency(yearTotal)} | {t("memberDetails.fiscalReceiptTithes")}: {formatCurrency(yearTitheTotal)}
+            {yearDonations.length} {lt.contributions} | {lt.total}: {formatCurrency(yearTotal)} | {lt.tithes}: {formatCurrency(yearTitheTotal)}
           </div>
         )}
       </CardHeader>
@@ -295,19 +365,19 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.totalAllTime")}</p>
+            <p className="text-sm text-muted-foreground">{lt.totalAllTime}</p>
             <p className="text-2xl font-bold text-primary">{formatCurrency(totalAmount)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.last6MonthsTotal")}</p>
+            <p className="text-sm text-muted-foreground">{lt.last6MonthsTotal}</p>
             <p className="text-2xl font-bold">{formatCurrency(last6MonthsTotal)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("donations.numberOfDonations")}</p>
+            <p className="text-sm text-muted-foreground">{lt.numberOfDonations}</p>
             <p className="text-2xl font-bold">{donationCount}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t("attendance.monthlyTrend")}</p>
+            <p className="text-sm text-muted-foreground">{lt.monthlyTrend}</p>
             <div className="flex items-center gap-2">
               {trend > 0 ? (
                 <TrendingUp className="h-5 w-5 text-success" />
@@ -328,14 +398,14 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
           <div className="grid md:grid-cols-2 gap-6">
             {/* Monthly Evolution */}
             <div>
-              <h4 className="font-medium mb-4">{t("donations.monthlyEvolution")}</h4>
+              <h4 className="font-medium mb-4">{lt.monthlyEvolution}</h4>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="month" className="text-xs" />
                   <YAxis className="text-xs" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
-                    formatter={(value: number) => [formatCurrency(value), t("donations.amount")]}
+                    formatter={(value: number) => [formatCurrency(value), lt.amount]}
                     contentStyle={{
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
@@ -350,7 +420,7 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
             {/* Category Distribution */}
             {pieData.length > 0 && (
               <div>
-                <h4 className="font-medium mb-4">{t("donations.distributionByType")}</h4>
+                <h4 className="font-medium mb-4">{lt.distributionByType}</h4>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
@@ -383,14 +453,14 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
         ) : (
           <div className="text-center py-8 text-muted-foreground">
             <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>{t("donations.noDonationsRecorded")}</p>
+            <p>{lt.noDonationsRecorded}</p>
           </div>
         )}
 
         {/* Recent Donations List */}
         {donations && donations.length > 0 && (
           <div>
-            <h4 className="font-medium mb-3">{t("donations.recentDonations")}</h4>
+            <h4 className="font-medium mb-3">{lt.recentDonations}</h4>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {donations.slice(0, 10).map((donation) => (
                 <div
@@ -402,12 +472,12 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                     <div>
                       <p className="font-medium">{formatCurrency(Number(donation.amount))}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(donation.donation_date).toLocaleDateString("fr-FR")}
+                        {new Date(donation.donation_date).toLocaleDateString(dateLocaleStr)}
                       </p>
                     </div>
                   </div>
                   <Badge variant="secondary">
-                    {t(`donations.${donation.donation_type}`) || donation.donation_type}
+                    {donation.donation_type}
                   </Badge>
                 </div>
               ))}

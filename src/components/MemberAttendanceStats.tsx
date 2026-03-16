@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Clock } from "lucide-react";
+import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3 } from "lucide-react";
 import { formatScanTime, getArrivalStatus, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -23,14 +23,58 @@ import {
   Bar,
 } from "recharts";
 import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+
+const attendanceTranslations = {
+  fr: {
+    statistics: "Statistiques de Présence",
+    last6Months: "Statistiques des 6 derniers mois",
+    totalPresences: "Total présences",
+    attendanceRate: "Taux de présence",
+    thisMonth: "Ce mois",
+    trend: "Tendance",
+    monthlyEvolution: "Évolution mensuelle",
+    presences: "Présences",
+    byEventType: "Par type d'événement",
+    noAttendanceRecords: "Aucun enregistrement de présence",
+    loading: "Chargement...",
+  },
+  en: {
+    statistics: "Attendance Statistics",
+    last6Months: "Last 6 months statistics",
+    totalPresences: "Total attendance",
+    attendanceRate: "Attendance rate",
+    thisMonth: "This month",
+    trend: "Trend",
+    monthlyEvolution: "Monthly evolution",
+    presences: "Attendance",
+    byEventType: "By event type",
+    noAttendanceRecords: "No attendance records",
+    loading: "Loading...",
+  },
+  ht: {
+    statistics: "Estatistik Prezans",
+    last6Months: "Estatistik 6 dènye mwa yo",
+    totalPresences: "Total prezans",
+    attendanceRate: "To prezans",
+    thisMonth: "Mwa sa a",
+    trend: "Tandans",
+    monthlyEvolution: "Evolisyon chak mwa",
+    presences: "Prezans",
+    byEventType: "Pa tip evènman",
+    noAttendanceRecords: "Pa gen anrejistreman prezans",
+    loading: "Ap chaje...",
+  },
+};
 
 interface MemberAttendanceStatsProps {
   memberId: string;
 }
 
 export default function MemberAttendanceStats({ memberId }: MemberAttendanceStatsProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const lt = attendanceTranslations[language] || attendanceTranslations.fr;
+  const dateLocale = language === "en" ? enUS : fr;
 
   // Fetch attendance records for the last 6 months
   const { data: attendanceData, isLoading } = useQuery({
@@ -93,8 +137,8 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
       });
 
       return {
-        month: format(month, "MMM", { locale: fr }),
-        fullMonth: format(month, "MMMM yyyy", { locale: fr }),
+        month: format(month, "MMM", { locale: dateLocale }),
+        fullMonth: format(month, "MMMM yyyy", { locale: dateLocale }),
         count: monthAttendance.length,
       };
     });
@@ -142,7 +186,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">{t("common.loading")}</p>
+          <p className="text-muted-foreground">{lt.loading}</p>
         </CardContent>
       </Card>
     );
@@ -153,10 +197,10 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarCheck className="h-5 w-5" />
-          {t("attendance.statistics")}
+          {lt.statistics}
         </CardTitle>
         <CardDescription>
-          {t("memberStats.last6Months")}
+          {lt.last6Months}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -164,17 +208,17 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">{totalAttendance}</p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.totalPresences")}</p>
+            <p className="text-xs text-muted-foreground">{lt.totalPresences}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.attendanceRate")}</p>
+            <p className="text-xs text-muted-foreground">{lt.attendanceRate}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">
               {monthlyStats[monthlyStats.length - 1]?.count || 0}
             </p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.thisMonth")}</p>
+            <p className="text-xs text-muted-foreground">{lt.thisMonth}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <div className="flex items-center justify-center gap-1">
@@ -195,7 +239,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
                 {trend.percentage}%
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">{t("memberStats.trend")}</p>
+            <p className="text-xs text-muted-foreground">{lt.trend}</p>
           </div>
         </div>
 
@@ -204,7 +248,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           <div>
             <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              {t("memberStats.monthlyEvolution")}
+              {lt.monthlyEvolution}
             </h4>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -226,7 +270,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px'
                     }}
-                    formatter={(value: number) => [value, t("memberStats.presences")]}
+                    formatter={(value: number) => [value, lt.presences]}
                     labelFormatter={(label) => {
                       const stat = monthlyStats.find(s => s.month === label);
                       return stat?.fullMonth || label;
@@ -248,7 +292,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           <div>
             <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              {t("memberStats.byEventType")}
+              {lt.byEventType}
             </h4>
             <div className="flex flex-wrap gap-2">
               {eventTypeStats.map((stat) => (
@@ -268,7 +312,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
         {totalAttendance === 0 && (
           <div className="text-center py-6 text-muted-foreground">
             <CalendarCheck className="h-12 w-12 mx-auto mb-2 opacity-20" />
-            <p>{t("memberStats.noAttendanceRecords")}</p>
+            <p>{lt.noAttendanceRecords}</p>
           </div>
         )}
       </CardContent>
