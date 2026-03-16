@@ -120,7 +120,9 @@ export default function SuperAdminDashboard() {
       { 
         key: "tenant_subscriptions", 
         header: t("superAdmin.plan"),
-        formatter: (subs: any[]) => planDisplayName[subs?.[0]?.plan] || subs?.[0]?.plan || "Aucun"
+        formatter: (subs: any[]) => subs?.[0]?.status === "trial"
+          ? t("superAdmin.statusTrial")
+          : planDisplayName[subs?.[0]?.plan] || subs?.[0]?.plan || "Aucun"
       },
       { 
         key: "tenant_subscriptions", 
@@ -284,7 +286,9 @@ export default function SuperAdminDashboard() {
                         }`}>
                           {(() => {
                             const sub = Array.isArray(tenant.tenant_subscriptions) ? tenant.tenant_subscriptions?.[0] : tenant.tenant_subscriptions;
-                            return planDisplayName[sub?.plan] || sub?.plan || "Aucun";
+                            return sub?.status === "trial"
+                              ? t("superAdmin.statusTrial")
+                              : planDisplayName[sub?.plan] || sub?.plan || "Aucun";
                           })()}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">

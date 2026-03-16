@@ -404,7 +404,7 @@ export default function SubscriptionOverrides() {
                 {(subscriptions || []).slice(0, 20).map(s => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium">{(s as any).tenants?.name || "-"}</TableCell>
-                    <TableCell><Badge className={planColors[s.plan] || ""}>{s.plan}</Badge></TableCell>
+                    <TableCell><Badge className={s.status === "trial" ? "bg-blue-100 text-blue-800" : planColors[s.plan] || ""}>{s.status === "trial" ? "Trial" : s.plan}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={s.status === "active" ? "default" : s.status === "trial" ? "secondary" : "destructive"}>
                         {s.status}
