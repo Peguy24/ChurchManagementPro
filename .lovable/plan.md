@@ -1,32 +1,25 @@
 
 
-## Current Situation
+# Plan: Move Bank Reconciliation & Cash Register to Essentiel Plan
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+## Rationale
+Essentiel users track donations but currently can't reconcile or trace cash flow. Bank reconciliation and cash register are basic accounting needs, not advanced features.
 
-## What Needs to Be Done
+## Changes
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### 1. `src/hooks/usePlanLimits.tsx`
+- Add two new feature flags: `bankReconciliation` and `cashRegister`
+- Set them to `true` in `BASIC_FEATURES` (which covers Free, Essentiel, and Trial)
+- They remain `true` in PRO and ENTERPRISE via inheritance
+- Update the `PlanLimits["features"]` interface
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+### 2. `src/App.tsx`
+- Change the `<FeatureGate>` for `/finance/bank-reconciliation` from `feature="advancedFinance"` to `feature="bankReconciliation"` with `requiredPlan="essentiel"`
+- Change the `<FeatureGate>` for `/finance/cash-register` from `feature="advancedFinance"` to `feature="cashRegister"` with `requiredPlan="essentiel"`
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+### 3. `src/components/FeatureLockedCard.tsx`
+- Already has `bankReconciliation` and `cashRegister` translation keys — no changes needed
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+### What stays gated at Professionnel
+Budgets, Salaries, Credit/Loans, Financial Audit, Special Funds, Financial Dashboard — all remain under `advancedFinance`.
 
