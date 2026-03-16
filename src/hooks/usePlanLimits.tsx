@@ -110,7 +110,7 @@ export function usePlanLimits() {
       if (!tenantId) return null;
       const { data } = await supabase
         .from("tenant_subscriptions")
-        .select("plan, status")
+        .select("plan, status, trial_ends_at")
         .eq("tenant_id", tenantId)
         .single();
       return data;
