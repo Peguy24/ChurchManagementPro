@@ -79,9 +79,7 @@ serve(async (req) => {
       });
     }
 
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId, email: userEmail });
 
     // Get user's tenant_id first (needed for DB fallback)
     const { data: profile } = await supabaseClient
