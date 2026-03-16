@@ -151,6 +151,36 @@ const featureTranslations: Record<FeatureKey, { fr: { name: string; desc: string
     en: { name: "Churn Prevention", desc: "Identify and retain at-risk members" },
     ht: { name: "Prevansyon atrisyon", desc: "Idantifye epi kenbe manm ki an risk" },
   },
+  attendance: {
+    fr: { name: "Présence", desc: "Suivez la présence de vos membres aux événements" },
+    en: { name: "Attendance", desc: "Track your members' attendance at events" },
+    ht: { name: "Prezans", desc: "Swiv prezans manm ou yo nan evènman" },
+  },
+  donations: {
+    fr: { name: "Dons", desc: "Gérez les dons et contributions de vos membres" },
+    en: { name: "Donations", desc: "Manage donations and contributions from your members" },
+    ht: { name: "Don", desc: "Jere don ak kontribisyon manm ou yo" },
+  },
+  emailNotifications: {
+    fr: { name: "Modèles d'emails", desc: "Personnalisez les modèles de notifications par email" },
+    en: { name: "Email Templates", desc: "Customize email notification templates" },
+    ht: { name: "Modèl imèl", desc: "Pèsonalize modèl notifikasyon imèl" },
+  },
+  inventory: {
+    fr: { name: "Inventaire", desc: "Gérez l'inventaire et les équipements de votre église" },
+    en: { name: "Inventory", desc: "Manage your church's inventory and equipment" },
+    ht: { name: "Envantè", desc: "Jere envantè ak ekipman legliz ou" },
+  },
+  support: {
+    fr: { name: "Support", desc: "Obtenez du support technique pour résoudre vos problèmes. Un abonnement actif est requis." },
+    en: { name: "Support", desc: "Get technical support to resolve your issues. An active subscription is required." },
+    ht: { name: "Sipò", desc: "Jwenn sipò teknik pou rezoud pwoblèm ou yo. Yon abònman aktif obligatwa." },
+  },
+  financialReports: {
+    fr: { name: "Rapports financiers", desc: "Rapports avancés et analyses financières détaillées" },
+    en: { name: "Financial Reports", desc: "Advanced reports and detailed financial analysis" },
+    ht: { name: "Rapò finansye", desc: "Rapò avanse ak analiz finansye detaye" },
+  },
 };
 
 const uiTranslations = {
