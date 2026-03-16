@@ -54,7 +54,14 @@ export function useSubscription() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setState(prev => ({ ...prev, loading: false, subscribed: false }));
+        setState({
+          subscribed: false,
+          plan: null,
+          subscriptionEnd: null,
+          subscriptionStatus: null,
+          hasStripeCustomer: false,
+          loading: false,
+        });
         return;
       }
 
@@ -74,6 +81,7 @@ export function useSubscription() {
         subscribed: data.subscribed,
         plan: data.plan,
         subscriptionEnd: data.subscription_end,
+        subscriptionStatus: data.status ?? null,
         hasStripeCustomer: data.has_stripe_customer ?? false,
         loading: false,
       });

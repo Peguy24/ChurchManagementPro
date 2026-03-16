@@ -45,7 +45,6 @@ export function TrialCountdownCard() {
     );
   }
 
-  if (subscribed) return null;
   if (!subscription || subscription.status !== "trial" || !subscription.trial_ends_at) return null;
 
   const trialEndDate = new Date(subscription.trial_ends_at);

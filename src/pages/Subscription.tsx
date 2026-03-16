@@ -234,7 +234,7 @@ export default function Subscription() {
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {(Object.entries(PLAN_DETAILS) as [StripePlanKey, typeof PLAN_DETAILS[StripePlanKey]][]).map(([key, details]) => {
-              const isCurrentPlan = plan === key;
+              const isCurrentPlan = !isTrial && plan === key;
               const isProfessional = key === 'professionnel';
               const features = planFeatures[key] || [];
               
