@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
+import { FeatureLockedCard } from '@/components/FeatureLockedCard';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
