@@ -66,19 +66,25 @@ export function SubscriptionCard() {
               </p>
             </div>
           </div>
-          <Button 
-            onClick={openCustomerPortal} 
-            disabled={portalLoading}
-            variant="outline" 
-            className="w-full"
-          >
-            {portalLoading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Settings className="h-4 w-4 mr-2" />
-            )}
-            {t("sub.manageSubscription")}
-          </Button>
+          {hasStripeCustomer ? (
+            <Button 
+              onClick={openCustomerPortal} 
+              disabled={portalLoading}
+              variant="outline" 
+              className="w-full"
+            >
+              {portalLoading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Settings className="h-4 w-4 mr-2" />
+              )}
+              {t("sub.manageSubscription")}
+            </Button>
+          ) : (
+            <p className="text-xs text-center text-muted-foreground">
+              {t("sub.managedByAdmin") || "This subscription is managed by the platform administrator."}
+            </p>
+          )}
         </CardContent>
       </Card>
     );
