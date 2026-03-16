@@ -2904,6 +2904,11 @@ const translations = {
       prioritySupport: "Support prioritaire",
       trainingIncluded: "Formation incluse",
       support247: "Support 24/7",
+      monthly: "Mensuel",
+      yearly: "Annuel",
+      save15: "Économisez 15%",
+      perYear: "/an",
+      billedAnnually: "Facturé annuellement",
     },
     memberDetails: {
       title: "Détails du Membre",
