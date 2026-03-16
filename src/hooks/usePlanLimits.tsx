@@ -30,6 +30,8 @@ const BASIC_FEATURES = {
   ...ALL_FEATURES_FALSE,
   attendance: true,
   donations: true,
+  bankReconciliation: true,
+  cashRegister: true,
 } as const;
 
 const PRO_FEATURES = {
