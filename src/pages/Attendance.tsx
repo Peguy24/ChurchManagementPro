@@ -96,8 +96,7 @@ export default function Attendance() {
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("attendance.title")}
-          featureDescription={t("attendance.subtitle")}
+          featureKey="attendance"
           requiredPlan="essentiel"
           icon={<Calendar className="w-8 h-8 text-muted-foreground" />}
         />

@@ -146,16 +146,10 @@ export default function Support() {
 
   // Gate support access: users without any active subscription see locked card
   if (!planLoading && !subscribed) {
-    const lockedDesc: Record<string, string> = {
-      en: "Access technical support to resolve your issues and get help. An active subscription is required to contact our team.",
-      fr: "Accédez au support technique pour résoudre vos problèmes et obtenir de l'aide. Un abonnement actif est requis pour contacter notre équipe.",
-      ht: "Jwenn sipò teknik pou rezoud pwoblèm ou yo epi jwenn èd. Yon abònman aktif obligatwa pou kontakte ekip nou an.",
-    };
     return (
       <Layout>
         <FeatureLockedCard
-          featureName={t("layout.support")}
-          featureDescription={lockedDesc[language] || lockedDesc.en}
+          featureKey="support"
           requiredPlan="essentiel"
           icon={<MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />}
         />
