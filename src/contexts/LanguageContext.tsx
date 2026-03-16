@@ -9409,6 +9409,11 @@ const translations = {
       prioritySupport: "Sipò priyorite",
       trainingIncluded: "Fòmasyon enkli",
       support247: "Sipò 24/7",
+      monthly: "Chak Mwa",
+      yearly: "Chak Ane",
+      save15: "Ekonomize 15%",
+      perYear: "/ane",
+      billedAnnually: "Faktire chak ane",
     },
     memberDetails: {
       title: "Detay Manm",

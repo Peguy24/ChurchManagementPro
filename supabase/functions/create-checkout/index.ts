@@ -63,13 +63,17 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get the plan from request body
-    const { plan } = await req.json();
+    // Get the plan and interval from request body
+    const { plan, interval } = await req.json();
+    const billingInterval = interval === "yearly" ? "yearly" : "monthly";
+    
     if (!plan || !PRICE_IDS[plan as keyof typeof PRICE_IDS]) {
       throw new Error(`Invalid plan: ${plan}. Valid plans: essentiel, professionnel, entreprise`);
     }
-    const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
-    logStep("Plan selected", { plan, priceId });
+    const priceId = billingInterval === "yearly" 
+      ? YEARLY_PRICE_IDS[plan as keyof typeof YEARLY_PRICE_IDS]
+      : PRICE_IDS[plan as keyof typeof PRICE_IDS];
+    logStep("Plan selected", { plan, priceId, interval: billingInterval });
 
     // Get user's tenant_id
     const { data: profile } = await supabaseClient
