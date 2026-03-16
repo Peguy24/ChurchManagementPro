@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Send, Megaphone, Clock, Users, AlertTriangle, Wrench, Rocket, Package, Mail } from "lucide-react";
 import { format } from "date-fns";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 
 export default function BulkCommunication() {
   const { t } = useLanguage();
