@@ -449,7 +449,7 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         {timelineEvents.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>Aucune activité enregistrée</p>
+            <p>{tl.noActivity}</p>
           </div>
         ) : (
           <ScrollArea className="h-[400px] pr-4">
