@@ -208,7 +208,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">{totalAttendance}</p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.totalPresences")}</p>
+            <p className="text-xs text-muted-foreground">{lt.totalPresences}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
