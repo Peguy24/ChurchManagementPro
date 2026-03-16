@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,16 +52,7 @@ interface Member {
 }
 
 export default function MemberCards() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { toast } = useToast();
-
-  if (!planLoading && !hasFeature("memberCards")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Cartes de membres" featureDescription="Générez des cartes d'identification pour vos membres" requiredPlan="professionnel" />
-      </Layout>
-    );
-  }
   const { t, language } = useLanguage();
   const { tenant } = useCurrentTenant();
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});

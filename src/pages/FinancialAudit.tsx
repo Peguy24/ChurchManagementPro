@@ -11,8 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { History, Search, FileText, Eye } from "lucide-react";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -20,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const FinancialAudit = () => {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
 
   if (!planLoading && !hasFeature("advancedFinance")) {

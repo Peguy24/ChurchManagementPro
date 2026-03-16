@@ -1,6 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -41,7 +39,6 @@ import {
 const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--secondary))", "hsl(var(--accent))"];
 
 const FinancialDashboard = () => {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
 
   if (!planLoading && !hasFeature("advancedFinance")) {

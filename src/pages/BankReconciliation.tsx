@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import Layout from "@/components/Layout";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,16 +21,7 @@ import { generateBankReconciliationPDF, BankTransaction } from "@/lib/bankReconc
 import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BankReconciliation() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { t, language } = useLanguage();
-
-  if (!planLoading && !hasFeature("advancedFinance")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Réconciliation bancaire" featureDescription="Rapprochement bancaire et gestion des comptes" requiredPlan="professionnel" />
-      </Layout>
-    );
-  }
   const { formatAmount } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();

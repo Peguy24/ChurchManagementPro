@@ -8,14 +8,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Palette, Save, Loader2, Type, Eye } from "lucide-react";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LogoUpload from "@/components/LogoUpload";
 
 export default function TenantBranding() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const queryClient = useQueryClient();
 
   if (!planLoading && !hasFeature("branding")) {

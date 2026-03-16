@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Download, Database, Loader2, FileDown, CheckCircle, Shield, Users, DollarSign, Calendar, Package, ClipboardCheck, Briefcase, Church } from "lucide-react";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -191,7 +189,6 @@ const DATA_MODULES: DataModule[] = [
 ];
 
 export default function DataBackup() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { language } = useLanguage();
 
   if (!planLoading && !hasFeature("dataBackup")) {

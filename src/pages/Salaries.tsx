@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,16 +72,7 @@ interface SalaryPayment {
 }
 
 export default function Salaries() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { toast } = useToast();
-
-  if (!planLoading && !hasFeature("advancedFinance")) {
-    return (
-      <Layout>
-        <FeatureLockedCard featureName="Salaires" featureDescription="Gestion de la paie et des employés" requiredPlan="professionnel" />
-      </Layout>
-    );
-  }
   const { formatAmount: formatCurrency } = useCurrency();
   const { user } = useAuth();
   const { tenantId } = useCurrentTenant();

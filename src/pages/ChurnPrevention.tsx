@@ -1,6 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,7 +91,6 @@ const localTranslations: Record<string, Record<string, string>> = {
 };
 
 export default function ChurnPrevention() {
-  const { hasFeature, loading: planLoading } = usePlanLimits();
   const { language } = useLanguage();
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
 
