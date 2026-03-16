@@ -212,6 +212,38 @@ serve(async (req) => {
       emailsSent++;
     }
 
+    // 3. Find trial subscriptions about to expire
+    const { data: trialSubs } = await supabase
+      .from("tenant_subscriptions")
+      .select("tenant_id, trial_ends_at")
+      .eq("status", "trial")
+      .not("trial_ends_at", "is", null);
+
+    for (const sub of trialSubs || []) {
+      if (!sub.trial_ends_at) continue;
+      const endDate = new Date(sub.trial_ends_at);
+      const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysUntilExpiry !== 7 && daysUntilExpiry !== 3 && daysUntilExpiry !== 1) continue;
+
+      const emails = await getTenantAdminEmails(supabase, sub.tenant_id);
+      if (emails.length === 0) continue;
+
+      const lang = await getTenantLanguage(supabase, sub.tenant_id);
+      const tenantName = await getTenantName(supabase, sub.tenant_id);
+      const t = translations.trial_expiring[lang] || translations.trial_expiring.fr;
+      const colors = colorSchemes.trial_expiring;
+      const dateStr = formatDate(endDate, lang);
+
+      await resend.emails.send({
+        from: `${tenantName} <noreply@churchmanagementpro.com>`,
+        to: emails,
+        subject: `${t.subject} — ${tenantName}`,
+        html: buildEmailHtml(t, colors, dateStr, tenantName),
+      });
+      emailsSent++;
+    }
+
     console.log(`[SUB-ALERTS] Processed. Emails sent: ${emailsSent}`);
 
     return new Response(JSON.stringify({ success: true, emailsSent }), {
