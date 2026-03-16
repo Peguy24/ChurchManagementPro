@@ -156,9 +156,14 @@ export function usePlanLimits() {
     enabled: !!tenantId && !tenantLoading,
   });
 
-  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (free/trialing)
+  // Check if trial has expired
+  const isTrialExpired = dbSubscription?.status === "trial" && dbSubscription?.trial_ends_at
+    ? new Date(dbSubscription.trial_ends_at) < new Date()
+    : false;
+
+  // Determine effective plan: Stripe subscription takes priority, then DB-only plans (active or valid trial)
   const isDbActivePlan = !subscribed && dbSubscription?.plan && 
-    (dbSubscription?.status === "active" || dbSubscription?.status === "trial");
+    (dbSubscription?.status === "active" || (dbSubscription?.status === "trial" && !isTrialExpired));
   const effectiveSubscribed = subscribed || !!isDbActivePlan;
   
   // Map DB plan names to frontend plan names
