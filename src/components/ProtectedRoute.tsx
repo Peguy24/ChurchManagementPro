@@ -4,9 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
+import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
 import { Church } from 'lucide-react';
 import Layout from '@/components/Layout';
 import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
+import MaintenancePage from '@/components/MaintenancePage';
 
 // Paths that are accessible even without an active subscription
 const SUBSCRIPTION_EXEMPT_PATHS = [
