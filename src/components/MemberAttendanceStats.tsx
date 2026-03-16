@@ -292,7 +292,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           <div>
             <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              {t("memberStats.byEventType")}
+              {lt.byEventType}
             </h4>
             <div className="flex flex-wrap gap-2">
               {eventTypeStats.map((stat) => (
