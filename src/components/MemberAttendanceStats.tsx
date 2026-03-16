@@ -212,7 +212,7 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
-            <p className="text-xs text-muted-foreground">{t("memberStats.attendanceRate")}</p>
+            <p className="text-xs text-muted-foreground">{lt.attendanceRate}</p>
           </div>
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold text-primary">
