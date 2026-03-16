@@ -1,32 +1,15 @@
 
 
-## Current Situation
+## Fix: Missing `sub.managedByAdmin` Translation Key
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+The `SubscriptionCard.tsx` component references `t("sub.managedByAdmin")` but this key was never added to the translations in `LanguageContext.tsx`. The `t()` function returns the raw key when it can't find a match, and the `||` fallback doesn't work because the returned string `"sub.managedByAdmin"` is truthy.
 
-## What Needs to Be Done
+### Changes
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+**1. Add `managedByAdmin` key to all 3 language blocks in `src/contexts/LanguageContext.tsx`:**
+- **FR** (after `manageSub` ~line 2890): `managedByAdmin: "Cet abonnement est géré par l'administrateur de la plateforme."`
+- **EN** (after `manageSub` ~line 6137): `managedByAdmin: "This subscription is managed by the platform administrator."`
+- **HT** (after `manageSub` ~line 9383): `managedByAdmin: "Abònman sa a jere pa administratè platfòm nan."`
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
-
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
-
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+No other file changes needed — the `SubscriptionCard.tsx` code already uses this key correctly.
 
