@@ -15,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface PlanLimitDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  limitType: "members" | "branches" | "users";
+  limitType: "members" | "branches" | "users" | "storage";
   currentCount: number;
   maxCount: number;
   planName: string;
