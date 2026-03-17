@@ -25,6 +25,7 @@ export default function MemberRequests() {
   const { toast } = useToast();
   const { tenantId, tenant } = useCurrentTenant();
   const queryClient = useQueryClient();
+  const { canAddMember, limits, usage, plan } = usePlanLimits();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function MemberRequests() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
 
   const tenantSlug = tenant?.slug || tenantId;
   const joinUrl = `${window.location.origin}/join/${tenantSlug}`;
