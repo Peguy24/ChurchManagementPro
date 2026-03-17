@@ -5187,6 +5187,7 @@ const translations = {
       support: "Support",
       systemGuide: "System Guide",
       dataBackup: "Data Backup",
+      dataManagement: "Data Management",
       incomeCategoriesTitle: "Income Categories",
       incomeCategoriesDesc: "Manage categories to classify income",
       newCategory: "New Category",
