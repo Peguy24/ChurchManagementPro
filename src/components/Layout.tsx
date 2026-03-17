@@ -272,7 +272,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     activity: "Jounal Aktivite",
     banners: "Bannyè",
     subscriptions: "Abònman",
-    churn: "Prevansyon Atrisyon",
+    churn: "Prevansyon Dezangajman",
     comparison: "Konparezon",
     branding: "White-Label",
     settings: "Konfigirasyon Platfòm",
