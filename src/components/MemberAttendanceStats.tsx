@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3 } from "lucide-react";
+import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Archive } from "lucide-react";
 import { formatScanTime, getArrivalStatus, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
