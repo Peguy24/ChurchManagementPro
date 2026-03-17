@@ -3823,7 +3823,59 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_tenant_monthly_attendance: {
+        Row: {
+          event_days: number | null
+          month: string | null
+          tenant_id: string | null
+          total_records: number | null
+          unique_members: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_tenant_monthly_donations: {
+        Row: {
+          donation_count: number | null
+          month: string | null
+          tenant_id: string | null
+          total_amount: number | null
+          unique_donors: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_tenant_monthly_expenses: {
+        Row: {
+          expense_count: number | null
+          month: string | null
+          tenant_id: string | null
+          total_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       delete_email: {
@@ -3834,9 +3886,40 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_tenant_monthly_attendance: {
+        Args: { _tenant_id: string }
+        Returns: {
+          event_days: number
+          month: string
+          total_records: number
+          unique_members: number
+        }[]
+      }
+      get_tenant_monthly_donations: {
+        Args: { _tenant_id: string }
+        Returns: {
+          donation_count: number
+          month: string
+          total_amount: number
+          unique_donors: number
+        }[]
+      }
+      get_tenant_monthly_expenses: {
+        Args: { _tenant_id: string }
+        Returns: {
+          expense_count: number
+          month: string
+          total_amount: number
+        }[]
+      }
       get_tenant_onboarding_state: {
         Args: { _tenant_id: string }
         Returns: Json
+      }
+      get_tenant_storage_mb: { Args: { _tenant_id: string }; Returns: number }
+      get_tenant_storage_usage: {
+        Args: { _tenant_id: string }
+        Returns: number
       }
       get_user_branch_id: { Args: { user_uuid: string }; Returns: string }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
@@ -3890,6 +3973,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refresh_tenant_stats: { Args: never; Returns: undefined }
       tenant_has_admin: { Args: { _tenant_id: string }; Returns: boolean }
       validate_admin_invitation: {
         Args: { _token: string }

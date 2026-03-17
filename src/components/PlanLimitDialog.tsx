@@ -15,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface PlanLimitDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  limitType: "members" | "branches" | "users";
+  limitType: "members" | "branches" | "users" | "storage";
   currentCount: number;
   maxCount: number;
   planName: string;
@@ -26,9 +26,11 @@ const translations = {
     membersTitle: "Limite de membres atteinte",
     branchesTitle: "Limite de succursales atteinte",
     usersTitle: "Limite d'utilisateurs atteinte",
+    storageTitle: "Limite de stockage atteinte",
     membersDesc: "Votre plan {plan} est limité à {max} membres. Vous avez actuellement {current} membres actifs.",
     branchesDesc: "Votre plan {plan} est limité à {max} succursale(s). Vous avez actuellement {current} succursale(s) active(s).",
     usersDesc: "Votre plan {plan} est limité à {max} utilisateurs. Vous avez actuellement {current} utilisateur(s) actif(s).",
+    storageDesc: "Votre plan {plan} est limité à {max} MB de stockage. Vous utilisez actuellement {current} MB.",
     upgradeTitle: "Passez à un plan supérieur",
     upgradeDesc: "Débloquez plus de capacité et de fonctionnalités avancées",
     close: "Fermer",
@@ -38,9 +40,11 @@ const translations = {
     membersTitle: "Member limit reached",
     branchesTitle: "Branch limit reached",
     usersTitle: "User limit reached",
+    storageTitle: "Storage limit reached",
     membersDesc: "Your {plan} plan is limited to {max} members. You currently have {current} active members.",
     branchesDesc: "Your {plan} plan is limited to {max} branch(es). You currently have {current} active branch(es).",
     usersDesc: "Your {plan} plan is limited to {max} users. You currently have {current} active user(s).",
+    storageDesc: "Your {plan} plan is limited to {max} MB of storage. You are currently using {current} MB.",
     upgradeTitle: "Upgrade to a higher plan",
     upgradeDesc: "Unlock more capacity and advanced features",
     close: "Close",
@@ -50,9 +54,11 @@ const translations = {
     membersTitle: "Limit manm rive",
     branchesTitle: "Limit branch rive",
     usersTitle: "Limit itilizatè rive",
+    storageTitle: "Limit estokaj rive",
     membersDesc: "Plan {plan} ou a limite a {max} manm. Ou gen aktyèlman {current} manm aktif.",
     branchesDesc: "Plan {plan} ou a limite a {max} branch. Ou gen aktyèlman {current} branch aktif.",
     usersDesc: "Plan {plan} ou a limite a {max} itilizatè. Ou gen aktyèlman {current} itilizatè aktif.",
+    storageDesc: "Plan {plan} ou a limite a {max} MB estokaj. Ou itilize aktyèlman {current} MB.",
     upgradeTitle: "Pase nan yon plan siperyè",
     upgradeDesc: "Deblouke plis kapasite ak fonksyonalite avanse",
     close: "Fèmen",
@@ -77,12 +83,14 @@ export function PlanLimitDialog({
       case "members": return t.membersTitle;
       case "branches": return t.branchesTitle;
       case "users": return t.usersTitle;
+      case "storage": return t.storageTitle;
     }
   };
 
   const getDescription = () => {
     const template = limitType === "members" ? t.membersDesc 
       : limitType === "branches" ? t.branchesDesc 
+      : limitType === "storage" ? t.storageDesc
       : t.usersDesc;
     return template
       .replace("{plan}", planName)

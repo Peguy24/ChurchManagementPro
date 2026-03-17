@@ -15,25 +15,27 @@ export const ALL_FEATURE_KEYS = [
 export type FeatureKey = typeof ALL_FEATURE_KEYS[number];
 
 // Fallback defaults (used if DB fetch fails)
-const FALLBACK_PLAN_LIMITS: Record<string, { maxMembers: number; maxBranches: number; maxUsers: number; features: Record<FeatureKey, boolean> }> = {
-  free: { maxMembers: 100, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  essentiel: { maxMembers: 200, maxBranches: 1, maxUsers: 5, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  trial: { maxMembers: 50, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  none: { maxMembers: 0, maxBranches: 0, maxUsers: 0, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, false])) as Record<FeatureKey, boolean> },
-  professionnel: { maxMembers: 1000, maxBranches: 3, maxUsers: 15, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, !["prioritySupport","whiteLabel","churnPrevention","branding"].includes(k)])) as Record<FeatureKey, boolean> },
-  entreprise: { maxMembers: Infinity, maxBranches: Infinity, maxUsers: Infinity, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean> },
+const FALLBACK_PLAN_LIMITS: Record<string, { maxMembers: number; maxBranches: number; maxUsers: number; maxStorageMB: number; features: Record<FeatureKey, boolean> }> = {
+  free: { maxMembers: 100, maxBranches: 1, maxUsers: 3, maxStorageMB: 500, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  essentiel: { maxMembers: 200, maxBranches: 1, maxUsers: 5, maxStorageMB: 1024, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  trial: { maxMembers: 50, maxBranches: 1, maxUsers: 3, maxStorageMB: 200, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  none: { maxMembers: 0, maxBranches: 0, maxUsers: 0, maxStorageMB: 0, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, false])) as Record<FeatureKey, boolean> },
+  professionnel: { maxMembers: 1000, maxBranches: 3, maxUsers: 15, maxStorageMB: 5120, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, !["prioritySupport","whiteLabel","churnPrevention","branding"].includes(k)])) as Record<FeatureKey, boolean> },
+  entreprise: { maxMembers: Infinity, maxBranches: Infinity, maxUsers: Infinity, maxStorageMB: Infinity, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean> },
 };
 
 export interface UsageStats {
   membersCount: number;
   branchesCount: number;
   usersCount: number;
+  storageMB: number;
 }
 
 export interface PlanLimits {
   maxMembers: number;
   maxBranches: number;
   maxUsers: number;
+  maxStorageMB: number;
   features: Record<FeatureKey, boolean>;
 }
 
@@ -51,6 +53,7 @@ function parsePlanFromSetting(settingValue: any): PlanLimits | null {
   const maxMembers = settingValue.max_members === -1 ? Infinity : (settingValue.max_members ?? 0);
   const maxBranches = settingValue.max_branches === -1 ? Infinity : (settingValue.max_branches ?? 0);
   const maxUsers = settingValue.max_users === -1 ? Infinity : (settingValue.max_users ?? 0);
+  const maxStorageMB = settingValue.max_storage_mb === -1 ? Infinity : (settingValue.max_storage_mb ?? 0);
   
   // Build features from DB, defaulting to false for missing keys
   const dbFeatures = typeof settingValue.features === "object" ? settingValue.features : {};
@@ -58,7 +61,7 @@ function parsePlanFromSetting(settingValue: any): PlanLimits | null {
     ALL_FEATURE_KEYS.map(k => [k, dbFeatures[k] === true])
   ) as Record<FeatureKey, boolean>;
 
-  return { maxMembers, maxBranches, maxUsers, features };
+  return { maxMembers, maxBranches, maxUsers, maxStorageMB, features };
 }
 
 export function usePlanLimits() {
@@ -112,31 +115,33 @@ export function usePlanLimits() {
     queryKey: ["usage-stats", tenantId],
     queryFn: async (): Promise<UsageStats> => {
       if (!tenantId) {
-        return { membersCount: 0, branchesCount: 0, usersCount: 0 };
+        return { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 };
       }
 
-      const { count: membersCount } = await supabase
-        .from("members")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "active");
-
-      const { count: branchesCount } = await supabase
-        .from("branches")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "active");
-
-      const { count: usersCount } = await supabase
-        .from("tenant_user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("is_approved", true);
+      const [membersRes, branchesRes, usersRes, storageRes] = await Promise.all([
+        supabase
+          .from("members")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("status", "active"),
+        supabase
+          .from("branches")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("status", "active"),
+        supabase
+          .from("tenant_user_roles")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("is_approved", true),
+        supabase.rpc("get_tenant_storage_mb", { _tenant_id: tenantId }),
+      ]);
 
       return {
-        membersCount: membersCount || 0,
-        branchesCount: branchesCount || 0,
-        usersCount: usersCount || 0,
+        membersCount: membersRes.count || 0,
+        branchesCount: branchesRes.count || 0,
+        usersCount: usersRes.count || 0,
+        storageMB: Number(storageRes.data) || 0,
       };
     },
     enabled: !!tenantId && !tenantLoading,
@@ -197,6 +202,11 @@ export function usePlanLimits() {
     return limits.features[feature];
   };
 
+  const canUploadFile = (fileSizeMB: number = 0) => {
+    if (!usage || limits.maxStorageMB === Infinity) return true;
+    return (usage.storageMB + fileSizeMB) <= limits.maxStorageMB;
+  };
+
   const getRemainingMembers = () => {
     if (!usage || limits.maxMembers === Infinity) return Infinity;
     return Math.max(0, limits.maxMembers - usage.membersCount);
@@ -212,6 +222,11 @@ export function usePlanLimits() {
     return Math.max(0, limits.maxUsers - usage.usersCount);
   };
 
+  const getRemainingStorageMB = () => {
+    if (!usage || limits.maxStorageMB === Infinity) return Infinity;
+    return Math.max(0, limits.maxStorageMB - usage.storageMB);
+  };
+
   const getMemberUsagePercent = () => {
     if (!usage || limits.maxMembers === Infinity) return 0;
     return Math.round((usage.membersCount / limits.maxMembers) * 100);
@@ -222,17 +237,22 @@ export function usePlanLimits() {
     return Math.round((usage.branchesCount / limits.maxBranches) * 100);
   };
 
+  const getStorageUsagePercent = () => {
+    if (!usage || limits.maxStorageMB === Infinity) return 0;
+    return Math.round((usage.storageMB / limits.maxStorageMB) * 100);
+  };
+
   return {
     loading,
     subscribed,
     plan: effectivePlan,
     subscriptionStatus: dbSubscription?.status || null,
     limits,
-    usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0 },
-    canAddMember, canAddBranch, canAddUser,
+    usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 },
+    canAddMember, canAddBranch, canAddUser, canUploadFile,
     hasFeature,
-    getRemainingMembers, getRemainingBranches, getRemainingUsers,
-    getMemberUsagePercent, getBranchUsagePercent,
+    getRemainingMembers, getRemainingBranches, getRemainingUsers, getRemainingStorageMB,
+    getMemberUsagePercent, getBranchUsagePercent, getStorageUsagePercent,
   };
 }
 
