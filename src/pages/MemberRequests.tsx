@@ -476,6 +476,14 @@ export default function MemberRequests() {
         </DialogContent>
       </Dialog>
 
+      <PlanLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        limitType="members"
+        currentCount={usage.membersCount}
+        maxCount={limits.maxMembers}
+        planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : ""}
+      />
     </Layout>
   );
 }
