@@ -349,7 +349,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "tenant_deleted",
         eventCategory: "tenant",
-        description: `Église supprimée (ID: ${id})`,
+        description: `Church deleted (ID: ${id})`,
         metadata: { tenant_id: id },
       });
     },
