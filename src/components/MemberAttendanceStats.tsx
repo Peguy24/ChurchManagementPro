@@ -322,8 +322,19 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           </div>
         )}
 
+        {/* Archived data banner */}
+        {archivedStats && archivedStats.attendance_count > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 + {archivedStats.attendance_count} {lt.archivedRecords}
+            {archivedStats.attendance_min_date && archivedStats.attendance_max_date && (
+              <span className="text-xs">({archivedStats.attendance_min_date} – {archivedStats.attendance_max_date})</span>
+            )}
+          </div>
+        )}
+
         {/* No data message */}
-        {totalAttendance === 0 && (
+        {totalAttendance === 0 && !archivedStats?.attendance_count && (
           <div className="text-center py-6 text-muted-foreground">
             <CalendarCheck className="h-12 w-12 mx-auto mb-2 opacity-20" />
             <p>{lt.noAttendanceRecords}</p>
