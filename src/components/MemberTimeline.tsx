@@ -516,6 +516,16 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
             </div>
           </ScrollArea>
         )}
+
+        {/* Archived data banner */}
+        {archivedStats && (archivedStats.attendance_count > 0 || archivedStats.donations_count > 0) && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg mt-4">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 {archivedStats.attendance_count > 0 && `${archivedStats.attendance_count} ${tl.archivedSummary}`}
+            {archivedStats.attendance_count > 0 && archivedStats.donations_count > 0 && ", "}
+            {archivedStats.donations_count > 0 && `${archivedStats.donations_count} ${tl.archivedDonations}`}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
