@@ -42,47 +42,23 @@ export function OnboardingProgressCard() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const [members, events, donations, branches, adminInvites, settings] = await Promise.all([
-        supabase.from("members").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.from("events").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.from("donations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.from("branches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        (supabase as any).from("admin_invitations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        (supabase as any).from("church_settings").select("setting_key, setting_value").eq("tenant_id", tenantId),
-      ]);
+      const { data, error } = await supabase.rpc("get_tenant_onboarding_state", {
+        _tenant_id: tenantId,
+      });
 
-      // Check profile: church_name setting exists and is non-empty
-      const settingsData = settings.data || [];
-      const churchName = settingsData.find((s: any) => s.setting_key === "church_name");
-      const profileCompleted = !!(churchName && churchName.setting_value && churchName.setting_value.trim() !== "");
-
-      // Check logo: church_logo_url in settings OR logo_url on tenants table
-      const logoSetting = settingsData.find((s: any) => s.setting_key === "church_logo_url") 
-        || settingsData.find((s: any) => s.setting_key === "church_logo");
-      let logoUploaded = !!(logoSetting && logoSetting.setting_value && logoSetting.setting_value.trim() !== "");
-      
-      // Also check tenants.logo_url as fallback (TenantBranding saves there)
-      if (!logoUploaded) {
-        const { data: tenantData } = await supabase
-          .from("tenants")
-          .select("logo_url")
-          .eq("id", tenantId)
-          .maybeSingle();
-        logoUploaded = !!(tenantData?.logo_url && tenantData.logo_url.trim() !== "");
-      }
-
-      return {
-        step_profile_completed: profileCompleted,
-        step_logo_uploaded: logoUploaded,
-        step_first_member_added: (members.count || 0) > 0,
-        step_first_event_created: (events.count || 0) > 0,
-        step_first_donation_recorded: (donations.count || 0) > 0,
-        step_first_branch_created: (branches.count || 0) > 0,
-        step_admin_invited: (adminInvites.count || 0) > 0,
+      if (error) throw error;
+      return data as {
+        step_profile_completed: boolean;
+        step_logo_uploaded: boolean;
+        step_first_member_added: boolean;
+        step_first_event_created: boolean;
+        step_first_donation_recorded: boolean;
+        step_first_branch_created: boolean;
+        step_admin_invited: boolean;
       };
     },
     enabled: !!tenantId,
-    refetchInterval: 30000, // re-check every 30 seconds
+    refetchInterval: 30000,
   });
 
   // Sync live state to the database
