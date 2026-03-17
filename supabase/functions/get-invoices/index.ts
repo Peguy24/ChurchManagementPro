@@ -58,13 +58,31 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Real price IDs (monthly + yearly)
+    const realPriceIds = new Set([
+      "price_1SsxZvF3VvKmdn5Gokml3EOt", // Essentiel monthly
+      "price_1Ssxa9F3VvKmdn5GGE0wSfBk", // Professionnel monthly
+      "price_1SsxaeF3VvKmdn5G8aP7l7GE", // Entreprise monthly
+      "price_1TBi3DF3VvKmdn5GxgjBbhoe", // Essentiel yearly
+      "price_1TBi3bF3VvKmdn5G51dRztux", // Professionnel yearly
+      "price_1TBi4AF3VvKmdn5G1d7gKP8O", // Entreprise yearly
+    ]);
+
     // Get invoices for this customer
     const invoices = await stripe.invoices.list({
       customer: customerId,
       limit: 20,
     });
 
-    const formattedInvoices = invoices.data.map((invoice: Stripe.Invoice) => ({
+    // Filter out test invoices (only keep invoices with real price IDs)
+    const realInvoices = invoices.data.filter((invoice: Stripe.Invoice) => {
+      if (!invoice.lines?.data?.length) return false;
+      return invoice.lines.data.some((line: any) => 
+        line.price?.id && realPriceIds.has(line.price.id)
+      );
+    });
+
+    const formattedInvoices = realInvoices.map((invoice: Stripe.Invoice) => ({
       id: invoice.id,
       number: invoice.number,
       amount: invoice.amount_paid / 100,
