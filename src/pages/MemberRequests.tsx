@@ -19,15 +19,6 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 import QRCodeLib from "qrcode";
 
-
-  const handleApprove = (request: any) => {
-    if (!canAddMember()) {
-      setLimitDialogOpen(true);
-      return;
-    }
-    approveMutation.mutate(request);
-  };
-
 export default function MemberRequests() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
