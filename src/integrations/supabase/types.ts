@@ -3886,6 +3886,32 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_tenant_monthly_attendance: {
+        Args: { _tenant_id: string }
+        Returns: {
+          event_days: number
+          month: string
+          total_records: number
+          unique_members: number
+        }[]
+      }
+      get_tenant_monthly_donations: {
+        Args: { _tenant_id: string }
+        Returns: {
+          donation_count: number
+          month: string
+          total_amount: number
+          unique_donors: number
+        }[]
+      }
+      get_tenant_monthly_expenses: {
+        Args: { _tenant_id: string }
+        Returns: {
+          expense_count: number
+          month: string
+          total_amount: number
+        }[]
+      }
       get_tenant_onboarding_state: {
         Args: { _tenant_id: string }
         Returns: Json
