@@ -52,6 +52,7 @@ const attendanceTranslations = {
     byEventType: "By event type",
     noAttendanceRecords: "No attendance records",
     loading: "Loading...",
+    archivedRecords: "archived records",
   },
   ht: {
     statistics: "Estatistik Prezans",
@@ -65,6 +66,7 @@ const attendanceTranslations = {
     byEventType: "Pa tip evènman",
     noAttendanceRecords: "Pa gen anrejistreman prezans",
     loading: "Ap chaje...",
+    archivedRecords: "anrejistreman achive",
   },
 };
 
