@@ -272,7 +272,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "tenant_created",
         eventCategory: "tenant",
-        description: `Église créée: ${tenant.name}`,
+        description: `Church created: ${tenant.name}`,
         tenantId: tenant.id,
         metadata: { name: tenant.name, slug: tenant.slug },
       });
@@ -349,7 +349,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "tenant_deleted",
         eventCategory: "tenant",
-        description: `Église supprimée (ID: ${id})`,
+        description: `Church deleted (ID: ${id})`,
         metadata: { tenant_id: id },
       });
     },
@@ -407,7 +407,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "trial_extended",
         eventCategory: "subscription",
-        description: `Essai prolongé pour ${variables.tenantName}`,
+        description: `Trial extended for ${variables.tenantName}`,
         tenantId: variables.tenantId,
         metadata: { new_trial_end: newTrialEnd.toISOString(), duration: variables.duration },
       });
@@ -497,8 +497,8 @@ export default function TenantManagement() {
         eventType: activate ? "plan_activated" : "plan_deactivated",
         eventCategory: "subscription",
         description: activate 
-          ? `Plan ${PLAN_CONFIG[plan].label} activé pour ${variables.tenantName}`
-          : `Plan désactivé pour ${variables.tenantName}`,
+          ? `Plan ${PLAN_CONFIG[plan].label} activated for ${variables.tenantName}`
+          : `Plan deactivated for ${variables.tenantName}`,
         tenantId: variables.tenantId,
         metadata: { plan, activate, old_plan: variables.oldPlan, old_status: variables.oldStatus },
       });

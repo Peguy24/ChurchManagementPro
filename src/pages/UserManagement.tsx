@@ -134,7 +134,7 @@ export default function UserManagement() {
       logPlatformActivity({
         eventType: "role_changed",
         eventCategory: "user",
-        description: `Rôle ${variables.role} attribué à l'utilisateur ${variables.userId.slice(0, 8)}`,
+        description: `Role ${variables.role} assigned to user ${variables.userId.slice(0, 8)}`,
         metadata: { userId: variables.userId, role: variables.role },
       });
       toast({
