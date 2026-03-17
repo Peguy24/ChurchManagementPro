@@ -38,6 +38,7 @@ const attendanceTranslations = {
     byEventType: "Par type d'événement",
     noAttendanceRecords: "Aucun enregistrement de présence",
     loading: "Chargement...",
+    archivedRecords: "enregistrements archivés",
   },
   en: {
     statistics: "Attendance Statistics",
