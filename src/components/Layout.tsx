@@ -258,6 +258,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     subscriptions: "Abonnements",
     churn: "Prévention Désengagement",
     comparison: "Comparaison",
+    legal: "Documents Juridiques",
     branding: "White-Label",
     settings: "Configuration Plateforme",
   },
