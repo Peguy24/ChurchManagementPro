@@ -3834,6 +3834,10 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_tenant_onboarding_state: {
+        Args: { _tenant_id: string }
+        Returns: Json
+      }
       get_user_branch_id: { Args: { user_uuid: string }; Returns: string }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_any_platform_role: { Args: { _user_id: string }; Returns: boolean }
