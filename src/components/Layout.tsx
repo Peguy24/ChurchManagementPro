@@ -238,6 +238,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     subscriptions: "Subscription Overrides",
     churn: "Churn Prevention",
     comparison: "Comparison",
+    legal: "Legal Documents",
     branding: "White-Label",
     settings: "Platform Settings",
   },
