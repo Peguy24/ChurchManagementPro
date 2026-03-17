@@ -108,6 +108,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
+              <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
