@@ -106,7 +106,7 @@ function calculateChurnRisk(
   // Attendance trend
   z += attendanceTrendSlope * weights.attendanceTrend;
   if (attendanceTrendSlope < -0.1) {
-    factors.push("Tendance de présence en baisse");
+    factors.push("declining_attendance");
   }
   
   // Giving trend
