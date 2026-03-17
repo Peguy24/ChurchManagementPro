@@ -81,6 +81,7 @@ const donationTranslations = {
     contributions: "kontribisyon",
     total: "Total",
     tithes: "Dim",
+    archivedDonations: "kotizasyon achive, total :",
   },
 };
 
