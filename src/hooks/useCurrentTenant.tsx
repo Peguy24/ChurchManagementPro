@@ -33,6 +33,17 @@ function loadCachedTenant(): { userId: string; tenantId: string; tenant: TenantI
   }
 }
 
+// Load partial tenant_id cache set by useUserRole to skip duplicate profiles query
+function loadCachedTenantId(): { userId: string; tenantId: string } | null {
+  try {
+    const raw = sessionStorage.getItem('tenant_cache_tenant_id');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) {
   try {
     sessionStorage.setItem(TENANT_CACHE_KEY, JSON.stringify({ userId, tenantId, tenant }));
