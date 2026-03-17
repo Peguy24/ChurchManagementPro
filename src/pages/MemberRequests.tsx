@@ -15,6 +15,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 import QRCodeLib from "qrcode";
 
 
