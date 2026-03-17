@@ -112,7 +112,7 @@ function calculateChurnRisk(
   // Giving trend
   z += givingTrendSlope * weights.givingTrend;
   if (givingTrendSlope < -50) {
-    factors.push("Tendance de dons en baisse");
+    factors.push("declining_giving");
   }
   
   // Engagement score
