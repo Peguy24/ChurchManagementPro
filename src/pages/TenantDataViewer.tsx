@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert, Download } from "lucide-react";
+import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert, Download, Archive } from "lucide-react";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useUserRole } from "@/hooks/useUserRole";
