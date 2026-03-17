@@ -1,32 +1,32 @@
 
 
-## Current Situation
+## Clean Up Old Test Stripe Subscriptions
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### Summary of Findings
 
-## What Needs to Be Done
+After analyzing all 13 Stripe subscriptions, here's the breakdown:
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+**Legitimate (keep):**
+- `sub_1T8mWk...` — Enterprise plan, customer `cus_U70X...` — active, real price
+- `sub_1T4m8Z...` — Professional plan, customer `cus_U2rq...` — active, real price
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+**Test/duplicate subscriptions to cancel (6 active):**
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+1. `sub_1T4m7B...` — Duplicate Professional sub for same customer `cus_U2rq...` (has 2 active Pro subs)
+2. `sub_1Sj4Rp...` — Test price `price_1Sj4Rc...`, customer `cus_TYee...`
+3. `sub_1Sh46K...` — Test price `price_1Sh466...`, customer `cus_TeMe...` (Family Church of God — $20)
+4. `sub_1Sh3vR...` — Test price `price_1Sh3v6...`, customer `cus_TeMe...` (Family Church of God — $1)
+5. `sub_1Sh3L9...` — Test price `price_1Sh3Ky...`, customer `cus_TYee...`
+6. `sub_1Sg9Bf...` — Test price `price_1Sg9BJ...`, customer `cus_TYee...`
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+The remaining 5 subscriptions are already canceled — no action needed.
+
+### Plan
+
+1. **Cancel the 6 active test/duplicate subscriptions** listed above using the Stripe cancel subscription tool
+2. **Verify** only the 2 legitimate subscriptions remain active afterward
+
+### Important Notes
+- Canceling stops future billing but preserves invoice history (the $1 and $20 charges will still show in Stripe records as historical data)
+- The payment history UI will continue to display past invoices — if you want to hide old test invoices from the tenant's view, that would be a separate code change to filter by date or price ID
 
