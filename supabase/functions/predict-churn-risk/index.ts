@@ -100,7 +100,7 @@ function calculateChurnRisk(
   const cappedDays = Math.min(daysSinceLastAttendance, 90);
   z += cappedDays * weights.daysSinceAttendance;
   if (daysSinceLastAttendance > 30) {
-    factors.push(`Absent depuis ${daysSinceLastAttendance} jours`);
+    factors.push(`absent_days:${daysSinceLastAttendance}`);
   }
   
   // Attendance trend
