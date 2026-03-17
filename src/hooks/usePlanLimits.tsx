@@ -15,13 +15,13 @@ export const ALL_FEATURE_KEYS = [
 export type FeatureKey = typeof ALL_FEATURE_KEYS[number];
 
 // Fallback defaults (used if DB fetch fails)
-const FALLBACK_PLAN_LIMITS: Record<string, { maxMembers: number; maxBranches: number; maxUsers: number; features: Record<FeatureKey, boolean> }> = {
-  free: { maxMembers: 100, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  essentiel: { maxMembers: 200, maxBranches: 1, maxUsers: 5, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  trial: { maxMembers: 50, maxBranches: 1, maxUsers: 3, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
-  none: { maxMembers: 0, maxBranches: 0, maxUsers: 0, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, false])) as Record<FeatureKey, boolean> },
-  professionnel: { maxMembers: 1000, maxBranches: 3, maxUsers: 15, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, !["prioritySupport","whiteLabel","churnPrevention","branding"].includes(k)])) as Record<FeatureKey, boolean> },
-  entreprise: { maxMembers: Infinity, maxBranches: Infinity, maxUsers: Infinity, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean> },
+const FALLBACK_PLAN_LIMITS: Record<string, { maxMembers: number; maxBranches: number; maxUsers: number; maxStorageMB: number; features: Record<FeatureKey, boolean> }> = {
+  free: { maxMembers: 100, maxBranches: 1, maxUsers: 3, maxStorageMB: 500, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  essentiel: { maxMembers: 200, maxBranches: 1, maxUsers: 5, maxStorageMB: 1024, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  trial: { maxMembers: 50, maxBranches: 1, maxUsers: 3, maxStorageMB: 200, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, ["attendance","donations","bankReconciliation","cashRegister"].includes(k)])) as Record<FeatureKey, boolean> },
+  none: { maxMembers: 0, maxBranches: 0, maxUsers: 0, maxStorageMB: 0, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, false])) as Record<FeatureKey, boolean> },
+  professionnel: { maxMembers: 1000, maxBranches: 3, maxUsers: 15, maxStorageMB: 5120, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, !["prioritySupport","whiteLabel","churnPrevention","branding"].includes(k)])) as Record<FeatureKey, boolean> },
+  entreprise: { maxMembers: Infinity, maxBranches: Infinity, maxUsers: Infinity, maxStorageMB: Infinity, features: Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean> },
 };
 
 export interface UsageStats {
