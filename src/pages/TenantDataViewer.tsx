@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert, Download } from "lucide-react";
+import { Users, DollarSign, Calendar, Building2, Eye, ShieldAlert, Download, Archive } from "lucide-react";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -129,6 +129,57 @@ export default function TenantDataViewer() {
         .select("id, name, event_date, event_time, location, status")
         .eq("tenant_id", selectedTenantId)
         .order("event_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
+  // Fetch archived attendance for selected tenant
+  const { data: archivedAttendance, isLoading: archivedAttendanceLoading } = useQuery({
+    queryKey: ["tenant-archived-attendance", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("attendance_records_archive")
+        .select("id, member_id, event_type, event_date, scan_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("event_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
+  // Fetch archived donations for selected tenant
+  const { data: archivedDonations, isLoading: archivedDonationsLoading } = useQuery({
+    queryKey: ["tenant-archived-donations", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("donations_archive")
+        .select("id, amount, donation_type, donation_date, payment_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("donation_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
+  // Fetch archived expenses for selected tenant
+  const { data: archivedExpenses, isLoading: archivedExpensesLoading } = useQuery({
+    queryKey: ["tenant-archived-expenses", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("expenses_archive")
+        .select("id, description, amount, expense_date, vendor, payment_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("expense_date", { ascending: false })
         .limit(50);
       if (error) throw error;
       return data;
@@ -318,10 +369,15 @@ export default function TenantDataViewer() {
             </CardHeader>
             <CardContent className="p-3 md:p-6 pt-0 md:pt-0">
               <Tabs defaultValue="members">
-                <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
+                <TabsList className="grid w-full grid-cols-4 mb-4 h-auto">
                   <TabsTrigger value="members" className="text-xs md:text-sm py-2">{t("superAdmin.membersTab")}</TabsTrigger>
                   <TabsTrigger value="donations" className="text-xs md:text-sm py-2">{t("superAdmin.donationsTab")}</TabsTrigger>
                   <TabsTrigger value="events" className="text-xs md:text-sm py-2">{t("superAdmin.eventsTab")}</TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm py-2 flex items-center gap-1">
+                    <Archive className="h-3 w-3" />
+                    <span className="hidden sm:inline">{language === "en" ? "Archived" : language === "ht" ? "Achive" : "Archivées"}</span>
+                    <span className="sm:hidden">📦</span>
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Members Tab */}
@@ -486,6 +542,148 @@ export default function TenantDataViewer() {
                   ) : (
                     <p className="text-center text-muted-foreground py-8 text-sm">{t("superAdmin.noEventsFound")}</p>
                   )}
+                </TabsContent>
+
+                {/* Archived Data Tab */}
+                <TabsContent value="archived">
+                  <div className="space-y-6">
+                    {/* Archived Attendance */}
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <Archive className="h-4 w-4" />
+                        {language === "en" ? "Archived Attendance" : language === "ht" ? "Prezans Achive" : "Présences Archivées"}
+                        <Badge variant="secondary" className="text-xs">{archivedAttendance?.length || 0}</Badge>
+                      </h3>
+                      {archivedAttendanceLoading ? (
+                        <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+                      ) : archivedAttendance && archivedAttendance.length > 0 ? (
+                        <div className="rounded-md border overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.date")}</TableHead>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.type")}</TableHead>
+                                <TableHead className="hidden sm:table-cell">{language === "en" ? "Method" : "Méthode"}</TableHead>
+                                <TableHead className="whitespace-nowrap">{language === "en" ? "Archived" : "Archivé"}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {archivedAttendance.map((record: any) => (
+                                <TableRow key={record.id}>
+                                  <TableCell className="whitespace-nowrap">
+                                    {record.event_date ? format(new Date(record.event_date), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                  <TableCell><Badge variant="outline" className="text-xs">{record.event_type}</Badge></TableCell>
+                                  <TableCell className="hidden sm:table-cell">{record.scan_method || "-"}</TableCell>
+                                  <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                                    {record.archived_at ? format(new Date(record.archived_at), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4 text-sm">
+                          {language === "en" ? "No archived attendance records" : language === "ht" ? "Pa gen anrejistreman prezans achive" : "Aucune présence archivée"}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Archived Donations */}
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        {language === "en" ? "Archived Donations" : language === "ht" ? "Kotizasyon Achive" : "Cotisations Archivées"}
+                        <Badge variant="secondary" className="text-xs">{archivedDonations?.length || 0}</Badge>
+                      </h3>
+                      {archivedDonationsLoading ? (
+                        <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+                      ) : archivedDonations && archivedDonations.length > 0 ? (
+                        <div className="rounded-md border overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.date")}</TableHead>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.type")}</TableHead>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.amount")}</TableHead>
+                                <TableHead className="hidden sm:table-cell">{t("superAdmin.payment")}</TableHead>
+                                <TableHead className="whitespace-nowrap">{language === "en" ? "Archived" : "Archivé"}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {archivedDonations.map((donation: any) => (
+                                <TableRow key={donation.id}>
+                                  <TableCell className="whitespace-nowrap">
+                                    {donation.donation_date ? format(new Date(donation.donation_date), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                  <TableCell><Badge variant="outline" className="text-xs">{donation.donation_type}</Badge></TableCell>
+                                  <TableCell className="font-medium whitespace-nowrap">
+                                    {new Intl.NumberFormat(language === "en" ? "en-US" : "fr-FR", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(donation.amount))}
+                                  </TableCell>
+                                  <TableCell className="hidden sm:table-cell">{donation.payment_method}</TableCell>
+                                  <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                                    {donation.archived_at ? format(new Date(donation.archived_at), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4 text-sm">
+                          {language === "en" ? "No archived donations" : language === "ht" ? "Pa gen kotizasyon achive" : "Aucune cotisation archivée"}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Archived Expenses */}
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        {language === "en" ? "Archived Expenses" : language === "ht" ? "Depans Achive" : "Dépenses Archivées"}
+                        <Badge variant="secondary" className="text-xs">{archivedExpenses?.length || 0}</Badge>
+                      </h3>
+                      {archivedExpensesLoading ? (
+                        <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+                      ) : archivedExpenses && archivedExpenses.length > 0 ? (
+                        <div className="rounded-md border overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.date")}</TableHead>
+                                <TableHead className="whitespace-nowrap">Description</TableHead>
+                                <TableHead className="whitespace-nowrap">{t("superAdmin.amount")}</TableHead>
+                                <TableHead className="hidden sm:table-cell">{language === "en" ? "Vendor" : "Fournisseur"}</TableHead>
+                                <TableHead className="whitespace-nowrap">{language === "en" ? "Archived" : "Archivé"}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {archivedExpenses.map((expense: any) => (
+                                <TableRow key={expense.id}>
+                                  <TableCell className="whitespace-nowrap">
+                                    {expense.expense_date ? format(new Date(expense.expense_date), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                  <TableCell className="max-w-[150px] truncate">{expense.description}</TableCell>
+                                  <TableCell className="font-medium whitespace-nowrap">
+                                    {new Intl.NumberFormat(language === "en" ? "en-US" : "fr-FR", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(expense.amount))}
+                                  </TableCell>
+                                  <TableCell className="hidden sm:table-cell">{expense.vendor || "-"}</TableCell>
+                                  <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                                    {expense.archived_at ? format(new Date(expense.archived_at), "dd MMM yyyy", { locale: dateLocale }) : "-"}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4 text-sm">
+                          {language === "en" ? "No archived expenses" : language === "ht" ? "Pa gen depans achive" : "Aucune dépense archivée"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
             </CardContent>
