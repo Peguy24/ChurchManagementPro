@@ -77,6 +77,8 @@ const timelineTranslations = {
     dataNotAvailable: "Member data not available",
     pdfSuccess: "PDF generated successfully",
     pdfError: "Error generating PDF",
+    archivedSummary: "archived records",
+    archivedDonations: "archived donations",
   },
   ht: {
     completeHistory: "Istwa Konplè",
