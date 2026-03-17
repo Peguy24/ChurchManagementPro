@@ -307,7 +307,7 @@ export default function MemberRequests() {
                               </Button>
                               {req.status === "pending" && (
                                 <>
-                                  <Button variant="ghost" size="sm" className="text-green-600" onClick={() => approveMutation.mutate(req)}>
+                                  <Button variant="ghost" size="sm" className="text-green-600" onClick={() => handleApprove(req)}>
                                     <CheckCircle className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="sm" className="text-red-600" onClick={() => { setSelectedRequest(req); setRejectOpen(true); }}>
