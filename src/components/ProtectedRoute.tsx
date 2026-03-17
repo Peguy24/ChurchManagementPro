@@ -51,7 +51,7 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
         if (!userRef.current) {
           navigate('/commercial');
         }
-      }, 5000);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
   }, [user, loading, navigate]);

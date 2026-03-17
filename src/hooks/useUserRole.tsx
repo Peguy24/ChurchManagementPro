@@ -83,6 +83,18 @@ export function useUserRole() {
         }
 
         const globalRoles = rolesResult.data?.map((r) => r.role) || [];
+        const tenantId = profileResult.data?.tenant_id;
+
+        // Pre-populate tenant cache so useCurrentTenant doesn't re-fetch profiles
+        if (tenantId) {
+          try {
+            const existingCache = sessionStorage.getItem('tenant_cache');
+            if (!existingCache || !JSON.parse(existingCache)?.tenantId || JSON.parse(existingCache)?.userId !== user.id) {
+              // Store partial cache with tenantId so useCurrentTenant can skip profiles query
+              sessionStorage.setItem('tenant_cache_tenant_id', JSON.stringify({ userId: user.id, tenantId }));
+            }
+          } catch {}
+        }
         
         const isSuperAdminResult = globalRoles.includes("admin");
         
@@ -101,7 +113,7 @@ export function useUserRole() {
           return;
         }
 
-        const tenantId = profileResult.data?.tenant_id;
+        // tenantId already fetched above
 
         if (tenantId) {
           const [tenantRoleResult, permResult] = await Promise.all([

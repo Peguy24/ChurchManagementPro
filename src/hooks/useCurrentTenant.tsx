@@ -33,6 +33,17 @@ function loadCachedTenant(): { userId: string; tenantId: string; tenant: TenantI
   }
 }
 
+// Load partial tenant_id cache set by useUserRole to skip duplicate profiles query
+function loadCachedTenantId(): { userId: string; tenantId: string } | null {
+  try {
+    const raw = sessionStorage.getItem('tenant_cache_tenant_id');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) {
   try {
     sessionStorage.setItem(TENANT_CACHE_KEY, JSON.stringify({ userId, tenantId, tenant }));
@@ -79,17 +90,26 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     setError(null);
 
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
+      // First check if useUserRole already resolved tenant_id (avoids duplicate profiles query)
+      const cachedTenantId = loadCachedTenantId();
+      let resolvedTenantId: string | null = null;
 
-      if (profileError) {
-        throw new Error('Impossible de récupérer le profil utilisateur');
+      if (cachedTenantId && cachedTenantId.userId === user.id) {
+        resolvedTenantId = cachedTenantId.tenantId;
+      } else {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('tenant_id')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          throw new Error('Impossible de récupérer le profil utilisateur');
+        }
+        resolvedTenantId = profile?.tenant_id || null;
       }
 
-      if (!profile?.tenant_id) {
+      if (!resolvedTenantId) {
         setTenantId(null);
         setTenant(null);
         lastUserIdRef.current = user.id;
@@ -97,12 +117,12 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
         return;
       }
 
-      setTenantId(profile.tenant_id);
+      setTenantId(resolvedTenantId);
 
       const { data: tenantData, error: tenantError } = await supabase
         .from('tenants')
         .select('id, name, slug, logo_url, primary_color')
-        .eq('id', profile.tenant_id)
+        .eq('id', resolvedTenantId)
         .single();
 
       if (tenantError) {
@@ -111,7 +131,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
 
       setTenant(tenantData);
       lastUserIdRef.current = user.id;
-      saveCachedTenant(user.id, profile.tenant_id, tenantData);
+      saveCachedTenant(user.id, resolvedTenantId, tenantData);
     } catch (err) {
       console.error('Error fetching tenant info:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
