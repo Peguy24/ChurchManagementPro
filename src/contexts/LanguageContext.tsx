@@ -1920,6 +1920,7 @@ const translations = {
       support: "Support",
       systemGuide: "Guide du Système",
       dataBackup: "Sauvegarde des Données",
+      dataManagement: "Gestion des Données",
       incomeCategoriesTitle: "Catégories de Recettes",
       incomeCategoriesDesc: "Gérez les catégories pour classifier les revenus",
       newCategory: "Nouvelle Catégorie",
