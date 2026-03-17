@@ -202,6 +202,11 @@ export function usePlanLimits() {
     return limits.features[feature];
   };
 
+  const canUploadFile = (fileSizeMB: number = 0) => {
+    if (!usage || limits.maxStorageMB === Infinity) return true;
+    return (usage.storageMB + fileSizeMB) <= limits.maxStorageMB;
+  };
+
   const getRemainingMembers = () => {
     if (!usage || limits.maxMembers === Infinity) return Infinity;
     return Math.max(0, limits.maxMembers - usage.membersCount);
@@ -217,6 +222,11 @@ export function usePlanLimits() {
     return Math.max(0, limits.maxUsers - usage.usersCount);
   };
 
+  const getRemainingStorageMB = () => {
+    if (!usage || limits.maxStorageMB === Infinity) return Infinity;
+    return Math.max(0, limits.maxStorageMB - usage.storageMB);
+  };
+
   const getMemberUsagePercent = () => {
     if (!usage || limits.maxMembers === Infinity) return 0;
     return Math.round((usage.membersCount / limits.maxMembers) * 100);
@@ -227,17 +237,22 @@ export function usePlanLimits() {
     return Math.round((usage.branchesCount / limits.maxBranches) * 100);
   };
 
+  const getStorageUsagePercent = () => {
+    if (!usage || limits.maxStorageMB === Infinity) return 0;
+    return Math.round((usage.storageMB / limits.maxStorageMB) * 100);
+  };
+
   return {
     loading,
     subscribed,
     plan: effectivePlan,
     subscriptionStatus: dbSubscription?.status || null,
     limits,
-    usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0 },
-    canAddMember, canAddBranch, canAddUser,
+    usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 },
+    canAddMember, canAddBranch, canAddUser, canUploadFile,
     hasFeature,
-    getRemainingMembers, getRemainingBranches, getRemainingUsers,
-    getMemberUsagePercent, getBranchUsagePercent,
+    getRemainingMembers, getRemainingBranches, getRemainingUsers, getRemainingStorageMB,
+    getMemberUsagePercent, getBranchUsagePercent, getStorageUsagePercent,
   };
 }
 
