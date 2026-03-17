@@ -98,6 +98,17 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
     enabled: !!memberId,
   });
 
+  // Fetch archived stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-attendance", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!memberId,
+  });
+
   // Fetch total events in the same period to calculate attendance rate
   const { data: totalEventsData } = useQuery({
     queryKey: ["total-events-stats", memberId],
