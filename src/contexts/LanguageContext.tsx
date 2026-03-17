@@ -8450,6 +8450,7 @@ const translations = {
       support: "Sipò",
       systemGuide: "Gid Sistèm",
       dataBackup: "Sovgad Done",
+      dataManagement: "Jesyon Done",
       incomeCategoriesTitle: "Kategori Resèt",
       incomeCategoriesDesc: "Jere kategori pou klase revni yo",
       newCategory: "Nouvo Kategori",
