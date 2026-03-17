@@ -3823,7 +3823,59 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_tenant_monthly_attendance: {
+        Row: {
+          event_days: number | null
+          month: string | null
+          tenant_id: string | null
+          total_records: number | null
+          unique_members: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_tenant_monthly_donations: {
+        Row: {
+          donation_count: number | null
+          month: string | null
+          tenant_id: string | null
+          total_amount: number | null
+          unique_donors: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_tenant_monthly_expenses: {
+        Row: {
+          expense_count: number | null
+          month: string | null
+          tenant_id: string | null
+          total_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       delete_email: {
@@ -3895,6 +3947,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refresh_tenant_stats: { Args: never; Returns: undefined }
       tenant_has_admin: { Args: { _tenant_id: string }; Returns: boolean }
       validate_admin_invitation: {
         Args: { _token: string }
