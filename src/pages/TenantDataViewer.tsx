@@ -369,10 +369,15 @@ export default function TenantDataViewer() {
             </CardHeader>
             <CardContent className="p-3 md:p-6 pt-0 md:pt-0">
               <Tabs defaultValue="members">
-                <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
+                <TabsList className="grid w-full grid-cols-4 mb-4 h-auto">
                   <TabsTrigger value="members" className="text-xs md:text-sm py-2">{t("superAdmin.membersTab")}</TabsTrigger>
                   <TabsTrigger value="donations" className="text-xs md:text-sm py-2">{t("superAdmin.donationsTab")}</TabsTrigger>
                   <TabsTrigger value="events" className="text-xs md:text-sm py-2">{t("superAdmin.eventsTab")}</TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm py-2 flex items-center gap-1">
+                    <Archive className="h-3 w-3" />
+                    <span className="hidden sm:inline">{language === "en" ? "Archived" : language === "ht" ? "Achive" : "Archivées"}</span>
+                    <span className="sm:hidden">📦</span>
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Members Tab */}
