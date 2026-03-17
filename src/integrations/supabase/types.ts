@@ -3838,6 +3838,11 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: Json
       }
+      get_tenant_storage_mb: { Args: { _tenant_id: string }; Returns: number }
+      get_tenant_storage_usage: {
+        Args: { _tenant_id: string }
+        Returns: number
+      }
       get_user_branch_id: { Args: { user_uuid: string }; Returns: string }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_any_platform_role: { Args: { _user_id: string }; Returns: boolean }
