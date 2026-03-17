@@ -90,17 +90,26 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     setError(null);
 
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
+      // First check if useUserRole already resolved tenant_id (avoids duplicate profiles query)
+      const cachedTenantId = loadCachedTenantId();
+      let resolvedTenantId: string | null = null;
 
-      if (profileError) {
-        throw new Error('Impossible de récupérer le profil utilisateur');
+      if (cachedTenantId && cachedTenantId.userId === user.id) {
+        resolvedTenantId = cachedTenantId.tenantId;
+      } else {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('tenant_id')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          throw new Error('Impossible de récupérer le profil utilisateur');
+        }
+        resolvedTenantId = profile?.tenant_id || null;
       }
 
-      if (!profile?.tenant_id) {
+      if (!resolvedTenantId) {
         setTenantId(null);
         setTenant(null);
         lastUserIdRef.current = user.id;
@@ -108,7 +117,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
         return;
       }
 
-      setTenantId(profile.tenant_id);
+      setTenantId(resolvedTenantId);
 
       const { data: tenantData, error: tenantError } = await supabase
         .from('tenants')
