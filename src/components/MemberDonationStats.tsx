@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar, FileText, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar, FileText, Loader2, Archive } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
