@@ -103,6 +103,8 @@ const timelineTranslations = {
     dataNotAvailable: "Done manm nan pa disponib",
     pdfSuccess: "PDF jenere avèk siksè",
     pdfError: "Erè pandan jenerasyon PDF",
+    archivedSummary: "anrejistreman achive",
+    archivedDonations: "kotizasyon achive",
   },
 };
 
