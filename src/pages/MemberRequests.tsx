@@ -15,14 +15,16 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanLimitDialog } from "@/components/PlanLimitDialog";
 import QRCodeLib from "qrcode";
-
 
 export default function MemberRequests() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { tenantId, tenant } = useCurrentTenant();
   const queryClient = useQueryClient();
+  const { canAddMember, limits, usage, plan } = usePlanLimits();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -30,6 +32,7 @@ export default function MemberRequests() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
 
   const tenantSlug = tenant?.slug || tenantId;
   const joinUrl = `${window.location.origin}/join/${tenantSlug}`;
@@ -179,6 +182,14 @@ export default function MemberRequests() {
     },
   });
 
+  const handleApprove = (request: any) => {
+    if (!canAddMember()) {
+      setLimitDialogOpen(true);
+      return;
+    }
+    approveMutation.mutate(request);
+  };
+
   const filteredRequests = requests.filter(
     (r: any) =>
       `${r.first_name} ${r.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -296,7 +307,7 @@ export default function MemberRequests() {
                               </Button>
                               {req.status === "pending" && (
                                 <>
-                                  <Button variant="ghost" size="sm" className="text-green-600" onClick={() => approveMutation.mutate(req)}>
+                                  <Button variant="ghost" size="sm" className="text-green-600" onClick={() => handleApprove(req)}>
                                     <CheckCircle className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="sm" className="text-red-600" onClick={() => { setSelectedRequest(req); setRejectOpen(true); }}>
@@ -329,7 +340,7 @@ export default function MemberRequests() {
                         </Button>
                         {req.status === "pending" && (
                           <>
-                            <Button size="sm" className="flex-1" onClick={() => approveMutation.mutate(req)}>
+                            <Button size="sm" className="flex-1" onClick={() => handleApprove(req)}>
                               <CheckCircle className="h-4 w-4 mr-1" /> {t("memberRequests.approve")}
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => { setSelectedRequest(req); setRejectOpen(true); }}>
@@ -404,7 +415,7 @@ export default function MemberRequests() {
               <Button variant="destructive" onClick={() => { setRejectOpen(true); }}>
                 <XCircle className="h-4 w-4 mr-2" /> {t("memberRequests.reject")}
               </Button>
-              <Button onClick={() => approveMutation.mutate(selectedRequest)} disabled={approveMutation.isPending}>
+              <Button onClick={() => handleApprove(selectedRequest)} disabled={approveMutation.isPending}>
                 {approveMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                 {t("memberRequests.approveAsMember")}
               </Button>
@@ -465,6 +476,14 @@ export default function MemberRequests() {
         </DialogContent>
       </Dialog>
 
+      <PlanLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        limitType="members"
+        currentCount={usage.membersCount}
+        maxCount={limits.maxMembers}
+        planName={plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : ""}
+      />
     </Layout>
   );
 }
