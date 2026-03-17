@@ -83,6 +83,7 @@ export function PlanLimitDialog({
       case "members": return t.membersTitle;
       case "branches": return t.branchesTitle;
       case "users": return t.usersTitle;
+      case "storage": return t.storageTitle;
     }
   };
 
