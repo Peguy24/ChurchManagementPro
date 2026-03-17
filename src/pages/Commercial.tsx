@@ -19,7 +19,7 @@ import heroImage from "@/assets/hero-abstract.png";
 const Commercial = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
