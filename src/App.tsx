@@ -81,6 +81,8 @@ import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import DataBackup from "./pages/DataBackup";
 import DataManagement from "./pages/DataManagement";
+import LegalDocuments from "./pages/LegalDocuments";
+import LegalPage from "./pages/LegalPage";
 import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
@@ -106,6 +108,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
+              <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
@@ -171,6 +174,7 @@ const App = () => (
               <Route path="/super-admin/subscriptions" element={<ProtectedRoute requireSuperAdmin><SubscriptionOverrides /></ProtectedRoute>} />
               <Route path="/super-admin/churn" element={<ProtectedRoute requireSuperAdmin><ChurnPrevention /></ProtectedRoute>} />
               <Route path="/super-admin/comparison" element={<ProtectedRoute requireSuperAdmin><TenantComparison /></ProtectedRoute>} />
+              <Route path="/super-admin/legal" element={<ProtectedRoute requireSuperAdmin><LegalDocuments /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />

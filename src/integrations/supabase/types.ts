@@ -1935,6 +1935,54 @@ export type Database = {
           },
         ]
       }
+      legal_documents: {
+        Row: {
+          content_en: string
+          content_fr: string
+          content_ht: string
+          created_at: string
+          document_type: string
+          id: string
+          is_active: boolean
+          title_en: string
+          title_fr: string
+          title_ht: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          content_en?: string
+          content_fr?: string
+          content_ht?: string
+          created_at?: string
+          document_type: string
+          id?: string
+          is_active?: boolean
+          title_en?: string
+          title_fr?: string
+          title_ht?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          content_en?: string
+          content_fr?: string
+          content_ht?: string
+          created_at?: string
+          document_type?: string
+          id?: string
+          is_active?: boolean
+          title_en?: string
+          title_fr?: string
+          title_ht?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       login_verification_codes: {
         Row: {
           code: string
@@ -3567,6 +3615,50 @@ export type Database = {
             foreignKeyName: "tenant_onboarding_progress_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_policy_acceptances: {
+        Row: {
+          accepted_at: string
+          accepted_by: string | null
+          accepted_by_email: string | null
+          accepted_by_name: string | null
+          document_type: string
+          document_version: number
+          id: string
+          ip_address: string | null
+          tenant_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_by?: string | null
+          accepted_by_email?: string | null
+          accepted_by_name?: string | null
+          document_type: string
+          document_version?: number
+          id?: string
+          ip_address?: string | null
+          tenant_id: string
+        }
+        Update: {
+          accepted_at?: string
+          accepted_by?: string | null
+          accepted_by_email?: string | null
+          accepted_by_name?: string | null
+          document_type?: string
+          document_version?: number
+          id?: string
+          ip_address?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_policy_acceptances_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },

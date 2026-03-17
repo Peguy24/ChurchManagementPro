@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -25,9 +27,14 @@ interface ProvisionResult {
 }
 
 export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }: ChurchRequestFormProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ProvisionResult | null>(null);
+  const [policiesAccepted, setPoliciesAccepted] = useState<Record<string, boolean>>({
+    terms_of_use: false,
+    privacy_policy: false,
+    payment_terms: false,
+  });
   const [formData, setFormData] = useState({
     church_name: "",
     contact_name: "",
@@ -38,11 +45,49 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
     message: "",
   });
 
+  const { data: legalDocs } = useQuery({
+    queryKey: ["legal-documents-active"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("legal_documents")
+        .select("*")
+        .eq("is_active", true)
+        .order("document_type");
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const lang = (language || "fr") as "fr" | "en" | "ht";
+  const allPoliciesAccepted = Object.values(policiesAccepted).every(Boolean);
+
+  const policyLabels: Record<string, Record<string, string>> = {
+    terms_of_use: { fr: "Conditions d'Utilisation", en: "Terms of Use", ht: "Kondisyon Itilizasyon" },
+    privacy_policy: { fr: "Politique de Confidentialité", en: "Privacy Policy", ht: "Politik Konfidansyalite" },
+    payment_terms: { fr: "Conditions de Paiement", en: "Payment Terms", ht: "Kondisyon Peman" },
+  };
+
+  const policyAcceptText: Record<string, string> = {
+    fr: "J'accepte les",
+    en: "I accept the",
+    ht: "Mwen aksepte",
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.church_name || !formData.contact_name || !formData.contact_email) {
       toast.error(t("churchForm.requiredFields"));
+      return;
+    }
+
+    if (!allPoliciesAccepted) {
+      const msg: Record<string, string> = {
+        fr: "Vous devez accepter toutes les politiques pour continuer",
+        en: "You must accept all policies to continue",
+        ht: "Ou dwe aksepte tout politik yo pou w kontinye",
+      };
+      toast.error(msg[lang] || msg.fr);
       return;
     }
 
@@ -64,6 +109,25 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       if (data?.error) throw new Error(data.error);
 
       setResult(data as ProvisionResult);
+
+      // Record policy acceptances
+      if (data?.tenantId || data?.slug) {
+        try {
+          const docTypes = ["terms_of_use", "privacy_policy", "payment_terms"];
+          for (const docType of docTypes) {
+            const doc = legalDocs?.find((d: any) => d.document_type === docType);
+            await (supabase as any).from("tenant_policy_acceptances").insert({
+              tenant_id: data.tenantId,
+              document_type: docType,
+              document_version: doc?.version || 1,
+              accepted_by_name: formData.contact_name,
+              accepted_by_email: formData.contact_email,
+            });
+          }
+        } catch (err) {
+          console.warn("Failed to record policy acceptances:", err);
+        }
+      }
       
       if (data.emailSent) {
         toast.success(t("churchForm.successWithEmail"));
@@ -87,6 +151,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
   const handleClose = () => {
     setResult(null);
+    setPoliciesAccepted({ terms_of_use: false, privacy_policy: false, payment_terms: false });
     setFormData({
       church_name: "",
       contact_name: "",
@@ -253,7 +318,33 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {/* Policy acceptance checkboxes */}
+          <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+            {["terms_of_use", "privacy_policy", "payment_terms"].map((docType) => (
+              <div key={docType} className="flex items-start gap-2">
+                <Checkbox
+                  id={`policy-${docType}`}
+                  checked={policiesAccepted[docType] || false}
+                  onCheckedChange={(checked) =>
+                    setPoliciesAccepted((prev) => ({ ...prev, [docType]: !!checked }))
+                  }
+                />
+                <label htmlFor={`policy-${docType}`} className="text-sm leading-tight cursor-pointer">
+                  {policyAcceptText[lang] || policyAcceptText.fr}{" "}
+                  <a
+                    href={`/legal/${docType}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:text-primary/80"
+                  >
+                    {policyLabels[docType]?.[lang] || policyLabels[docType]?.fr || docType}
+                  </a>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting || !allPoliciesAccepted}>
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
