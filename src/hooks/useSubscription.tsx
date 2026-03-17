@@ -58,8 +58,11 @@ export function useSubscription() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
 
+  const retryCountRef = useRef(0);
+
   const checkSubscription = useCallback(async () => {
     try {
+      // Always get a fresh session to avoid stale tokens
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setState({
@@ -70,6 +73,7 @@ export function useSubscription() {
           hasStripeCustomer: false,
           loading: false,
         });
+        retryCountRef.current = 0;
         return;
       }
 
@@ -81,10 +85,26 @@ export function useSubscription() {
 
       if (error) {
         console.error('Error checking subscription:', error);
+        
+        // On 401/auth errors, try refreshing session and retry once
+        const is401 = error?.message?.includes('non-2xx') || error?.status === 401;
+        if (is401 && retryCountRef.current < 2) {
+          retryCountRef.current += 1;
+          console.log('Retrying subscription check with refreshed session...');
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (refreshData?.session) {
+            // Retry with fresh token after a short delay
+            setTimeout(() => checkSubscription(), 1000);
+            return;
+          }
+        }
+        
         setState(prev => ({ ...prev, loading: false }));
+        retryCountRef.current = 0;
         return;
       }
 
+      retryCountRef.current = 0;
       setState({
         subscribed: data.subscribed,
         plan: data.plan,
@@ -96,6 +116,7 @@ export function useSubscription() {
     } catch (error) {
       console.error('Error checking subscription:', error);
       setState(prev => ({ ...prev, loading: false }));
+      retryCountRef.current = 0;
     }
   }, []);
 
