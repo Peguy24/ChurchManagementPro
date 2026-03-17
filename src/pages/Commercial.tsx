@@ -8,7 +8,7 @@ import {
   Church, Heart, Clock, Smartphone,
   Sparkles, Zap, ChevronRight, Play, TrendingUp
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
