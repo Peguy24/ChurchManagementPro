@@ -151,6 +151,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
   const handleClose = () => {
     setResult(null);
+    setPoliciesAccepted({ terms_of_use: false, privacy_policy: false, payment_terms: false });
     setFormData({
       church_name: "",
       contact_name: "",
