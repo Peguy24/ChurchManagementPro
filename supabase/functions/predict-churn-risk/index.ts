@@ -125,7 +125,7 @@ function calculateChurnRisk(
   const tenureBonus = Math.min(tenureMonths, 24);
   z += tenureBonus * weights.tenureBonus;
   if (tenureMonths < 6) {
-    factors.push("Nouveau membre (moins de 6 mois)");
+    factors.push("new_member");
   }
   
   // Add bias term

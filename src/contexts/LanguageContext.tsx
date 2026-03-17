@@ -9124,7 +9124,7 @@ const translations = {
       churn: {
         title: "Prevansyon Dezangajman",
         subtitle: "Idantifye manm ki an risk nan tout legliz yo",
-        navTitle: "Prevansyon Churn",
+        navTitle: "Prevansyon Dezangajman",
         allChurches: "Tout Legliz",
         runAnalysis: "Lanse Analiz",
         predictionComplete: "Analiz fini",
