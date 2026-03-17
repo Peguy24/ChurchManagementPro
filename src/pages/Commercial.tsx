@@ -8,7 +8,7 @@ import {
   Church, Heart, Clock, Smartphone,
   Sparkles, Zap, ChevronRight, Play, TrendingUp
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,7 +19,7 @@ import heroImage from "@/assets/hero-abstract.png";
 const Commercial = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("basic");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -574,6 +574,17 @@ const Commercial = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
               <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <Link to="/legal/terms_of_use" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Conditions d'utilisation" : language === "ht" ? "Kondisyon itilizasyon" : "Terms of Use"}
+              </Link>
+              <Link to="/legal/privacy_policy" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Politique de confidentialité" : language === "ht" ? "Politik konfidansyalite" : "Privacy Policy"}
+              </Link>
+              <Link to="/legal/payment_terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Conditions de paiement" : language === "ht" ? "Kondisyon peman" : "Payment Terms"}
+              </Link>
             </div>
             <p className="text-sm text-muted-foreground">
               {t("commercial.footer")}
