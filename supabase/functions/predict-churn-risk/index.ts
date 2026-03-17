@@ -118,7 +118,7 @@ function calculateChurnRisk(
   // Engagement score
   z += (100 - engagementScore) * weights.engagementScore;
   if (engagementScore < 40) {
-    factors.push("Faible score d'engagement");
+    factors.push("low_engagement");
   }
   
   // Tenure bonus (new members are more at risk)
