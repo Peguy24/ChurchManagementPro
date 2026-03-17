@@ -29,9 +29,14 @@ export default function Home() {
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
+  // Not logged in → Show commercial page immediately (don't wait for other hooks)
+  if (!authLoading && !user) {
+    return <Commercial />;
+  }
+
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
-  // Show loading state
+  // Show loading state only for authenticated users while hooks resolve
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -41,11 +46,6 @@ export default function Home() {
         </div>
       </div>
     );
-  }
-
-  // Not logged in → Show commercial/marketing page
-  if (!user) {
-    return <Commercial />;
   }
 
   // Maintenance mode: block non-super-admins
