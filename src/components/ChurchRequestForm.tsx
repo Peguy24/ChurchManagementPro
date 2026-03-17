@@ -318,7 +318,33 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {/* Policy acceptance checkboxes */}
+          <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+            {["terms_of_use", "privacy_policy", "payment_terms"].map((docType) => (
+              <div key={docType} className="flex items-start gap-2">
+                <Checkbox
+                  id={`policy-${docType}`}
+                  checked={policiesAccepted[docType] || false}
+                  onCheckedChange={(checked) =>
+                    setPoliciesAccepted((prev) => ({ ...prev, [docType]: !!checked }))
+                  }
+                />
+                <label htmlFor={`policy-${docType}`} className="text-sm leading-tight cursor-pointer">
+                  {policyAcceptText[lang] || policyAcceptText.fr}{" "}
+                  <a
+                    href={`/legal/${docType}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:text-primary/80"
+                  >
+                    {policyLabels[docType]?.[lang] || policyLabels[docType]?.fr || docType}
+                  </a>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting || !allPoliciesAccepted}>
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
