@@ -126,6 +126,54 @@ export type Database = {
           },
         ]
       }
+      attendance_records_archive: {
+        Row: {
+          archived_at: string
+          archived_by: string | null
+          branch_id: string | null
+          created_at: string | null
+          event_date: string
+          event_id: string | null
+          event_type: string
+          id: string
+          marked_at: string | null
+          marked_by: string | null
+          member_id: string
+          scan_method: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          archived_at?: string
+          archived_by?: string | null
+          branch_id?: string | null
+          created_at?: string | null
+          event_date: string
+          event_id?: string | null
+          event_type: string
+          id: string
+          marked_at?: string | null
+          marked_by?: string | null
+          member_id: string
+          scan_method?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          archived_at?: string
+          archived_by?: string | null
+          branch_id?: string | null
+          created_at?: string | null
+          event_date?: string
+          event_id?: string | null
+          event_type?: string
+          id?: string
+          marked_at?: string | null
+          marked_by?: string | null
+          member_id?: string
+          scan_method?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: []
+      }
       bank_accounts: {
         Row: {
           account_number: string | null
@@ -775,6 +823,44 @@ export type Database = {
           },
         ]
       }
+      data_cleanup_logs: {
+        Row: {
+          archived_by: string
+          created_at: string
+          data_type: string
+          date_before: string
+          id: string
+          records_archived: number
+          tenant_id: string
+        }
+        Insert: {
+          archived_by: string
+          created_at?: string
+          data_type: string
+          date_before: string
+          id?: string
+          records_archived?: number
+          tenant_id: string
+        }
+        Update: {
+          archived_by?: string
+          created_at?: string
+          data_type?: string
+          date_before?: string
+          id?: string
+          records_archived?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_cleanup_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           amount: number
@@ -874,6 +960,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      donations_archive: {
+        Row: {
+          amount: number
+          archived_at: string
+          archived_by: string | null
+          bank_account_id: string | null
+          branch_id: string | null
+          cash_register_id: string | null
+          category_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          donation_date: string
+          donation_type: string
+          id: string
+          member_id: string | null
+          notes: string | null
+          payment_method: string
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          archived_at?: string
+          archived_by?: string | null
+          bank_account_id?: string | null
+          branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          donation_date: string
+          donation_type: string
+          id: string
+          member_id?: string | null
+          notes?: string | null
+          payment_method: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          archived_at?: string
+          archived_by?: string | null
+          bank_account_id?: string | null
+          branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          donation_date?: string
+          donation_type?: string
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          payment_method?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       email_send_log: {
         Row: {
@@ -1352,6 +1501,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      expenses_archive: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          archived_at: string
+          archived_by: string | null
+          bank_account_id: string | null
+          branch_id: string | null
+          cash_register_id: string | null
+          category_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          expense_date: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          receipt_url: string | null
+          reference_number: string | null
+          status: string | null
+          tenant_id: string | null
+          updated_at: string | null
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string
+          archived_by?: string | null
+          bank_account_id?: string | null
+          branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          expense_date: string
+          id: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string
+          archived_by?: string | null
+          bank_account_id?: string | null
+          branch_id?: string | null
+          cash_register_id?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Relationships: []
       }
       financial_audit_logs: {
         Row: {
@@ -3878,6 +4102,18 @@ export type Database = {
       }
     }
     Functions: {
+      archive_tenant_attendance: {
+        Args: { _before_date: string; _tenant_id: string; _user_id: string }
+        Returns: number
+      }
+      archive_tenant_donations: {
+        Args: { _before_date: string; _tenant_id: string; _user_id: string }
+        Returns: number
+      }
+      archive_tenant_expenses: {
+        Args: { _before_date: string; _tenant_id: string; _user_id: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -3886,6 +4122,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
       get_tenant_monthly_attendance: {
         Args: { _tenant_id: string }
         Returns: {

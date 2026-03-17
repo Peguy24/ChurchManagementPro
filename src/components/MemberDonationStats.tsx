@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar, FileText, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Minus, Calendar, FileText, Loader2, Archive } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ const donationTranslations = {
     contributions: "contributions",
     total: "Total",
     tithes: "Dîmes",
+    archivedDonations: "cotisations archivées, total :",
   },
   en: {
     donationHistory: "Contribution History",
@@ -49,6 +50,7 @@ const donationTranslations = {
     recentDonations: "Recent donations",
     amount: "Amount",
     loading: "Loading...",
+    archivedDonations: "archived donations, total:",
     noDonationsForReceipt: "No donations for this year",
     receiptSuccess: "Fiscal receipt generated successfully",
     receiptError: "Error generating receipt",
@@ -79,6 +81,7 @@ const donationTranslations = {
     contributions: "kontribisyon",
     total: "Total",
     tithes: "Dim",
+    archivedDonations: "kotizasyon achive, total :",
   },
 };
 
@@ -126,6 +129,17 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
       if (error) throw error;
       return data || [];
     },
+  });
+
+  // Fetch archived donation stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-donations", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!memberId,
   });
 
   // Fetch donations for selected year (for fiscal receipt)
@@ -482,6 +496,14 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Archived data banner */}
+        {archivedStats && archivedStats.donations_count > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 + {archivedStats.donations_count} {lt.archivedDonations} {formatCurrency(Number(archivedStats.donations_total))}
           </div>
         )}
       </CardContent>

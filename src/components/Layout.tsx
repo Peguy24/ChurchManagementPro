@@ -62,6 +62,7 @@ import {
   Monitor,
   Clock,
   Handshake,
+  Archive,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -175,6 +176,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       { to: "/settings/church", icon: Church, label: t("layout.churchInfo") },
         { to: "/custom-fields", icon: FileText, label: t("nav.customFields") },
         { to: "/settings/backup", icon: FileText, label: t("layout.dataBackup") },
+        { to: "/settings/data-management", icon: Archive, label: t("layout.dataManagement") },
         { to: "/system-guide", icon: FileText, label: t("layout.systemGuide") },
       ],
     },

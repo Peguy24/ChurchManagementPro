@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3 } from "lucide-react";
+import { CalendarCheck, TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Archive } from "lucide-react";
 import { formatScanTime, getArrivalStatus, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -38,6 +38,7 @@ const attendanceTranslations = {
     byEventType: "Par type d'événement",
     noAttendanceRecords: "Aucun enregistrement de présence",
     loading: "Chargement...",
+    archivedRecords: "enregistrements archivés",
   },
   en: {
     statistics: "Attendance Statistics",
@@ -51,6 +52,7 @@ const attendanceTranslations = {
     byEventType: "By event type",
     noAttendanceRecords: "No attendance records",
     loading: "Loading...",
+    archivedRecords: "archived records",
   },
   ht: {
     statistics: "Estatistik Prezans",
@@ -64,6 +66,7 @@ const attendanceTranslations = {
     byEventType: "Pa tip evènman",
     noAttendanceRecords: "Pa gen anrejistreman prezans",
     loading: "Ap chaje...",
+    archivedRecords: "anrejistreman achive",
   },
 };
 
@@ -91,6 +94,17 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
 
       if (error) throw error;
       return data || [];
+    },
+    enabled: !!memberId,
+  });
+
+  // Fetch archived stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-attendance", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
     },
     enabled: !!memberId,
   });
@@ -308,8 +322,19 @@ export default function MemberAttendanceStats({ memberId }: MemberAttendanceStat
           </div>
         )}
 
+        {/* Archived data banner */}
+        {archivedStats && archivedStats.attendance_count > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 + {archivedStats.attendance_count} {lt.archivedRecords}
+            {archivedStats.attendance_min_date && archivedStats.attendance_max_date && (
+              <span className="text-xs">({archivedStats.attendance_min_date} – {archivedStats.attendance_max_date})</span>
+            )}
+          </div>
+        )}
+
         {/* No data message */}
-        {totalAttendance === 0 && (
+        {totalAttendance === 0 && !archivedStats?.attendance_count && (
           <div className="text-center py-6 text-muted-foreground">
             <CalendarCheck className="h-12 w-12 mx-auto mb-2 opacity-20" />
             <p>{lt.noAttendanceRecords}</p>

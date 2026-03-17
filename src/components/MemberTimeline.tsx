@@ -17,7 +17,8 @@ import {
   Heart,
   Award,
   Download,
-  Loader2
+  Loader2,
+  Archive
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
@@ -50,6 +51,8 @@ const timelineTranslations = {
     dataNotAvailable: "Données du membre non disponibles",
     pdfSuccess: "PDF généré avec succès",
     pdfError: "Erreur lors de la génération du PDF",
+    archivedSummary: "enregistrements archivés",
+    archivedDonations: "cotisations archivées",
   },
   en: {
     completeHistory: "Complete History",
@@ -74,6 +77,8 @@ const timelineTranslations = {
     dataNotAvailable: "Member data not available",
     pdfSuccess: "PDF generated successfully",
     pdfError: "Error generating PDF",
+    archivedSummary: "archived records",
+    archivedDonations: "archived donations",
   },
   ht: {
     completeHistory: "Istwa Konplè",
@@ -98,6 +103,8 @@ const timelineTranslations = {
     dataNotAvailable: "Done manm nan pa disponib",
     pdfSuccess: "PDF jenere avèk siksè",
     pdfError: "Erè pandan jenerasyon PDF",
+    archivedSummary: "anrejistreman achive",
+    archivedDonations: "kotizasyon achive",
   },
 };
 
@@ -225,6 +232,17 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+    enabled: !!memberId,
+  });
+
+  // Fetch archived stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-timeline", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
     },
     enabled: !!memberId,
   });
@@ -497,6 +515,16 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
               ))}
             </div>
           </ScrollArea>
+        )}
+
+        {/* Archived data banner */}
+        {archivedStats && (archivedStats.attendance_count > 0 || archivedStats.donations_count > 0) && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg mt-4">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 {archivedStats.attendance_count > 0 && `${archivedStats.attendance_count} ${tl.archivedSummary}`}
+            {archivedStats.attendance_count > 0 && archivedStats.donations_count > 0 && ", "}
+            {archivedStats.donations_count > 0 && `${archivedStats.donations_count} ${tl.archivedDonations}`}
+          </div>
         )}
       </CardContent>
     </Card>
