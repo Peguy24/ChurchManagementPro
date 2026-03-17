@@ -407,7 +407,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "trial_extended",
         eventCategory: "subscription",
-        description: `Essai prolongé pour ${variables.tenantName}`,
+        description: `Trial extended for ${variables.tenantName}`,
         tenantId: variables.tenantId,
         metadata: { new_trial_end: newTrialEnd.toISOString(), duration: variables.duration },
       });
