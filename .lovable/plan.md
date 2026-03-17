@@ -1,32 +1,28 @@
 
 
-## Current Situation
+## Plan: Populate Default Legal Documents Content
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### What
 
-## What Needs to Be Done
+Update the 3 existing `legal_documents` rows (currently placeholder text) with comprehensive, real legal content in all 3 languages (FR, EN, HT) tailored to the Church Management Pro platform.
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### Content Summary
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+**Terms of Use** — Covers: account creation, acceptable use, church data ownership, platform responsibilities, user obligations, intellectual property, termination, limitation of liability, governing law.
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+**Privacy Policy** — Covers: data collected (church members, attendance, donations), how data is used, data storage & security, third-party services (Stripe for payments), data retention, user rights (access, correction, deletion), cookies, contact information.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+**Payment Terms** — Covers: subscription plans (Free, Essential $49, Professional $99, Premium $199, Enterprise $499), free trial (14 days), billing cycles (monthly/yearly), auto-renewal, cancellation & refund policy, failed payments, price changes, Stripe as payment processor.
+
+### Implementation
+
+**Single migration file** that runs `UPDATE` statements on the 3 existing rows in `legal_documents`, replacing placeholder text with full legal content. Each document ~1500-2500 words per language. Version bumped to 2.
+
+### Files
+
+| File | Action |
+|------|--------|
+| `supabase/migrations/..._seed_legal_content.sql` | Create — UPDATE 3 rows with real content |
+
+No UI changes needed — the Super Admin can view and edit the content from the existing `/super-admin/legal` page.
 
