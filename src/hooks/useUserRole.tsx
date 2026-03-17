@@ -113,7 +113,7 @@ export function useUserRole() {
           return;
         }
 
-        const tenantId = profileResult.data?.tenant_id;
+        // tenantId already fetched above
 
         if (tenantId) {
           const [tenantRoleResult, permResult] = await Promise.all([
