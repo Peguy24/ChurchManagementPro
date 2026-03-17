@@ -2,11 +2,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Building2, UserCheck, AlertTriangle, Crown, ArrowRight } from "lucide-react";
+import { Users, Building2, UserCheck, AlertTriangle, Crown, ArrowRight, HardDrive } from "lucide-react";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+function formatStorageSize(mb: number): string {
+  if (mb === Infinity) return "∞";
+  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
+  return `${mb} MB`;
+}
 
 export function PlanUsageCard() {
   const { t } = useLanguage();
@@ -18,8 +24,10 @@ export function PlanUsageCard() {
     usage,
     getMemberUsagePercent,
     getBranchUsagePercent,
+    getStorageUsagePercent,
     canAddMember,
     canAddBranch,
+    canUploadFile,
   } = usePlanLimits();
 
   if (loading) {
@@ -27,6 +35,7 @@ export function PlanUsageCard() {
       <Card>
         <CardContent className="p-6 space-y-4">
           <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
         </CardContent>
@@ -40,13 +49,18 @@ export function PlanUsageCard() {
 
   const memberPercent = getMemberUsagePercent();
   const branchPercent = getBranchUsagePercent();
+  const storagePercent = getStorageUsagePercent();
   const isNearMemberLimit = memberPercent >= 80;
   const isNearBranchLimit = branchPercent >= 80;
+  const isNearStorageLimit = storagePercent >= 80;
   const atMemberLimit = !canAddMember();
   const atBranchLimit = !canAddBranch();
+  const atStorageLimit = !canUploadFile(0);
+
+  const hasAnyLimit = atMemberLimit || atBranchLimit || atStorageLimit;
 
   return (
-    <Card className={atMemberLimit || atBranchLimit ? "border-destructive/50" : ""}>
+    <Card className={hasAnyLimit ? "border-destructive/50" : ""}>
       <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -143,7 +157,39 @@ export function PlanUsageCard() {
           </div>
         </div>
 
-        {(atMemberLimit || atBranchLimit) && plan !== "entreprise" && (
+        {/* Storage Usage */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <HardDrive className="h-4 w-4 text-muted-foreground" />
+              <span>{t("sub.storage") || "Stockage"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {atStorageLimit && (
+                <Badge variant="destructive" className="text-xs">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {t("sub.limitReached")}
+                </Badge>
+              )}
+              {!atStorageLimit && isNearStorageLimit && (
+                <Badge variant="outline" className="text-xs border-warning text-warning">
+                  {t("sub.almostFull")}
+                </Badge>
+              )}
+              <span className="font-medium">
+                {formatStorageSize(usage.storageMB)} / {formatStorageSize(limits.maxStorageMB)}
+              </span>
+            </div>
+          </div>
+          {limits.maxStorageMB !== Infinity && (
+            <Progress 
+              value={storagePercent} 
+              className={`h-2 ${atStorageLimit ? "[&>div]:bg-destructive" : isNearStorageLimit ? "[&>div]:bg-warning" : ""}`}
+            />
+          )}
+        </div>
+
+        {hasAnyLimit && plan !== "entreprise" && (
           <div className="pt-2 border-t">
             <p className="text-sm text-muted-foreground mb-2">
               {t("sub.upgradeMsg")}
