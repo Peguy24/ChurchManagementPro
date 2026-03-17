@@ -1,32 +1,22 @@
 
 
-## Current Situation
+## Plan: Add Legal Document Links to Commercial Page Footer
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### What
+Add links to Terms of Use, Privacy Policy, and Payment Terms in the footer of the Commercial/landing page, pointing to the existing `/legal/:docType` routes.
 
-## What Needs to Be Done
+### Implementation
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+**Single file change** — `src/pages/Commercial.tsx`
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+Update the footer section (lines 571-587) to include a row of links:
+- Terms of Use → `/legal/terms_of_use`
+- Privacy Policy → `/legal/privacy_policy`  
+- Payment Terms → `/legal/payment_terms`
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+Links will be styled as subtle text links (`text-muted-foreground hover:text-foreground`) placed between the logo and the copyright text, using `Link` from react-router-dom.
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+| File | Action |
+|------|--------|
+| `src/pages/Commercial.tsx` | Edit footer to add 3 legal links |
 
