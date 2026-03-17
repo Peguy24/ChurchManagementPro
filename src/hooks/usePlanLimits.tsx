@@ -28,12 +28,14 @@ export interface UsageStats {
   membersCount: number;
   branchesCount: number;
   usersCount: number;
+  storageMB: number;
 }
 
 export interface PlanLimits {
   maxMembers: number;
   maxBranches: number;
   maxUsers: number;
+  maxStorageMB: number;
   features: Record<FeatureKey, boolean>;
 }
 
