@@ -116,7 +116,7 @@ export default function ChurnPrevention() {
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
 
   const translateFactor = (factor: string): string => {
-    // Handle "absent_days:N" pattern
+    // Handle new neutral stored format: "absent_days:N"
     if (factor.startsWith("absent_days:")) {
       const days = factor.split(":")[1];
       const templates: Record<string, string> = {
@@ -126,13 +126,29 @@ export default function ChurnPrevention() {
       };
       return templates[language] || templates.en;
     }
-    // Handle legacy French factors already in DB
-    if (factor.startsWith("Absent depuis")) return factor;
-    if (factor.startsWith("Tendance")) return factor;
-    if (factor.startsWith("Faible")) return factor;
-    if (factor.startsWith("Nouveau")) return factor;
-    // Translate keyed factors
-    return factorTranslations[language]?.[factor] || factorTranslations.en?.[factor] || factor;
+
+    // Handle legacy French values already stored in DB
+    const absentDaysMatch = factor.match(/^Absent depuis\s+(\d+)\s+jours$/i);
+    if (absentDaysMatch) {
+      const days = absentDaysMatch[1];
+      const templates: Record<string, string> = {
+        en: `Absent for ${days} days`,
+        fr: `Absent depuis ${days} jours`,
+        ht: `Absan depi ${days} jou`,
+      };
+      return templates[language] || templates.en;
+    }
+
+    const legacyFrenchFactors: Record<string, string> = {
+      "Tendance de présence en baisse": "declining_attendance",
+      "Tendance de dons en baisse": "declining_giving",
+      "Faible score d'engagement": "low_engagement",
+      "Nouveau membre (moins de 6 mois)": "new_member",
+    };
+
+    const normalizedFactor = legacyFrenchFactors[factor] || factor;
+
+    return factorTranslations[language]?.[normalizedFactor] || factorTranslations.en?.[normalizedFactor] || factor;
   };
 
   const queryClient = useQueryClient();
