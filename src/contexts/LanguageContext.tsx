@@ -2599,7 +2599,7 @@ const translations = {
       churn: {
         title: "Prévention du Désengagement",
         subtitle: "Identifiez les membres à risque de désengagement dans toutes les églises",
-        navTitle: "Prévention Churn",
+        navTitle: "Prévention du Désengagement",
         allChurches: "Toutes les églises",
         runAnalysis: "Lancer l'analyse",
         predictionComplete: "Analyse terminée",
@@ -9124,7 +9124,7 @@ const translations = {
       churn: {
         title: "Prevansyon Dezangajman",
         subtitle: "Idantifye manm ki an risk nan tout legliz yo",
-        navTitle: "Prevansyon Churn",
+        navTitle: "Prevansyon Dezangajman",
         allChurches: "Tout Legliz",
         runAnalysis: "Lanse Analiz",
         predictionComplete: "Analiz fini",

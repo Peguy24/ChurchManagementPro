@@ -90,9 +90,50 @@ const localTranslations: Record<string, Record<string, string>> = {
   },
 };
 
+const factorTranslations: Record<string, Record<string, string>> = {
+  en: {
+    declining_attendance: "Declining attendance",
+    declining_giving: "Declining giving",
+    low_engagement: "Low engagement",
+    new_member: "New member (<6 months)",
+  },
+  fr: {
+    declining_attendance: "Présence en baisse",
+    declining_giving: "Dons en baisse",
+    low_engagement: "Faible engagement",
+    new_member: "Nouveau membre (<6 mois)",
+  },
+  ht: {
+    declining_attendance: "Prezans ap bese",
+    declining_giving: "Don ap bese",
+    low_engagement: "Angajman fèb",
+    new_member: "Nouvo manm (<6 mwa)",
+  },
+};
+
 export default function ChurnPrevention() {
   const { language } = useLanguage();
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
+
+  const translateFactor = (factor: string): string => {
+    // Handle "absent_days:N" pattern
+    if (factor.startsWith("absent_days:")) {
+      const days = factor.split(":")[1];
+      const templates: Record<string, string> = {
+        en: `Absent for ${days} days`,
+        fr: `Absent depuis ${days} jours`,
+        ht: `Absan depi ${days} jou`,
+      };
+      return templates[language] || templates.en;
+    }
+    // Handle legacy French factors already in DB
+    if (factor.startsWith("Absent depuis")) return factor;
+    if (factor.startsWith("Tendance")) return factor;
+    if (factor.startsWith("Faible")) return factor;
+    if (factor.startsWith("Nouveau")) return factor;
+    // Translate keyed factors
+    return factorTranslations[language]?.[factor] || factorTranslations.en?.[factor] || factor;
+  };
 
   const queryClient = useQueryClient();
   const [selectedTenant, setSelectedTenant] = useState<string>("all");
@@ -274,7 +315,7 @@ export default function ChurnPrevention() {
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {((p.contributing_factors as string[]) || []).slice(0, 2).map((f, i) => (
-                            <Badge key={i} variant="outline" className="text-[10px]">{f}</Badge>
+                            <Badge key={i} variant="outline" className="text-[10px]">{translateFactor(f)}</Badge>
                           ))}
                         </div>
                       </TableCell>

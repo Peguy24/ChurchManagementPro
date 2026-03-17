@@ -100,32 +100,32 @@ function calculateChurnRisk(
   const cappedDays = Math.min(daysSinceLastAttendance, 90);
   z += cappedDays * weights.daysSinceAttendance;
   if (daysSinceLastAttendance > 30) {
-    factors.push(`Absent depuis ${daysSinceLastAttendance} jours`);
+    factors.push(`absent_days:${daysSinceLastAttendance}`);
   }
   
   // Attendance trend
   z += attendanceTrendSlope * weights.attendanceTrend;
   if (attendanceTrendSlope < -0.1) {
-    factors.push("Tendance de présence en baisse");
+    factors.push("declining_attendance");
   }
   
   // Giving trend
   z += givingTrendSlope * weights.givingTrend;
   if (givingTrendSlope < -50) {
-    factors.push("Tendance de dons en baisse");
+    factors.push("declining_giving");
   }
   
   // Engagement score
   z += (100 - engagementScore) * weights.engagementScore;
   if (engagementScore < 40) {
-    factors.push("Faible score d'engagement");
+    factors.push("low_engagement");
   }
   
   // Tenure bonus (new members are more at risk)
   const tenureBonus = Math.min(tenureMonths, 24);
   z += tenureBonus * weights.tenureBonus;
   if (tenureMonths < 6) {
-    factors.push("Nouveau membre (moins de 6 mois)");
+    factors.push("new_member");
   }
   
   // Add bias term
