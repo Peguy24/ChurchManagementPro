@@ -135,13 +135,13 @@ export function OnboardingProgressCard() {
   if (!currentProgress || isLoading) return null;
 
   const steps: OnboardingStep[] = [
-    { key: "step_profile_completed", label: t("onboarding.stepProfile"), completed: currentProgress.step_profile_completed, link: "/settings" },
-    { key: "step_logo_uploaded", label: t("onboarding.stepLogo"), completed: currentProgress.step_logo_uploaded, link: "/settings" },
+    { key: "step_profile_completed", label: t("onboarding.stepProfile"), completed: currentProgress.step_profile_completed, link: "/settings/church" },
+    { key: "step_logo_uploaded", label: t("onboarding.stepLogo"), completed: currentProgress.step_logo_uploaded, link: "/settings/church" },
     { key: "step_first_member_added", label: t("onboarding.stepMember"), completed: currentProgress.step_first_member_added, link: "/members" },
     { key: "step_first_event_created", label: t("onboarding.stepEvent"), completed: currentProgress.step_first_event_created, link: "/events" },
     { key: "step_first_donation_recorded", label: t("onboarding.stepDonation"), completed: currentProgress.step_first_donation_recorded, link: "/donations" },
     { key: "step_first_branch_created", label: t("onboarding.stepBranch"), completed: currentProgress.step_first_branch_created, link: "/branches" },
-    { key: "step_admin_invited", label: t("onboarding.stepInvite"), completed: currentProgress.step_admin_invited, link: "/admin-invitations" },
+    { key: "step_admin_invited", label: t("onboarding.stepInvite"), completed: currentProgress.step_admin_invited, link: "/settings/invitations" },
   ];
 
   const completedCount = steps.filter((s) => s.completed).length;
