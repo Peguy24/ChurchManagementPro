@@ -182,6 +182,14 @@ export default function MemberRequests() {
     },
   });
 
+  const handleApprove = (request: any) => {
+    if (!canAddMember()) {
+      setLimitDialogOpen(true);
+      return;
+    }
+    approveMutation.mutate(request);
+  };
+
   const filteredRequests = requests.filter(
     (r: any) =>
       `${r.first_name} ${r.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
