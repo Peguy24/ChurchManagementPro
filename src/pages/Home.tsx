@@ -3,15 +3,29 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
 import { Church } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 import Commercial from './Commercial';
 import Dashboard from './Dashboard';
 import SuperAdminDashboard from './SuperAdminDashboard';
 import PendingApproval from './PendingApproval';
 import MaintenancePage from '@/components/MaintenancePage';
 
+// Ordered list of fallback routes for users without dashboard access
+const FALLBACK_ROUTES = [
+  '/attendance',
+  '/members',
+  '/events',
+  '/donations',
+  '/ministries',
+  '/branches',
+  '/inventory',
+  '/volunteers',
+  '/visitors',
+];
+
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
-  const { isApproved, isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
+  const { isApproved, isAdmin, isSuperAdmin, canAccess, hasPermissionFor, loading: roleLoading } = useUserRole();
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
@@ -49,6 +63,15 @@ export default function Home() {
     return <SuperAdminDashboard />;
   }
 
-  // Regular approved user with tenant → Show dashboard
+  // Check if user has dashboard permission
+  if (!hasPermissionFor('dashboard')) {
+    // Redirect to the first route the user can access
+    const fallback = FALLBACK_ROUTES.find((route) => canAccess(route));
+    if (fallback) {
+      return <Navigate to={fallback} replace />;
+    }
+  }
+
+  // Regular approved user with dashboard access → Show dashboard
   return <Dashboard />;
 }
