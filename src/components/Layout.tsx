@@ -62,6 +62,7 @@ import {
   Monitor,
   Clock,
   Handshake,
+  Archive,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
