@@ -2599,7 +2599,7 @@ const translations = {
       churn: {
         title: "Prévention du Désengagement",
         subtitle: "Identifiez les membres à risque de désengagement dans toutes les églises",
-        navTitle: "Prévention Churn",
+        navTitle: "Prévention du Désengagement",
         allChurches: "Toutes les églises",
         runAnalysis: "Lancer l'analyse",
         predictionComplete: "Analyse terminée",
