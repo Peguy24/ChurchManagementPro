@@ -131,6 +131,17 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
     },
   });
 
+  // Fetch archived donation stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-donations", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!memberId,
+  });
+
   // Fetch donations for selected year (for fiscal receipt)
   const { data: yearDonations } = useQuery({
     queryKey: ["member-donations-year", memberId, selectedYear],
