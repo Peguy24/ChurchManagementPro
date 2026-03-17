@@ -315,7 +315,7 @@ export default function ChurnPrevention() {
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {((p.contributing_factors as string[]) || []).slice(0, 2).map((f, i) => (
-                            <Badge key={i} variant="outline" className="text-[10px]">{f}</Badge>
+                            <Badge key={i} variant="outline" className="text-[10px]">{translateFactor(f)}</Badge>
                           ))}
                         </div>
                       </TableCell>
