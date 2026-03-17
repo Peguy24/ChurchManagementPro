@@ -80,6 +80,7 @@ import Visitors from "./pages/Visitors";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import DataBackup from "./pages/DataBackup";
+import DataManagement from "./pages/DataManagement";
 import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
