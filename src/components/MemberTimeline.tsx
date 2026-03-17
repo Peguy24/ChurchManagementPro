@@ -51,6 +51,8 @@ const timelineTranslations = {
     dataNotAvailable: "Données du membre non disponibles",
     pdfSuccess: "PDF généré avec succès",
     pdfError: "Erreur lors de la génération du PDF",
+    archivedSummary: "enregistrements archivés",
+    archivedDonations: "cotisations archivées",
   },
   en: {
     completeHistory: "Complete History",
