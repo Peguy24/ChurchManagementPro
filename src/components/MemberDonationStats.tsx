@@ -35,6 +35,7 @@ const donationTranslations = {
     contributions: "contributions",
     total: "Total",
     tithes: "Dîmes",
+    archivedDonations: "cotisations archivées, total :",
   },
   en: {
     donationHistory: "Contribution History",
