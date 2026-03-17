@@ -236,6 +236,17 @@ export default function MemberTimeline({ memberId }: MemberTimelineProps) {
     enabled: !!memberId,
   });
 
+  // Fetch archived stats
+  const { data: archivedStats } = useQuery({
+    queryKey: ["member-archived-stats-timeline", memberId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_member_archived_stats", { _member_id: memberId });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!memberId,
+  });
+
   // Export to PDF function
   const handleExportPDF = async () => {
     if (!member) {
