@@ -17,7 +17,8 @@ import {
   Heart,
   Award,
   Download,
-  Loader2
+  Loader2,
+  Archive
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
