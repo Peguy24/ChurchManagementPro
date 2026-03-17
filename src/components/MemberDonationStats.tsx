@@ -50,6 +50,7 @@ const donationTranslations = {
     recentDonations: "Recent donations",
     amount: "Amount",
     loading: "Loading...",
+    archivedDonations: "archived donations, total:",
     noDonationsForReceipt: "No donations for this year",
     receiptSuccess: "Fiscal receipt generated successfully",
     receiptError: "Error generating receipt",
