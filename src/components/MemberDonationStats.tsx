@@ -498,6 +498,14 @@ export default function MemberDonationStats({ memberId }: MemberDonationStatsPro
             </div>
           </div>
         )}
+
+        {/* Archived data banner */}
+        {archivedStats && archivedStats.donations_count > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+            <Archive className="h-4 w-4 shrink-0" />
+            📦 + {archivedStats.donations_count} {lt.archivedDonations} {formatCurrency(Number(archivedStats.donations_total))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
