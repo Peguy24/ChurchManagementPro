@@ -278,6 +278,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     subscriptions: "Abònman",
     churn: "Prevansyon Dezangajman",
     comparison: "Konparezon",
+    legal: "Dokiman Legal",
     branding: "White-Label",
     settings: "Konfigirasyon Platfòm",
   },
