@@ -136,6 +136,57 @@ export default function TenantDataViewer() {
     enabled: !!selectedTenantId && isAdmin,
   });
 
+  // Fetch archived attendance for selected tenant
+  const { data: archivedAttendance, isLoading: archivedAttendanceLoading } = useQuery({
+    queryKey: ["tenant-archived-attendance", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("attendance_records_archive")
+        .select("id, member_id, event_type, event_date, scan_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("event_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
+  // Fetch archived donations for selected tenant
+  const { data: archivedDonations, isLoading: archivedDonationsLoading } = useQuery({
+    queryKey: ["tenant-archived-donations", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("donations_archive")
+        .select("id, amount, donation_type, donation_date, payment_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("donation_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
+  // Fetch archived expenses for selected tenant
+  const { data: archivedExpenses, isLoading: archivedExpensesLoading } = useQuery({
+    queryKey: ["tenant-archived-expenses", selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return [];
+      const { data, error } = await supabase
+        .from("expenses_archive")
+        .select("id, description, amount, expense_date, vendor, payment_method, archived_at")
+        .eq("tenant_id", selectedTenantId)
+        .order("expense_date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenantId && isAdmin,
+  });
+
   const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
 
   const handleExportMembers = () => {
