@@ -90,6 +90,7 @@ export function PlanLimitDialog({
   const getDescription = () => {
     const template = limitType === "members" ? t.membersDesc 
       : limitType === "branches" ? t.branchesDesc 
+      : limitType === "storage" ? t.storageDesc
       : t.usersDesc;
     return template
       .replace("{plan}", planName)
