@@ -53,6 +53,7 @@ function parsePlanFromSetting(settingValue: any): PlanLimits | null {
   const maxMembers = settingValue.max_members === -1 ? Infinity : (settingValue.max_members ?? 0);
   const maxBranches = settingValue.max_branches === -1 ? Infinity : (settingValue.max_branches ?? 0);
   const maxUsers = settingValue.max_users === -1 ? Infinity : (settingValue.max_users ?? 0);
+  const maxStorageMB = settingValue.max_storage_mb === -1 ? Infinity : (settingValue.max_storage_mb ?? 0);
   
   // Build features from DB, defaulting to false for missing keys
   const dbFeatures = typeof settingValue.features === "object" ? settingValue.features : {};
@@ -60,7 +61,7 @@ function parsePlanFromSetting(settingValue: any): PlanLimits | null {
     ALL_FEATURE_KEYS.map(k => [k, dbFeatures[k] === true])
   ) as Record<FeatureKey, boolean>;
 
-  return { maxMembers, maxBranches, maxUsers, features };
+  return { maxMembers, maxBranches, maxUsers, maxStorageMB, features };
 }
 
 export function usePlanLimits() {
