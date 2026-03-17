@@ -122,7 +122,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       const { data: tenantData, error: tenantError } = await supabase
         .from('tenants')
         .select('id, name, slug, logo_url, primary_color')
-        .eq('id', profile.tenant_id)
+        .eq('id', resolvedTenantId)
         .single();
 
       if (tenantError) {
