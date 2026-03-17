@@ -81,6 +81,8 @@ import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import DataBackup from "./pages/DataBackup";
 import DataManagement from "./pages/DataManagement";
+import LegalDocuments from "./pages/LegalDocuments";
+import LegalPage from "./pages/LegalPage";
 import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
