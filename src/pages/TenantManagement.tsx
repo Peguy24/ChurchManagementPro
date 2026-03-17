@@ -497,8 +497,8 @@ export default function TenantManagement() {
         eventType: activate ? "plan_activated" : "plan_deactivated",
         eventCategory: "subscription",
         description: activate 
-          ? `Plan ${PLAN_CONFIG[plan].label} activé pour ${variables.tenantName}`
-          : `Plan désactivé pour ${variables.tenantName}`,
+          ? `Plan ${PLAN_CONFIG[plan].label} activated for ${variables.tenantName}`
+          : `Plan deactivated for ${variables.tenantName}`,
         tenantId: variables.tenantId,
         metadata: { plan, activate, old_plan: variables.oldPlan, old_status: variables.oldStatus },
       });
