@@ -340,7 +340,7 @@ export default function MemberRequests() {
                         </Button>
                         {req.status === "pending" && (
                           <>
-                            <Button size="sm" className="flex-1" onClick={() => approveMutation.mutate(req)}>
+                            <Button size="sm" className="flex-1" onClick={() => handleApprove(req)}>
                               <CheckCircle className="h-4 w-4 mr-1" /> {t("memberRequests.approve")}
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => { setSelectedRequest(req); setRejectOpen(true); }}>
