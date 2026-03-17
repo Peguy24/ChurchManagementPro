@@ -157,6 +157,7 @@ const App = () => (
               <Route path="/settings/tenant-users" element={<ProtectedRoute><TenantUserManagement /></ProtectedRoute>} />
               <Route path="/settings/branding" element={<ProtectedRoute><FeatureGate feature="branding" featureKey="branding" requiredPlan="entreprise"><TenantBranding /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/backup" element={<ProtectedRoute><FeatureGate feature="dataBackup" featureKey="dataBackup" requiredPlan="professionnel"><DataBackup /></FeatureGate></ProtectedRoute>} />
+              <Route path="/settings/data-management" element={<ProtectedRoute requireAdmin><FeatureGate feature="dataBackup" featureKey="dataBackup" requiredPlan="professionnel"><DataManagement /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />

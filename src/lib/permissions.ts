@@ -107,6 +107,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/custom-fields": "settings",
   "/settings/email-templates": "communication",
   "/settings/church": "settings",
+  "/settings/data-management": "settings",
   "/settings/users": "users",
   "/settings/tenants": "tenants",
   "/inventory": "inventory",
