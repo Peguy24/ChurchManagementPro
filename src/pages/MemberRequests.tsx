@@ -415,7 +415,7 @@ export default function MemberRequests() {
               <Button variant="destructive" onClick={() => { setRejectOpen(true); }}>
                 <XCircle className="h-4 w-4 mr-2" /> {t("memberRequests.reject")}
               </Button>
-              <Button onClick={() => approveMutation.mutate(selectedRequest)} disabled={approveMutation.isPending}>
+              <Button onClick={() => handleApprove(selectedRequest)} disabled={approveMutation.isPending}>
                 {approveMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                 {t("memberRequests.approveAsMember")}
               </Button>
