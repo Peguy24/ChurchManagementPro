@@ -272,7 +272,7 @@ export default function TenantManagement() {
       logPlatformActivity({
         eventType: "tenant_created",
         eventCategory: "tenant",
-        description: `Église créée: ${tenant.name}`,
+        description: `Church created: ${tenant.name}`,
         tenantId: tenant.id,
         metadata: { name: tenant.name, slug: tenant.slug },
       });
