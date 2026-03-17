@@ -115,31 +115,33 @@ export function usePlanLimits() {
     queryKey: ["usage-stats", tenantId],
     queryFn: async (): Promise<UsageStats> => {
       if (!tenantId) {
-        return { membersCount: 0, branchesCount: 0, usersCount: 0 };
+        return { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 };
       }
 
-      const { count: membersCount } = await supabase
-        .from("members")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "active");
-
-      const { count: branchesCount } = await supabase
-        .from("branches")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "active");
-
-      const { count: usersCount } = await supabase
-        .from("tenant_user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("is_approved", true);
+      const [membersRes, branchesRes, usersRes, storageRes] = await Promise.all([
+        supabase
+          .from("members")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("status", "active"),
+        supabase
+          .from("branches")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("status", "active"),
+        supabase
+          .from("tenant_user_roles")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("is_approved", true),
+        supabase.rpc("get_tenant_storage_mb", { _tenant_id: tenantId }),
+      ]);
 
       return {
-        membersCount: membersCount || 0,
-        branchesCount: branchesCount || 0,
-        usersCount: usersCount || 0,
+        membersCount: membersRes.count || 0,
+        branchesCount: branchesRes.count || 0,
+        usersCount: usersRes.count || 0,
+        storageMB: Number(storageRes.data) || 0,
       };
     },
     enabled: !!tenantId && !tenantLoading,
