@@ -2259,6 +2259,7 @@ const translations = {
       noPlan: "Aucun",
       activityLog: {
         title: "Journal d'activité",
+        navTitle: "Journal d'activité",
         subtitle: "Historique de toutes les actions sur la plateforme",
         searchPlaceholder: "Rechercher par description ou email...",
         eventType: "Type d'événement",
