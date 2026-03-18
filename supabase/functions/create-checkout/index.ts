@@ -86,11 +86,11 @@ serve(async (req) => {
     logStep("User tenant", { tenantId });
 
     // Look up active discount for this tenant
-    let discount: { discount_type: string; discount_value: number; id: string; valid_until: string | null } | null = null;
+    let discount: { discount_type: string; discount_value: number; id: string; valid_until: string | null; target_plan: string | null } | null = null;
     if (tenantId) {
       const { data: discounts } = await supabaseClient
         .from("subscription_discounts")
-        .select("id, discount_type, discount_value, valid_until")
+        .select("id, discount_type, discount_value, valid_until, target_plan")
         .eq("tenant_id", tenantId)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -100,8 +100,13 @@ serve(async (req) => {
         const d = discounts[0];
         // Check if not expired
         if (!d.valid_until || new Date(d.valid_until) > new Date()) {
-          discount = d;
-          logStep("Active discount found", { type: d.discount_type, value: d.discount_value });
+          // Check if target_plan matches (null or "any" = any plan)
+          if (!d.target_plan || d.target_plan === "any" || d.target_plan === plan) {
+            discount = d;
+            logStep("Active discount found", { type: d.discount_type, value: d.discount_value, targetPlan: d.target_plan });
+          } else {
+            logStep("Discount skipped — target plan mismatch", { targetPlan: d.target_plan, selectedPlan: plan });
+          }
         } else {
           logStep("Discount expired", { valid_until: d.valid_until });
         }
