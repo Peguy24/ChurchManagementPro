@@ -17,6 +17,7 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "dashboard",
   "members",
   "attendance",
+  "attendance_admin",
   "ministries",
   "branches",
   "finances",
@@ -199,7 +200,6 @@ export default function RolePermissionsManager() {
                       <Checkbox
                         checked={hasPermission(role, group)}
                         onCheckedChange={() => togglePermission(role, group)}
-                        disabled={group === "dashboard"}
                       />
                     </td>
                   ))}
@@ -211,7 +211,7 @@ export default function RolePermissionsManager() {
 
         <div className="mt-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {t("rolePermissions.dashboardAlwaysAccessible")}
+            {t("rolePermissions.permissionsNote")}
           </p>
           <Button
             onClick={() => saveMutation.mutate()}

@@ -16,7 +16,7 @@ import { Pencil, Plus, Save, Trash2, Users2 } from "lucide-react";
 import type { RouteGroup } from "@/lib/permissions";
 
 const ALL_PERMISSION_GROUPS: RouteGroup[] = [
-  "dashboard", "members", "attendance", "ministries", "branches",
+  "dashboard", "members", "attendance", "attendance_admin", "ministries", "branches",
   "finances", "events", "reports", "communication", "settings",
   "inventory", "volunteers", "visitors",
 ];

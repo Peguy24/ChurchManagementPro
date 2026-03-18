@@ -86,7 +86,10 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   useEffect(() => {
     if (!loading && user && isApproved && !requireAdmin) {
       if (!canAccess(location.pathname) && location.pathname !== '/pending-approval') {
-        navigate('/');
+        // Find the first accessible route as fallback instead of always "/"
+        const fallbackRoutes = ['/attendance', '/members', '/donations', '/events', '/ministries', '/inventory', '/'];
+        const fallback = fallbackRoutes.find(r => canAccess(r)) || '/pending-approval';
+        navigate(fallback);
       }
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
