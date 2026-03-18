@@ -311,9 +311,9 @@ export default function SuperAdminDashboard() {
               {[
                   { icon: Eye, label: t("superAdmin.exploreChurchData"), path: "/super-admin/explore" },
                   { icon: Users, label: t("superAdmin.userManagement"), path: "/settings/users" },
-                  { icon: Activity, label: t("superAdmin.activityLog.title"), path: "/super-admin/activity" },
-                  { icon: BarChart3, label: t("superAdmin.revenue.title"), path: "/super-admin/revenue" },
-                  { icon: Heart, label: t("superAdmin.health.title"), path: "/super-admin/health" },
+                  { icon: Activity, label: t("superAdmin.activityLog.navTitle"), path: "/super-admin/activity" },
+                  { icon: BarChart3, label: t("superAdmin.revenue.navTitle"), path: "/super-admin/revenue" },
+                  { icon: Heart, label: t("superAdmin.health.navTitle"), path: "/super-admin/health" },
                   { icon: Megaphone, label: t("superAdmin.banners.navTitle"), path: "/super-admin/banners" },
                   { icon: CreditCard, label: t("superAdmin.overrides.navTitle"), path: "/super-admin/subscriptions" },
                   { icon: ShieldAlert, label: t("superAdmin.churn.navTitle"), path: "/super-admin/churn" },

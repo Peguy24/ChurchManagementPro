@@ -2259,6 +2259,7 @@ const translations = {
       noPlan: "Aucun",
       activityLog: {
         title: "Journal d'activité",
+        navTitle: "Journal d'activité",
         subtitle: "Historique de toutes les actions sur la plateforme",
         searchPlaceholder: "Rechercher par description ou email...",
         eventType: "Type d'événement",
@@ -2281,6 +2282,7 @@ const translations = {
       },
       revenue: {
         title: "Analytique Revenus",
+        navTitle: "Revenus",
         subtitle: "Métriques de revenus, croissance MRR et conversion des essais",
         mrr: "MRR",
         mrrDesc: "Revenus mensuels récurrents",
@@ -2305,6 +2307,7 @@ const translations = {
       },
       health: {
         title: "Santé des Églises",
+        navTitle: "Santé Églises",
         subtitle: "Scores de santé basés sur l'engagement, la présence, les dons et l'adoption des fonctionnalités",
         recalculate: "Recalculer",
         recalculated: "Scores recalculés",
@@ -5528,6 +5531,7 @@ const translations = {
       noPlan: "None",
       activityLog: {
         title: "Activity Log",
+        navTitle: "Activity Log",
         subtitle: "History of all platform actions",
         searchPlaceholder: "Search by description or email...",
         eventType: "Event Type",
@@ -5550,6 +5554,7 @@ const translations = {
       },
       revenue: {
         title: "Revenue Analytics",
+        navTitle: "Revenue",
         subtitle: "Revenue metrics, MRR growth and trial conversion tracking",
         mrr: "MRR",
         mrrDesc: "Monthly Recurring Revenue",
@@ -5574,6 +5579,7 @@ const translations = {
       },
       health: {
         title: "Church Health Scores",
+        navTitle: "Church Health",
         subtitle: "Health scores based on engagement, attendance, donations and feature adoption",
         recalculate: "Recalculate",
         recalculated: "Scores recalculated",
@@ -8793,6 +8799,7 @@ const translations = {
       noPlan: "Okenn",
       activityLog: {
         title: "Jounal Aktivite",
+        navTitle: "Jounal Aktivite",
         subtitle: "Istwa tout aksyon sou platfòm nan",
         searchPlaceholder: "Chèche pa deskripsyon oswa imèl...",
         eventType: "Tip Evènman",
@@ -8815,6 +8822,7 @@ const translations = {
       },
       revenue: {
         title: "Analitik Revni",
+        navTitle: "Revni",
         subtitle: "Metrik revni, kwasans MRR ak konvèsyon esè",
         mrr: "MRR",
         mrrDesc: "Revni Mansyèl Rekiran",
@@ -8839,6 +8847,7 @@ const translations = {
       },
       health: {
         title: "Sante Legliz",
+        navTitle: "Sante Legliz",
         subtitle: "Nòt sante baze sou angajman, prezans, don ak adopsyon fonksyonalite",
         recalculate: "Rekalkile",
         recalculated: "Nòt rekalkile",
