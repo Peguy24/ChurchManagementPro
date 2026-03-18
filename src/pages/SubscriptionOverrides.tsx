@@ -50,6 +50,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "On Checkout",
     effectHintFree: "Free access activates immediately — bypasses billing.",
     effectHintOther: "Applied at next renewal if already subscribed, or on first checkout.",
+    targetPlan: "Target Plan",
+    anyPlan: "Any Plan",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
   fr: {
     title: "Gestion des Abonnements",
