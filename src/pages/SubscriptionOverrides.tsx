@@ -190,7 +190,7 @@ export default function SubscriptionOverrides() {
         discount_value: parseFloat(form.discount_value) || 0,
         reason: form.reason || null,
         valid_until: form.valid_until || null,
-        target_plan: form.target_plan || null,
+        target_plan: form.target_plan && form.target_plan !== "any" ? form.target_plan : null,
       } as any).select("id").single();
       if (error) throw error;
 
