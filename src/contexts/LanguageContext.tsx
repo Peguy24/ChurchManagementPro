@@ -5531,6 +5531,7 @@ const translations = {
       noPlan: "None",
       activityLog: {
         title: "Activity Log",
+        navTitle: "Activity Log",
         subtitle: "History of all platform actions",
         searchPlaceholder: "Search by description or email...",
         eventType: "Event Type",
