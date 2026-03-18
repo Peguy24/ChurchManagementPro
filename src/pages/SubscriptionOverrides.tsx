@@ -400,8 +400,14 @@ export default function SubscriptionOverrides() {
                       </Badge>
                     </TableCell>
                     <TableCell>{d.discount_type === "free" ? "100%" : `${d.discount_value}${d.discount_type === "percentage" ? "%" : "$"}`}</TableCell>
-                    <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
-                    <TableCell className="text-sm">{d.valid_until ? format(new Date(d.valid_until), "dd/MM/yyyy") : "∞"}</TableCell>
+                     <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
+                     <TableCell>
+                       {(() => {
+                         const timing = getEffectTiming(d);
+                         return <Badge className={timing.className}>{timing.label}</Badge>;
+                       })()}
+                     </TableCell>
+                     <TableCell className="text-sm">{d.valid_until ? format(new Date(d.valid_until), "dd/MM/yyyy") : "∞"}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => removeDiscount.mutate(d.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
