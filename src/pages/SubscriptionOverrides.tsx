@@ -305,6 +305,18 @@ export default function SubscriptionOverrides() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>{lt("targetPlan")}</Label>
+                  <Select value={form.target_plan} onValueChange={v => setForm({ ...form, target_plan: v })}>
+                    <SelectTrigger><SelectValue placeholder={lt("anyPlan")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">{lt("anyPlan")}</SelectItem>
+                      <SelectItem value="essentiel">{lt("essentiel")}</SelectItem>
+                      <SelectItem value="professionnel">{lt("professionnel")}</SelectItem>
+                      <SelectItem value="entreprise">{lt("entreprise")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{lt("discountType")}</Label>
