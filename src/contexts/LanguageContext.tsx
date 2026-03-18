@@ -5577,6 +5577,7 @@ const translations = {
       },
       health: {
         title: "Church Health Scores",
+        navTitle: "Church Health",
         subtitle: "Health scores based on engagement, attendance, donations and feature adoption",
         recalculate: "Recalculate",
         recalculated: "Scores recalculated",
