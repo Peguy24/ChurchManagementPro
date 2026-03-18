@@ -1795,6 +1795,7 @@ const translations = {
       subtitle: "Personnalisez les accès pour chaque rôle dans votre église. L'administrateur a toujours accès complet.",
       feature: "Fonctionnalité",
       dashboardAlwaysAccessible: "Note: Le tableau de bord est toujours accessible à tous les utilisateurs approuvés.",
+      permissionsNote: "Décochez le tableau de bord pour empêcher l'accès. Les utilisateurs seront redirigés vers leur première page autorisée.",
       save: "Enregistrer",
       saving: "Enregistrement...",
       loadingPermissions: "Chargement des permissions...",
