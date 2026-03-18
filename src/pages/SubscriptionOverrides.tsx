@@ -430,6 +430,11 @@ export default function SubscriptionOverrides() {
                       </Badge>
                     </TableCell>
                     <TableCell>{d.discount_type === "free" ? "100%" : `${d.discount_value}${d.discount_type === "percentage" ? "%" : "$"}`}</TableCell>
+                    <TableCell>
+                      {(d as any).target_plan && (d as any).target_plan !== "any"
+                        ? <Badge variant="secondary">{lt((d as any).target_plan)}</Badge>
+                        : <span className="text-muted-foreground text-sm">{lt("anyPlan")}</span>}
+                    </TableCell>
                      <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
                      <TableCell>
                        {(() => {
