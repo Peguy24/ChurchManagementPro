@@ -3227,6 +3227,9 @@ export type Database = {
           discount_value: number
           id: string
           is_active: boolean
+          previous_plan: string | null
+          previous_price_id: string | null
+          previous_stripe_subscription_id: string | null
           reason: string | null
           target_plan: string | null
           tenant_id: string
@@ -3241,6 +3244,9 @@ export type Database = {
           discount_value?: number
           id?: string
           is_active?: boolean
+          previous_plan?: string | null
+          previous_price_id?: string | null
+          previous_stripe_subscription_id?: string | null
           reason?: string | null
           target_plan?: string | null
           tenant_id: string
@@ -3255,6 +3261,9 @@ export type Database = {
           discount_value?: number
           id?: string
           is_active?: boolean
+          previous_plan?: string | null
+          previous_price_id?: string | null
+          previous_stripe_subscription_id?: string | null
           reason?: string | null
           target_plan?: string | null
           tenant_id?: string

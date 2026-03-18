@@ -120,6 +120,30 @@ serve(async (req) => {
         const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
         const subscriptionEnd = getDbSubscriptionEnd(tenantSub);
 
+        // Safety check: if DB-only subscription has expired period, mark as expired
+        if (subscriptionEnd && new Date(subscriptionEnd) < new Date()) {
+          logStep("DB-only subscription period has ended, marking as expired", {
+            subscriptionEnd,
+            tenantId: userTenantId,
+          });
+
+          await supabaseClient
+            .from("tenant_subscriptions")
+            .update({ status: "expired" })
+            .eq("tenant_id", userTenantId);
+
+          return new Response(JSON.stringify({
+            subscribed: false,
+            plan: null,
+            status: "expired",
+            subscription_end: subscriptionEnd,
+            has_stripe_customer: false,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+
         logStep("Found tenant subscription in DB", {
           plan: mappedPlan,
           status: tenantSub.status,

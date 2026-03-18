@@ -37,6 +37,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   new_event: Calendar,
   new_expense: Briefcase,
   member_request: Users,
+  discount_expired: AlertTriangle,
   info: Info,
 };
 
@@ -55,6 +56,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_expense_recorded: "Nouvelle dépense enregistrée",
     new_membership_request: "Nouvelle demande d'adhésion",
     payment_failed: "Paiement échoué",
+    free_access_ended_plan_restored: "Accès gratuit terminé — plan précédent réactivé",
+    free_access_ended_select_plan: "Accès gratuit terminé — veuillez sélectionner un plan",
+    discount_ended: "Votre réduction a pris fin",
   },
   en: {
     new_member_added: "New member added",
@@ -63,6 +67,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_expense_recorded: "New expense recorded",
     new_membership_request: "New membership request",
     payment_failed: "Payment failed",
+    free_access_ended_plan_restored: "Free access ended — previous plan reactivated",
+    free_access_ended_select_plan: "Free access ended — please select a plan",
+    discount_ended: "Your discount has ended",
   },
   ht: {
     new_member_added: "Nouvo manm ajoute",
@@ -71,6 +78,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_expense_recorded: "Nouvo depans anrejistre",
     new_membership_request: "Nouvo demann manm",
     payment_failed: "Peman echwe",
+    free_access_ended_plan_restored: "Aksè gratis fini — plan anvan an reaktive",
+    free_access_ended_select_plan: "Aksè gratis fini — tanpri chwazi yon plan",
+    discount_ended: "Rabè ou a fini",
   },
 };
 

@@ -55,6 +55,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     essentiel: "Essentiel",
     professionnel: "Professionnel",
     entreprise: "Entreprise",
+    previousPlan: "Previous Plan",
   },
   fr: {
     title: "Gestion des Abonnements",
@@ -93,6 +94,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     essentiel: "Essentiel",
     professionnel: "Professionnel",
     entreprise: "Entreprise",
+    previousPlan: "Plan précédent",
   },
   ht: {
     title: "Jesyon Abònman",
@@ -131,6 +133,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     essentiel: "Essentiel",
     professionnel: "Professionnel",
     entreprise: "Entreprise",
+    previousPlan: "Plan anvan",
   },
 };
 
@@ -413,8 +416,9 @@ export default function SubscriptionOverrides() {
                   <TableHead>{lt("church")}</TableHead>
                   <TableHead>{lt("discountType")}</TableHead>
                   <TableHead>{lt("value")}</TableHead>
-                  <TableHead>{lt("targetPlan")}</TableHead>
-                  <TableHead>{lt("reason")}</TableHead>
+                   <TableHead>{lt("targetPlan")}</TableHead>
+                   <TableHead>{lt("previousPlan")}</TableHead>
+                   <TableHead>{lt("reason")}</TableHead>
                    <TableHead>{lt("effect")}</TableHead>
                    <TableHead>{lt("validUntil")}</TableHead>
                    <TableHead>{lt("actions")}</TableHead>
@@ -434,7 +438,12 @@ export default function SubscriptionOverrides() {
                       {(d as any).target_plan && (d as any).target_plan !== "any"
                         ? <Badge variant="secondary">{lt((d as any).target_plan)}</Badge>
                         : <span className="text-muted-foreground text-sm">{lt("anyPlan")}</span>}
-                    </TableCell>
+                     </TableCell>
+                     <TableCell>
+                       {(d as any).previous_plan
+                         ? <Badge variant="outline">{lt((d as any).previous_plan)}</Badge>
+                         : <span className="text-muted-foreground text-sm">-</span>}
+                     </TableCell>
                      <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
                      <TableCell>
                        {(() => {
@@ -452,7 +461,7 @@ export default function SubscriptionOverrides() {
                 ))}
                 {!activeDiscounts.length && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       {lt("noDiscounts")}
                     </TableCell>
                   </TableRow>
