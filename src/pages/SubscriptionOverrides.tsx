@@ -130,6 +130,7 @@ export default function SubscriptionOverrides() {
     discount_value: "",
     reason: "",
     valid_until: "",
+    target_plan: "",
   });
 
   const { data: tenants } = useQuery({
