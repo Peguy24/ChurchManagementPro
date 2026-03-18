@@ -8819,6 +8819,7 @@ const translations = {
       },
       revenue: {
         title: "Analitik Revni",
+        navTitle: "Revni",
         subtitle: "Metrik revni, kwasans MRR ak konvèsyon esè",
         mrr: "MRR",
         mrrDesc: "Revni Mansyèl Rekiran",
