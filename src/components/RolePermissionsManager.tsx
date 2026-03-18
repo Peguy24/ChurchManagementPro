@@ -200,7 +200,6 @@ export default function RolePermissionsManager() {
                       <Checkbox
                         checked={hasPermission(role, group)}
                         onCheckedChange={() => togglePermission(role, group)}
-                        disabled={group === "dashboard"}
                       />
                     </td>
                   ))}
