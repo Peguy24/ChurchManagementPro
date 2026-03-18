@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_discounts ADD COLUMN target_plan text DEFAULT NULL;

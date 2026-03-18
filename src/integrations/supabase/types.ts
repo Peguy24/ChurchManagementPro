@@ -3228,6 +3228,7 @@ export type Database = {
           id: string
           is_active: boolean
           reason: string | null
+          target_plan: string | null
           tenant_id: string
           updated_at: string
           valid_from: string
@@ -3241,6 +3242,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           reason?: string | null
+          target_plan?: string | null
           tenant_id: string
           updated_at?: string
           valid_from?: string
@@ -3254,6 +3256,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           reason?: string | null
+          target_plan?: string | null
           tenant_id?: string
           updated_at?: string
           valid_from?: string

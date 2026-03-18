@@ -50,6 +50,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "On Checkout",
     effectHintFree: "Free access activates immediately — bypasses billing.",
     effectHintOther: "Applied at next renewal if already subscribed, or on first checkout.",
+    targetPlan: "Target Plan",
+    anyPlan: "Any Plan",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
   fr: {
     title: "Gestion des Abonnements",
@@ -83,6 +88,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "Au paiement",
     effectHintFree: "L'accès gratuit s'active immédiatement — pas de facturation.",
     effectHintOther: "Appliqué au prochain renouvellement si déjà abonné, ou au premier paiement.",
+    targetPlan: "Plan cible",
+    anyPlan: "Tous les plans",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
   ht: {
     title: "Jesyon Abònman",
@@ -116,6 +126,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "Lè peye",
     effectHintFree: "Aksè gratis aktive touswit — pa gen fakti.",
     effectHintOther: "Aplike nan pwochen renouvèlman si deja abòne, oswa nan premye pèman.",
+    targetPlan: "Plan sib",
+    anyPlan: "Tout plan",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
 };
 
@@ -130,6 +145,7 @@ export default function SubscriptionOverrides() {
     discount_value: "",
     reason: "",
     valid_until: "",
+    target_plan: "",
   });
 
   const { data: tenants } = useQuery({
@@ -174,7 +190,8 @@ export default function SubscriptionOverrides() {
         discount_value: parseFloat(form.discount_value) || 0,
         reason: form.reason || null,
         valid_until: form.valid_until || null,
-      }).select("id").single();
+        target_plan: form.target_plan && form.target_plan !== "any" ? form.target_plan : null,
+      } as any).select("id").single();
       if (error) throw error;
 
       // 2. Apply discount to existing Stripe subscription (if any)
@@ -218,7 +235,7 @@ export default function SubscriptionOverrides() {
       queryClient.invalidateQueries({ queryKey: ["subscription-discounts"] });
       toast.success(lt("discountAdded"));
       setDialogOpen(false);
-      setForm({ tenant_id: "", discount_type: "percentage", discount_value: "", reason: "", valid_until: "" });
+      setForm({ tenant_id: "", discount_type: "percentage", discount_value: "", reason: "", valid_until: "", target_plan: "" });
     },
     onError: () => toast.error(lt("error")),
   });
@@ -285,6 +302,18 @@ export default function SubscriptionOverrides() {
                       {(tenants || []).map(tenant => (
                         <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{lt("targetPlan")}</Label>
+                  <Select value={form.target_plan} onValueChange={v => setForm({ ...form, target_plan: v })}>
+                    <SelectTrigger><SelectValue placeholder={lt("anyPlan")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">{lt("anyPlan")}</SelectItem>
+                      <SelectItem value="essentiel">{lt("essentiel")}</SelectItem>
+                      <SelectItem value="professionnel">{lt("professionnel")}</SelectItem>
+                      <SelectItem value="entreprise">{lt("entreprise")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -384,6 +413,7 @@ export default function SubscriptionOverrides() {
                   <TableHead>{lt("church")}</TableHead>
                   <TableHead>{lt("discountType")}</TableHead>
                   <TableHead>{lt("value")}</TableHead>
+                  <TableHead>{lt("targetPlan")}</TableHead>
                   <TableHead>{lt("reason")}</TableHead>
                    <TableHead>{lt("effect")}</TableHead>
                    <TableHead>{lt("validUntil")}</TableHead>
@@ -400,6 +430,11 @@ export default function SubscriptionOverrides() {
                       </Badge>
                     </TableCell>
                     <TableCell>{d.discount_type === "free" ? "100%" : `${d.discount_value}${d.discount_type === "percentage" ? "%" : "$"}`}</TableCell>
+                    <TableCell>
+                      {(d as any).target_plan && (d as any).target_plan !== "any"
+                        ? <Badge variant="secondary">{lt((d as any).target_plan)}</Badge>
+                        : <span className="text-muted-foreground text-sm">{lt("anyPlan")}</span>}
+                    </TableCell>
                      <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
                      <TableCell>
                        {(() => {
@@ -417,7 +452,7 @@ export default function SubscriptionOverrides() {
                 ))}
                 {!activeDiscounts.length && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       {lt("noDiscounts")}
                     </TableCell>
                   </TableRow>
