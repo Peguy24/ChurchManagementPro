@@ -94,6 +94,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     essentiel: "Essentiel",
     professionnel: "Professionnel",
     entreprise: "Entreprise",
+    previousPlan: "Plan précédent",
   },
   ht: {
     title: "Jesyon Abònman",
