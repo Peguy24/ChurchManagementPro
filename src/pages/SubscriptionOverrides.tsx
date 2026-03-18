@@ -311,6 +311,10 @@ export default function SubscriptionOverrides() {
                     />
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="h-3 w-3" />
+                  {form.discount_type === "free" ? lt("effectHintFree") : lt("effectHintOther")}
+                </p>
                 <div>
                   <Label>{lt("reason")}</Label>
                   <Textarea value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} rows={2} />
