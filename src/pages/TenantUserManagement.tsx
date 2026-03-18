@@ -477,8 +477,14 @@ export default function TenantUserManagement() {
                         <TableRow key={pendingUser.id}>
                           <TableCell className="font-medium">
                             <div>
-                              <div>{pendingUser.profile?.first_name} {pendingUser.profile?.last_name}</div>
-                              <div className="text-xs text-muted-foreground">{pendingUser.user_email}</div>
+                              <div>
+                                {(pendingUser.profile?.first_name || pendingUser.profile?.last_name)
+                                  ? `${pendingUser.profile?.first_name || ''} ${pendingUser.profile?.last_name || ''}`.trim()
+                                  : pendingUser.user_email}
+                              </div>
+                              {(pendingUser.profile?.first_name || pendingUser.profile?.last_name) && (
+                                <div className="text-xs text-muted-foreground">{pendingUser.user_email}</div>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell>
