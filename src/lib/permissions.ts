@@ -91,7 +91,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/attendance/alerts": "attendance_admin",
   "/attendance/kiosk": "attendance",
   "/attendance/comparison": "reports",
-  "/attendance/arrival-report": "attendance_admin",
+  "/attendance/arrivals": "attendance_admin",
   "/donations": "finances",
   "/donations/categories": "finances",
   "/donations/reports": "reports",
