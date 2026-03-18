@@ -7,6 +7,7 @@ export type RouteGroup =
   | "dashboard"
   | "members"
   | "attendance"
+  | "attendance_admin"
   | "ministries"
   | "branches"
   | "finances"
@@ -26,6 +27,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "dashboard",
     "members",
     "attendance",
+    "attendance_admin",
     "ministries",
     "branches",
     "finances",
@@ -43,6 +45,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "dashboard",
     "members",
     "attendance",
+    "attendance_admin",
     "ministries",
     "branches",
     "events",
@@ -63,6 +66,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "dashboard",
     "members",
     "attendance",
+    "attendance_admin",
     "events",
     "communication",
     "inventory",
@@ -83,10 +87,11 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/members/requests": "members",
   "/members/details": "members",
   "/attendance": "attendance",
-  "/attendance/stats": "attendance",
-  "/attendance/alerts": "attendance",
+  "/attendance/stats": "attendance_admin",
+  "/attendance/alerts": "attendance_admin",
   "/attendance/kiosk": "attendance",
   "/attendance/comparison": "reports",
+  "/attendance/arrival-report": "attendance_admin",
   "/donations": "finances",
   "/donations/categories": "finances",
   "/donations/reports": "reports",
@@ -122,7 +127,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
 
 // Map nav groups to route groups (using internal keys, not translated labels)
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
-  "members": ["members", "attendance", "branches", "ministries", "visitors"],
+  "members": ["members", "attendance", "attendance_admin", "branches", "ministries", "visitors"],
   "finances": ["finances"],
   "reports": ["dashboard", "reports", "finances"],
   "communication": ["communication"],
@@ -196,7 +201,8 @@ export function canSeeNavItem(roles: AppRole[], itemPath: string): boolean {
 export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   dashboard: "Tableau de bord",
   members: "Gestion des membres",
-  attendance: "Présences",
+  attendance: "Présences (Scanner)",
+  attendance_admin: "Présences (Alertes & Rapports)",
   ministries: "Ministères",
   branches: "Branches",
   finances: "Finances",
