@@ -8329,6 +8329,7 @@ const translations = {
       subtitle: "Pèsonalize aksè pou chak wòl nan legliz ou. Administratè toujou gen aksè konplè.",
       feature: "Fonksyonalite",
       dashboardAlwaysAccessible: "Nòt: Tablo debò a toujou aksesib pou tout itilizatè apwouve.",
+      permissionsNote: "Dekoche tablo debò pou anpeche aksè. Itilizatè yo ap redirije nan premye paj otorize yo.",
       save: "Anrejistre",
       saving: "Anrejistreman...",
       loadingPermissions: "Chajman pèmisyon...",
