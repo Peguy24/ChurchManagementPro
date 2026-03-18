@@ -5064,6 +5064,7 @@ const translations = {
       subtitle: "Customize access for each role in your church. Administrators always have full access.",
       feature: "Feature",
       dashboardAlwaysAccessible: "Note: The dashboard is always accessible to all approved users.",
+      permissionsNote: "Uncheck dashboard to prevent access. Users will be redirected to their first authorized page.",
       save: "Save",
       saving: "Saving...",
       loadingPermissions: "Loading permissions...",
