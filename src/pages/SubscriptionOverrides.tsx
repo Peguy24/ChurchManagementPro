@@ -126,6 +126,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "Lè peye",
     effectHintFree: "Aksè gratis aktive touswit — pa gen fakti.",
     effectHintOther: "Aplike nan pwochen renouvèlman si deja abòne, oswa nan premye pèman.",
+    targetPlan: "Plan sib",
+    anyPlan: "Tout plan",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
 };
 
