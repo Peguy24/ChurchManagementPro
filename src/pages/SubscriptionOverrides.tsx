@@ -413,8 +413,9 @@ export default function SubscriptionOverrides() {
                   <TableHead>{lt("church")}</TableHead>
                   <TableHead>{lt("discountType")}</TableHead>
                   <TableHead>{lt("value")}</TableHead>
-                  <TableHead>{lt("targetPlan")}</TableHead>
-                  <TableHead>{lt("reason")}</TableHead>
+                   <TableHead>{lt("targetPlan")}</TableHead>
+                   <TableHead>{lt("previousPlan")}</TableHead>
+                   <TableHead>{lt("reason")}</TableHead>
                    <TableHead>{lt("effect")}</TableHead>
                    <TableHead>{lt("validUntil")}</TableHead>
                    <TableHead>{lt("actions")}</TableHead>
