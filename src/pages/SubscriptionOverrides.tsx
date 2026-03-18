@@ -385,8 +385,9 @@ export default function SubscriptionOverrides() {
                   <TableHead>{lt("discountType")}</TableHead>
                   <TableHead>{lt("value")}</TableHead>
                   <TableHead>{lt("reason")}</TableHead>
-                  <TableHead>{lt("validUntil")}</TableHead>
-                  <TableHead>{lt("actions")}</TableHead>
+                   <TableHead>{lt("effect")}</TableHead>
+                   <TableHead>{lt("validUntil")}</TableHead>
+                   <TableHead>{lt("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
