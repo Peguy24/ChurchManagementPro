@@ -435,7 +435,12 @@ export default function SubscriptionOverrides() {
                       {(d as any).target_plan && (d as any).target_plan !== "any"
                         ? <Badge variant="secondary">{lt((d as any).target_plan)}</Badge>
                         : <span className="text-muted-foreground text-sm">{lt("anyPlan")}</span>}
-                    </TableCell>
+                     </TableCell>
+                     <TableCell>
+                       {(d as any).previous_plan
+                         ? <Badge variant="outline">{lt((d as any).previous_plan)}</Badge>
+                         : <span className="text-muted-foreground text-sm">-</span>}
+                     </TableCell>
                      <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
                      <TableCell>
                        {(() => {
