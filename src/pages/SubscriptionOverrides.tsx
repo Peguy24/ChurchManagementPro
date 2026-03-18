@@ -88,6 +88,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     onCheckout: "Au paiement",
     effectHintFree: "L'accès gratuit s'active immédiatement — pas de facturation.",
     effectHintOther: "Appliqué au prochain renouvellement si déjà abonné, ou au premier paiement.",
+    targetPlan: "Plan cible",
+    anyPlan: "Tous les plans",
+    essentiel: "Essentiel",
+    professionnel: "Professionnel",
+    entreprise: "Entreprise",
   },
   ht: {
     title: "Jesyon Abònman",
