@@ -5552,6 +5552,7 @@ const translations = {
       },
       revenue: {
         title: "Revenue Analytics",
+        navTitle: "Revenue",
         subtitle: "Revenue metrics, MRR growth and trial conversion tracking",
         mrr: "MRR",
         mrrDesc: "Monthly Recurring Revenue",
