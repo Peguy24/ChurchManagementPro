@@ -37,6 +37,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   new_event: Calendar,
   new_expense: Briefcase,
   member_request: Users,
+  discount_expired: AlertTriangle,
   info: Info,
 };
 
