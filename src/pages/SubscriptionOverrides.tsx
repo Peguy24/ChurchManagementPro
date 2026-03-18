@@ -190,7 +190,8 @@ export default function SubscriptionOverrides() {
         discount_value: parseFloat(form.discount_value) || 0,
         reason: form.reason || null,
         valid_until: form.valid_until || null,
-      }).select("id").single();
+        target_plan: form.target_plan || null,
+      } as any).select("id").single();
       if (error) throw error;
 
       // 2. Apply discount to existing Stripe subscription (if any)
