@@ -65,8 +65,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { data: tenants, error: tenantsError } = await supabaseClient
       .from("tenants")
-      .select("id, name")
-      .eq("is_active", true);
+      .select("id, name");
 
     if (tenantsError) {
       console.error("Error fetching tenants:", tenantsError);
