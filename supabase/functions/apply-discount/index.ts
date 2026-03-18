@@ -124,6 +124,40 @@ serve(async (req) => {
 
     // Handle free access: cancel subscription and activate in DB
     if (discount_type === "free") {
+      // Save previous subscription info before cancelling
+      const prevPriceId = subscription.items.data[0]?.price?.id || null;
+      const prevProductId = subscription.items.data[0]?.price?.product as string || null;
+      
+      // Map product ID to plan name
+      const PRODUCT_TO_PLAN: Record<string, string> = {
+        "prod_Tqetfpt7pnhNFf": "essentiel",
+        "prod_TqetHNAL0zc5kD": "professionnel",
+        "prod_TqeuZk0jVNwjEp": "entreprise",
+        "prod_UA271d9Xzge6lN": "essentiel",
+        "prod_UA2716VZhzrvjd": "professionnel",
+        "prod_UA28jB4cFz2aZ7": "entreprise",
+      };
+      const prevPlanName = prevProductId ? (PRODUCT_TO_PLAN[prevProductId] || null) : null;
+
+      logStep("Saving previous subscription info", { 
+        subscriptionId: subscription.id, 
+        prevPriceId, 
+        prevPlanName 
+      });
+
+      // Store previous plan info in the discount record
+      if (prevPriceId || prevPlanName) {
+        await supabaseClient
+          .from("subscription_discounts")
+          .update({
+            previous_stripe_subscription_id: subscription.id,
+            previous_plan: prevPlanName,
+            previous_price_id: prevPriceId,
+          } as any)
+          .eq("id", discount_id);
+        logStep("Previous plan info saved to discount record");
+      }
+
       await stripe.subscriptions.cancel(subscription.id, {
         prorate: true,
       });
