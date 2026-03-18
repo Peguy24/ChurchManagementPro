@@ -71,6 +71,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkEmailTitle: "Check Your Email",
     checkEmailDesc: "We sent a verification link to {email}. Please check your inbox (and spam folder) and click the link to verify your account.",
     checkEmailBack: "Back to Login",
+    resendVerification: "Resend verification email",
+    resendingVerification: "Sending verification email...",
+    verificationResent: "Verification email sent",
+    verificationResentDesc: "A new verification link was sent to {email}.",
+    verificationResendError: "We could not resend the verification email right now. Please try again in a moment.",
   },
   fr: {
     loading: "Chargement...",
@@ -129,6 +134,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkEmailTitle: "Vérifiez votre email",
     checkEmailDesc: "Nous avons envoyé un lien de vérification à {email}. Veuillez vérifier votre boîte de réception (et le dossier spam) et cliquer sur le lien pour activer votre compte.",
     checkEmailBack: "Retour à la connexion",
+    resendVerification: "Renvoyer l'email de vérification",
+    resendingVerification: "Envoi de l'email de vérification...",
+    verificationResent: "Email de vérification envoyé",
+    verificationResentDesc: "Un nouveau lien de vérification a été envoyé à {email}.",
+    verificationResendError: "Impossible de renvoyer l'email de vérification pour le moment. Réessayez dans un instant.",
   },
   ht: {
     loading: "Chajman...",
@@ -187,6 +197,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkEmailTitle: "Tcheke Imèl Ou",
     checkEmailDesc: "Nou voye yon lyen verifikasyon bay {email}. Tanpri tcheke bwat resepsyon ou (ak dosye spam) epi klike sou lyen nan pou aktive kont ou.",
     checkEmailBack: "Retounen nan koneksyon",
+    resendVerification: "Revoye imèl verifikasyon an",
+    resendingVerification: "Ap voye imèl verifikasyon an...",
+    verificationResent: "Imèl verifikasyon an voye",
+    verificationResentDesc: "Yon nouvo lyen verifikasyon voye bay {email}.",
+    verificationResendError: "Nou pa t kapab revoye imèl verifikasyon an kounye a. Tanpri eseye ankò talè.",
   },
 };
 
@@ -237,6 +252,7 @@ export default function TenantAuth() {
   const [error, setError] = useState<string | null>(null);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState('');
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -473,6 +489,43 @@ export default function TenantAuth() {
     setIsLoading(false);
   };
 
+  const resendVerificationEmail = async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return false;
+
+    setIsResendingVerification(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: normalizedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: lt('verificationResent'),
+        description: lt('verificationResentDesc', { email: normalizedEmail }),
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error resending verification email:', err);
+      toast({
+        title: lt('errorTitle'),
+        description: lt('verificationResendError'),
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -543,10 +596,12 @@ export default function TenantAuth() {
     // Email+role invitation (tenant user invite) = requires manual approval.
     const isAutoApproved = isTokenInvite;
 
+    const normalizedEmail = signupForm.email.trim().toLowerCase();
+
     // Sign up the user — pass tenant info in metadata so the handle_new_user trigger
     // (which runs as SECURITY DEFINER) can create the profile and role atomically
     const { error, data } = await signUp(
-      signupForm.email,
+      normalizedEmail,
       signupForm.password,
       signupForm.firstName,
       signupForm.lastName,
@@ -566,7 +621,7 @@ export default function TenantAuth() {
 
       if (isAlreadyRegistered && hasValidInvitation) {
         // User exists from another tenant — switch to login tab
-        setLoginForm({ email: signupForm.email, password: '' });
+        setLoginForm({ email: normalizedEmail, password: '' });
         setActiveTab('login');
         toast({
           title: lt('accountExists'),
@@ -589,6 +644,32 @@ export default function TenantAuth() {
       return;
     }
 
+    const looksLikeRepeatedSignup = Boolean(
+      !data.session &&
+      data.user &&
+      Array.isArray(data.user.identities) &&
+      data.user.identities.length === 0
+    );
+
+    if (looksLikeRepeatedSignup) {
+      const resendWorked = await resendVerificationEmail(normalizedEmail);
+
+      if (resendWorked) {
+        setConfirmationEmail(normalizedEmail);
+        setShowEmailConfirmation(true);
+      } else {
+        setLoginForm({ email: normalizedEmail, password: '' });
+        setActiveTab('login');
+        toast({
+          title: lt('accountExists'),
+          description: hasValidInvitation ? lt('accountExistsLogin') : lt('accountExistsDesc'),
+        });
+      }
+
+      setIsLoading(false);
+      return;
+    }
+
     // Mark token invitation as used (best-effort, will also be handled on login)
     if (isTokenInvite && invitation?.id) {
       try {
@@ -599,7 +680,7 @@ export default function TenantAuth() {
     }
 
     // Always show email confirmation screen after successful signup
-    setConfirmationEmail(signupForm.email);
+    setConfirmationEmail(normalizedEmail);
     setShowEmailConfirmation(true);
     setIsLoading(false);
   };
@@ -629,6 +710,13 @@ export default function TenantAuth() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Button
+              className="w-full"
+              onClick={() => void resendVerificationEmail(confirmationEmail)}
+              disabled={isResendingVerification}
+            >
+              {isResendingVerification ? lt('resendingVerification') : lt('resendVerification')}
+            </Button>
             <Button 
               variant="outline" 
               className="w-full" 
