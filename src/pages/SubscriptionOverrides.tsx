@@ -234,7 +234,7 @@ export default function SubscriptionOverrides() {
       queryClient.invalidateQueries({ queryKey: ["subscription-discounts"] });
       toast.success(lt("discountAdded"));
       setDialogOpen(false);
-      setForm({ tenant_id: "", discount_type: "percentage", discount_value: "", reason: "", valid_until: "" });
+      setForm({ tenant_id: "", discount_type: "percentage", discount_value: "", reason: "", valid_until: "", target_plan: "" });
     },
     onError: () => toast.error(lt("error")),
   });
