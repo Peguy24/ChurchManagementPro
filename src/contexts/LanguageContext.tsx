@@ -2281,6 +2281,7 @@ const translations = {
       },
       revenue: {
         title: "Analytique Revenus",
+        navTitle: "Revenus",
         subtitle: "Métriques de revenus, croissance MRR et conversion des essais",
         mrr: "MRR",
         mrrDesc: "Revenus mensuels récurrents",
