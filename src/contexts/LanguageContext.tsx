@@ -2306,6 +2306,7 @@ const translations = {
       },
       health: {
         title: "Santé des Églises",
+        navTitle: "Santé Églises",
         subtitle: "Scores de santé basés sur l'engagement, la présence, les dons et l'adoption des fonctionnalités",
         recalculate: "Recalculer",
         recalculated: "Scores recalculés",
