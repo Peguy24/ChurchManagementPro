@@ -49,7 +49,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("Starting birthday notification check...");
+    const body = await req.json().catch(() => ({}));
+    console.log("Starting birthday notification check...", body);
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -65,7 +66,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw tenantsError;
     }
 
-    const today = new Date();
+    // Allow overriding the check date for manual triggers (format: YYYY-MM-DD)
+    const checkDate = body.check_date ? new Date(body.check_date + "T12:00:00Z") : new Date();
+    const today = checkDate;
     const month = today.getMonth() + 1;
     const day = today.getDate();
     console.log(`Checking birthdays for ${month}/${day}`);
