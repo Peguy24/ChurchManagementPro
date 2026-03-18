@@ -201,7 +201,8 @@ export function canSeeNavItem(roles: AppRole[], itemPath: string): boolean {
 export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   dashboard: "Tableau de bord",
   members: "Gestion des membres",
-  attendance: "Présences",
+  attendance: "Présences (Scanner)",
+  attendance_admin: "Présences (Alertes & Rapports)",
   ministries: "Ministères",
   branches: "Branches",
   finances: "Finances",
