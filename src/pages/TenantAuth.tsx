@@ -652,18 +652,29 @@ export default function TenantAuth() {
     );
 
     if (looksLikeRepeatedSignup) {
-      const resendWorked = await resendVerificationEmail(normalizedEmail);
-
-      if (resendWorked) {
-        setConfirmationEmail(normalizedEmail);
-        setShowEmailConfirmation(true);
-      } else {
+      if (hasValidInvitation) {
+        setShowEmailConfirmation(false);
+        setConfirmationEmail('');
         setLoginForm({ email: normalizedEmail, password: '' });
         setActiveTab('login');
         toast({
           title: lt('accountExists'),
-          description: hasValidInvitation ? lt('accountExistsLogin') : lt('accountExistsDesc'),
+          description: lt('accountExistsLogin'),
         });
+      } else {
+        const resendWorked = await resendVerificationEmail(normalizedEmail);
+
+        if (resendWorked) {
+          setConfirmationEmail(normalizedEmail);
+          setShowEmailConfirmation(true);
+        } else {
+          setLoginForm({ email: normalizedEmail, password: '' });
+          setActiveTab('login');
+          toast({
+            title: lt('accountExists'),
+            description: lt('accountExistsDesc'),
+          });
+        }
       }
 
       setIsLoading(false);
