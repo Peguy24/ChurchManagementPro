@@ -8799,6 +8799,7 @@ const translations = {
       noPlan: "Okenn",
       activityLog: {
         title: "Jounal Aktivite",
+        navTitle: "Jounal Aktivite",
         subtitle: "Istwa tout aksyon sou platfòm nan",
         searchPlaceholder: "Chèche pa deskripsyon oswa imèl...",
         eventType: "Tip Evènman",
