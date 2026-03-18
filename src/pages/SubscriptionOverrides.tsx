@@ -244,6 +244,19 @@ export default function SubscriptionOverrides() {
 
   const activeDiscounts = (discounts || []).filter(d => d.is_active);
 
+  const getEffectTiming = (discount: any) => {
+    if (discount.discount_type === "free") {
+      return { label: lt("immediate"), className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200" };
+    }
+    const hasActiveSub = (subscriptions || []).some(
+      (s: any) => s.tenant_id === discount.tenant_id && s.status === "active"
+    );
+    if (hasActiveSub) {
+      return { label: lt("nextRenewal"), className: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" };
+    }
+    return { label: lt("onCheckout"), className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" };
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
