@@ -17,6 +17,7 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "dashboard",
   "members",
   "attendance",
+  "attendance_admin",
   "ministries",
   "branches",
   "finances",
