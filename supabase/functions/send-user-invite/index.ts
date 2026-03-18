@@ -88,15 +88,16 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const normalizedEmail = email.toLowerCase().trim();
 
     // Look up user by email in auth.users
     const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = authData?.users?.find((u: any) => u.email === email);
+    const existingUser = authData?.users?.find((u: any) => u.email?.toLowerCase() === normalizedEmail);
 
     if (existingUser) {
       const { data: existingRole } = await supabaseAdmin
         .from("tenant_user_roles")
-        .select("id, role")
+        .select("id, role, is_approved")
         .eq("tenant_id", tenantId)
         .eq("user_id", existingUser.id)
         .maybeSingle();
@@ -112,6 +113,28 @@ serve(async (req) => {
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      const { error: pendingRoleError } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .insert({
+          tenant_id: tenantId,
+          user_id: existingUser.id,
+          role: role || "user",
+          is_approved: false,
+          custom_role_id: customRoleId || null,
+        });
+
+      if (pendingRoleError) {
+        throw new Error(`Failed to create pending tenant role: ${pendingRoleError.message}`);
+      }
+
+      console.log("Created pending tenant role for existing user", {
+        email: normalizedEmail,
+        tenantId,
+        userId: existingUser.id,
+        role: role || "user",
+        customRoleId: customRoleId || null,
+      });
     }
 
     // Build the invitation URL
