@@ -116,11 +116,11 @@ export default function TenantRolePermissionsManager() {
   function getDefaultPermissions(role: AppRole): RouteGroup[] {
     switch (role) {
       case "pastor":
-        return ["dashboard", "members", "attendance", "ministries", "branches", "finances", "events", "reports", "communication", "settings", "inventory", "volunteers", "visitors"];
+        return ["dashboard", "members", "attendance", "attendance_admin", "ministries", "branches", "finances", "events", "reports", "communication", "settings", "inventory", "volunteers", "visitors"];
       case "treasurer":
         return ["dashboard", "finances", "reports", "inventory"];
       case "secretary":
-        return ["dashboard", "members", "attendance", "events", "communication", "inventory", "visitors"];
+        return ["dashboard", "members", "attendance", "attendance_admin", "events", "communication", "inventory", "visitors"];
       case "volunteer":
         return ["dashboard", "attendance"];
       default:

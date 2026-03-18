@@ -51,6 +51,7 @@ export default function RolePermissionsManager() {
     dashboard: t("rolePermissions.groupDashboard"),
     members: t("rolePermissions.groupMembers"),
     attendance: t("rolePermissions.groupAttendance"),
+    attendance_admin: t("rolePermissions.groupAttendanceAdmin"),
     ministries: t("rolePermissions.groupMinistries"),
     branches: t("rolePermissions.groupBranches"),
     finances: t("rolePermissions.groupFinances"),
