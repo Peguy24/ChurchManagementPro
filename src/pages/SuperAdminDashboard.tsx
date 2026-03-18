@@ -308,8 +308,7 @@ export default function SuperAdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
-                  { icon: Building2, label: t("superAdmin.manageChurches"), path: "/settings/tenants" },
+              {[
                   { icon: Eye, label: t("superAdmin.exploreChurchData"), path: "/super-admin/explore" },
                   { icon: Users, label: t("superAdmin.userManagement"), path: "/settings/users" },
                   { icon: Activity, label: t("superAdmin.activityLog.title"), path: "/super-admin/activity" },
