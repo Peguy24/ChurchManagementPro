@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CreditCard, Plus, Trash2, Percent, DollarSign, Gift } from "lucide-react";
+import { CreditCard, Plus, Trash2, Percent, DollarSign, Gift, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/currency";
