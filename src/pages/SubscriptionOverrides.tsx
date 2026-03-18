@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CreditCard, Plus, Trash2, Percent, DollarSign, Gift } from "lucide-react";
+import { CreditCard, Plus, Trash2, Percent, DollarSign, Gift, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/currency";
@@ -44,6 +44,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Status",
     actions: "Actions",
     error: "Error",
+    effect: "Effect",
+    immediate: "Immediate",
+    nextRenewal: "Next Renewal",
+    onCheckout: "On Checkout",
+    effectHintFree: "Free access activates immediately — bypasses billing.",
+    effectHintOther: "Applied at next renewal if already subscribed, or on first checkout.",
   },
   fr: {
     title: "Gestion des Abonnements",
@@ -71,6 +77,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Statut",
     actions: "Actions",
     error: "Erreur",
+    effect: "Effet",
+    immediate: "Immédiat",
+    nextRenewal: "Prochain renouvellement",
+    onCheckout: "Au paiement",
+    effectHintFree: "L'accès gratuit s'active immédiatement — pas de facturation.",
+    effectHintOther: "Appliqué au prochain renouvellement si déjà abonné, ou au premier paiement.",
   },
   ht: {
     title: "Jesyon Abònman",
@@ -98,6 +110,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Estati",
     actions: "Aksyon",
     error: "Erè",
+    effect: "Efè",
+    immediate: "Imedyat",
+    nextRenewal: "Pwochen renouvèlman",
+    onCheckout: "Lè peye",
+    effectHintFree: "Aksè gratis aktive touswit — pa gen fakti.",
+    effectHintOther: "Aplike nan pwochen renouvèlman si deja abòne, oswa nan premye pèman.",
   },
 };
 
@@ -226,6 +244,19 @@ export default function SubscriptionOverrides() {
 
   const activeDiscounts = (discounts || []).filter(d => d.is_active);
 
+  const getEffectTiming = (discount: any) => {
+    if (discount.discount_type === "free") {
+      return { label: lt("immediate"), className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200" };
+    }
+    const hasActiveSub = (subscriptions || []).some(
+      (s: any) => s.tenant_id === discount.tenant_id && s.status === "active"
+    );
+    if (hasActiveSub) {
+      return { label: lt("nextRenewal"), className: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" };
+    }
+    return { label: lt("onCheckout"), className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" };
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -280,6 +311,10 @@ export default function SubscriptionOverrides() {
                     />
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="h-3 w-3" />
+                  {form.discount_type === "free" ? lt("effectHintFree") : lt("effectHintOther")}
+                </p>
                 <div>
                   <Label>{lt("reason")}</Label>
                   <Textarea value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} rows={2} />
@@ -350,8 +385,9 @@ export default function SubscriptionOverrides() {
                   <TableHead>{lt("discountType")}</TableHead>
                   <TableHead>{lt("value")}</TableHead>
                   <TableHead>{lt("reason")}</TableHead>
-                  <TableHead>{lt("validUntil")}</TableHead>
-                  <TableHead>{lt("actions")}</TableHead>
+                   <TableHead>{lt("effect")}</TableHead>
+                   <TableHead>{lt("validUntil")}</TableHead>
+                   <TableHead>{lt("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -364,8 +400,14 @@ export default function SubscriptionOverrides() {
                       </Badge>
                     </TableCell>
                     <TableCell>{d.discount_type === "free" ? "100%" : `${d.discount_value}${d.discount_type === "percentage" ? "%" : "$"}`}</TableCell>
-                    <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
-                    <TableCell className="text-sm">{d.valid_until ? format(new Date(d.valid_until), "dd/MM/yyyy") : "∞"}</TableCell>
+                     <TableCell className="text-sm max-w-[200px] truncate">{d.reason || "-"}</TableCell>
+                     <TableCell>
+                       {(() => {
+                         const timing = getEffectTiming(d);
+                         return <Badge className={timing.className}>{timing.label}</Badge>;
+                       })()}
+                     </TableCell>
+                     <TableCell className="text-sm">{d.valid_until ? format(new Date(d.valid_until), "dd/MM/yyyy") : "∞"}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => removeDiscount.mutate(d.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -375,7 +417,7 @@ export default function SubscriptionOverrides() {
                 ))}
                 {!activeDiscounts.length && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       {lt("noDiscounts")}
                     </TableCell>
                   </TableRow>

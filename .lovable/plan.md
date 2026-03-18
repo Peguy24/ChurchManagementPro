@@ -1,26 +1,32 @@
 
 
-## Plan: Add "Effect Timing" Indicator to Discount Panel
+## Current Situation
 
-### What changes
+You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
 
-**1. Add an "Effect" column to the Active Discounts table** showing when each discount takes effect:
-- **"Immediate"** (green badge) — for `free` type discounts (bypasses Stripe, activates directly in DB)
-- **"Next Renewal"** (amber badge) — for `percentage` or `fixed` discounts on existing subscriptions (Stripe applies at next invoice)
-- **"On Checkout"** (blue badge) — for discounts where the church has no active subscription yet (coupon applied when they subscribe)
+## What Needs to Be Done
 
-**2. Determine the indicator logic** by cross-referencing the discount's `tenant_id` against the `tenant_subscriptions` table:
-- If `discount_type === "free"` → always "Immediate"
-- If tenant has an active subscription → "Next Renewal"
-- If tenant has no active subscription → "On Checkout"
+### 1. Update all Edge Functions sender addresses
+Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
 
-**3. Add a helper tooltip/info** in the Add Discount dialog explaining when each type takes effect.
+| Function | Current `from` |
+|---|---|
+| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
+| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
+| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
+| `send-absence-alert` | `Église <onboarding@resend.dev>` |
+| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
+| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
+| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
+| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
 
-### Technical details
+### 2. Before I proceed, I need to know:
+- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
+- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
 
-- **File**: `src/pages/SubscriptionOverrides.tsx`
-- Join `subscriptions` data (already fetched) with `discounts` to determine if the tenant has an active sub
-- Add a new `TableHead` "Effect" column and render the appropriate colored `Badge`
-- Add translations for the new labels in all 3 languages (en, fr, ht)
-- Add a small info note below the discount type selector in the dialog explaining timing
+Once you provide the domain, I'll update all 12 Edge Functions in one pass.
 
