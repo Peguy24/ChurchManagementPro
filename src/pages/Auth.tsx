@@ -211,6 +211,18 @@ export default function Auth() {
   const [superAdminInvite, setSuperAdminInvite] = useState<{ email: string; valid: boolean } | null>(null);
   const [isValidatingToken, setIsValidatingToken] = useState(false);
 
+  // Clear cached tenant branding on Auth page so default blue colors are shown
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('tenant_cache');
+      const root = document.documentElement;
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--primary-light');
+      root.style.removeProperty('--primary-dark');
+      root.style.removeProperty('--ring');
+    } catch (e) {}
+  }, []);
+
   // Validate Super Admin invitation token
   useEffect(() => {
     const validateSuperAdminToken = async () => {
