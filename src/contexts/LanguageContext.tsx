@@ -8844,6 +8844,7 @@ const translations = {
       },
       health: {
         title: "Sante Legliz",
+        navTitle: "Sante Legliz",
         subtitle: "Nòt sante baze sou angajman, prezans, don ak adopsyon fonksyonalite",
         recalculate: "Rekalkile",
         recalculated: "Nòt rekalkile",
