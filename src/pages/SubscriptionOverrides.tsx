@@ -44,6 +44,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Status",
     actions: "Actions",
     error: "Error",
+    effect: "Effect",
+    immediate: "Immediate",
+    nextRenewal: "Next Renewal",
+    onCheckout: "On Checkout",
+    effectHintFree: "Free access activates immediately — bypasses billing.",
+    effectHintOther: "Applied at next renewal if already subscribed, or on first checkout.",
   },
   fr: {
     title: "Gestion des Abonnements",
@@ -71,6 +77,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Statut",
     actions: "Actions",
     error: "Erreur",
+    effect: "Effet",
+    immediate: "Immédiat",
+    nextRenewal: "Prochain renouvellement",
+    onCheckout: "Au paiement",
+    effectHintFree: "L'accès gratuit s'active immédiatement — pas de facturation.",
+    effectHintOther: "Appliqué au prochain renouvellement si déjà abonné, ou au premier paiement.",
   },
   ht: {
     title: "Jesyon Abònman",
@@ -98,6 +110,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     status: "Estati",
     actions: "Aksyon",
     error: "Erè",
+    effect: "Efè",
+    immediate: "Imedyat",
+    nextRenewal: "Pwochen renouvèlman",
+    onCheckout: "Lè peye",
+    effectHintFree: "Aksè gratis aktive touswit — pa gen fakti.",
+    effectHintOther: "Aplike nan pwochen renouvèlman si deja abòne, oswa nan premye pèman.",
   },
 };
 
