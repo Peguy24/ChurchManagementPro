@@ -83,6 +83,7 @@ const EventRegister = lazy(() => import("./pages/EventRegister"));
 const EventRegistrations = lazy(() => import("./pages/EventRegistrations"));
 const VolunteerScheduling = lazy(() => import("./pages/VolunteerScheduling"));
 const Visitors = lazy(() => import("./pages/Visitors"));
+const SuperAdminWhiteLabel = lazy(() => import("./pages/SuperAdminWhiteLabel"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DataBackup = lazy(() => import("./pages/DataBackup"));
