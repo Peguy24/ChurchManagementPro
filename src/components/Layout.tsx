@@ -516,6 +516,8 @@ export default function Layout({ children }: LayoutProps) {
                     src={brandingLogo} 
                     alt="Logo" 
                     className="h-10 w-10 object-contain"
+                    width={40}
+                    height={40}
                   />
                 ) : (
                   <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
@@ -539,6 +541,8 @@ export default function Layout({ children }: LayoutProps) {
                 src={brandingLogo} 
                 alt="Logo" 
                 className="h-8 w-8 sm:h-12 sm:w-12 object-contain"
+                width={48}
+                height={48}
               />
             ) : (
               <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg bg-primary flex items-center justify-center">
