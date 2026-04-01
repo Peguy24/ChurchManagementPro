@@ -22,10 +22,10 @@ const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
     professional: "Professional",
   },
   fr: {
-    enterpriseDesc: "Votre ticket sera traité en priorité absolue (24/7).",
+    enterpriseDesc: "Votre ticket sera traité en priorité absolue.",
     professionalDesc: "Votre ticket sera traité en priorité.",
     standardDesc: "Décrivez votre problème, notre équipe vous répondra par email.",
-    support247: "Support 24/7",
+    support247: "Support dédié",
     supportPriority: "Support Prioritaire",
     enterprise: "Entreprise",
     professional: "Professionnel",
