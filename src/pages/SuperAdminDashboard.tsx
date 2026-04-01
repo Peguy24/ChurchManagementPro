@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette, FileText } from "lucide-react";
 import { SuperAdminOnboardingOverview } from "@/components/SuperAdminOnboardingOverview";
 import { SupportTicketsSummary } from "@/components/superadmin/SupportTicketsSummary";
 import { PlatformAlertsWidget } from "@/components/superadmin/PlatformAlertsWidget";
@@ -15,6 +16,7 @@ import { formatCurrency } from "@/lib/currency";
 import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
