@@ -326,10 +326,10 @@ export default function SuperAdminDashboard() {
                   { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
                 ].map((item) => (
                   <Button
-                    key={item.path}
+                  key={item.path}
                     variant="outline"
                     className="w-full justify-start text-left truncate"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => item.path === "__presentation__" ? setShowPresDialog(true) : navigate(item.path)}
                   >
                     <item.icon className="mr-2 h-4 w-4 shrink-0" />
                     <span className="truncate">{item.label}</span>
