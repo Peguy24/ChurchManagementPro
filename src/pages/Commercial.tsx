@@ -576,7 +576,7 @@ const Commercial = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
-              <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
+              <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <Link to="/legal/terms_of_use" className="text-muted-foreground hover:text-foreground transition-colors">
