@@ -13,10 +13,10 @@ import { Loader2, Shield, Headphones } from "lucide-react";
 
 const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
-    enterpriseDesc: "Your ticket will be handled with absolute priority (24/7).",
+    enterpriseDesc: "Your ticket will be handled with absolute priority.",
     professionalDesc: "Your ticket will be handled with priority.",
     standardDesc: "Describe your issue, our team will respond by email.",
-    support247: "24/7 Support",
+    support247: "Dedicated Support",
     supportPriority: "Priority Support",
     enterprise: "Enterprise",
     professional: "Professional",
