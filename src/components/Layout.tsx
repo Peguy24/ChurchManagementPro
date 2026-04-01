@@ -299,6 +299,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin", icon: LayoutDashboard, label: sl("dashboard") },
         { to: "/super-admin/accounting", icon: PiggyBank, label: sl("accounting") },
         { to: "/super-admin/revenue", icon: BarChart3, label: sl("revenue") },
+        { to: "/super-admin/payments", icon: CreditCard, label: sl("payments") },
         { to: "/super-admin/health", icon: Sparkles, label: sl("health") },
         { to: "/super-admin/explore", icon: FolderOpen, label: sl("explore") },
         { to: "/settings/tenants", icon: Building2, label: sl("churches") },
