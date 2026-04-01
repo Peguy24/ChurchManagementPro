@@ -67,6 +67,7 @@ import AnnouncementBanners from "./pages/AnnouncementBanners";
 import SubscriptionOverrides from "./pages/SubscriptionOverrides";
 import ChurnPrevention from "./pages/ChurnPrevention";
 import TenantComparison from "./pages/TenantComparison";
+import PaymentMonitoring from "./pages/PaymentMonitoring";
 
 import EventCalendar from "./pages/EventCalendar";
 import AttendanceKiosk from "./pages/AttendanceKiosk";
