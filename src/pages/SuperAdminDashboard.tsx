@@ -340,6 +340,28 @@ export default function SuperAdminDashboard() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={showPresDialog} onOpenChange={setShowPresDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === "fr" ? "Télécharger la présentation" : "Download Presentation"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <a href="/presentations/presentation_fr.pptx" download className="block">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>Français</span>
+              </Button>
+            </a>
+            <a href="/presentations/presentation_en.pptx" download className="block">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>English</span>
+              </Button>
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
