@@ -5937,6 +5937,10 @@ const translations = {
         error: "Error updating branding",
         noResults: "No churches found",
       },
+      payments: {
+        title: "Payment Monitoring",
+        navTitle: "Payments",
+      },
     },
     platformAccounting: {
       title: "Platform Accounting",
