@@ -9209,6 +9209,10 @@ const translations = {
         error: "Erè pandan mete ajou branding",
         noResults: "Pa gen legliz jwenn",
       },
+      payments: {
+        title: "Siveyans Peman",
+        navTitle: "Peman",
+      },
     },
     platformAccounting: {
       title: "Kontabilite Platfòm",
