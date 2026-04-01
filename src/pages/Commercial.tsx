@@ -317,6 +317,9 @@ const Commercial = () => {
                   src={heroImage} 
                   alt="ChurchManager Platform" 
                   className="w-full h-auto object-cover"
+                  width={1920}
+                  height={1088}
+                  fetchPriority="high"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               </div>
