@@ -2777,7 +2777,7 @@ const translations = {
       feat_unlimitedMembers: "Membres illimités",
       feat_unlimitedBranches: "Succursales illimitées",
       feat_trainingIncluded: "Formation incluse",
-      feat_support247: "Support 24/7",
+      feat_support247: "Support dédié",
       feat_whiteLabel: "White-label disponible",
       testimonialsBadge: "Témoignages",
       testimonialsTitle: "Ce que disent nos clients",
