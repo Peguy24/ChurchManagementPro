@@ -323,6 +323,7 @@ export default function SuperAdminDashboard() {
                   { icon: GitCompareArrows, label: t("superAdmin.comparison.title"), path: "/super-admin/comparison" },
                   { icon: Palette, label: t("superAdmin.whiteLabel.title"), path: "/super-admin/branding" },
                   { icon: DollarSign, label: t("superAdmin.payments.title"), path: "/super-admin/payments" },
+                  { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
                 ].map((item) => (
                   <Button
                     key={item.path}
