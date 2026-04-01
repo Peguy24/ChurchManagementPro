@@ -2913,7 +2913,7 @@ const translations = {
       advancedReports: "Rapports avancés",
       prioritySupport: "Support prioritaire",
       trainingIncluded: "Formation incluse",
-      support247: "Support 24/7",
+      support247: "Support dédié",
       monthly: "Mensuel",
       yearly: "Annuel",
       save15: "Économisez 15%",
