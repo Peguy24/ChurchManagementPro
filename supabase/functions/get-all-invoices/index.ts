@@ -139,8 +139,15 @@ serve(async (req) => {
 
     logStep("Fetched invoices from Stripe", { count: allStripeInvoices.length });
 
-    // Show all invoices (don't filter by price ID — this is the super admin view)
-    const realInvoices = allStripeInvoices;
+    // Filter to only show invoices for known church management plan price IDs
+    const realInvoices = allStripeInvoices.filter((invoice) => {
+      for (const line of invoice.lines?.data || []) {
+        if (line.price?.id && realPriceIds.has(line.price.id)) {
+          return true;
+        }
+      }
+      return false;
+    });
 
     // Get tenant mapping: email -> tenant name
     const { data: tenants } = await supabaseClient
