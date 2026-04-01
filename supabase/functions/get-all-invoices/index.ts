@@ -179,10 +179,13 @@ serve(async (req) => {
       const customerEmail = (invoice.customer_email || "").toLowerCase();
       const tenantInfo = emailToTenant[customerEmail] || emailToTenantViaProfile[customerEmail];
 
-      let planName = "Unknown";
+      let planName = "Other";
       for (const line of invoice.lines?.data || []) {
         if (line.price?.id && planNameMap[line.price.id]) {
           planName = planNameMap[line.price.id];
+          break;
+        } else if ((line as any).description) {
+          planName = (line as any).description;
           break;
         }
       }
