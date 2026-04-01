@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette, FileText } from "lucide-react";
 import { SuperAdminOnboardingOverview } from "@/components/SuperAdminOnboardingOverview";
 import { SupportTicketsSummary } from "@/components/superadmin/SupportTicketsSummary";
 import { PlatformAlertsWidget } from "@/components/superadmin/PlatformAlertsWidget";
@@ -15,10 +16,12 @@ import { formatCurrency } from "@/lib/currency";
 import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const [showPresDialog, setShowPresDialog] = useState(false);
 
   const planDisplayName: Record<string, string> = {
     free: t("superAdmin.free"),
@@ -320,12 +323,13 @@ export default function SuperAdminDashboard() {
                   { icon: GitCompareArrows, label: t("superAdmin.comparison.title"), path: "/super-admin/comparison" },
                   { icon: Palette, label: t("superAdmin.whiteLabel.title"), path: "/super-admin/branding" },
                   { icon: DollarSign, label: t("superAdmin.payments.title"), path: "/super-admin/payments" },
+                  { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
                 ].map((item) => (
                   <Button
-                    key={item.path}
+                  key={item.path}
                     variant="outline"
                     className="w-full justify-start text-left truncate"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => item.path === "__presentation__" ? setShowPresDialog(true) : navigate(item.path)}
                   >
                     <item.icon className="mr-2 h-4 w-4 shrink-0" />
                     <span className="truncate">{item.label}</span>
@@ -336,6 +340,28 @@ export default function SuperAdminDashboard() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={showPresDialog} onOpenChange={setShowPresDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === "fr" ? "Télécharger la présentation" : "Download Presentation"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <a href="/presentations/presentation_fr.pptx" download className="block">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>Français</span>
+              </Button>
+            </a>
+            <a href="/presentations/presentation_en.pptx" download className="block">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>English</span>
+              </Button>
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
