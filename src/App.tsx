@@ -188,6 +188,7 @@ const App = () => (
               <Route path="/super-admin/comparison" element={<ProtectedRoute requireSuperAdmin><TenantComparison /></ProtectedRoute>} />
               <Route path="/super-admin/payments" element={<ProtectedRoute requireSuperAdmin><PaymentMonitoring /></ProtectedRoute>} />
               <Route path="/super-admin/legal" element={<ProtectedRoute requireSuperAdmin><LegalDocuments /></ProtectedRoute>} />
+              <Route path="/super-admin/branding" element={<ProtectedRoute requireSuperAdmin><SuperAdminWhiteLabel /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
