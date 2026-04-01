@@ -31,10 +31,10 @@ const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
     professional: "Professionnel",
   },
   ht: {
-    enterpriseDesc: "Tikè ou a ap trete ak priyorite absoli (24/7).",
+    enterpriseDesc: "Tikè ou a ap trete ak priyorite absoli.",
     professionalDesc: "Tikè ou a ap trete ak priyorite.",
     standardDesc: "Dekri pwoblèm ou, ekip nou an ap reponn pa imèl.",
-    support247: "Sipò 24/7",
+    support247: "Sipò dedye",
     supportPriority: "Sipò Priyorite",
     enterprise: "Antrepriz",
     professional: "Pwofesyonèl",
