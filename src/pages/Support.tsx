@@ -30,13 +30,13 @@ const priorityColors: Record<string, string> = {
 
 const TIER_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
-    support247: "24/7 Support",
+    support247: "Dedicated Support",
     supportPriority: "Priority Support",
     supportEmail: "Email Support",
     enterprise: "Enterprise",
     professional: "Professional",
     essential: "Essential",
-    enterpriseDesc: "You benefit from priority 24/7 support. Your tickets are handled with absolute priority.",
+    enterpriseDesc: "You benefit from dedicated priority support. Your tickets are handled with absolute priority.",
     professionalDesc: "Your tickets are handled with priority. Accelerated response time guaranteed.",
     essentialDesc: "Standard email support. Upgrade to Professional plan for priority support.",
   },
