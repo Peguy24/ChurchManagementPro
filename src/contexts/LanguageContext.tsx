@@ -6051,7 +6051,7 @@ const translations = {
       feat_unlimitedBranches: "Unlimited branches",
       
       feat_trainingIncluded: "Training included",
-      feat_support247: "24/7 Support",
+      feat_support247: "Dedicated Support",
       feat_whiteLabel: "White-label available",
       testimonialsBadge: "Testimonials",
       testimonialsTitle: "What our clients say",
