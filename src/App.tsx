@@ -67,6 +67,7 @@ import AnnouncementBanners from "./pages/AnnouncementBanners";
 import SubscriptionOverrides from "./pages/SubscriptionOverrides";
 import ChurnPrevention from "./pages/ChurnPrevention";
 import TenantComparison from "./pages/TenantComparison";
+import PaymentMonitoring from "./pages/PaymentMonitoring";
 
 import EventCalendar from "./pages/EventCalendar";
 import AttendanceKiosk from "./pages/AttendanceKiosk";
@@ -174,6 +175,7 @@ const App = () => (
               <Route path="/super-admin/subscriptions" element={<ProtectedRoute requireSuperAdmin><SubscriptionOverrides /></ProtectedRoute>} />
               <Route path="/super-admin/churn" element={<ProtectedRoute requireSuperAdmin><ChurnPrevention /></ProtectedRoute>} />
               <Route path="/super-admin/comparison" element={<ProtectedRoute requireSuperAdmin><TenantComparison /></ProtectedRoute>} />
+              <Route path="/super-admin/payments" element={<ProtectedRoute requireSuperAdmin><PaymentMonitoring /></ProtectedRoute>} />
               <Route path="/super-admin/legal" element={<ProtectedRoute requireSuperAdmin><LegalDocuments /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
