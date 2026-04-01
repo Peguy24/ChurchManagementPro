@@ -14,7 +14,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import heroImage from "@/assets/hero-abstract.png";
+import heroImage from "@/assets/hero-abstract.webp";
 
 const Commercial = () => {
   const navigate = useNavigate();
@@ -231,7 +231,7 @@ const Commercial = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
+            <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
@@ -576,7 +576,7 @@ const Commercial = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
-              <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <Link to="/legal/terms_of_use" className="text-muted-foreground hover:text-foreground transition-colors">

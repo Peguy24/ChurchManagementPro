@@ -1,4 +1,5 @@
 // App root - force rebuild
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,86 +8,88 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
-import Commercial from "./pages/Commercial";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Members from "./pages/Members";
-import MemberCards from "./pages/MemberCards";
-import MemberDetails from "./pages/MemberDetails";
-import Attendance from "./pages/Attendance";
-import MemberAttendanceStats from "./pages/MemberAttendanceStats";
-import AttendanceAlerts from "./pages/AttendanceAlerts";
-import AttendanceArrivalReport from "./pages/AttendanceArrivalReport";
-import GroupComparisonDashboard from "./pages/GroupComparisonDashboard";
-import Donations from "./pages/Donations";
-import IncomeCategories from "./pages/IncomeCategories";
-import FinancialReports from "./pages/FinancialReports";
-import FinancialDashboard from "./pages/FinancialDashboard";
-import Budgets from "./pages/Budgets";
-import Expenses from "./pages/Expenses";
-import ExpenseCategories from "./pages/ExpenseCategories";
-import BankReconciliation from "./pages/BankReconciliation";
-import SpecialFunds from "./pages/SpecialFunds";
-import CashRegister from "./pages/CashRegister";
-import FinancialAudit from "./pages/FinancialAudit";
-import CreditAndLoans from "./pages/CreditAndLoans";
-import Events from "./pages/Events";
-import Ministries from "./pages/Ministries";
-import MinistryDetails from "./pages/MinistryDetails";
-import MinistriesStats from "./pages/MinistriesStats";
-import Auth from "./pages/Auth";
-import TenantAuth from "./pages/TenantAuth";
-import SelectTenant from "./pages/SelectTenant";
-import Branches from "./pages/Branches";
-import CustomFields from "./pages/CustomFields";
-import EmailTemplates from "./pages/EmailTemplates";
-import ChurchSettings from "./pages/ChurchSettings";
-
-import TenantBranding from "./pages/TenantBranding";
-import UserManagement from "./pages/UserManagement";
-import PendingApproval from "./pages/PendingApproval";
-import Salaries from "./pages/Salaries";
-import Inventory from "./pages/Inventory";
-import TenantManagement from "./pages/TenantManagement";
-import TenantUserManagement from "./pages/TenantUserManagement";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import PlatformAccounting from "./pages/PlatformAccounting";
-import AdminInvitations from "./pages/AdminInvitations";
-import Subscription from "./pages/Subscription";
-import TenantDataViewer from "./pages/TenantDataViewer";
-import SmartInsights from "./pages/SmartInsights";
-import SystemGuide from "./pages/SystemGuide";
-import Support from "./pages/Support";
-import PlatformActivityLog from "./pages/PlatformActivityLog";
-import RevenueAnalytics from "./pages/RevenueAnalytics";
-import ChurchHealthScores from "./pages/ChurchHealthScores";
-import BulkCommunication from "./pages/BulkCommunication";
-import PlatformSettings from "./pages/PlatformSettings";
-import SupportManagement from "./pages/SupportManagement";
-import AnnouncementBanners from "./pages/AnnouncementBanners";
-import SubscriptionOverrides from "./pages/SubscriptionOverrides";
-import ChurnPrevention from "./pages/ChurnPrevention";
-import TenantComparison from "./pages/TenantComparison";
-import PaymentMonitoring from "./pages/PaymentMonitoring";
-
-import EventCalendar from "./pages/EventCalendar";
-import AttendanceKiosk from "./pages/AttendanceKiosk";
-import EngagementAutomations from "./pages/EngagementAutomations";
-import JoinChurch from "./pages/JoinChurch";
-import MemberRequests from "./pages/MemberRequests";
-import EventRegister from "./pages/EventRegister";
-import EventRegistrations from "./pages/EventRegistrations";
-import VolunteerScheduling from "./pages/VolunteerScheduling";
-import Visitors from "./pages/Visitors";
-import NotFound from "./pages/NotFound";
-import ResetPassword from "./pages/ResetPassword";
-import DataBackup from "./pages/DataBackup";
-import DataManagement from "./pages/DataManagement";
-import LegalDocuments from "./pages/LegalDocuments";
-import LegalPage from "./pages/LegalPage";
-import SelectChurch from "./pages/SelectChurch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
+
+// Eagerly load landing pages for fast LCP
+import Commercial from "./pages/Commercial";
+import Home from "./pages/Home";
+
+// Lazy load everything else
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Members = lazy(() => import("./pages/Members"));
+const MemberCards = lazy(() => import("./pages/MemberCards"));
+const MemberDetails = lazy(() => import("./pages/MemberDetails"));
+const Attendance = lazy(() => import("./pages/Attendance"));
+const MemberAttendanceStats = lazy(() => import("./pages/MemberAttendanceStats"));
+const AttendanceAlerts = lazy(() => import("./pages/AttendanceAlerts"));
+const AttendanceArrivalReport = lazy(() => import("./pages/AttendanceArrivalReport"));
+const GroupComparisonDashboard = lazy(() => import("./pages/GroupComparisonDashboard"));
+const Donations = lazy(() => import("./pages/Donations"));
+const IncomeCategories = lazy(() => import("./pages/IncomeCategories"));
+const FinancialReports = lazy(() => import("./pages/FinancialReports"));
+const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const Expenses = lazy(() => import("./pages/Expenses"));
+const ExpenseCategories = lazy(() => import("./pages/ExpenseCategories"));
+const BankReconciliation = lazy(() => import("./pages/BankReconciliation"));
+const SpecialFunds = lazy(() => import("./pages/SpecialFunds"));
+const CashRegister = lazy(() => import("./pages/CashRegister"));
+const FinancialAudit = lazy(() => import("./pages/FinancialAudit"));
+const CreditAndLoans = lazy(() => import("./pages/CreditAndLoans"));
+const Events = lazy(() => import("./pages/Events"));
+const Ministries = lazy(() => import("./pages/Ministries"));
+const MinistryDetails = lazy(() => import("./pages/MinistryDetails"));
+const MinistriesStats = lazy(() => import("./pages/MinistriesStats"));
+const Auth = lazy(() => import("./pages/Auth"));
+const TenantAuth = lazy(() => import("./pages/TenantAuth"));
+const SelectTenant = lazy(() => import("./pages/SelectTenant"));
+const Branches = lazy(() => import("./pages/Branches"));
+const CustomFields = lazy(() => import("./pages/CustomFields"));
+const EmailTemplates = lazy(() => import("./pages/EmailTemplates"));
+const ChurchSettings = lazy(() => import("./pages/ChurchSettings"));
+const TenantBranding = lazy(() => import("./pages/TenantBranding"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const PendingApproval = lazy(() => import("./pages/PendingApproval"));
+const Salaries = lazy(() => import("./pages/Salaries"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const TenantManagement = lazy(() => import("./pages/TenantManagement"));
+const TenantUserManagement = lazy(() => import("./pages/TenantUserManagement"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const PlatformAccounting = lazy(() => import("./pages/PlatformAccounting"));
+const AdminInvitations = lazy(() => import("./pages/AdminInvitations"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const TenantDataViewer = lazy(() => import("./pages/TenantDataViewer"));
+const SmartInsights = lazy(() => import("./pages/SmartInsights"));
+const SystemGuide = lazy(() => import("./pages/SystemGuide"));
+const Support = lazy(() => import("./pages/Support"));
+const PlatformActivityLog = lazy(() => import("./pages/PlatformActivityLog"));
+const RevenueAnalytics = lazy(() => import("./pages/RevenueAnalytics"));
+const ChurchHealthScores = lazy(() => import("./pages/ChurchHealthScores"));
+const BulkCommunication = lazy(() => import("./pages/BulkCommunication"));
+const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
+const SupportManagement = lazy(() => import("./pages/SupportManagement"));
+const AnnouncementBanners = lazy(() => import("./pages/AnnouncementBanners"));
+const SubscriptionOverrides = lazy(() => import("./pages/SubscriptionOverrides"));
+const ChurnPrevention = lazy(() => import("./pages/ChurnPrevention"));
+const TenantComparison = lazy(() => import("./pages/TenantComparison"));
+const PaymentMonitoring = lazy(() => import("./pages/PaymentMonitoring"));
+const EventCalendar = lazy(() => import("./pages/EventCalendar"));
+const AttendanceKiosk = lazy(() => import("./pages/AttendanceKiosk"));
+const EngagementAutomations = lazy(() => import("./pages/EngagementAutomations"));
+const JoinChurch = lazy(() => import("./pages/JoinChurch"));
+const MemberRequests = lazy(() => import("./pages/MemberRequests"));
+const EventRegister = lazy(() => import("./pages/EventRegister"));
+const EventRegistrations = lazy(() => import("./pages/EventRegistrations"));
+const VolunteerScheduling = lazy(() => import("./pages/VolunteerScheduling"));
+const Visitors = lazy(() => import("./pages/Visitors"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const DataBackup = lazy(() => import("./pages/DataBackup"));
+const DataManagement = lazy(() => import("./pages/DataManagement"));
+const LegalDocuments = lazy(() => import("./pages/LegalDocuments"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
+const SelectChurch = lazy(() => import("./pages/SelectChurch"));
 
 const queryClient = new QueryClient();
 
@@ -94,6 +97,12 @@ const InactivityGuard = ({ children }: { children: React.ReactNode }) => {
   useInactivityLogout();
   return <>{children}</>;
 };
+
+const LazyFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -104,6 +113,7 @@ const App = () => (
         <BrowserRouter>
           <InactivityGuard>
           <TenantProvider>
+            <Suspense fallback={<LazyFallback />}>
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
@@ -184,6 +194,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </TenantProvider>
           </InactivityGuard>
         </BrowserRouter>

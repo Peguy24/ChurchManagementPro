@@ -494,7 +494,7 @@ export default function Layout({ children }: LayoutProps) {
     : (tenant?.name || whiteLabelSettings.app_name);
   const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
   const brandingLogo = showAsSuperAdmin 
-    ? "/images/church-management-pro-logo.png" 
+    ? "/images/church-management-pro-logo.webp" 
     : (tenant?.logo_url || whiteLabelSettings.logo_url);
 
   return (
