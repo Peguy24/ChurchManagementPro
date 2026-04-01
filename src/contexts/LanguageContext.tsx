@@ -9322,7 +9322,7 @@ const translations = {
       feat_unlimitedMembers: "Manm ilimite",
       feat_unlimitedBranches: "Sikssal ilimite",
       feat_trainingIncluded: "Fòmasyon enkli",
-      feat_support247: "Sipò 24/7",
+      feat_support247: "Sipò dedye",
       feat_whiteLabel: "White-label disponib",
       testimonialsBadge: "Temwayaj",
       testimonialsTitle: "Sa kliyan nou yo di",
