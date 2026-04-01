@@ -231,7 +231,7 @@ const Commercial = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" />
+            <img src="/images/church-management-pro-logo.png" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
