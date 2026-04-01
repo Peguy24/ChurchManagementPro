@@ -153,16 +153,6 @@ export default function PaymentMonitoring() {
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["payment-monitoring", selectedMonth, statusFilter],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("get-all-invoices", {
-        body: null,
-        headers: {},
-      });
-      // Use URL params approach through body
-      const response = await supabase.functions.invoke("get-all-invoices", {
-        headers: {},
-      });
-
-      // Actually we need to pass params - let's use the function invoke with query string
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
