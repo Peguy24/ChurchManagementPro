@@ -2664,6 +2664,10 @@ const translations = {
         error: "Erreur lors de la mise à jour",
         noResults: "Aucune église trouvée",
       },
+      payments: {
+        title: "Suivi des Paiements",
+        navTitle: "Paiements",
+      },
     },
     platformAccounting: {
       title: "Comptabilité Plateforme",
