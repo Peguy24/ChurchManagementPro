@@ -14,7 +14,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import heroImage from "@/assets/hero-abstract.png";
+import heroImage from "@/assets/hero-abstract.webp";
 
 const Commercial = () => {
   const navigate = useNavigate();
