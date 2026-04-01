@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const [showPresDialog, setShowPresDialog] = useState(false);
 
   const planDisplayName: Record<string, string> = {
     free: t("superAdmin.free"),
