@@ -6185,7 +6185,7 @@ const translations = {
       advancedReports: "Advanced reports",
       prioritySupport: "Priority support",
       trainingIncluded: "Training included",
-      support247: "24/7 support",
+      support247: "Dedicated support",
       monthly: "Monthly",
       yearly: "Yearly",
       save15: "Save 15%",
