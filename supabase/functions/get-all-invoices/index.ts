@@ -64,7 +64,7 @@ serve(async (req) => {
     const monthParam = url.searchParams.get("month"); // YYYY-MM format
     const statusFilter = url.searchParams.get("status"); // paid, open, uncollectible, void
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Determine date range
     let createdGte: number;
