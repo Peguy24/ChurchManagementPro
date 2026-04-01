@@ -2664,6 +2664,10 @@ const translations = {
         error: "Erreur lors de la mise à jour",
         noResults: "Aucune église trouvée",
       },
+      payments: {
+        title: "Suivi des Paiements",
+        navTitle: "Paiements",
+      },
     },
     platformAccounting: {
       title: "Comptabilité Plateforme",
@@ -5933,6 +5937,10 @@ const translations = {
         error: "Error updating branding",
         noResults: "No churches found",
       },
+      payments: {
+        title: "Payment Monitoring",
+        navTitle: "Payments",
+      },
     },
     platformAccounting: {
       title: "Platform Accounting",
@@ -9200,6 +9208,10 @@ const translations = {
         saved: "Branding mete ajou avèk siksè",
         error: "Erè pandan mete ajou branding",
         noResults: "Pa gen legliz jwenn",
+      },
+      payments: {
+        title: "Siveyans Peman",
+        navTitle: "Peman",
       },
     },
     platformAccounting: {
