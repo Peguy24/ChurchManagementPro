@@ -1,32 +1,52 @@
 
 
-## Current Situation
+## Plan: Create Sales PPTX Presentations + Super Admin Download
 
-You've verified your domain in Resend -- that's the first critical step. Now, all 12 Edge Functions still use `onboarding@resend.dev` as the sender address. This is Resend's sandbox address, which can only send emails to your own Resend account email. To send to real church members, you need to update all functions to use your verified domain.
+### What we're building
 
-## What Needs to Be Done
+1. **Two downloadable .pptx files** (FR + EN) — professional sales presentations with screenshots of the system to convince church leaders
+2. **A "Download Presentation" button** in the Super Admin Quick Actions section
 
-### 1. Update all Edge Functions sender addresses
-Replace `onboarding@resend.dev` with your verified domain (e.g., `noreply@yourdomain.com`) across these 12 functions:
+### Presentation Content (12-14 slides)
 
-| Function | Current `from` |
-|---|---|
-| `auto-provision-tenant` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-admin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-event-reminder` | `${tenant.name} <onboarding@resend.dev>` |
-| `notify-admin-new-user` | `${churchName} <onboarding@resend.dev>` |
-| `send-birthday-notification` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-superadmin-invite` | `Church Management <onboarding@resend.dev>` |
-| `send-absence-alert` | `Église <onboarding@resend.dev>` |
-| `send-welcome-email` | `Church Manager Pro <onboarding@resend.dev>` |
-| `send-expense-notification` | `Gestion Église <onboarding@resend.dev>` |
-| `send-user-invite` | `ChurchFlow <onboarding@resend.dev>` |
-| `check-attendance-alerts` | `${tenant.name} <onboarding@resend.dev>` |
-| `send-support-email` | `Church Manager Pro <onboarding@resend.dev>` |
+| # | Slide | Visual |
+|---|-------|--------|
+| 1 | Title slide — "Church Management Pro" | Logo + hero image |
+| 2 | The Problem — manual processes, paper, spreadsheets | Icon grid |
+| 3 | The Solution — all-in-one platform | Screenshot of Dashboard |
+| 4 | Member Management | Screenshot of Members page |
+| 5 | Attendance & QR Code | Screenshot of Attendance page |
+| 6 | Financial Management | Screenshot of Donations/Financial Dashboard |
+| 7 | Events & Ministries | Screenshot of Events page |
+| 8 | Multi-Branch Management | Screenshot of Branches page |
+| 9 | Reports & Smart Insights | Screenshot of Reports page |
+| 10 | Security & Roles | Key points with icons |
+| 11 | Pricing Plans | 3-column comparison |
+| 12 | Call to Action — "Get Started Today" | Contact info |
 
-### 2. Before I proceed, I need to know:
-- **What is your verified domain?** (e.g., `churchmanagementpro.com`)
-- **What sender name format do you prefer?** (e.g., `noreply@yourdomain.com`, `notifications@yourdomain.com`)
+### Screenshots approach
 
-Once you provide the domain, I'll update all 12 Edge Functions in one pass.
+Since we can't take live screenshots at PPTX generation time on the client, we will:
+- Take screenshots of key pages now using browser tools
+- Store them as static assets in `public/screenshots/`
+- The PPTX generator script will embed them as base64 images
+
+### Technical details
+
+**Step 1 — Capture screenshots** of ~8 key pages (Dashboard, Members, Attendance, Donations, Events, Branches, Reports, Financial Dashboard) and save to `public/screenshots/`
+
+**Step 2 — Create PPTX generator script** using `pptxgenjs` (Node.js) that:
+- Builds a professional dark-themed presentation
+- Embeds screenshots on feature slides
+- Generates two files: `presentation_fr.pptx` and `presentation_en.pptx`
+- Saves to `public/presentations/`
+
+**Step 3 — Add download in Super Admin**
+- Add a new Quick Action button with `FileText` icon: "Download Sales Presentation"
+- On click, opens a small dialog to pick language (FR/EN), then triggers download of the corresponding `.pptx` from `public/presentations/`
+
+### Files to create/modify
+- `public/screenshots/` — 8 screenshot images
+- `public/presentations/` — 2 generated .pptx files
+- `src/pages/SuperAdminDashboard.tsx` — add Quick Action button + download logic
 
