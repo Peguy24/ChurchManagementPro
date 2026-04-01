@@ -9456,7 +9456,7 @@ const translations = {
       advancedReports: "Rapò avanse",
       prioritySupport: "Sipò priyorite",
       trainingIncluded: "Fòmasyon enkli",
-      support247: "Sipò 24/7",
+      support247: "Sipò dedye",
       monthly: "Chak Mwa",
       yearly: "Chak Ane",
       save15: "Ekonomize 15%",

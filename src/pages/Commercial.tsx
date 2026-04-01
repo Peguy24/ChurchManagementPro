@@ -222,7 +222,7 @@ const Commercial = () => {
     { value: "500+", label: t("commercial.stat_churches") },
     { value: "50K+", label: t("commercial.stat_members") },
     { value: "99.9%", label: t("commercial.stat_uptime") },
-    { value: "24/7", label: t("commercial.stat_support") }
+    { value: "100%", label: t("commercial.stat_support") }
   ];
 
   return (
