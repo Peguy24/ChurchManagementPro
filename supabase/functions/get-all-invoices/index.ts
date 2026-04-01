@@ -64,7 +64,7 @@ serve(async (req) => {
     const monthParam = url.searchParams.get("month"); // YYYY-MM format
     const statusFilter = url.searchParams.get("status"); // paid, open, uncollectible, void
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
     // Determine date range
     let createdGte: number;
@@ -114,16 +114,33 @@ serve(async (req) => {
       listParams.status = statusFilter as Stripe.InvoiceListParams["status"];
     }
 
-    const invoices = await stripe.invoices.list(listParams);
-    logStep("Fetched invoices from Stripe", { count: invoices.data.length });
+    const allStripeInvoices = [];
+    let hasMore = true;
+    let startingAfter: string | undefined;
+    
+    while (hasMore) {
+      const params: any = {
+        created: { gte: createdGte, lte: createdLte },
+        limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      };
+      if (statusFilter && statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      const batch = await stripe.invoices.list(params);
+      allStripeInvoices.push(...batch.data);
+      hasMore = batch.has_more;
+      if (batch.data.length > 0) {
+        startingAfter = batch.data[batch.data.length - 1].id;
+      } else {
+        hasMore = false;
+      }
+    }
 
-    // Filter to real plan invoices only
-    const realInvoices = invoices.data.filter((invoice) => {
-      if (!invoice.lines?.data?.length) return false;
-      return invoice.lines.data.some((line: any) =>
-        line.price?.id && realPriceIds.has(line.price.id)
-      );
-    });
+    logStep("Fetched invoices from Stripe", { count: allStripeInvoices.length });
+
+    // Show all invoices (don't filter by price ID — this is the super admin view)
+    const realInvoices = allStripeInvoices;
 
     // Get tenant mapping: email -> tenant name
     const { data: tenants } = await supabaseClient
@@ -162,10 +179,13 @@ serve(async (req) => {
       const customerEmail = (invoice.customer_email || "").toLowerCase();
       const tenantInfo = emailToTenant[customerEmail] || emailToTenantViaProfile[customerEmail];
 
-      let planName = "Unknown";
+      let planName = "Other";
       for (const line of invoice.lines?.data || []) {
         if (line.price?.id && planNameMap[line.price.id]) {
           planName = planNameMap[line.price.id];
+          break;
+        } else if ((line as any).description) {
+          planName = (line as any).description;
           break;
         }
       }
