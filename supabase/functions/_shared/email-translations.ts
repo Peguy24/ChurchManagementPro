@@ -67,10 +67,10 @@ export const eventReminderTranslations: Record<EmailLang, {
     serviceTypes: { Dimanche: 'Dimanche', Mercredi: 'Mercredi' },
   },
   en: {
-    subject: (serviceType) => `📅 Reminder: ${serviceType} Service Tomorrow`,
+    subject: (serviceType) => `🔔 Reminder: ${serviceType} Service Tomorrow`,
     body: (name, serviceType, serviceDate, churchName) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">📅 Service Reminder</h1>
+        <h1 style="color: #4F46E5;">🔔 Service Reminder</h1>
         <p style="font-size: 18px;">Hello ${name},</p>
         <p>This is a reminder for our <strong>${serviceType}</strong> service on <strong>${serviceDate}</strong>.</p>
         <p>We hope to see you!</p>
