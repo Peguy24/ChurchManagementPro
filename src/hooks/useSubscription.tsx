@@ -25,8 +25,8 @@ export const PLAN_DETAILS = {
     name: "Professional", 
     price: 59.99,
     yearlyPrice: 612,
-    priceId: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
-    yearlyPriceId: "price_1TBi3bF3VvKmdn5G51dRztux",
+    priceId: "price_1TIVVDF3VvKmdn5Gjf1yY160",
+    yearlyPriceId: "price_1TIVVfF3VvKmdn5GXC0UT8N8",
     productId: "prod_TqetHNAL0zc5kD",
   },
   entreprise: {
