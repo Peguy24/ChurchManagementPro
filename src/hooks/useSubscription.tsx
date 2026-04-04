@@ -31,8 +31,8 @@ export const PLAN_DETAILS = {
   },
   entreprise: {
     name: "Enterprise",
-    price: 199,
-    yearlyPrice: 2030,
+    price: 99.99,
+    yearlyPrice: 1020,
     priceId: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
     yearlyPriceId: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
     productId: "prod_TqeuZk0jVNwjEp",
