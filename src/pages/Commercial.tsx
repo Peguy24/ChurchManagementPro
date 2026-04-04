@@ -88,15 +88,15 @@ const Commercial = () => {
   ];
 
   const yearlyPrices: Record<string, string> = {
-    basic: "499",
-    standard: "1,009",
-    premium: "2,030",
+    basic: "305",
+    standard: "612",
+    premium: "1,020",
   };
 
   const pricingPlans = [
     {
       name: t("commercial.plan_essential"),
-      price: "49",
+      price: "29.99",
       yearlyPrice: yearlyPrices.basic,
       period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_essentialDesc"),
@@ -112,7 +112,7 @@ const Commercial = () => {
     },
     {
       name: t("commercial.plan_professional"),
-      price: "99",
+      price: "59.99",
       yearlyPrice: yearlyPrices.standard,
       period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_professionalDesc"),
@@ -129,7 +129,7 @@ const Commercial = () => {
     },
     {
       name: t("commercial.plan_enterprise"),
-      price: "199",
+      price: "99.99",
       yearlyPrice: yearlyPrices.premium,
       period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_enterpriseDesc"),
