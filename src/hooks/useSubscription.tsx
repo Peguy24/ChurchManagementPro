@@ -15,8 +15,8 @@ export interface SubscriptionState {
 export const PLAN_DETAILS = {
   essentiel: {
     name: "Essential",
-    price: 49,
-    yearlyPrice: 499,
+    price: 29.99,
+    yearlyPrice: 305,
     priceId: "price_1SsxZvF3VvKmdn5Gokml3EOt",
     yearlyPriceId: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
     productId: "prod_Tqetfpt7pnhNFf",
