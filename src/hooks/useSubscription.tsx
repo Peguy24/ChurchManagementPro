@@ -17,8 +17,8 @@ export const PLAN_DETAILS = {
     name: "Essential",
     price: 29.99,
     yearlyPrice: 305,
-    priceId: "price_1SsxZvF3VvKmdn5Gokml3EOt",
-    yearlyPriceId: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
+    priceId: "price_1TIVUcF3VvKmdn5GYXcFcGh4",
+    yearlyPriceId: "price_1TIVUxF3VvKmdn5GC7fA2VyK",
     productId: "prod_Tqetfpt7pnhNFf",
   },
   professionnel: {
