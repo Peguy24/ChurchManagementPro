@@ -86,7 +86,7 @@ serve(async (req) => {
 
     logStep("Date range", { from: new Date(createdGte * 1000).toISOString(), to: new Date(createdLte * 1000).toISOString() });
 
-    // Real price IDs
+    // Real price IDs (old + new)
     const realPriceIds = new Set([
       "price_1SsxZvF3VvKmdn5Gokml3EOt",
       "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
@@ -94,6 +94,12 @@ serve(async (req) => {
       "price_1TBi3DF3VvKmdn5GxgjBbhoe",
       "price_1TBi3bF3VvKmdn5G51dRztux",
       "price_1TBi4AF3VvKmdn5G1d7gKP8O",
+      "price_1TIVUcF3VvKmdn5GYXcFcGh4",
+      "price_1TIVVDF3VvKmdn5Gjf1yY160",
+      "price_1TIVVwF3VvKmdn5GV4rCswUg",
+      "price_1TIVUxF3VvKmdn5GC7fA2VyK",
+      "price_1TIVVfF3VvKmdn5GXC0UT8N8",
+      "price_1TIVWFF3VvKmdn5G7yPSifLh",
     ]);
 
     const planNameMap: Record<string, string> = {
@@ -103,6 +109,12 @@ serve(async (req) => {
       "price_1TBi3DF3VvKmdn5GxgjBbhoe": "Essentiel (Annual)",
       "price_1TBi3bF3VvKmdn5G51dRztux": "Professionnel (Annual)",
       "price_1TBi4AF3VvKmdn5G1d7gKP8O": "Entreprise (Annual)",
+      "price_1TIVUcF3VvKmdn5GYXcFcGh4": "Essentiel (Monthly)",
+      "price_1TIVVDF3VvKmdn5Gjf1yY160": "Professionnel (Monthly)",
+      "price_1TIVVwF3VvKmdn5GV4rCswUg": "Entreprise (Monthly)",
+      "price_1TIVUxF3VvKmdn5GC7fA2VyK": "Essentiel (Annual)",
+      "price_1TIVVfF3VvKmdn5GXC0UT8N8": "Professionnel (Annual)",
+      "price_1TIVWFF3VvKmdn5G7yPSifLh": "Entreprise (Annual)",
     };
 
     // Fetch invoices from Stripe for this period

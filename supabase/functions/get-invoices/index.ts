@@ -58,14 +58,20 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Real price IDs (monthly + yearly)
+    // Real price IDs (monthly + yearly) - both old and new
     const realPriceIds = new Set([
-      "price_1SsxZvF3VvKmdn5Gokml3EOt", // Essentiel monthly
-      "price_1Ssxa9F3VvKmdn5GGE0wSfBk", // Professionnel monthly
-      "price_1SsxaeF3VvKmdn5G8aP7l7GE", // Entreprise monthly
-      "price_1TBi3DF3VvKmdn5GxgjBbhoe", // Essentiel yearly
-      "price_1TBi3bF3VvKmdn5G51dRztux", // Professionnel yearly
-      "price_1TBi4AF3VvKmdn5G1d7gKP8O", // Entreprise yearly
+      "price_1SsxZvF3VvKmdn5Gokml3EOt", // Essentiel monthly (old)
+      "price_1Ssxa9F3VvKmdn5GGE0wSfBk", // Professionnel monthly (old)
+      "price_1SsxaeF3VvKmdn5G8aP7l7GE", // Entreprise monthly (old)
+      "price_1TBi3DF3VvKmdn5GxgjBbhoe", // Essentiel yearly (old)
+      "price_1TBi3bF3VvKmdn5G51dRztux", // Professionnel yearly (old)
+      "price_1TBi4AF3VvKmdn5G1d7gKP8O", // Entreprise yearly (old)
+      "price_1TIVUcF3VvKmdn5GYXcFcGh4", // Essentiel monthly (new)
+      "price_1TIVVDF3VvKmdn5Gjf1yY160", // Professionnel monthly (new)
+      "price_1TIVVwF3VvKmdn5GV4rCswUg", // Entreprise monthly (new)
+      "price_1TIVUxF3VvKmdn5GC7fA2VyK", // Essentiel yearly (new)
+      "price_1TIVVfF3VvKmdn5GXC0UT8N8", // Professionnel yearly (new)
+      "price_1TIVWFF3VvKmdn5G7yPSifLh", // Entreprise yearly (new)
     ]);
 
     // Get invoices for this customer

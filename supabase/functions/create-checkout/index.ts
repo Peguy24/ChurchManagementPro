@@ -14,16 +14,16 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 // Monthly Price IDs for each plan - synced with useSubscription.tsx
 const PRICE_IDS = {
-  essentiel: "price_1SsxZvF3VvKmdn5Gokml3EOt",
-  professionnel: "price_1Ssxa9F3VvKmdn5GGE0wSfBk",
-  entreprise: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
+  essentiel: "price_1TIVUcF3VvKmdn5GYXcFcGh4",
+  professionnel: "price_1TIVVDF3VvKmdn5Gjf1yY160",
+  entreprise: "price_1TIVVwF3VvKmdn5GV4rCswUg",
 };
 
 // Yearly Price IDs (15% discount)
 const YEARLY_PRICE_IDS = {
-  essentiel: "price_1TBi3DF3VvKmdn5GxgjBbhoe",
-  professionnel: "price_1TBi3bF3VvKmdn5G51dRztux",
-  entreprise: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
+  essentiel: "price_1TIVUxF3VvKmdn5GC7fA2VyK",
+  professionnel: "price_1TIVVfF3VvKmdn5GXC0UT8N8",
+  entreprise: "price_1TIVWFF3VvKmdn5G7yPSifLh",
 };
 
 // Plan limits for direct DB activation (free access)
