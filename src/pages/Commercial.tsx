@@ -88,9 +88,9 @@ const Commercial = () => {
   ];
 
   const yearlyPrices: Record<string, string> = {
-    basic: "499",
-    standard: "1,009",
-    premium: "2,030",
+    basic: "305",
+    standard: "612",
+    premium: "1,020",
   };
 
   const pricingPlans = [
