@@ -33,8 +33,8 @@ export const PLAN_DETAILS = {
     name: "Enterprise",
     price: 99.99,
     yearlyPrice: 1020,
-    priceId: "price_1SsxaeF3VvKmdn5G8aP7l7GE",
-    yearlyPriceId: "price_1TBi4AF3VvKmdn5G1d7gKP8O",
+    priceId: "price_1TIVVwF3VvKmdn5GV4rCswUg",
+    yearlyPriceId: "price_1TIVWFF3VvKmdn5G7yPSifLh",
     productId: "prod_TqeuZk0jVNwjEp",
   },
 } as const;
