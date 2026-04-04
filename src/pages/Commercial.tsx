@@ -96,7 +96,7 @@ const Commercial = () => {
   const pricingPlans = [
     {
       name: t("commercial.plan_essential"),
-      price: "49",
+      price: "29.99",
       yearlyPrice: yearlyPrices.basic,
       period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_essentialDesc"),
