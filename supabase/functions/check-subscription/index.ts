@@ -26,9 +26,9 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
 
 // Map plan names to DB plan names for tenant_subscriptions sync
 const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number; branches: number; users: number; storage: number }> = {
-  "essentiel": { plan: "basic", price: 49, members: 200, branches: 1, users: 5, storage: 500 },
-  "professionnel": { plan: "standard", price: 99, members: 1000, branches: 3, users: 15, storage: 2000 },
-  "entreprise": { plan: "premium", price: 199, members: -1, branches: -1, users: -1, storage: -1 },
+  "essentiel": { plan: "basic", price: 29.99, members: 200, branches: 1, users: 5, storage: 500 },
+  "professionnel": { plan: "standard", price: 59.99, members: 1000, branches: 3, users: 15, storage: 2000 },
+  "entreprise": { plan: "premium", price: 99.99, members: -1, branches: -1, users: -1, storage: -1 },
 };
 
 const DB_TO_PLAN: Record<string, string> = {
