@@ -55,10 +55,10 @@ export const eventReminderTranslations: Record<EmailLang, {
   serviceTypes: Record<string, string>;
 }> = {
   fr: {
-    subject: (serviceType) => `📅 Rappel: Culte du ${serviceType} demain`,
+    subject: (serviceType) => `🔔 Rappel: Culte du ${serviceType} demain`,
     body: (name, serviceType, serviceDate, churchName) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">📅 Rappel de Service</h1>
+        <h1 style="color: #4F46E5;">🔔 Rappel de Service</h1>
         <p style="font-size: 18px;">Bonjour ${name},</p>
         <p>Nous vous rappelons notre culte de <strong>${serviceType}</strong> prévu le <strong>${serviceDate}</strong>.</p>
         <p>Nous espérons vous voir!</p>
@@ -67,10 +67,10 @@ export const eventReminderTranslations: Record<EmailLang, {
     serviceTypes: { Dimanche: 'Dimanche', Mercredi: 'Mercredi' },
   },
   en: {
-    subject: (serviceType) => `📅 Reminder: ${serviceType} Service Tomorrow`,
+    subject: (serviceType) => `🔔 Reminder: ${serviceType} Service Tomorrow`,
     body: (name, serviceType, serviceDate, churchName) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">📅 Service Reminder</h1>
+        <h1 style="color: #4F46E5;">🔔 Service Reminder</h1>
         <p style="font-size: 18px;">Hello ${name},</p>
         <p>This is a reminder for our <strong>${serviceType}</strong> service on <strong>${serviceDate}</strong>.</p>
         <p>We hope to see you!</p>
@@ -79,10 +79,10 @@ export const eventReminderTranslations: Record<EmailLang, {
     serviceTypes: { Dimanche: 'Sunday', Mercredi: 'Wednesday' },
   },
   ht: {
-    subject: (serviceType) => `📅 Rapèl: Sèvis ${serviceType} Demen`,
+    subject: (serviceType) => `🔔 Rapèl: Sèvis ${serviceType} Demen`,
     body: (name, serviceType, serviceDate, churchName) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">📅 Rapèl Sèvis</h1>
+        <h1 style="color: #4F46E5;">🔔 Rapèl Sèvis</h1>
         <p style="font-size: 18px;">Bonjou ${name},</p>
         <p>Sa a se yon rapèl pou sèvis <strong>${serviceType}</strong> nou an ki pral fèt <strong>${serviceDate}</strong>.</p>
         <p>Nou espere wè ou!</p>
