@@ -112,7 +112,7 @@ const Commercial = () => {
     },
     {
       name: t("commercial.plan_professional"),
-      price: "99",
+      price: "59.99",
       yearlyPrice: yearlyPrices.standard,
       period: isYearly ? t("sub.perYear") : t("commercial.perMonth"),
       description: t("commercial.plan_professionalDesc"),
