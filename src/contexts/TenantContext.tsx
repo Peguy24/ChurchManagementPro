@@ -115,8 +115,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           setError(fetchError.message);
         }
         setTenant(null);
-      } else {
-        setTenant(data);
+      } else if (data) {
+        setTenant({
+          ...data,
+          contact_email: data.contact_email ?? '',
+          contact_phone: data.contact_phone ?? '',
+          address: data.address ?? '',
+        });
         setTenantSlug(slug);
         
         // Check if tenant has admin already
