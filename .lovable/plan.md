@@ -1,52 +1,51 @@
 
 
-## Plan: Create Sales PPTX Presentations + Super Admin Download
+## Plan: Platform Business Management (Payroll, Employees, Tax Records)
 
-### What we're building
+### Overview
+Expand the Super Admin area with dedicated modules for managing your business operations: employee records, payroll tracking, and tax preparation — all separate from church-level finances.
 
-1. **Two downloadable .pptx files** (FR + EN) — professional sales presentations with screenshots of the system to convince church leaders
-2. **A "Download Presentation" button** in the Super Admin Quick Actions section
+### New Database Tables
 
-### Presentation Content (12-14 slides)
+**1. `platform_employees`** — Store employee/contractor info
+- id, full_name, email, phone, role/title, employment_type (full-time, part-time, contractor), hire_date, salary_amount, pay_frequency (monthly, bi-weekly, weekly), tax_id (SSN/EIN placeholder), status (active, inactive), bank_info (text/notes), notes, created_by, created_at, updated_at
 
-| # | Slide | Visual |
-|---|-------|--------|
-| 1 | Title slide — "Church Management Pro" | Logo + hero image |
-| 2 | The Problem — manual processes, paper, spreadsheets | Icon grid |
-| 3 | The Solution — all-in-one platform | Screenshot of Dashboard |
-| 4 | Member Management | Screenshot of Members page |
-| 5 | Attendance & QR Code | Screenshot of Attendance page |
-| 6 | Financial Management | Screenshot of Donations/Financial Dashboard |
-| 7 | Events & Ministries | Screenshot of Events page |
-| 8 | Multi-Branch Management | Screenshot of Branches page |
-| 9 | Reports & Smart Insights | Screenshot of Reports page |
-| 10 | Security & Roles | Key points with icons |
-| 11 | Pricing Plans | 3-column comparison |
-| 12 | Call to Action — "Get Started Today" | Contact info |
+**2. `platform_payroll`** — Track each pay run
+- id, employee_id (FK to platform_employees), pay_period_start, pay_period_end, gross_amount, deductions (jsonb: federal_tax, state_tax, social_security, medicare, other), net_amount, payment_date, payment_method, reference_number, status (pending, paid, cancelled), notes, created_by, created_at
 
-### Screenshots approach
+**3. `platform_tax_records`** — Track tax filings and obligations
+- id, tax_type (federal_income, state_income, payroll_tax, sales_tax, other), tax_period (e.g. "2026-Q1"), amount_due, amount_paid, due_date, paid_date, status (pending, paid, overdue, filed), reference_number, filing_notes, document_url, created_by, created_at, updated_at
 
-Since we can't take live screenshots at PPTX generation time on the client, we will:
-- Take screenshots of key pages now using browser tools
-- Store them as static assets in `public/screenshots/`
-- The PPTX generator script will embed them as base64 images
+All three tables will have RLS policies restricted to super admins only.
 
-### Technical details
+### New Pages
 
-**Step 1 — Capture screenshots** of ~8 key pages (Dashboard, Members, Attendance, Donations, Events, Branches, Reports, Financial Dashboard) and save to `public/screenshots/`
+**1. `/super-admin/payroll` — Platform Payroll** (new file: `src/pages/PlatformPayroll.tsx`)
+- **Employees tab**: List all employees with add/edit/deactivate. Shows name, role, type, salary, status.
+- **Pay Runs tab**: Record payroll payments per employee per period. Auto-calculates deductions (configurable percentages). Shows gross, deductions breakdown, net. Filter by month/employee.
+- **Summary cards**: Total payroll this month, YTD payroll, active employees count, avg salary.
+- **CSV export** for payroll records.
 
-**Step 2 — Create PPTX generator script** using `pptxgenjs` (Node.js) that:
-- Builds a professional dark-themed presentation
-- Embeds screenshots on feature slides
-- Generates two files: `presentation_fr.pptx` and `presentation_en.pptx`
-- Saves to `public/presentations/`
+**2. `/super-admin/taxes` — Tax Management** (new file: `src/pages/PlatformTaxRecords.tsx`)
+- Track quarterly/annual tax obligations (federal, state, payroll taxes).
+- Status badges: pending (yellow), paid (green), overdue (red), filed (blue).
+- Calendar view of upcoming due dates.
+- Summary cards: Total taxes due, paid YTD, upcoming deadlines.
+- **CSV export** for tax records.
 
-**Step 3 — Add download in Super Admin**
-- Add a new Quick Action button with `FileText` icon: "Download Sales Presentation"
-- On click, opens a small dialog to pick language (FR/EN), then triggers download of the corresponding `.pptx` from `public/presentations/`
+### Navigation & Routing Updates
 
-### Files to create/modify
-- `public/screenshots/` — 8 screenshot images
-- `public/presentations/` — 2 generated .pptx files
-- `src/pages/SuperAdminDashboard.tsx` — add Quick Action button + download logic
+- **Layout.tsx**: Add two new nav items in super admin section:
+  - `{ to: "/super-admin/payroll", icon: Users, label: "Payroll" }`
+  - `{ to: "/super-admin/taxes", icon: FileText, label: "Taxes" }`
+- **App.tsx**: Add two new protected super admin routes.
+- **SuperAdminDashboard.tsx**: Add quick action buttons for both new pages.
+
+### Translation Keys
+Add FR/EN/HT labels for all new UI elements (employees, payroll, deductions, tax types, statuses, form fields).
+
+### Files to Create/Modify
+- **Create**: `src/pages/PlatformPayroll.tsx`, `src/pages/PlatformTaxRecords.tsx`
+- **Modify**: `src/App.tsx` (routes), `src/components/Layout.tsx` (nav), `src/pages/SuperAdminDashboard.tsx` (quick actions), `src/contexts/LanguageContext.tsx` (translations)
+- **Database**: 3 new tables with RLS policies via migration tool
 
