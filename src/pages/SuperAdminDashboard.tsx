@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette, FileText } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, UserCheck, Clock, Eye, Download, Activity, BarChart3, Heart, Megaphone, CreditCard, ShieldAlert, GitCompareArrows, Palette, FileText, Receipt } from "lucide-react";
 import { SuperAdminOnboardingOverview } from "@/components/SuperAdminOnboardingOverview";
 import { SupportTicketsSummary } from "@/components/superadmin/SupportTicketsSummary";
 import { PlatformAlertsWidget } from "@/components/superadmin/PlatformAlertsWidget";
@@ -323,6 +323,8 @@ export default function SuperAdminDashboard() {
                   { icon: GitCompareArrows, label: t("superAdmin.comparison.title"), path: "/super-admin/comparison" },
                   { icon: Palette, label: t("superAdmin.whiteLabel.title"), path: "/super-admin/branding" },
                   { icon: DollarSign, label: t("superAdmin.payments.title"), path: "/super-admin/payments" },
+                  { icon: Users, label: language === "fr" ? "Paie" : language === "ht" ? "Pewòl" : "Payroll", path: "/super-admin/payroll" },
+                  { icon: Receipt, label: language === "fr" ? "Fiscalité" : language === "ht" ? "Taks" : "Taxes", path: "/super-admin/taxes" },
                   { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
                 ].map((item) => (
                   <Button

@@ -2739,6 +2739,63 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_employees: {
+        Row: {
+          bank_info: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          employment_type: string
+          full_name: string
+          hire_date: string | null
+          id: string
+          notes: string | null
+          pay_frequency: string
+          phone: string | null
+          role_title: string
+          salary_amount: number
+          status: string
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bank_info?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          employment_type?: string
+          full_name: string
+          hire_date?: string | null
+          id?: string
+          notes?: string | null
+          pay_frequency?: string
+          phone?: string | null
+          role_title?: string
+          salary_amount?: number
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bank_info?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          employment_type?: string
+          full_name?: string
+          hire_date?: string | null
+          id?: string
+          notes?: string | null
+          pay_frequency?: string
+          phone?: string | null
+          role_title?: string
+          salary_amount?: number
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_expenses: {
         Row: {
           amount: number
@@ -2834,6 +2891,65 @@ export type Database = {
           },
         ]
       }
+      platform_payroll: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deductions: Json
+          employee_id: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          notes: string | null
+          pay_period_end: string
+          pay_period_start: string
+          payment_date: string | null
+          payment_method: string | null
+          reference_number: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deductions?: Json
+          employee_id: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          pay_period_end: string
+          pay_period_start: string
+          payment_date?: string | null
+          payment_method?: string | null
+          reference_number?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deductions?: Json
+          employee_id?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          pay_period_end?: string
+          pay_period_start?: string
+          payment_date?: string | null
+          payment_method?: string | null
+          reference_number?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_payroll_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "platform_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_permissions: {
         Row: {
           created_at: string | null
@@ -2881,6 +2997,57 @@ export type Database = {
           setting_category?: string
           setting_key?: string
           setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_tax_records: {
+        Row: {
+          amount_due: number
+          amount_paid: number
+          created_at: string
+          created_by: string | null
+          document_url: string | null
+          due_date: string
+          filing_notes: string | null
+          id: string
+          paid_date: string | null
+          reference_number: string | null
+          status: string
+          tax_period: string
+          tax_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due?: number
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          due_date: string
+          filing_notes?: string | null
+          id?: string
+          paid_date?: string | null
+          reference_number?: string | null
+          status?: string
+          tax_period: string
+          tax_type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          due_date?: string
+          filing_notes?: string | null
+          id?: string
+          paid_date?: string | null
+          reference_number?: string | null
+          status?: string
+          tax_period?: string
+          tax_type?: string
           updated_at?: string
         }
         Relationships: []
