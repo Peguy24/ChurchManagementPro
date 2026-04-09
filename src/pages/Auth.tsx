@@ -602,14 +602,17 @@ export default function Auth() {
             .update({ tenant_id: tenantId })
             .eq('id', userId);
           
-          await supabase
-            .from('tenant_user_roles')
-            .insert({
+          // Use atomic claim function to prevent race conditions
+          const { data: claimed } = await supabase.rpc('claim_tenant_admin', { _tenant_id: tenantId });
+          if (!claimed) {
+            // If claim failed (admin already exists), insert as unapproved
+            await supabase.from('tenant_user_roles').insert({
               user_id: userId,
               tenant_id: tenantId,
               role: 'admin',
-              is_approved: true,
+              is_approved: false,
             });
+          }
           
           toast({
             title: lt('signupSuccess'),

@@ -4385,6 +4385,7 @@ export type Database = {
         Args: { _before_date: string; _tenant_id: string; _user_id: string }
         Returns: number
       }
+      claim_tenant_admin: { Args: { _tenant_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
