@@ -242,6 +242,8 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     legal: "Legal Documents",
     branding: "White-Label",
     settings: "Platform Settings",
+    payroll: "Payroll",
+    taxes: "Taxes",
   },
   fr: {
     dashboard: "Tableau de bord",
@@ -263,6 +265,8 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     legal: "Documents Juridiques",
     branding: "White-Label",
     settings: "Configuration Plateforme",
+    payroll: "Paie",
+    taxes: "Fiscalité",
   },
   ht: {
     dashboard: "Tablo Debò",
@@ -284,6 +288,8 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     legal: "Dokiman Legal",
     branding: "White-Label",
     settings: "Konfigirasyon Platfòm",
+    payroll: "Pewòl",
+    taxes: "Taks",
   },
 };
 
@@ -313,6 +319,8 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/churn", icon: ShieldAlertIcon, label: sl("churn") },
         { to: "/super-admin/comparison", icon: GitCompareArrows, label: sl("comparison") },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
+        { to: "/super-admin/payroll", icon: Users, label: sl("payroll") },
+        { to: "/super-admin/taxes", icon: FileText, label: sl("taxes") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
     },

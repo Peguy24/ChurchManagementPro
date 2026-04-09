@@ -84,6 +84,8 @@ const EventRegistrations = lazy(() => import("./pages/EventRegistrations"));
 const VolunteerScheduling = lazy(() => import("./pages/VolunteerScheduling"));
 const Visitors = lazy(() => import("./pages/Visitors"));
 const SuperAdminWhiteLabel = lazy(() => import("./pages/SuperAdminWhiteLabel"));
+const PlatformPayroll = lazy(() => import("./pages/PlatformPayroll"));
+const PlatformTaxRecords = lazy(() => import("./pages/PlatformTaxRecords"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DataBackup = lazy(() => import("./pages/DataBackup"));
@@ -189,6 +191,8 @@ const App = () => (
               <Route path="/super-admin/payments" element={<ProtectedRoute requireSuperAdmin><PaymentMonitoring /></ProtectedRoute>} />
               <Route path="/super-admin/legal" element={<ProtectedRoute requireSuperAdmin><LegalDocuments /></ProtectedRoute>} />
               <Route path="/super-admin/branding" element={<ProtectedRoute requireSuperAdmin><SuperAdminWhiteLabel /></ProtectedRoute>} />
+              <Route path="/super-admin/payroll" element={<ProtectedRoute requireSuperAdmin><PlatformPayroll /></ProtectedRoute>} />
+              <Route path="/super-admin/taxes" element={<ProtectedRoute requireSuperAdmin><PlatformTaxRecords /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
