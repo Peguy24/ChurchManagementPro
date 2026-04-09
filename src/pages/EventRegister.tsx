@@ -39,11 +39,9 @@ export default function EventRegister() {
   useEffect(() => {
     if (!eventId) return;
     const fetchEvent = async () => {
-      const { data: eventData } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", eventId)
-        .single();
+      const { data: eventArr } = await supabase
+        .rpc('get_public_event' as any, { _event_id: eventId });
+      const eventData = eventArr?.[0] ?? null;
 
       if (eventData) {
         setEvent(eventData);
