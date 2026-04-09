@@ -67,16 +67,29 @@ serve(async (req) => {
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    
+    let userId: string;
+    let userEmail: string;
+    
+    try {
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+      if (userError || !userData?.user) {
+        logStep("Auth failed", { error: userError?.message });
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        });
+      }
+      userId = userData.user.id;
+      userEmail = userData.user.email ?? "";
+    } catch (authErr) {
+      logStep("Auth exception", { error: String(authErr) });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
 
-    const userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email as string;
     if (!userId || !userEmail) {
       return new Response(JSON.stringify({ error: "Invalid token claims" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
