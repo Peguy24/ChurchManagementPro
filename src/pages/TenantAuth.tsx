@@ -286,11 +286,9 @@ export default function TenantAuth() {
       console.log('Fetching tenant with slug:', slug);
       console.log('Invite token from URL:', inviteToken);
       
-      const { data, error: fetchError } = await supabase
-        .from('tenants')
-        .select('id, name, slug, logo_url, primary_color')
-        .eq('slug', slug)
-        .single();
+      const { data: rpcData, error: fetchError } = await supabase
+        .rpc('get_tenant_by_slug', { _slug: slug });
+      const data = rpcData?.[0] ?? null;
       
       if (fetchError) {
         console.error('Error fetching tenant:', fetchError);

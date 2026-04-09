@@ -48,11 +48,9 @@ export default function EventRegister() {
       if (eventData) {
         setEvent(eventData);
         if (eventData.tenant_id) {
-          const { data: tenant } = await supabase
-            .from("tenants")
-            .select("name, logo_url")
-            .eq("id", eventData.tenant_id)
-            .single();
+          const { data: tenantArr } = await supabase
+            .rpc('get_tenant_public_info', { _tenant_id: eventData.tenant_id });
+          const tenant = tenantArr?.[0] ?? null;
           if (tenant) {
             setChurchName(tenant.name);
             setLogoUrl(tenant.logo_url);
