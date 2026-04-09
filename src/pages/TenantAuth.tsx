@@ -373,15 +373,29 @@ export default function TenantAuth() {
         const isAutoApproved = metadata?.tenant_auto_approved === true;
 
         try {
-          await supabase.from('tenant_user_roles').insert({
-            tenant_id: tenant.id,
-            user_id: user.id,
-            role: roleToInsert as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
-            is_approved: isAutoApproved,
-          });
-          console.log('Created missing tenant_user_roles entry from metadata fallback');
-          if (isAutoApproved) {
-            navigate('/');
+          if (isAutoApproved && roleToInsert === 'admin') {
+            // Use atomic claim function for admin bootstrap
+            const { data: claimed } = await supabase.rpc('claim_tenant_admin', { _tenant_id: tenant.id });
+            if (claimed) {
+              console.log('Claimed tenant admin via atomic RPC');
+              navigate('/');
+            } else {
+              // Fallback: insert as unapproved
+              await supabase.from('tenant_user_roles').insert({
+                tenant_id: tenant.id,
+                user_id: user.id,
+                role: roleToInsert as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+                is_approved: false,
+              });
+            }
+          } else {
+            await supabase.from('tenant_user_roles').insert({
+              tenant_id: tenant.id,
+              user_id: user.id,
+              role: roleToInsert as 'admin' | 'pastor' | 'treasurer' | 'secretary' | 'volunteer' | 'user',
+              is_approved: false,
+            });
+            console.log('Created missing tenant_user_roles entry from metadata fallback');
           }
         } catch (err) {
           console.error('Error creating fallback tenant role:', err);
