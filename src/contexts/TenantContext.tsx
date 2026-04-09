@@ -118,9 +118,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       } else if (data) {
         setTenant({
           ...data,
-          contact_email: data.contact_email ?? '',
-          contact_phone: data.contact_phone ?? '',
-          address: data.address ?? '',
+          contact_email: '',
+          contact_phone: '',
+          address: '',
         });
         setTenantSlug(slug);
         
