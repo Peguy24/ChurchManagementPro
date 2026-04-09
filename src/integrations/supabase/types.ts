@@ -4394,6 +4394,16 @@ export type Database = {
         Returns: number
       }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
+      get_tenant_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          id: string
+          logo_url: string
+          name: string
+          primary_color: string
+          slug: string
+        }[]
+      }
       get_tenant_monthly_attendance: {
         Args: { _tenant_id: string }
         Returns: {
@@ -4423,6 +4433,14 @@ export type Database = {
       get_tenant_onboarding_state: {
         Args: { _tenant_id: string }
         Returns: Json
+      }
+      get_tenant_public_info: {
+        Args: { _tenant_id: string }
+        Returns: {
+          id: string
+          logo_url: string
+          name: string
+        }[]
       }
       get_tenant_storage_mb: { Args: { _tenant_id: string }; Returns: number }
       get_tenant_storage_usage: {

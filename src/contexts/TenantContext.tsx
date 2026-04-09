@@ -104,11 +104,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setError(null);
     
     try {
-      const { data, error: fetchError } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('slug', slug)
-        .single();
+      const { data: rpcData, error: fetchError } = await supabase
+        .rpc('get_tenant_by_slug', { _slug: slug });
+      const data = rpcData?.[0] ?? null;
       
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {
@@ -117,8 +115,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           setError(fetchError.message);
         }
         setTenant(null);
-      } else {
-        setTenant(data);
+      } else if (data) {
+        setTenant({
+          ...data,
+          contact_email: '',
+          contact_phone: '',
+          address: '',
+        });
         setTenantSlug(slug);
         
         // Check if tenant has admin already
