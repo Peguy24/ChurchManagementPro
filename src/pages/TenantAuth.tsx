@@ -290,7 +290,7 @@ export default function TenantAuth() {
         .rpc('get_tenant_by_slug', { _slug: slug });
       const data = rpcData?.[0] ?? null;
       
-      if (fetchError) {
+      if (fetchError || !data) {
         console.error('Error fetching tenant:', fetchError);
         setError(lt('churchNotFound'));
         setLoading(false);
@@ -298,7 +298,7 @@ export default function TenantAuth() {
       }
       
       console.log('Tenant found:', data);
-      setTenant(data);
+      setTenant(data as any);
       
       // Check if tenant has admin
       const { data: adminExists } = await supabase
