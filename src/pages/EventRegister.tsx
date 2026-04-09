@@ -40,7 +40,7 @@ export default function EventRegister() {
     if (!eventId) return;
     const fetchEvent = async () => {
       const { data: eventArr } = await supabase
-        .rpc('get_public_event', { _event_id: eventId });
+        .rpc('get_public_event' as any, { _event_id: eventId });
       const eventData = eventArr?.[0] ?? null;
 
       if (eventData) {
