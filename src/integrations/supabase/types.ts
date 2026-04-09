@@ -4511,6 +4511,14 @@ export type Database = {
           used_at: string
         }[]
       }
+      validate_and_mark_super_admin_invitation: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          id: string
+        }[]
+      }
       validate_super_admin_invitation: {
         Args: { _token: string }
         Returns: {
