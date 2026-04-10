@@ -43,6 +43,20 @@ function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
+function normalizeCode(raw: string): string {
+  return raw.replace(/\s+/g, '').trim()
+}
+
+async function hashCode(code: string): Promise<string> {
+  const normalized = normalizeCode(code)
+  const data = new TextEncoder().encode(normalized)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 const LOGO_URL = 'https://ihwhbtmnyhhceiwdcfsc.supabase.co/storage/v1/object/public/email-assets/logo.png'
 const SITE_NAME = 'Church Management Pro'
 
@@ -96,16 +110,16 @@ Deno.serve(async (req) => {
         .eq('user_id', userId)
         .is('used_at', null)
 
-      // Generate new code
+      // Generate new code and store only its hash at rest
       const newCode = generateCode()
+      const hashedCode = await hashCode(newCode)
 
-      // Store code
       const { error: insertError } = await supabase
         .from('login_verification_codes')
         .insert({
           user_id: userId,
           email,
-          code: newCode,
+          code: hashedCode,
           expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
         })
 
@@ -178,12 +192,15 @@ Deno.serve(async (req) => {
         })
       }
 
+      const normalizedVerifyCode = normalizeCode(verifyCode)
+      const hashedVerifyCode = await hashCode(normalizedVerifyCode)
+
       const { data: codeRecord, error: fetchError } = await supabase
         .from('login_verification_codes')
         .select('*')
         .eq('user_id', userId)
         .eq('email', email)
-        .eq('code', verifyCode)
+        .in('code', [hashedVerifyCode, normalizedVerifyCode])
         .is('used_at', null)
         .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
