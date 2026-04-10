@@ -4394,6 +4394,10 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      event_belongs_to_tenant: {
+        Args: { _event_id: string; _tenant_id: string }
+        Returns: boolean
+      }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
       get_tenant_by_slug: {
         Args: { _slug: string }
