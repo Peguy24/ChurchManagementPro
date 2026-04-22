@@ -262,9 +262,10 @@ export default function ChurchSettings() {
                   <Input
                     id="church_name"
                     value={settings.church_name}
-                    onChange={(e) => setSettings({ ...settings, church_name: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_name: e.target.value }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
                     placeholder={t("churchSettings.churchNamePlaceholder")}
                   />
+                  <FieldError name="church_name" errors={errors} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_tax_id" className="flex items-center gap-2">
@@ -303,9 +304,10 @@ export default function ChurchSettings() {
                   <Input
                     id="church_phone"
                     value={settings.church_phone}
-                    onChange={(e) => setSettings({ ...settings, church_phone: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_phone: e.target.value }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
                     placeholder={t("churchSettings.phonePlaceholder")}
                   />
+                  <FieldError name="church_phone" errors={errors} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_email" className="flex items-center gap-2">
@@ -316,9 +318,10 @@ export default function ChurchSettings() {
                     id="church_email"
                     type="email"
                     value={settings.church_email}
-                    onChange={(e) => setSettings({ ...settings, church_email: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_email: e.target.value }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
                     placeholder={t("churchSettings.emailPlaceholder")}
                   />
+                  <FieldError name="church_email" errors={errors} />
                 </div>
               </div>
 
