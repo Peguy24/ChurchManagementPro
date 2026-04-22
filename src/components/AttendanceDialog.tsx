@@ -427,6 +427,7 @@ export default function AttendanceDialog({
                   {t("attendance.createEventHint")}
                 </p>
               )}
+              <FieldError name="eventId" errors={errors} />
             </div>
             
             <Tabs defaultValue="manual" className="w-full">
@@ -486,6 +487,7 @@ export default function AttendanceDialog({
                   <p className="text-sm text-muted-foreground">
                     {t("attendance.membersSelected").replace("{count}", String(checkedMembers.length))}
                   </p>
+                  <FieldError name="members" errors={errors} />
                 </div>
               </TabsContent>
 
