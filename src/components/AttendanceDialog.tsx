@@ -26,6 +26,8 @@ import { getLocalToday } from "@/lib/utils";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { attendanceSchema, validateForm, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 interface AttendanceDialogProps {
   open: boolean;
@@ -67,6 +69,7 @@ export default function AttendanceDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const qrReaderRef = useRef<HTMLDivElement>(null);
 
@@ -163,23 +166,22 @@ export default function AttendanceDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedEventId) {
-      toast({
-        title: t("attendance.error"),
-        description: t("attendance.selectAnEvent"),
-        variant: "destructive",
-      });
-      return;
-    }
 
-    if (checkedMembers.length === 0) {
+    const validation = validateForm(attendanceSchema, {
+      date,
+      eventId: selectedEventId || "",
+      members: checkedMembers,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
       toast({
         title: t("attendance.error"),
-        description: t("attendance.selectAtLeastOneMember"),
+        description: t(firstErrorMessage(validation.fieldErrors) || "errors.required"),
         variant: "destructive",
       });
       return;
     }
+    setErrors({});
 
     // Time window validation for selected event
     if (selectedEventId) {
@@ -392,9 +394,13 @@ export default function AttendanceDialog({
                 id="date"
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  if (errors.date) setErrors({ ...errors, date: "" });
+                }}
                 required
               />
+              <FieldError name="date" errors={errors} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="event">{t("attendance.meetingType")}</Label>
@@ -421,6 +427,7 @@ export default function AttendanceDialog({
                   {t("attendance.createEventHint")}
                 </p>
               )}
+              <FieldError name="eventId" errors={errors} />
             </div>
             
             <Tabs defaultValue="manual" className="w-full">
@@ -480,6 +487,7 @@ export default function AttendanceDialog({
                   <p className="text-sm text-muted-foreground">
                     {t("attendance.membersSelected").replace("{count}", String(checkedMembers.length))}
                   </p>
+                  <FieldError name="members" errors={errors} />
                 </div>
               </TabsContent>
 

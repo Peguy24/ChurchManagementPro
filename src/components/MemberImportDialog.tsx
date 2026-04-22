@@ -37,6 +37,7 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { memberSchema, validateForm } from "@/lib/validation";
 
 interface MemberImportDialogProps {
   open: boolean;
@@ -377,17 +378,19 @@ export default function MemberImportDialog({
         }
       });
 
-      // Validate required fields
-      if (!data.first_name) {
-        errors.push(t("members.firstName") + " " + t("members.requiredFields").toLowerCase());
-      }
-      if (!data.last_name) {
-        errors.push(t("members.lastName") + " " + t("members.requiredFields").toLowerCase());
-      }
-
-      // Validate email format if provided
-      if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        errors.push("Format email invalide");
+      // Validate via shared zod schema (first/last required, optional email/phone format)
+      const validation = validateForm(memberSchema, {
+        firstName: data.first_name || "",
+        lastName: data.last_name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        emergencyPhone: data.emergency_phone || "",
+      });
+      if (!validation.success) {
+        for (const key of Object.keys(validation.fieldErrors)) {
+          // Translation keys → resolve to current language for the import preview table
+          errors.push(t(validation.fieldErrors[key]));
+        }
       }
 
       // Normalize gender

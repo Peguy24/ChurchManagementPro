@@ -30,6 +30,8 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
+import { memberFullSchema, validateForm, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 const localT: Record<Language, Record<string, string>> = {
   fr: {
@@ -340,6 +342,7 @@ export default function MemberDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
@@ -651,6 +654,26 @@ export default function MemberDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = validateForm(memberFullSchema, {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      emergencyPhone: formData.emergencyPhone,
+      dateOfBirth: formData.dateOfBirth,
+      joinDate: formData.joinDate,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast({
+        title: lt.error,
+        description: firstErrorMessage(validation.fieldErrors, (k) => k),
+        variant: "destructive",
+      });
+      return;
+    }
+    setErrors({});
     setLoading(true);
 
     try {
@@ -940,24 +963,28 @@ export default function MemberDialog({
                   <Input
                     id="lastName"
                     value={formData.lastName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lastName: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, lastName: e.target.value });
+                      if (errors.lastName) setErrors({ ...errors, lastName: "" });
+                    }}
                     placeholder="Smith"
                     required
                   />
+                  <FieldError name="lastName" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="firstName">{lt.firstName} *</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, firstName: e.target.value });
+                      if (errors.firstName) setErrors({ ...errors, firstName: "" });
+                    }}
                     placeholder="John"
                     required
                   />
+                  <FieldError name="firstName" errors={errors} />
                 </div>
               </div>
 
@@ -999,12 +1026,14 @@ export default function MemberDialog({
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value });
+                      if (errors.phone) setErrors({ ...errors, phone: "" });
+                    }}
                     placeholder="+1 (555) 123-4567"
                     required
                   />
+                  <FieldError name="phone" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">{lt.email}</Label>
@@ -1012,11 +1041,13 @@ export default function MemberDialog({
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: "" });
+                    }}
                     placeholder="john@example.com"
                   />
+                  <FieldError name="email" errors={errors} />
                 </div>
               </div>
 
@@ -1025,11 +1056,13 @@ export default function MemberDialog({
                 <Input
                   id="emergencyPhone"
                   value={formData.emergencyPhone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, emergencyPhone: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setFormData({ ...formData, emergencyPhone: e.target.value });
+                    if (errors.emergencyPhone) setErrors({ ...errors, emergencyPhone: "" });
+                  }}
                   placeholder="+1 (555) 987-6543"
                 />
+                <FieldError name="emergencyPhone" errors={errors} />
               </div>
 
               {/* Address Section */}

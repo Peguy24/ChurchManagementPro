@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { customFieldFullSchema, validateForm, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 interface CustomFieldDialogProps {
   open: boolean;
@@ -42,6 +44,7 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
   });
   const [loading, setLoading] = useState(false);
   const [newOption, setNewOption] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (field) {
@@ -71,11 +74,25 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const normalizedFieldName = formData.field_name.toLowerCase().replace(/\s+/g, "_");
+    const validation = validateForm(customFieldFullSchema, {
+      fieldLabel: formData.field_label,
+      fieldName: normalizedFieldName,
+      fieldType: formData.field_type,
+      fieldOptions: formData.field_options,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast.error(t(firstErrorMessage(validation.fieldErrors) || "errors.required"));
+      return;
+    }
+    setErrors({});
     setLoading(true);
 
     const dataToSave = {
       entity_type: formData.entity_type,
-      field_name: formData.field_name.toLowerCase().replace(/\s+/g, "_"),
+      field_name: normalizedFieldName,
       field_label: formData.field_label,
       field_type: formData.field_type,
       is_required: formData.is_required,
@@ -188,21 +205,29 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <Label>{t("customFields.fieldNameInternal")}</Label>
             <Input
               value={formData.field_name}
-              onChange={(e) => setFormData({ ...formData, field_name: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, field_name: e.target.value });
+                if (errors.fieldName) setErrors({ ...errors, fieldName: "" });
+              }}
               placeholder={t("customFields.fieldNamePlaceholder")}
               required
               disabled={!!field}
             />
+            <FieldError name="fieldName" errors={errors} />
           </div>
 
           <div>
             <Label>{t("customFields.fieldLabelDisplay")}</Label>
             <Input
               value={formData.field_label}
-              onChange={(e) => setFormData({ ...formData, field_label: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, field_label: e.target.value });
+                if (errors.fieldLabel) setErrors({ ...errors, fieldLabel: "" });
+              }}
               placeholder={t("customFields.fieldLabelPlaceholder")}
               required
             />
+            <FieldError name="fieldLabel" errors={errors} />
           </div>
 
           {formData.field_type === "select" && (
@@ -233,6 +258,7 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                <FieldError name="fieldOptions" errors={errors} />
               </div>
             </div>
           )}
