@@ -110,6 +110,11 @@ export default function EventRegister() {
         }
       }
 
+      toast.success(t("eventRegistration.successTitle"), {
+        description: t("eventRegistration.successMessage"),
+      });
+      setFormData({ firstName: "", lastName: "", email: "", phone: "" });
+      setErrors({});
       setSubmitted(true);
     } catch {
       toast.error(t("eventRegistration.errorSubmit"));
