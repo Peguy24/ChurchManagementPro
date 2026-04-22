@@ -111,7 +111,7 @@ export default function EventRegister() {
 
       setSubmitted(true);
     } catch {
-      alert(t("eventRegistration.errorSubmit"));
+      toast.error(t("eventRegistration.errorSubmit"));
     } finally {
       setIsSubmitting(false);
     }
