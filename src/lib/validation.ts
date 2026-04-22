@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+/**
+ * NOTE on i18n
+ * -------------
+ * Every error message below is a *translation key* (e.g. "validation.email.required"),
+ * not a human-readable string. The `<FieldError>` component and the `firstErrorMessage`
+ * helper resolve these keys through the existing language context (FR/EN/HT).
+ *
+ * Keep these keys in sync with the `validation` namespace in
+ * `src/contexts/LanguageContext.tsx`.
+ */
+
 /* ---------------------------------------------------------------- */
 /* Reusable primitive schemas                                       */
 /* ---------------------------------------------------------------- */
@@ -7,85 +18,85 @@ import { z } from "zod";
 export const emailSchema = z
   .string()
   .trim()
-  .min(1, "Email is required")
-  .max(255, "Email must be less than 255 characters")
-  .email("Invalid email address");
+  .min(1, "validation.email.required")
+  .max(255, "validation.email.tooLong")
+  .email("validation.email.invalid");
 
 export const optionalEmailSchema = z
   .string()
   .trim()
-  .max(255, "Email must be less than 255 characters")
-  .email("Invalid email address")
+  .max(255, "validation.email.tooLong")
+  .email("validation.email.invalid")
   .optional()
   .or(z.literal(""));
 
 export const phoneSchema = z
   .string()
   .trim()
-  .min(7, "Phone must be at least 7 characters")
-  .max(20, "Phone must be less than 20 characters")
-  .regex(/^[+\d()\-\s]+$/, "Phone may contain digits, +, -, (, ) and spaces only");
+  .min(7, "validation.phone.tooShort")
+  .max(20, "validation.phone.tooLong")
+  .regex(/^[+\d()\-\s]+$/, "validation.phone.invalid");
 
 export const optionalPhoneSchema = z
   .string()
   .trim()
-  .max(20, "Phone must be less than 20 characters")
-  .regex(/^[+\d()\-\s]*$/, "Phone may contain digits, +, -, (, ) and spaces only")
+  .max(20, "validation.phone.tooLong")
+  .regex(/^[+\d()\-\s]*$/, "validation.phone.invalid")
   .optional()
   .or(z.literal(""));
 
 export const nameSchema = z
   .string()
   .trim()
-  .min(1, "This field is required")
-  .max(100, "Must be less than 100 characters");
+  .min(1, "validation.field.required")
+  .max(100, "validation.field.tooLong100");
 
 export const optionalNameSchema = z
   .string()
   .trim()
-  .max(100, "Must be less than 100 characters")
+  .max(100, "validation.field.tooLong100")
   .optional()
   .or(z.literal(""));
 
 export const shortTextSchema = z
   .string()
   .trim()
-  .max(255, "Must be less than 255 characters");
+  .max(255, "validation.field.tooLong255");
 
 export const requiredShortTextSchema = z
   .string()
   .trim()
-  .min(1, "This field is required")
-  .max(255, "Must be less than 255 characters");
+  .min(1, "validation.field.required")
+  .max(255, "validation.field.tooLong255");
 
 export const longTextSchema = z
   .string()
   .trim()
-  .max(2000, "Must be less than 2000 characters");
+  .max(2000, "validation.field.tooLong2000");
 
 export const requiredLongTextSchema = z
   .string()
   .trim()
-  .min(1, "This field is required")
-  .max(2000, "Must be less than 2000 characters");
+  .min(1, "validation.field.required")
+  .max(2000, "validation.field.tooLong2000");
 
 export const titleSchema = z
   .string()
   .trim()
-  .min(1, "Title is required")
-  .max(200, "Title must be less than 200 characters");
+  .min(1, "validation.title.required")
+  .max(200, "validation.title.tooLong");
 
 export const urlSchema = z
   .string()
   .trim()
-  .url("Must be a valid URL starting with http(s)://")
-  .max(500, "URL must be less than 500 characters");
+  .url("validation.url.invalid")
+  .max(500, "validation.url.tooLong");
 
 export const optionalUrlSchema = z
   .string()
   .trim()
-  .max(500, "URL must be less than 500 characters")
-  .url("Must be a valid URL starting with http(s)://")
+  .max(500, "validation.url.tooLong")
+  .url("validation.url.invalid")
   .optional()
   .or(z.literal(""));
 
@@ -94,54 +105,54 @@ const amountRegex = /^\d{1,10}(\.\d{1,2})?$/;
 export const positiveAmountSchema = z
   .string()
   .trim()
-  .min(1, "Amount is required")
-  .regex(amountRegex, "Amount must be a number with up to 2 decimals")
-  .refine((v) => parseFloat(v) > 0, "Amount must be greater than 0")
-  .refine((v) => parseFloat(v) <= 9_999_999_999, "Amount is too large");
+  .min(1, "validation.amount.required")
+  .regex(amountRegex, "validation.amount.invalid")
+  .refine((v) => parseFloat(v) > 0, "validation.amount.positive")
+  .refine((v) => parseFloat(v) <= 9_999_999_999, "validation.amount.tooLarge");
 
 export const nonNegativeAmountSchema = z
   .string()
   .trim()
-  .min(1, "Amount is required")
-  .regex(amountRegex, "Amount must be a number with up to 2 decimals")
-  .refine((v) => parseFloat(v) >= 0, "Amount cannot be negative")
-  .refine((v) => parseFloat(v) <= 9_999_999_999, "Amount is too large");
+  .min(1, "validation.amount.required")
+  .regex(amountRegex, "validation.amount.invalid")
+  .refine((v) => parseFloat(v) >= 0, "validation.amount.nonNegative")
+  .refine((v) => parseFloat(v) <= 9_999_999_999, "validation.amount.tooLarge");
 
 const isValidDate = (v: string) => !isNaN(new Date(v).getTime());
 
 export const dateSchema = z
   .string()
-  .min(1, "Date is required")
-  .refine(isValidDate, "Invalid date");
+  .min(1, "validation.date.required")
+  .refine(isValidDate, "validation.date.invalid");
 
 export const optionalDateSchema = z
   .string()
-  .refine((v) => !v || isValidDate(v), "Invalid date")
+  .refine((v) => !v || isValidDate(v), "validation.date.invalid")
   .optional()
   .or(z.literal(""));
 
 export const eventDateSchema = z
   .string()
-  .min(1, "Date is required")
-  .refine(isValidDate, "Invalid date")
+  .min(1, "validation.date.required")
+  .refine(isValidDate, "validation.date.invalid")
   .refine((v) => {
     const d = new Date(v);
     const now = new Date();
     const minYear = now.getFullYear() - 100;
     const maxYear = now.getFullYear() + 100;
     return d.getFullYear() >= minYear && d.getFullYear() <= maxYear;
-  }, "Date must be within 100 years from today");
+  }, "validation.date.outOfRange");
 
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(72, "Password is too long")
-  .regex(/[A-Za-z]/, "Password must contain at least one letter")
-  .regex(/\d/, "Password must contain at least one number");
+  .min(8, "validation.password.tooShort")
+  .max(72, "validation.password.tooLong")
+  .regex(/[A-Za-z]/, "validation.password.needsLetter")
+  .regex(/\d/, "validation.password.needsNumber");
 
 export const otpCodeSchema = z
   .string()
-  .regex(/^\d{6}$/, "Code must be exactly 6 digits");
+  .regex(/^\d{6}$/, "validation.otp.invalid");
 
 /* ---------------------------------------------------------------- */
 /* Composite form schemas                                           */
@@ -149,7 +160,7 @@ export const otpCodeSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "validation.password.required"),
 });
 
 export const signupSchema = z
@@ -158,10 +169,10 @@ export const signupSchema = z
     lastName: nameSchema,
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().min(1, "validation.password.confirmRequired"),
   })
   .refine((d) => d.password === d.confirmPassword, {
-    message: "Passwords do not match",
+    message: "validation.password.mismatch",
     path: ["confirmPassword"],
   });
 
@@ -172,10 +183,10 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z
   .object({
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().min(1, "validation.password.confirmRequired"),
   })
   .refine((d) => d.password === d.confirmPassword, {
-    message: "Passwords do not match",
+    message: "validation.password.mismatch",
     path: ["confirmPassword"],
   });
 
@@ -203,8 +214,8 @@ export const joinChurchSchema = z.object({
 
 export const donationSchema = z.object({
   amount: positiveAmountSchema,
-  donationType: z.string().min(1, "Type is required"),
-  paymentMethod: z.string().min(1, "Payment method is required"),
+  donationType: z.string().min(1, "validation.type.required"),
+  paymentMethod: z.string().min(1, "validation.paymentMethod.required"),
   donationDate: dateSchema,
   description: requiredShortTextSchema,
   notes: longTextSchema.optional().or(z.literal("")),
@@ -239,7 +250,7 @@ export const eventSchema = z
   })
   .refine(
     (d) => !d.endDate || new Date(d.endDate) >= new Date(d.date),
-    { message: "End date must be on or after start date", path: ["endDate"] },
+    { message: "validation.date.endBeforeStart", path: ["endDate"] },
   );
 
 export const eventRegistrationSchema = z.object({
@@ -266,16 +277,16 @@ export const customFieldSchema = z.object({
   fieldLabel: z
     .string()
     .trim()
-    .min(1, "Label is required")
-    .max(100, "Label must be less than 100 characters"),
+    .min(1, "validation.label.required")
+    .max(100, "validation.field.tooLong100"),
   fieldName: z
     .string()
     .trim()
-    .min(1, "Field name is required")
-    .max(50, "Field name must be less than 50 characters")
+    .min(1, "validation.fieldName.required")
+    .max(50, "validation.fieldName.tooLong")
     .regex(
       /^[a-z][a-z0-9_]*$/,
-      "Field name must start with a letter and contain only lowercase letters, numbers and underscores",
+      "validation.fieldName.invalidFormat",
     ),
 });
 
@@ -315,6 +326,10 @@ export type ValidationResult<T> =
 /**
  * Validate an object against a Zod schema and return a flat
  * { fieldName: errorMessage } map suitable for inline form display.
+ *
+ * The values are *translation keys* (see top-of-file note). Display them
+ * through `<FieldError>` (which translates automatically) or through
+ * `firstErrorMessage(errors, t)` for toasts.
  */
 export function validateForm<T>(
   schema: z.ZodType<T>,
@@ -333,12 +348,16 @@ export function validateForm<T>(
 }
 
 /**
- * Convenience helper: returns the first error message from a result,
- * useful for showing a single-line toast summary.
+ * Returns the first error message from a result. If a translator `t` is
+ * provided, the message (which is a translation key) is resolved into the
+ * current language; otherwise the raw key is returned.
  */
 export function firstErrorMessage(
   fieldErrors: Record<string, string>,
+  t?: (key: string) => string,
 ): string | undefined {
   const keys = Object.keys(fieldErrors);
-  return keys.length ? fieldErrors[keys[0]] : undefined;
+  if (!keys.length) return undefined;
+  const raw = fieldErrors[keys[0]];
+  return t ? t(raw) : raw;
 }
