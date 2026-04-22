@@ -25,6 +25,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, ministrySchema, firstErrorMessage } from "@/lib/validation";
 
 interface MinistryDialogProps {
   open: boolean;
@@ -45,6 +47,7 @@ export default function MinistryDialog({
   const queryClient = useQueryClient();
   const m = (key: string) => t(`ministries.${key}`);
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -107,6 +110,13 @@ export default function MinistryDialog({
       toast.error(m("errorOccurred"));
       return;
     }
+    const validation = validateForm(ministrySchema, { name: formData.name, description: formData.description });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast.error(firstErrorMessage(validation.fieldErrors) || m("errorOccurred"));
+      return;
+    }
+    setErrors({});
     setLoading(true);
 
     try {
@@ -168,9 +178,9 @@ export default function MinistryDialog({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
+              <FieldError name="name" errors={errors} />
             </div>
 
             <div className="grid gap-2">

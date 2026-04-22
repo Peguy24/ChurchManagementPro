@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LoginOtpVerification from '@/components/LoginOtpVerification';
+import { FieldError } from '@/components/FieldError';
+import { validateForm, loginSchema, signupSchema, forgotPasswordSchema, firstErrorMessage } from '@/lib/validation';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -198,6 +200,9 @@ export default function Auth() {
   const [isCheckingOtp, setIsCheckingOtp] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
+  const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
+  const [forgotErrors, setForgotErrors] = useState<Record<string, string>>({});
 
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations['en'][key] || key;
   
@@ -300,17 +305,19 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    if (!loginForm.email || !loginForm.password) {
+    const validation = validateForm(loginSchema, loginForm);
+    if (!validation.success) {
+      setLoginErrors(validation.fieldErrors);
       toast({
         title: lt('error'),
-        description: lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
         variant: 'destructive',
       });
-      setIsLoading(false);
       return;
     }
+    setLoginErrors({});
+    setIsLoading(true);
 
     // Set flag BEFORE signIn to prevent redirect during OTP check
     setIsCheckingOtp(true);
@@ -466,7 +473,17 @@ export default function Auth() {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail) return;
+    const validation = validateForm(forgotPasswordSchema, { email: forgotEmail });
+    if (!validation.success) {
+      setForgotErrors(validation.fieldErrors);
+      toast({
+        title: lt('error'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setForgotErrors({});
     setForgotLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -483,37 +500,19 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = validateForm(signupSchema, signupForm);
+    if (!validation.success) {
+      setSignupErrors(validation.fieldErrors);
+      toast({
+        title: lt('error'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSignupErrors({});
     setIsLoading(true);
-
-    if (!signupForm.firstName || !signupForm.lastName || !signupForm.email || !signupForm.password) {
-      toast({
-        title: lt('error'),
-        description: lt('fillAllFields'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (signupForm.password !== signupForm.confirmPassword) {
-      toast({
-        title: lt('error'),
-        description: lt('passwordMismatch'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (signupForm.password.length < 6) {
-      toast({
-        title: lt('error'),
-        description: lt('passwordTooShortAuth'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
 
     const { error, data } = await signUp(
       signupForm.email,
@@ -682,7 +681,10 @@ export default function Auth() {
     showForgotPassword && (
       <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
         <p className="text-sm text-muted-foreground">{lt('forgotPasswordDesc')}</p>
-        <Input type="email" placeholder={lt('emailPlaceholder')} value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required />
+        <div>
+          <Input type="email" placeholder={lt('emailPlaceholder')} value={forgotEmail} onChange={(e) => { setForgotEmail(e.target.value); if (forgotErrors.email) setForgotErrors({}); }} />
+          <FieldError name="email" errors={forgotErrors} />
+        </div>
         <div className="flex gap-2">
           <Button type="submit" size="sm" disabled={forgotLoading}>{forgotLoading ? lt('sending') : lt('sendLink')}</Button>
           <Button type="button" variant="ghost" size="sm" onClick={() => setShowForgotPassword(false)}>{lt('cancel')}</Button>
@@ -700,9 +702,9 @@ export default function Auth() {
           type="email"
           placeholder={lt('emailPlaceholder')}
           value={loginForm.email}
-          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-          required
+          onChange={(e) => { setLoginForm({ ...loginForm, email: e.target.value }); if (loginErrors.email) setLoginErrors((p) => ({ ...p, email: '' })); }}
         />
+        <FieldError name="email" errors={loginErrors} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="login-password">{lt('password')}</Label>
@@ -711,9 +713,9 @@ export default function Auth() {
           type="password"
           placeholder="••••••••"
           value={loginForm.password}
-          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-          required
+          onChange={(e) => { setLoginForm({ ...loginForm, password: e.target.value }); if (loginErrors.password) setLoginErrors((p) => ({ ...p, password: '' })); }}
         />
+        <FieldError name="password" errors={loginErrors} />
       </div>
       <div className="flex justify-end">
         <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
@@ -823,9 +825,9 @@ export default function Auth() {
                           id="signup-firstname"
                           placeholder="Jean"
                           value={signupForm.firstName}
-                          onChange={(e) => setSignupForm({ ...signupForm, firstName: e.target.value })}
-                          required
+                          onChange={(e) => { setSignupForm({ ...signupForm, firstName: e.target.value }); if (signupErrors.firstName) setSignupErrors((p) => ({ ...p, firstName: '' })); }}
                         />
+                        <FieldError name="firstName" errors={signupErrors} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-lastname">{lt('lastName')}</Label>
@@ -833,9 +835,9 @@ export default function Auth() {
                           id="signup-lastname"
                           placeholder="Pierre"
                           value={signupForm.lastName}
-                          onChange={(e) => setSignupForm({ ...signupForm, lastName: e.target.value })}
-                          required
+                          onChange={(e) => { setSignupForm({ ...signupForm, lastName: e.target.value }); if (signupErrors.lastName) setSignupErrors((p) => ({ ...p, lastName: '' })); }}
                         />
+                        <FieldError name="lastName" errors={signupErrors} />
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -845,9 +847,9 @@ export default function Auth() {
                         type="email"
                         placeholder={lt('emailPlaceholder')}
                         value={signupForm.email}
-                        onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                        required
+                        onChange={(e) => { setSignupForm({ ...signupForm, email: e.target.value }); if (signupErrors.email) setSignupErrors((p) => ({ ...p, email: '' })); }}
                       />
+                      <FieldError name="email" errors={signupErrors} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-password">{lt('password')}</Label>
@@ -856,9 +858,9 @@ export default function Auth() {
                         type="password"
                         placeholder="••••••••"
                         value={signupForm.password}
-                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                        required
+                        onChange={(e) => { setSignupForm({ ...signupForm, password: e.target.value }); if (signupErrors.password) setSignupErrors((p) => ({ ...p, password: '' })); }}
                       />
+                      <FieldError name="password" errors={signupErrors} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-confirm">{lt('confirmPassword')}</Label>
@@ -867,9 +869,9 @@ export default function Auth() {
                         type="password"
                         placeholder="••••••••"
                         value={signupForm.confirmPassword}
-                        onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
-                        required
+                        onChange={(e) => { setSignupForm({ ...signupForm, confirmPassword: e.target.value }); if (signupErrors.confirmPassword) setSignupErrors((p) => ({ ...p, confirmPassword: '' })); }}
                       />
+                      <FieldError name="confirmPassword" errors={signupErrors} />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? lt('loading') : lt('createBtn')}

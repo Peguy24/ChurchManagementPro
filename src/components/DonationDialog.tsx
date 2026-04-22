@@ -29,6 +29,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { todayInputValue } from "@/lib/date";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, donationSchema, firstErrorMessage } from "@/lib/validation";
 
 interface DonationDialogProps {
   open: boolean;
@@ -47,6 +49,7 @@ export default function DonationDialog({
   const { tenantId } = useCurrentTenant();
   const { currencyCode, currencySymbol } = useCurrency();
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     memberId: "none",
     amount: "",
@@ -261,16 +264,26 @@ export default function DonationDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.donationType || !formData.paymentMethod || !formData.amount) {
+
+    const validation = validateForm(donationSchema, {
+      amount: formData.amount,
+      donationType: formData.donationType,
+      paymentMethod: formData.paymentMethod,
+      donationDate: formData.donationDate,
+      description: formData.description,
+      notes: formData.notes,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
       toast({
         title: t("errors.serverError"),
-        description: t("errors.required"),
+        description: firstErrorMessage(validation.fieldErrors) || t("errors.required"),
         variant: "destructive",
       });
       return;
     }
-    
+    setErrors({});
+
     createDonation.mutate(formData);
   };
 
@@ -325,10 +338,10 @@ export default function DonationDialog({
               step="0.01"
               min="0"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, amount: e.target.value }); if (errors.amount) setErrors((p) => ({ ...p, amount: "" })); }}
               placeholder="0.00"
-              required
             />
+            <FieldError name="amount" errors={errors} />
           </div>
 
           {/* Category/Type - Required */}
@@ -445,10 +458,10 @@ export default function DonationDialog({
             <Input
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, description: e.target.value }); if (errors.description) setErrors((p) => ({ ...p, description: "" })); }}
               placeholder={t("donations.descriptionPlaceholder")}
-              required
             />
+            <FieldError name="description" errors={errors} />
           </div>
 
           {/* Member - Optional */}

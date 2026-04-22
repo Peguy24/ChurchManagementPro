@@ -10,6 +10,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Headphones } from "lucide-react";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, supportSchema, firstErrorMessage } from "@/lib/validation";
 
 const DIALOG_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
@@ -57,6 +59,7 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
   const [message, setMessage] = useState("");
   const [category, setCategory] = useState("general");
   const [priority, setPriority] = useState("medium");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Auto-elevate priority based on plan
   useEffect(() => {
@@ -72,6 +75,13 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) return;
+
+    const validation = validateForm(supportSchema, { subject, message });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      return;
+    }
+    setErrors({});
 
     setLoading(true);
     try {
@@ -151,11 +161,11 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
             <Label>{t("layout.supportSubject")}</Label>
             <Input
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e) => { setSubject(e.target.value); if (errors.subject) setErrors((p) => ({ ...p, subject: "" })); }}
               maxLength={200}
               placeholder="..."
-              required
             />
+            <FieldError name="subject" errors={errors} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -192,12 +202,12 @@ export default function SupportDialog({ open, onOpenChange, onSuccess, plan }: S
             <Label>{t("layout.supportMessage")}</Label>
             <Textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => { setMessage(e.target.value); if (errors.message) setErrors((p) => ({ ...p, message: "" })); }}
               maxLength={2000}
               rows={5}
               placeholder="..."
-              required
             />
+            <FieldError name="message" errors={errors} />
             <p className="text-xs text-muted-foreground">{message.length}/2000</p>
           </div>
 

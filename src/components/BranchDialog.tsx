@@ -12,6 +12,8 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, branchSchema, firstErrorMessage } from "@/lib/validation";
 
 interface Branch {
   id: string;
@@ -47,6 +49,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const { tenantId } = useCurrentTenant();
   const { t } = useLanguage();
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: members } = useQuery({
     queryKey: ["active-members"],
@@ -105,6 +108,20 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = validateForm(branchSchema, {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      description: formData.description,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast.error(firstErrorMessage(validation.fieldErrors) || t("branches.saveError"));
+      return;
+    }
+    setErrors({});
     setLoading(true);
 
     try {
@@ -165,9 +182,9 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
+              <FieldError name="name" errors={errors} />
             </div>
 
             <div className="space-y-2">
@@ -256,8 +273,9 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
               />
+              <FieldError name="phone" errors={errors} />
             </div>
 
             <div className="space-y-2">
@@ -266,8 +284,9 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
               />
+              <FieldError name="email" errors={errors} />
             </div>
           </div>
 

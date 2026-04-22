@@ -8,6 +8,8 @@ import { KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FieldError } from '@/components/FieldError';
+import { validateForm, resetPasswordSchema, firstErrorMessage } from '@/lib/validation';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     // Listen for the recovery event from the auth link
@@ -42,15 +45,17 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password.length < 6) {
-      toast({ title: t('common.error'), description: t('auth.passwordTooShort'), variant: 'destructive' });
+    const validation = validateForm(resetPasswordSchema, { password, confirmPassword });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast({
+        title: t('common.error'),
+        description: firstErrorMessage(validation.fieldErrors) || t('auth.passwordTooShort'),
+        variant: 'destructive',
+      });
       return;
     }
-
-    if (password !== confirmPassword) {
-      toast({ title: t('common.error'), description: t('auth.passwordMismatch'), variant: 'destructive' });
-      return;
-    }
+    setErrors({});
 
     setIsLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
@@ -108,9 +113,9 @@ export default function ResetPassword() {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((p) => ({ ...p, password: '' })); }}
                 />
+                <FieldError name="password" errors={errors} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">{t('auth.confirmNewPassword')}</Label>
@@ -119,9 +124,9 @@ export default function ResetPassword() {
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                  onChange={(e) => { setConfirmPassword(e.target.value); if (errors.confirmPassword) setErrors((p) => ({ ...p, confirmPassword: '' })); }}
                 />
+                <FieldError name="confirmPassword" errors={errors} />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? t('auth.updating') : t('auth.updatePassword')}

@@ -41,6 +41,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, eventSchema, firstErrorMessage } from "@/lib/validation";
 
 interface Event {
   id: string;
@@ -75,6 +77,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
   const isReadOnly = isEditing && (event.status === "completed" || event.status === "cancelled");
 
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -201,6 +204,21 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = validateForm(eventSchema, {
+      name: formData.name,
+      date: formData.date,
+      endDate: formData.endDate,
+      location: formData.location,
+      description: formData.description,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast({ title: t("common.error"), description: firstErrorMessage(validation.fieldErrors) || t("events.errorCreate"), variant: "destructive" });
+      return;
+    }
+    setErrors({});
+
     if (isEditing) updateMutation.mutate(formData);
     else createMutation.mutate(formData);
   };
@@ -343,9 +361,9 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
+              <FieldError name="name" errors={errors} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -379,11 +397,13 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="date">{t("events.startDate")} *</Label>
-                <Input id="date" type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+                <Input id="date" type="date" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (errors.date) setErrors((p) => ({ ...p, date: "" })); }} />
+                <FieldError name="date" errors={errors} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">{t("events.endDate")}</Label>
-                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} min={formData.date} />
+                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} />
+                <FieldError name="endDate" errors={errors} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

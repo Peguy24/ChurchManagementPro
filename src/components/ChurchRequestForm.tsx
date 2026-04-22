@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, churchRequestSchema, firstErrorMessage } from "@/lib/validation";
 
 interface ChurchRequestFormProps {
   open: boolean;
@@ -30,6 +32,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
   const { t, language } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ProvisionResult | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [policiesAccepted, setPoliciesAccepted] = useState<Record<string, boolean>>({
     terms_of_use: false,
     privacy_policy: false,
@@ -75,11 +78,20 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.church_name || !formData.contact_name || !formData.contact_email) {
-      toast.error(t("churchForm.requiredFields"));
+
+    const validation = validateForm(churchRequestSchema, {
+      churchName: formData.church_name,
+      contactName: formData.contact_name,
+      email: formData.contact_email,
+      phone: formData.contact_phone,
+      message: formData.message,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast.error(firstErrorMessage(validation.fieldErrors) || t("churchForm.requiredFields"));
       return;
     }
+    setErrors({});
 
     if (!allPoliciesAccepted) {
       const msg: Record<string, string> = {
@@ -240,20 +252,20 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
               <Input
                 id="church_name"
                 value={formData.church_name}
-                onChange={(e) => setFormData({ ...formData, church_name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, church_name: e.target.value }); if (errors.churchName) setErrors((p) => ({ ...p, churchName: "" })); }}
                 placeholder={t("churchForm.churchNamePlaceholder")}
-                required
               />
+              <FieldError name="churchName" errors={errors} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact_name">{t("churchForm.yourName")} *</Label>
               <Input
                 id="contact_name"
                 value={formData.contact_name}
-                onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, contact_name: e.target.value }); if (errors.contactName) setErrors((p) => ({ ...p, contactName: "" })); }}
                 placeholder={t("churchForm.yourNamePlaceholder")}
-                required
               />
+              <FieldError name="contactName" errors={errors} />
             </div>
           </div>
 
@@ -264,19 +276,20 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
-                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, contact_email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
                 placeholder={t("churchForm.emailPlaceholder")}
-                required
               />
+              <FieldError name="email" errors={errors} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact_phone">{t("churchForm.phone")}</Label>
               <Input
                 id="contact_phone"
                 value={formData.contact_phone}
-                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, contact_phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
                 placeholder={t("churchForm.phonePlaceholder")}
               />
+              <FieldError name="phone" errors={errors} />
             </div>
           </div>
 
