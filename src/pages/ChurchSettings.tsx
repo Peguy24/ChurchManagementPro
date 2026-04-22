@@ -84,6 +84,8 @@ export default function ChurchSettings() {
     currency_code: "USD",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { data: settingsData, isLoading } = useQuery({
     queryKey: ["church-settings", tenantId],
     queryFn: async () => {
       if (!tenantId) return {};
