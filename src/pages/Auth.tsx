@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LoginOtpVerification from '@/components/LoginOtpVerification';
+import { FieldError } from '@/components/FieldError';
+import { validateForm, loginSchema, signupSchema, forgotPasswordSchema, firstErrorMessage } from '@/lib/validation';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -198,6 +200,9 @@ export default function Auth() {
   const [isCheckingOtp, setIsCheckingOtp] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
+  const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
+  const [forgotErrors, setForgotErrors] = useState<Record<string, string>>({});
 
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations['en'][key] || key;
   
@@ -300,17 +305,19 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    if (!loginForm.email || !loginForm.password) {
+    const validation = validateForm(loginSchema, loginForm);
+    if (!validation.success) {
+      setLoginErrors(validation.fieldErrors);
       toast({
         title: lt('error'),
-        description: lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
         variant: 'destructive',
       });
-      setIsLoading(false);
       return;
     }
+    setLoginErrors({});
+    setIsLoading(true);
 
     // Set flag BEFORE signIn to prevent redirect during OTP check
     setIsCheckingOtp(true);
