@@ -11,6 +11,8 @@ import { Palette, Save, Loader2, Type, Eye } from "lucide-react";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LogoUpload from "@/components/LogoUpload";
+import { validateForm, tenantBrandingSchema, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 export default function TenantBranding() {
   const queryClient = useQueryClient();
@@ -23,6 +25,7 @@ export default function TenantBranding() {
     logo_url: "",
     primary_color: "#6366f1",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (tenant) {
@@ -65,6 +68,19 @@ export default function TenantBranding() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const validation = validateForm(tenantBrandingSchema, {
+      name: settings.name,
+      primaryColor: settings.primary_color,
+    });
+    if (!validation.success) {
+      setErrors({
+        name: validation.fieldErrors.name || "",
+        primary_color: validation.fieldErrors.primaryColor || "",
+      });
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("tenant.settingsError"));
+      return;
+    }
+    setErrors({});
     updateSettings.mutate(settings);
   };
 
@@ -106,9 +122,10 @@ export default function TenantBranding() {
                 <Input
                   id="name"
                   value={settings.name}
-                  onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                  onChange={(e) => { setSettings({ ...settings, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
                   placeholder={t("tenant.churchNameLabel")}
                 />
+                <FieldError name="name" errors={errors} />
               </div>
 
               <LogoUpload
@@ -138,16 +155,17 @@ export default function TenantBranding() {
                     id="primary_color"
                     type="color"
                     value={settings.primary_color}
-                    onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, primary_color: e.target.value }); if (errors.primary_color) setErrors((p) => ({ ...p, primary_color: "" })); }}
                     className="w-16 h-10 p-1 cursor-pointer"
                   />
                   <Input
                     value={settings.primary_color}
-                    onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, primary_color: e.target.value }); if (errors.primary_color) setErrors((p) => ({ ...p, primary_color: "" })); }}
                     placeholder="#6366f1"
                     className="flex-1"
                   />
                 </div>
+                <FieldError name="primary_color" errors={errors} />
               </div>
             </CardContent>
           </Card>

@@ -17,6 +17,8 @@ import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette,
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -81,6 +83,7 @@ export default function ChurchSettings() {
     card_church_name_on_card: "true",
     currency_code: "USD",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["church-settings", tenantId],
@@ -168,6 +171,21 @@ export default function ChurchSettings() {
       toast.error(t("churchSettings.noChurchSelected"));
       return;
     }
+    const validation = validateForm(churchSettingsSchema, {
+      churchName: settings.church_name,
+      churchEmail: settings.church_email,
+      churchPhone: settings.church_phone,
+    });
+    if (!validation.success) {
+      setErrors({
+        church_name: validation.fieldErrors.churchName || "",
+        church_email: validation.fieldErrors.churchEmail || "",
+        church_phone: validation.fieldErrors.churchPhone || "",
+      });
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("churchSettings.saveError"));
+      return;
+    }
+    setErrors({});
     updateSettings.mutate(settings);
   };
 
@@ -244,9 +262,10 @@ export default function ChurchSettings() {
                   <Input
                     id="church_name"
                     value={settings.church_name}
-                    onChange={(e) => setSettings({ ...settings, church_name: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_name: e.target.value }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
                     placeholder={t("churchSettings.churchNamePlaceholder")}
                   />
+                  <FieldError name="church_name" errors={errors} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_tax_id" className="flex items-center gap-2">
@@ -285,9 +304,10 @@ export default function ChurchSettings() {
                   <Input
                     id="church_phone"
                     value={settings.church_phone}
-                    onChange={(e) => setSettings({ ...settings, church_phone: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_phone: e.target.value }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
                     placeholder={t("churchSettings.phonePlaceholder")}
                   />
+                  <FieldError name="church_phone" errors={errors} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="church_email" className="flex items-center gap-2">
@@ -298,9 +318,10 @@ export default function ChurchSettings() {
                     id="church_email"
                     type="email"
                     value={settings.church_email}
-                    onChange={(e) => setSettings({ ...settings, church_email: e.target.value })}
+                    onChange={(e) => { setSettings({ ...settings, church_email: e.target.value }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
                     placeholder={t("churchSettings.emailPlaceholder")}
                   />
+                  <FieldError name="church_email" errors={errors} />
                 </div>
               </div>
 
