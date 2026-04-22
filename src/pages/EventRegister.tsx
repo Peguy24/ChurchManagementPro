@@ -66,6 +66,7 @@ export default function EventRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!event || !eventId) return;
 
     const validation = validateForm(eventRegistrationSchema, formData);
