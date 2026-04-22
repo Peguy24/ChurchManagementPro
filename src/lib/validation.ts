@@ -315,9 +315,156 @@ export const visitorSchema = z.object({
   notes: longTextSchema.optional().or(z.literal("")),
 });
 
-/* ---------------------------------------------------------------- */
-/* Validator helper                                                 */
-/* ---------------------------------------------------------------- */
+/* --- Finance / HR --------------------------------------------------- */
+
+export const employeeSchema = z.object({
+  firstName: nameSchema,
+  lastName: nameSchema,
+  position: requiredShortTextSchema,
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
+  hireDate: optionalDateSchema,
+  salaryAmount: positiveAmountSchema,
+});
+
+export const employeePaymentSchema = z
+  .object({
+    employeeId: z.string().min(1, "validation.employee.required"),
+    amount: positiveAmountSchema,
+    paymentDate: dateSchema,
+    periodStart: dateSchema,
+    periodEnd: dateSchema,
+    notes: longTextSchema.optional().or(z.literal("")),
+  })
+  .refine(
+    (d) => new Date(d.periodEnd) >= new Date(d.periodStart),
+    { message: "validation.date.endBeforeStart", path: ["periodEnd"] },
+  );
+
+export const platformEmployeeSchema = z.object({
+  fullName: nameSchema,
+  roleTitle: requiredShortTextSchema,
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
+  hireDate: optionalDateSchema,
+  salaryAmount: positiveAmountSchema,
+});
+
+export const platformPayrollSchema = z
+  .object({
+    employeeId: z.string().min(1, "validation.employee.required"),
+    payPeriodStart: dateSchema,
+    payPeriodEnd: dateSchema,
+    grossAmount: positiveAmountSchema,
+  })
+  .refine(
+    (d) => new Date(d.payPeriodEnd) >= new Date(d.payPeriodStart),
+    { message: "validation.date.endBeforeStart", path: ["payPeriodEnd"] },
+  );
+
+/* --- Expense (with category + account selection) -------------------- */
+
+export const expenseFormSchema = z.object({
+  amount: positiveAmountSchema,
+  description: requiredShortTextSchema,
+  expenseDate: dateSchema,
+  categoryId: z.string().min(1, "validation.category.required"),
+  vendor: shortTextSchema.optional().or(z.literal("")),
+  notes: longTextSchema.optional().or(z.literal("")),
+});
+
+/* --- Tenant management --------------------------------------------- */
+
+export const tenantManagementSchema = z.object({
+  name: nameSchema,
+  slug: z
+    .string()
+    .trim()
+    .min(1, "validation.field.required")
+    .max(60, "validation.slug.tooLong")
+    .regex(/^[a-z0-9-]+$/, "validation.slug.invalidFormat"),
+  contactEmail: emailSchema,
+  contactPhone: optionalPhoneSchema,
+  address: shortTextSchema.optional().or(z.literal("")),
+  adminEmail: optionalEmailSchema,
+});
+
+/* --- Member (extended) --------------------------------------------- */
+
+export const memberFullSchema = z.object({
+  firstName: nameSchema,
+  lastName: nameSchema,
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
+  emergencyPhone: optionalPhoneSchema,
+  dateOfBirth: optionalDateSchema,
+  joinDate: optionalDateSchema,
+});
+
+/* --- Custom fields (extended with select-options check) ------------ */
+
+export const customFieldFullSchema = z
+  .object({
+    fieldLabel: z
+      .string()
+      .trim()
+      .min(1, "validation.label.required")
+      .max(100, "validation.field.tooLong100"),
+    fieldName: z
+      .string()
+      .trim()
+      .min(1, "validation.fieldName.required")
+      .max(50, "validation.fieldName.tooLong")
+      .regex(
+        /^[a-z][a-z0-9_]*$/,
+        "validation.fieldName.invalidFormat",
+      ),
+    fieldType: z.string(),
+    fieldOptions: z.array(z.string()).optional(),
+  })
+  .refine(
+    (d) => d.fieldType !== "select" || (d.fieldOptions && d.fieldOptions.length > 0),
+    { message: "validation.options.atLeastOne", path: ["fieldOptions"] },
+  );
+
+/* --- Attendance ----------------------------------------------------- */
+
+export const attendanceSchema = z.object({
+  date: dateSchema,
+  eventId: z.string().min(1, "validation.event.required"),
+  members: z.array(z.string()).min(1, "validation.attendance.atLeastOneMember"),
+});
+
+/* --- Church settings ------------------------------------------------ */
+
+export const churchSettingsSchema = z.object({
+  churchName: nameSchema,
+  churchEmail: optionalEmailSchema,
+  churchPhone: optionalPhoneSchema,
+});
+
+/* --- Tenant branding ----------------------------------------------- */
+
+export const tenantBrandingSchema = z.object({
+  name: nameSchema,
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "validation.color.invalid"),
+});
+
+/* --- Tenant user invite -------------------------------------------- */
+
+export const tenantUserInviteSchema = z.object({
+  email: emailSchema,
+  role: z.string().min(1, "validation.role.required"),
+});
+
+/* --- OTP login verification ---------------------------------------- */
+
+export const otpLoginSchema = z.object({
+  code: otpCodeSchema,
+});
+
 
 export type ValidationResult<T> =
   | { success: true; data: T; fieldErrors: Record<string, string> }
