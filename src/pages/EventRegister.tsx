@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { eventRegistrationSchema, validateForm, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { toast } from "sonner";
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
@@ -70,7 +71,7 @@ export default function EventRegister() {
     const validation = validateForm(eventRegistrationSchema, formData);
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      alert(t(firstErrorMessage(validation.fieldErrors) || "errors.required"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("errors.required"));
       return;
     }
     setErrors({});
@@ -110,7 +111,7 @@ export default function EventRegister() {
 
       setSubmitted(true);
     } catch {
-      alert(t("eventRegistration.errorSubmit"));
+      toast.error(t("eventRegistration.errorSubmit"));
     } finally {
       setIsSubmitting(false);
     }
