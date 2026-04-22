@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, inviteSchema, firstErrorMessage } from "@/lib/validation";
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -98,6 +100,7 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
 
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -119,7 +122,14 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
   };
 
   const generateInvitation = async (skipEmail: boolean) => {
-    if (!tenant || !email) return;
+    if (!tenant) return;
+    const validation = validateForm(inviteSchema, { email });
+    if (!validation.success) {
+      setEmailError(validation.fieldErrors.email || "");
+      toast.error(firstErrorMessage(validation.fieldErrors) || lt("error"));
+      return;
+    }
+    setEmailError("");
 
     setIsLoading(true);
     setMode(skipEmail ? "link" : "email");
@@ -205,9 +215,10 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
               type="email"
               placeholder="admin@eglise.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
               disabled={!!invitationLink}
             />
+            <FieldError name="email" errors={emailError ? { email: emailError } : {}} />
           </div>
 
           {!invitationLink ? (

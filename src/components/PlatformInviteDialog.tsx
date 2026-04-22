@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle, Shield, Wallet, MessageSquare, HeadphonesIcon, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Database } from "@/integrations/supabase/types";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, inviteSchema, firstErrorMessage } from "@/lib/validation";
 
 type PlatformRole = Database["public"]["Enums"]["platform_role"];
 
@@ -30,6 +32,7 @@ const PLATFORM_ROLES: PlatformRole[] = ["super_admin", "finance_admin", "moderat
 export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialogProps) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [selectedRole, setSelectedRole] = useState<PlatformRole>("support");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +72,13 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
   };
 
   const generateInvitation = async (skipEmail: boolean) => {
-    if (!email) return;
+    const validation = validateForm(inviteSchema, { email });
+    if (!validation.success) {
+      setEmailError(validation.fieldErrors.email || "");
+      toast.error(firstErrorMessage(validation.fieldErrors) || t("common.error"));
+      return;
+    }
+    setEmailError("");
 
     setIsLoading(true);
     setMode(skipEmail ? "link" : "email");
@@ -138,9 +147,10 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
               type="email"
               placeholder="admin@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
               disabled={!!invitationLink}
             />
+            <FieldError name="email" errors={emailError ? { email: emailError } : {}} />
           </div>
 
           <div className="space-y-2">

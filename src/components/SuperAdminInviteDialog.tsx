@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle, Shield } from "lucide-react";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, inviteSchema, firstErrorMessage } from "@/lib/validation";
 
 interface SuperAdminInviteDialogProps {
   open: boolean;
@@ -14,6 +16,7 @@ interface SuperAdminInviteDialogProps {
 
 export function SuperAdminInviteDialog({ open, onOpenChange }: SuperAdminInviteDialogProps) {
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -35,7 +38,13 @@ export function SuperAdminInviteDialog({ open, onOpenChange }: SuperAdminInviteD
   };
 
   const generateInvitation = async (skipEmail: boolean) => {
-    if (!email) return;
+    const validation = validateForm(inviteSchema, { email });
+    if (!validation.success) {
+      setEmailError(validation.fieldErrors.email || "");
+      toast.error(firstErrorMessage(validation.fieldErrors) || "Erreur");
+      return;
+    }
+    setEmailError("");
 
     setIsLoading(true);
     setMode(skipEmail ? "link" : "email");
@@ -103,9 +112,10 @@ export function SuperAdminInviteDialog({ open, onOpenChange }: SuperAdminInviteD
               type="email"
               placeholder="admin@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
               disabled={!!invitationLink}
             />
+            <FieldError name="email" errors={emailError ? { email: emailError } : {}} />
           </div>
 
           {!invitationLink ? (
