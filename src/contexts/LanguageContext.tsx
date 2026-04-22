@@ -6680,6 +6680,71 @@ const translations = {
     newExpense: "New expense",
     memberRequest: "Membership request",
   },
+  validation: {
+    email: {
+      required: "Email is required",
+      invalid: "Invalid email address",
+      tooLong: "Email must be less than 255 characters",
+    },
+    phone: {
+      tooShort: "Phone must be at least 7 characters",
+      tooLong: "Phone must be less than 20 characters",
+      invalid: "Phone may contain digits, +, -, (, ) and spaces only",
+    },
+    field: {
+      required: "This field is required",
+      tooLong100: "Must be less than 100 characters",
+      tooLong255: "Must be less than 255 characters",
+      tooLong2000: "Must be less than 2000 characters",
+    },
+    title: {
+      required: "Title is required",
+      tooLong: "Title must be less than 200 characters",
+    },
+    url: {
+      invalid: "Must be a valid URL starting with http(s)://",
+      tooLong: "URL must be less than 500 characters",
+    },
+    amount: {
+      required: "Amount is required",
+      invalid: "Amount must be a number with up to 2 decimals",
+      positive: "Amount must be greater than 0",
+      nonNegative: "Amount cannot be negative",
+      tooLarge: "Amount is too large",
+    },
+    date: {
+      required: "Date is required",
+      invalid: "Invalid date",
+      outOfRange: "Date must be within 100 years from today",
+      endBeforeStart: "End date must be on or after start date",
+    },
+    password: {
+      required: "Password is required",
+      confirmRequired: "Please confirm your password",
+      tooShort: "Password must be at least 8 characters",
+      tooLong: "Password is too long",
+      needsLetter: "Password must contain at least one letter",
+      needsNumber: "Password must contain at least one number",
+      mismatch: "Passwords do not match",
+    },
+    otp: {
+      invalid: "Code must be exactly 6 digits",
+    },
+    type: {
+      required: "Type is required",
+    },
+    paymentMethod: {
+      required: "Payment method is required",
+    },
+    label: {
+      required: "Label is required",
+    },
+    fieldName: {
+      required: "Field name is required",
+      tooLong: "Field name must be less than 50 characters",
+      invalidFormat: "Field name must start with a letter and contain only lowercase letters, numbers and underscores",
+    },
+  },
   },
   ht: {
     common: {
@@ -9950,6 +10015,71 @@ const translations = {
     newEvent: "Nouvo evènman",
     newExpense: "Nouvo depans",
     memberRequest: "Demann adhesyon",
+  },
+  validation: {
+    email: {
+      required: "Imèl la obligatwa",
+      invalid: "Adrès imèl pa valab",
+      tooLong: "Imèl la dwe gen mwens pase 255 karaktè",
+    },
+    phone: {
+      tooShort: "Telefòn lan dwe gen omwen 7 karaktè",
+      tooLong: "Telefòn lan dwe gen mwens pase 20 karaktè",
+      invalid: "Telefòn lan ka genyen sèlman chif, +, -, (, ) ak espas",
+    },
+    field: {
+      required: "Chan sa a obligatwa",
+      tooLong100: "Dwe gen mwens pase 100 karaktè",
+      tooLong255: "Dwe gen mwens pase 255 karaktè",
+      tooLong2000: "Dwe gen mwens pase 2000 karaktè",
+    },
+    title: {
+      required: "Tit la obligatwa",
+      tooLong: "Tit la dwe gen mwens pase 200 karaktè",
+    },
+    url: {
+      invalid: "Dwe yon URL valab ki kòmanse ak http(s)://",
+      tooLong: "URL la dwe gen mwens pase 500 karaktè",
+    },
+    amount: {
+      required: "Montan an obligatwa",
+      invalid: "Montan an dwe yon nimewo ak jiska 2 desimal",
+      positive: "Montan an dwe pi gran pase 0",
+      nonNegative: "Montan an pa ka negatif",
+      tooLarge: "Montan an twò gwo",
+    },
+    date: {
+      required: "Dat la obligatwa",
+      invalid: "Dat pa valab",
+      outOfRange: "Dat la dwe nan 100 ane apati jodi a",
+      endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
+    },
+    password: {
+      required: "Modpas la obligatwa",
+      confirmRequired: "Tanpri konfime modpas ou",
+      tooShort: "Modpas la dwe gen omwen 8 karaktè",
+      tooLong: "Modpas la twò long",
+      needsLetter: "Modpas la dwe genyen omwen yon lèt",
+      needsNumber: "Modpas la dwe genyen omwen yon chif",
+      mismatch: "Modpas yo pa menm",
+    },
+    otp: {
+      invalid: "Kòd la dwe gen egzakteman 6 chif",
+    },
+    type: {
+      required: "Tip la obligatwa",
+    },
+    paymentMethod: {
+      required: "Metòd peman an obligatwa",
+    },
+    label: {
+      required: "Etikèt la obligatwa",
+    },
+    fieldName: {
+      required: "Non chan an obligatwa",
+      tooLong: "Non chan an dwe gen mwens pase 50 karaktè",
+      invalidFormat: "Non an dwe kòmanse ak yon lèt epi genyen sèlman lèt minuskil, chif ak underscore",
+    },
   },
   },
 };
