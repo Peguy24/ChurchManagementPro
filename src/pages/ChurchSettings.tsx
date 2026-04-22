@@ -17,6 +17,8 @@ import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette,
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -81,8 +83,7 @@ export default function ChurchSettings() {
     card_church_name_on_card: "true",
     currency_code: "USD",
   });
-
-  const { data: settingsData, isLoading } = useQuery({
+  const [errors, setErrors] = useState<Record<string, string>>({});
     queryKey: ["church-settings", tenantId],
     queryFn: async () => {
       if (!tenantId) return {};
@@ -168,6 +169,21 @@ export default function ChurchSettings() {
       toast.error(t("churchSettings.noChurchSelected"));
       return;
     }
+    const validation = validateForm(churchSettingsSchema, {
+      churchName: settings.church_name,
+      churchEmail: settings.church_email,
+      churchPhone: settings.church_phone,
+    });
+    if (!validation.success) {
+      setErrors({
+        church_name: validation.fieldErrors.churchName || "",
+        church_email: validation.fieldErrors.churchEmail || "",
+        church_phone: validation.fieldErrors.churchPhone || "",
+      });
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("churchSettings.saveError"));
+      return;
+    }
+    setErrors({});
     updateSettings.mutate(settings);
   };
 
