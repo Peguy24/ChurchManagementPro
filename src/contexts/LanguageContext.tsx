@@ -3343,6 +3343,71 @@ const translations = {
     newExpense: "Nouvelle dépense",
     memberRequest: "Demande d'adhésion",
   },
+  validation: {
+    email: {
+      required: "L'email est requis",
+      invalid: "Adresse email invalide",
+      tooLong: "L'email doit contenir moins de 255 caractères",
+    },
+    phone: {
+      tooShort: "Le téléphone doit contenir au moins 7 caractères",
+      tooLong: "Le téléphone doit contenir moins de 20 caractères",
+      invalid: "Le téléphone ne peut contenir que des chiffres, +, -, (, ) et des espaces",
+    },
+    field: {
+      required: "Ce champ est requis",
+      tooLong100: "Doit contenir moins de 100 caractères",
+      tooLong255: "Doit contenir moins de 255 caractères",
+      tooLong2000: "Doit contenir moins de 2000 caractères",
+    },
+    title: {
+      required: "Le titre est requis",
+      tooLong: "Le titre doit contenir moins de 200 caractères",
+    },
+    url: {
+      invalid: "Doit être une URL valide commençant par http(s)://",
+      tooLong: "L'URL doit contenir moins de 500 caractères",
+    },
+    amount: {
+      required: "Le montant est requis",
+      invalid: "Le montant doit être un nombre avec jusqu'à 2 décimales",
+      positive: "Le montant doit être supérieur à 0",
+      nonNegative: "Le montant ne peut pas être négatif",
+      tooLarge: "Le montant est trop élevé",
+    },
+    date: {
+      required: "La date est requise",
+      invalid: "Date invalide",
+      outOfRange: "La date doit être dans les 100 ans à partir d'aujourd'hui",
+      endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
+    },
+    password: {
+      required: "Le mot de passe est requis",
+      confirmRequired: "Veuillez confirmer votre mot de passe",
+      tooShort: "Le mot de passe doit contenir au moins 8 caractères",
+      tooLong: "Le mot de passe est trop long",
+      needsLetter: "Le mot de passe doit contenir au moins une lettre",
+      needsNumber: "Le mot de passe doit contenir au moins un chiffre",
+      mismatch: "Les mots de passe ne correspondent pas",
+    },
+    otp: {
+      invalid: "Le code doit comporter exactement 6 chiffres",
+    },
+    type: {
+      required: "Le type est requis",
+    },
+    paymentMethod: {
+      required: "La méthode de paiement est requise",
+    },
+    label: {
+      required: "L'étiquette est requise",
+    },
+    fieldName: {
+      required: "Le nom du champ est requis",
+      tooLong: "Le nom du champ doit contenir moins de 50 caractères",
+      invalidFormat: "Le nom doit commencer par une lettre et ne contenir que des lettres minuscules, chiffres et tirets bas",
+    },
+  },
   },
   en: {
     common: {
