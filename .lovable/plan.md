@@ -1,51 +1,71 @@
 
 
-## Plan: Platform Business Management (Payroll, Employees, Tax Records)
+# Add input validation across all client forms
 
-### Overview
-Expand the Super Admin area with dedicated modules for managing your business operations: employee records, payroll tracking, and tax preparation — all separate from church-level finances.
+Currently the app has **no client-side input validation** beyond a few `type="email"` and `required` HTML attributes. Zod is already installed (`^3.25.76`) but never used in `src/`. This means users can submit empty names, oversized text, malformed emails, negative amounts, invalid phone numbers, etc. — and the only thing catching it is the database (which produces ugly error toasts) or, worse, nothing at all.
 
-### New Database Tables
+I'll introduce a centralized Zod-based validation layer and wire it into every form across the app, with friendly inline error messages.
 
-**1. `platform_employees`** — Store employee/contractor info
-- id, full_name, email, phone, role/title, employment_type (full-time, part-time, contractor), hire_date, salary_amount, pay_frequency (monthly, bi-weekly, weekly), tax_id (SSN/EIN placeholder), status (active, inactive), bank_info (text/notes), notes, created_by, created_at, updated_at
+## What I'll build
 
-**2. `platform_payroll`** — Track each pay run
-- id, employee_id (FK to platform_employees), pay_period_start, pay_period_end, gross_amount, deductions (jsonb: federal_tax, state_tax, social_security, medicare, other), net_amount, payment_date, payment_method, reference_number, status (pending, paid, cancelled), notes, created_by, created_at
+### 1. Shared validation library — `src/lib/validation.ts`
 
-**3. `platform_tax_records`** — Track tax filings and obligations
-- id, tax_type (federal_income, state_income, payroll_tax, sales_tax, other), tax_period (e.g. "2026-Q1"), amount_due, amount_paid, due_date, paid_date, status (pending, paid, overdue, filed), reference_number, filing_notes, document_url, created_by, created_at, updated_at
+A single source of truth for reusable field schemas and form schemas:
 
-All three tables will have RLS policies restricted to super admins only.
+- **Primitives**: `emailSchema`, `phoneSchema`, `nameSchema` (trim + 1–100 chars), `shortTextSchema` (≤255), `longTextSchema` (≤2000), `urlSchema`, `positiveAmountSchema`, `nonNegativeAmountSchema`, `dateSchema`, `passwordSchema` (≥8 chars, mix of letter+number).
+- **Composite form schemas** for each dialog/page (member, donation, event, expense, branch, ministry, support ticket, church request, join church, invites, auth signup/login, custom fields, visitor, employee, etc.).
+- A `validateForm(schema, data)` helper that returns `{ success, data, fieldErrors }` for easy mapping to UI state.
 
-### New Pages
+### 2. Reusable error display
 
-**1. `/super-admin/payroll` — Platform Payroll** (new file: `src/pages/PlatformPayroll.tsx`)
-- **Employees tab**: List all employees with add/edit/deactivate. Shows name, role, type, salary, status.
-- **Pay Runs tab**: Record payroll payments per employee per period. Auto-calculates deductions (configurable percentages). Shows gross, deductions breakdown, net. Filter by month/employee.
-- **Summary cards**: Total payroll this month, YTD payroll, active employees count, avg salary.
-- **CSV export** for payroll records.
+A small `<FieldError>` component (reads from a `Record<string, string>` errors map) so every form renders inline errors consistently below inputs in `text-destructive` style.
 
-**2. `/super-admin/taxes` — Tax Management** (new file: `src/pages/PlatformTaxRecords.tsx`)
-- Track quarterly/annual tax obligations (federal, state, payroll taxes).
-- Status badges: pending (yellow), paid (green), overdue (red), filed (blue).
-- Calendar view of upcoming due dates.
-- Summary cards: Total taxes due, paid YTD, upcoming deadlines.
-- **CSV export** for tax records.
+### 3. Wire validation into every form
 
-### Navigation & Routing Updates
+For each form below, I'll:
+- Add an `errors` state of `Record<string, string>`.
+- Call `validateForm(schema, formData)` at the top of `handleSubmit`; bail out + show toast + set errors if invalid.
+- Clear a field's error on change.
+- Render `<FieldError name="..." errors={errors} />` under each input.
 
-- **Layout.tsx**: Add two new nav items in super admin section:
-  - `{ to: "/super-admin/payroll", icon: Users, label: "Payroll" }`
-  - `{ to: "/super-admin/taxes", icon: FileText, label: "Taxes" }`
-- **App.tsx**: Add two new protected super admin routes.
-- **SuperAdminDashboard.tsx**: Add quick action buttons for both new pages.
+**Forms to update (22 total):**
 
-### Translation Keys
-Add FR/EN/HT labels for all new UI elements (employees, payroll, deductions, tax types, statuses, form fields).
+| Area | Files |
+|---|---|
+| Auth | `pages/Auth.tsx` (signup, login, forgot password), `pages/ResetPassword.tsx`, `components/LoginOtpVerification.tsx` |
+| Members | `components/MemberDialog.tsx`, `components/JoinAsMemberDialog.tsx`, `pages/JoinChurch.tsx`, `components/MemberImportDialog.tsx` (per-row) |
+| Finance | `components/DonationDialog.tsx`, `pages/Expenses.tsx`, `pages/Budgets.tsx`, `pages/Salaries.tsx` |
+| Events & Attendance | `components/EventDialog.tsx`, `components/AttendanceDialog.tsx`, `pages/EventRegister.tsx` |
+| Org | `components/BranchDialog.tsx`, `components/MinistryDialog.tsx`, `components/CustomFieldDialog.tsx` |
+| Invites & Support | `components/AdminInviteDialog.tsx`, `components/SuperAdminInviteDialog.tsx`, `components/PlatformInviteDialog.tsx`, `components/SupportDialog.tsx`, `components/ChurchRequestForm.tsx` |
+| Settings | `pages/ChurchSettings.tsx`, `pages/TenantBranding.tsx`, `pages/Visitors.tsx`, `pages/PlatformPayroll.tsx`, `pages/TenantManagement.tsx`, `pages/TenantUserManagement.tsx` |
 
-### Files to Create/Modify
-- **Create**: `src/pages/PlatformPayroll.tsx`, `src/pages/PlatformTaxRecords.tsx`
-- **Modify**: `src/App.tsx` (routes), `src/components/Layout.tsx` (nav), `src/pages/SuperAdminDashboard.tsx` (quick actions), `src/contexts/LanguageContext.tsx` (translations)
-- **Database**: 3 new tables with RLS policies via migration tool
+### 4. Validation rules applied (examples)
+
+- **Email**: trim, RFC-valid, ≤255 chars.
+- **Names** (first/last/church/branch/ministry): trim, 1–100 chars, no leading/trailing whitespace.
+- **Phone**: optional, 7–20 chars, digits + `+ - ( ) space`.
+- **Amounts** (donations/expenses/salary): positive number, ≤9 999 999 999, max 2 decimals.
+- **Dates**: valid ISO date; events can't be more than 100 years past/future.
+- **Passwords** (signup/reset): ≥8 chars with at least one letter and one digit.
+- **Long text** (notes/messages/descriptions): ≤2000 chars.
+- **URLs** (logo/website): valid `http(s)://` URL, ≤500 chars.
+- **OTP code**: exactly 6 digits.
+- **Subject/title fields**: 1–200 chars.
+
+### 5. What I will NOT touch
+
+- Server-side RLS and edge-function zod schemas (already in place where it matters — `send-event-registration-email`, `send-bulk-announcement`, etc.).
+- The Supabase generated files (`client.ts`, `types.ts`).
+- Any business logic — only validation gating before the existing submit handlers run.
+
+## Out of scope
+
+- Replacing the entire form layer with `react-hook-form` (would be a much larger refactor). This plan keeps existing controlled-state forms and just layers validation on top.
+- Translating new error messages — initial pass uses English defaults from the schema; a follow-up can move them through `useLanguage`.
+
+## Files created / modified
+
+- **Created**: `src/lib/validation.ts`, `src/components/FieldError.tsx`
+- **Modified**: ~22 form files listed above
 
