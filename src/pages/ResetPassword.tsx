@@ -50,7 +50,7 @@ export default function ResetPassword() {
       setErrors(validation.fieldErrors);
       toast({
         title: t('common.error'),
-        description: firstErrorMessage(validation.fieldErrors) || t('auth.passwordTooShort'),
+        description: firstErrorMessage(validation.fieldErrors, t) || t('auth.passwordTooShort'),
         variant: 'destructive',
       });
       return;

@@ -101,7 +101,7 @@ export default function JoinChurch() {
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors) || t("joinForm.errorRequired"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("joinForm.errorRequired"));
       return;
     }
     setErrors({});

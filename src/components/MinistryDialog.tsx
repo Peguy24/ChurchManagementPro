@@ -113,7 +113,7 @@ export default function MinistryDialog({
     const validation = validateForm(ministrySchema, { name: formData.name, description: formData.description });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors) || m("errorOccurred"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || m("errorOccurred"));
       return;
     }
     setErrors({});

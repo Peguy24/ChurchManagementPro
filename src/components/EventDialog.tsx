@@ -214,7 +214,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast({ title: t("common.error"), description: firstErrorMessage(validation.fieldErrors) || t("events.errorCreate"), variant: "destructive" });
+      toast({ title: t("common.error"), description: firstErrorMessage(validation.fieldErrors, t) || t("events.errorCreate"), variant: "destructive" });
       return;
     }
     setErrors({});

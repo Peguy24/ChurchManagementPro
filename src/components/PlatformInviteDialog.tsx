@@ -75,7 +75,7 @@ export function PlatformInviteDialog({ open, onOpenChange }: PlatformInviteDialo
     const validation = validateForm(inviteSchema, { email });
     if (!validation.success) {
       setEmailError(validation.fieldErrors.email || "");
-      toast.error(firstErrorMessage(validation.fieldErrors) || t("common.error"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("common.error"));
       return;
     }
     setEmailError("");

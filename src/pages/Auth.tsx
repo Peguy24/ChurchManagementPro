@@ -193,7 +193,7 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [otpPending, setOtpPending] = useState<{ email: string; userId: string } | null>(null);
@@ -311,7 +311,7 @@ export default function Auth() {
       setLoginErrors(validation.fieldErrors);
       toast({
         title: lt('error'),
-        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors, t) || lt('fillAllFields'),
         variant: 'destructive',
       });
       return;
@@ -478,7 +478,7 @@ export default function Auth() {
       setForgotErrors(validation.fieldErrors);
       toast({
         title: lt('error'),
-        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors, t) || lt('fillAllFields'),
         variant: 'destructive',
       });
       return;
@@ -506,7 +506,7 @@ export default function Auth() {
       setSignupErrors(validation.fieldErrors);
       toast({
         title: lt('error'),
-        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors, t) || lt('fillAllFields'),
         variant: 'destructive',
       });
       return;

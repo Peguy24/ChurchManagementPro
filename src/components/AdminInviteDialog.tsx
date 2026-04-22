@@ -96,7 +96,7 @@ interface AdminInviteDialogProps {
 }
 
 export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDialogProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
 
   const [email, setEmail] = useState("");
@@ -126,7 +126,7 @@ export function AdminInviteDialog({ open, onOpenChange, tenant }: AdminInviteDia
     const validation = validateForm(inviteSchema, { email });
     if (!validation.success) {
       setEmailError(validation.fieldErrors.email || "");
-      toast.error(firstErrorMessage(validation.fieldErrors) || lt("error"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || lt("error"));
       return;
     }
     setEmailError("");

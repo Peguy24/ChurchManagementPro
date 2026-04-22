@@ -118,7 +118,7 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors) || t("branches.saveError"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("branches.saveError"));
       return;
     }
     setErrors({});
