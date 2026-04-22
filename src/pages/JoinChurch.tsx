@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
+import { FieldError } from "@/components/FieldError";
+import { validateForm, joinChurchSchema, firstErrorMessage } from "@/lib/validation";
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
@@ -33,6 +35,7 @@ export default function JoinChurch() {
   const [churchName, setChurchName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [ministries, setMinistries] = useState<any[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", gender: "", dateOfBirth: "",
     phone: "", email: "", emergencyPhone: "",
@@ -89,10 +92,20 @@ export default function JoinChurch() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName) {
-      toast.error(t("joinForm.errorRequired"));
+
+    const validation = validateForm(joinChurchSchema, {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+    });
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      toast.error(firstErrorMessage(validation.fieldErrors) || t("joinForm.errorRequired"));
       return;
     }
+    setErrors({});
+
     if (!tenantId) {
       toast.error(t("joinForm.errorInvalidLink"));
       return;
@@ -247,11 +260,13 @@ export default function JoinChurch() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.firstName")} {t("joinForm.required")}</Label>
-                      <Input value={formData.firstName} onChange={(e) => updateField("firstName", e.target.value)} required />
+                      <Input value={formData.firstName} onChange={(e) => { updateField("firstName", e.target.value); if (errors.firstName) setErrors((p) => ({ ...p, firstName: "" })); }} />
+                      <FieldError name="firstName" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.lastName")} {t("joinForm.required")}</Label>
-                      <Input value={formData.lastName} onChange={(e) => updateField("lastName", e.target.value)} required />
+                      <Input value={formData.lastName} onChange={(e) => { updateField("lastName", e.target.value); if (errors.lastName) setErrors((p) => ({ ...p, lastName: "" })); }} />
+                      <FieldError name="lastName" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -273,11 +288,13 @@ export default function JoinChurch() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.phone")}</Label>
-                      <Input value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} />
+                      <Input value={formData.phone} onChange={(e) => { updateField("phone", e.target.value); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }} />
+                      <FieldError name="phone" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.email")}</Label>
-                      <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} />
+                      <Input type="email" value={formData.email} onChange={(e) => { updateField("email", e.target.value); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }} />
+                      <FieldError name="email" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
