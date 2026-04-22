@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { eventRegistrationSchema, validateForm, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { toast } from "sonner";
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
