@@ -258,6 +258,7 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                <FieldError name="fieldOptions" errors={errors} />
               </div>
             </div>
           )}
