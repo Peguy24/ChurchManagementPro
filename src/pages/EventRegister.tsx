@@ -71,7 +71,7 @@ export default function EventRegister() {
     const validation = validateForm(eventRegistrationSchema, formData);
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      alert(t(firstErrorMessage(validation.fieldErrors) || "errors.required"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("errors.required"));
       return;
     }
     setErrors({});
