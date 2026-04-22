@@ -17,6 +17,8 @@ import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, 
 import { exportToCsv, type CsvColumn, formatDateForCsv } from '@/lib/csvExport';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { validateForm, visitorSchema, firstErrorMessage } from '@/lib/validation';
+import { FieldError } from '@/components/FieldError';
 
 interface Visitor {
   id: string;
@@ -68,6 +70,7 @@ export default function Visitors() {
   const [visitDate, setVisitDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [howHeard, setHowHeard] = useState('');
   const [visitorNotes, setVisitorNotes] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false);
   const [followUpDate, setFollowUpDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -99,7 +102,25 @@ export default function Visitors() {
   }
 
   async function saveVisitor() {
-    if (!firstName.trim() || !lastName.trim()) return;
+    const validation = validateForm(visitorSchema, {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
+      notes: visitorNotes,
+    });
+    if (!validation.success) {
+      setErrors({
+        firstName: validation.fieldErrors.firstName || '',
+        lastName: validation.fieldErrors.lastName || '',
+        email: validation.fieldErrors.email || '',
+        phone: validation.fieldErrors.phone || '',
+        notes: validation.fieldErrors.notes || '',
+      });
+      toast({ title: t('visitors.error'), description: firstErrorMessage(validation.fieldErrors, t), variant: 'destructive' });
+      return;
+    }
+    setErrors({});
     try {
       await supabase.from('visitors').insert(forInsert({
         first_name: firstName,
@@ -246,12 +267,12 @@ export default function Visitors() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>{t('visitors.firstName')}</Label><Input value={firstName} onChange={e => setFirstName(e.target.value)} /></div>
-                  <div><Label>{t('visitors.lastName')}</Label><Input value={lastName} onChange={e => setLastName(e.target.value)} /></div>
+                  <div><Label>{t('visitors.firstName')}</Label><Input value={firstName} onChange={e => { setFirstName(e.target.value); if (errors.firstName) setErrors(p => ({ ...p, firstName: '' })); }} /><FieldError name="firstName" errors={errors} /></div>
+                  <div><Label>{t('visitors.lastName')}</Label><Input value={lastName} onChange={e => { setLastName(e.target.value); if (errors.lastName) setErrors(p => ({ ...p, lastName: '' })); }} /><FieldError name="lastName" errors={errors} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>{t('visitors.phone')}</Label><Input value={phone} onChange={e => setPhone(e.target.value)} /></div>
-                  <div><Label>{t('visitors.email')}</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+                  <div><Label>{t('visitors.phone')}</Label><Input value={phone} onChange={e => { setPhone(e.target.value); if (errors.phone) setErrors(p => ({ ...p, phone: '' })); }} /><FieldError name="phone" errors={errors} /></div>
+                  <div><Label>{t('visitors.email')}</Label><Input type="email" value={email} onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: '' })); }} /><FieldError name="email" errors={errors} /></div>
                 </div>
                 <div><Label>{t('visitors.visitDate')}</Label><Input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} /></div>
                 <div>
@@ -263,7 +284,7 @@ export default function Visitors() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>{t('visitors.notes')}</Label><Textarea value={visitorNotes} onChange={e => setVisitorNotes(e.target.value)} /></div>
+                <div><Label>{t('visitors.notes')}</Label><Textarea value={visitorNotes} onChange={e => { setVisitorNotes(e.target.value); if (errors.notes) setErrors(p => ({ ...p, notes: '' })); }} /><FieldError name="notes" errors={errors} /></div>
                 <Button onClick={saveVisitor} className="w-full">{t('visitors.save')}</Button>
               </div>
             </DialogContent>
