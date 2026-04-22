@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mail, Link2, Copy, Check, Loader2, AlertTriangle, Shield } from "lucide-react";
 import { FieldError } from "@/components/FieldError";
 import { validateForm, inviteSchema, firstErrorMessage } from "@/lib/validation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SuperAdminInviteDialogProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface SuperAdminInviteDialogProps {
 }
 
 export function SuperAdminInviteDialog({ open, onOpenChange }: SuperAdminInviteDialogProps) {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function SuperAdminInviteDialog({ open, onOpenChange }: SuperAdminInviteD
     const validation = validateForm(inviteSchema, { email });
     if (!validation.success) {
       setEmailError(validation.fieldErrors.email || "");
-      toast.error(firstErrorMessage(validation.fieldErrors) || "Erreur");
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || "Erreur");
       return;
     }
     setEmailError("");

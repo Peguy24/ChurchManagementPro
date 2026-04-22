@@ -277,7 +277,7 @@ export default function DonationDialog({
       setErrors(validation.fieldErrors);
       toast({
         title: t("errors.serverError"),
-        description: firstErrorMessage(validation.fieldErrors) || t("errors.required"),
+        description: firstErrorMessage(validation.fieldErrors, t) || t("errors.required"),
         variant: "destructive",
       });
       return;

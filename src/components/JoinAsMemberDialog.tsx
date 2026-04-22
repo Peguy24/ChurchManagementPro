@@ -76,7 +76,7 @@ export default function JoinAsMemberDialog({ open, onOpenChange }: JoinAsMemberD
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors) || t("joinForm.errorRequired"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("joinForm.errorRequired"));
       return;
     }
     setErrors({});

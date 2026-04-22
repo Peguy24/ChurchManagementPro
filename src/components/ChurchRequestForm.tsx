@@ -88,7 +88,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors) || t("churchForm.requiredFields"));
+      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("churchForm.requiredFields"));
       return;
     }
     setErrors({});
