@@ -473,7 +473,17 @@ export default function Auth() {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail) return;
+    const validation = validateForm(forgotPasswordSchema, { email: forgotEmail });
+    if (!validation.success) {
+      setForgotErrors(validation.fieldErrors);
+      toast({
+        title: lt('error'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setForgotErrors({});
     setForgotLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -490,37 +500,19 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = validateForm(signupSchema, signupForm);
+    if (!validation.success) {
+      setSignupErrors(validation.fieldErrors);
+      toast({
+        title: lt('error'),
+        description: firstErrorMessage(validation.fieldErrors) || lt('fillAllFields'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSignupErrors({});
     setIsLoading(true);
-
-    if (!signupForm.firstName || !signupForm.lastName || !signupForm.email || !signupForm.password) {
-      toast({
-        title: lt('error'),
-        description: lt('fillAllFields'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (signupForm.password !== signupForm.confirmPassword) {
-      toast({
-        title: lt('error'),
-        description: lt('passwordMismatch'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (signupForm.password.length < 6) {
-      toast({
-        title: lt('error'),
-        description: lt('passwordTooShortAuth'),
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
 
     const { error, data } = await signUp(
       signupForm.email,
