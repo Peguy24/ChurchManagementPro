@@ -18,6 +18,8 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useCurrency } from "@/hooks/useCurrency";
+import { validateForm, budgetSchema, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 export default function Budgets() {
   const { t } = useLanguage();
@@ -112,6 +114,7 @@ export default function Budgets() {
     planned_amount: "",
     notes: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createBudget = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -146,10 +149,19 @@ export default function Budgets() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.planned_amount) {
-      toast({ title: t("errors.required"), variant: "destructive" });
+    const validation = validateForm(budgetSchema, {
+      name: formData.name,
+      plannedAmount: formData.planned_amount,
+    });
+    if (!validation.success) {
+      setErrors({
+        name: validation.fieldErrors.name || "",
+        planned_amount: validation.fieldErrors.plannedAmount || "",
+      });
+      toast({ title: t("errors.required"), description: firstErrorMessage(validation.fieldErrors, t), variant: "destructive" });
       return;
     }
+    setErrors({});
     createBudget.mutate(formData);
   };
 
@@ -196,9 +208,10 @@ export default function Budgets() {
                     <Label>{t("budget.budgetName")}</Label>
                     <Input
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
                       placeholder="Ex: Budget Entretien 2025"
                     />
+                    <FieldError name="name" errors={errors} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -224,9 +237,10 @@ export default function Budgets() {
                       <Input
                         type="number"
                         value={formData.planned_amount}
-                        onChange={(e) => setFormData({ ...formData, planned_amount: e.target.value })}
+                        onChange={(e) => { setFormData({ ...formData, planned_amount: e.target.value }); if (errors.planned_amount) setErrors((p) => ({ ...p, planned_amount: "" })); }}
                         placeholder="0.00"
                       />
+                      <FieldError name="planned_amount" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
