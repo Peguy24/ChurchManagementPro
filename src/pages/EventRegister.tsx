@@ -13,6 +13,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { eventRegistrationSchema, validateForm, firstErrorMessage } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
@@ -35,6 +37,7 @@ export default function EventRegister() {
     email: "",
     phone: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!eventId) return;
@@ -62,10 +65,15 @@ export default function EventRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+    if (!event || !eventId) return;
+
+    const validation = validateForm(eventRegistrationSchema, formData);
+    if (!validation.success) {
+      setErrors(validation.fieldErrors);
+      alert(t(firstErrorMessage(validation.fieldErrors) || "errors.required"));
       return;
     }
-    if (!event || !eventId) return;
+    setErrors({});
 
     setIsSubmitting(true);
     try {
@@ -255,21 +263,29 @@ export default function EventRegister() {
                   <Label>{t("eventRegistration.firstName")} *</Label>
                   <Input
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, firstName: e.target.value });
+                      if (errors.firstName) setErrors({ ...errors, firstName: "" });
+                    }}
                     placeholder={t("eventRegistration.firstNamePlaceholder")}
                     required
                     maxLength={100}
                   />
+                  <FieldError name="firstName" errors={errors} />
                 </div>
                 <div className="space-y-2">
                   <Label>{t("eventRegistration.lastName")} *</Label>
                   <Input
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, lastName: e.target.value });
+                      if (errors.lastName) setErrors({ ...errors, lastName: "" });
+                    }}
                     placeholder={t("eventRegistration.lastNamePlaceholder")}
                     required
                     maxLength={100}
                   />
+                  <FieldError name="lastName" errors={errors} />
                 </div>
               </div>
               <div className="space-y-2">
@@ -277,20 +293,28 @@ export default function EventRegister() {
                 <Input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (errors.email) setErrors({ ...errors, email: "" });
+                  }}
                   placeholder={t("eventRegistration.emailPlaceholder")}
                   maxLength={255}
                 />
+                <FieldError name="email" errors={errors} />
               </div>
               <div className="space-y-2">
                 <Label>{t("eventRegistration.phone")}</Label>
                 <Input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    if (errors.phone) setErrors({ ...errors, phone: "" });
+                  }}
                   placeholder={t("eventRegistration.phonePlaceholder")}
                   maxLength={20}
                 />
+                <FieldError name="phone" errors={errors} />
               </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
