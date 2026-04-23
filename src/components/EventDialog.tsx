@@ -406,12 +406,12 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="date">{t("events.startDate")} *</Label>
-                <Input id="date" type="date" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (errors.date) setErrors((p) => ({ ...p, date: "" })); }} />
+                <Input id="date" type="date" value={formData.date} max={computeMaxEventDate()} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (errors.date) setErrors((p) => ({ ...p, date: "" })); }} />
                 <FieldError name="date" errors={errors} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">{t("events.endDate")}</Label>
-                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} />
+                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} max={computeMaxEventDate()} />
                 <FieldError name="endDate" errors={errors} />
               </div>
             </div>
