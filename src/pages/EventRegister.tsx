@@ -265,64 +265,72 @@ export default function EventRegister() {
             <h2 className="text-lg font-semibold mb-1">{t("eventRegistration.title")}</h2>
             <p className="text-sm text-muted-foreground mb-4">{t("eventRegistration.subtitle")}</p>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t("eventRegistration.firstName")} *</Label>
-                  <Input
-                    value={formData.firstName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, firstName: e.target.value });
-                      if (errors.firstName) setErrors({ ...errors, firstName: "" });
-                    }}
-                    placeholder={t("eventRegistration.firstNamePlaceholder")}
-                    required
-                    maxLength={100}
-                  />
-                  <FieldError name="firstName" errors={errors} />
+              <fieldset disabled={isSubmitting} className="space-y-4 disabled:opacity-60">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t("eventRegistration.firstName")} *</Label>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, firstName: e.target.value });
+                        if (errors.firstName) setErrors({ ...errors, firstName: "" });
+                      }}
+                      placeholder={t("eventRegistration.firstNamePlaceholder")}
+                      required
+                      maxLength={100}
+                    />
+                    <FieldError name="firstName" errors={errors} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t("eventRegistration.lastName")} *</Label>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, lastName: e.target.value });
+                        if (errors.lastName) setErrors({ ...errors, lastName: "" });
+                      }}
+                      placeholder={t("eventRegistration.lastNamePlaceholder")}
+                      required
+                      maxLength={100}
+                    />
+                    <FieldError name="lastName" errors={errors} />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("eventRegistration.lastName")} *</Label>
+                  <Label>{t("eventRegistration.email")}</Label>
                   <Input
-                    value={formData.lastName}
+                    type="email"
+                    value={formData.email}
                     onChange={(e) => {
-                      setFormData({ ...formData, lastName: e.target.value });
-                      if (errors.lastName) setErrors({ ...errors, lastName: "" });
+                      setFormData({ ...formData, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: "" });
                     }}
-                    placeholder={t("eventRegistration.lastNamePlaceholder")}
-                    required
-                    maxLength={100}
+                    placeholder={t("eventRegistration.emailPlaceholder")}
+                    maxLength={255}
                   />
-                  <FieldError name="lastName" errors={errors} />
+                  <FieldError name="email" errors={errors} />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("eventRegistration.email")}</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => {
-                    setFormData({ ...formData, email: e.target.value });
-                    if (errors.email) setErrors({ ...errors, email: "" });
-                  }}
-                  placeholder={t("eventRegistration.emailPlaceholder")}
-                  maxLength={255}
-                />
-                <FieldError name="email" errors={errors} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("eventRegistration.phone")}</Label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => {
-                    setFormData({ ...formData, phone: e.target.value });
-                    if (errors.phone) setErrors({ ...errors, phone: "" });
-                  }}
-                  placeholder={t("eventRegistration.phonePlaceholder")}
-                  maxLength={20}
-                />
-                <FieldError name="phone" errors={errors} />
-              </div>
+                <div className="space-y-2">
+                  <Label>{t("eventRegistration.phone")}</Label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value });
+                      if (errors.phone) setErrors({ ...errors, phone: "" });
+                    }}
+                    placeholder={t("eventRegistration.phonePlaceholder")}
+                    maxLength={20}
+                  />
+                  <FieldError name="phone" errors={errors} />
+                </div>
+              </fieldset>
+              {isSubmitting && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{t("eventRegistration.registering")}</span>
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? t("eventRegistration.registering") : t("eventRegistration.register")}
