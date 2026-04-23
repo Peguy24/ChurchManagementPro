@@ -3382,6 +3382,11 @@ const translations = {
       endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
       notInFuture: "La date ne peut pas être dans le futur",
     },
+    customField: {
+      invalidNumber: "Ce champ doit être un nombre valide",
+      invalidOption: "Veuillez sélectionner une option valide",
+      invalidBoolean: "Valeur invalide pour cette case à cocher",
+    },
     password: {
       required: "Le mot de passe est requis",
       confirmRequired: "Veuillez confirmer votre mot de passe",
@@ -6731,6 +6736,11 @@ const translations = {
       endBeforeStart: "End date must be on or after start date",
       notInFuture: "Date cannot be in the future",
     },
+    customField: {
+      invalidNumber: "This field must be a valid number",
+      invalidOption: "Please select a valid option",
+      invalidBoolean: "Invalid value for this checkbox",
+    },
     password: {
       required: "Password is required",
       confirmRequired: "Please confirm your password",
@@ -10078,6 +10088,11 @@ const translations = {
       outOfRange: "Dat la dwe nan 100 ane apati jodi a",
       endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
       notInFuture: "Dat la pa ka nan lavni",
+    },
+    customField: {
+      invalidNumber: "Chan sa a dwe yon nimewo valab",
+      invalidOption: "Tanpri chwazi yon opsyon valab",
+      invalidBoolean: "Valè pa valab pou kaz sa a",
     },
     password: {
       required: "Modpas la obligatwa",
