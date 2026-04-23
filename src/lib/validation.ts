@@ -147,6 +147,7 @@ export const optionalPastDateSchema = z
 
 export const EVENT_DATE_MIN_YEARS_BACK = 5;
 export const EVENT_DATE_MAX_YEARS_AHEAD = 5;
+export const EVENT_MAX_DURATION_DAYS = 366;
 
 export const eventDateSchema = z
   .string()
