@@ -10090,6 +10090,7 @@ const translations = {
       outOfRange: "Dat la dwe nan 100 ane apati jodi a",
       endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
       notInFuture: "Dat la pa ka nan lavni",
+      durationTooLong: "Dire evènman an pa ka depase 1 ane (366 jou)",
     },
     customField: {
       invalidNumber: "Chan sa a dwe yon nimewo valab",
