@@ -131,6 +131,20 @@ export const optionalDateSchema = z
   .optional()
   .or(z.literal(""));
 
+const isNotInFuture = (v: string) => {
+  const d = new Date(v);
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  return d.getTime() <= today.getTime();
+};
+
+export const optionalPastDateSchema = z
+  .string()
+  .refine((v) => !v || isValidDate(v), "validation.date.invalid")
+  .refine((v) => !v || isNotInFuture(v), "validation.date.notInFuture")
+  .optional()
+  .or(z.literal(""));
+
 export const eventDateSchema = z
   .string()
   .min(1, "validation.date.required")
@@ -397,8 +411,8 @@ export const memberFullSchema = z.object({
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
-  dateOfBirth: optionalDateSchema,
-  joinDate: optionalDateSchema,
+  dateOfBirth: optionalPastDateSchema,
+  joinDate: optionalPastDateSchema,
 });
 
 /* --- Custom fields (extended with select-options check) ------------ */

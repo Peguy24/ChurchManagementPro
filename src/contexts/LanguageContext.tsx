@@ -3380,6 +3380,7 @@ const translations = {
       invalid: "Date invalide",
       outOfRange: "La date doit être dans les 100 ans à partir d'aujourd'hui",
       endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
+      notInFuture: "La date ne peut pas être dans le futur",
     },
     password: {
       required: "Le mot de passe est requis",
@@ -6728,6 +6729,7 @@ const translations = {
       invalid: "Invalid date",
       outOfRange: "Date must be within 100 years from today",
       endBeforeStart: "End date must be on or after start date",
+      notInFuture: "Date cannot be in the future",
     },
     password: {
       required: "Password is required",
@@ -10075,6 +10077,7 @@ const translations = {
       invalid: "Dat pa valab",
       outOfRange: "Dat la dwe nan 100 ane apati jodi a",
       endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
+      notInFuture: "Dat la pa ka nan lavni",
     },
     password: {
       required: "Modpas la obligatwa",
