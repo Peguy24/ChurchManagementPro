@@ -79,6 +79,7 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
                 value={values[field.field_name] || ""}
                 onChange={(e) => onChange(field.field_name, e.target.value)}
                 required={field.is_required}
+                maxLength={255}
               />
             )}
             {field.field_type === "textarea" && (
@@ -86,11 +87,14 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
                 value={values[field.field_name] || ""}
                 onChange={(e) => onChange(field.field_name, e.target.value)}
                 required={field.is_required}
+                maxLength={2000}
               />
             )}
             {field.field_type === "number" && (
               <Input
                 type="number"
+                inputMode="decimal"
+                step="any"
                 value={values[field.field_name] || ""}
                 onChange={(e) => onChange(field.field_name, e.target.value)}
                 required={field.is_required}
@@ -99,6 +103,7 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
             {field.field_type === "date" && (
               <Input
                 type="date"
+                max={new Date().toISOString().split("T")[0]}
                 value={values[field.field_name] || ""}
                 onChange={(e) => onChange(field.field_name, e.target.value)}
                 required={field.is_required}
