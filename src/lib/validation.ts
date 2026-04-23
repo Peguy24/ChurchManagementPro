@@ -145,6 +145,9 @@ export const optionalPastDateSchema = z
   .optional()
   .or(z.literal(""));
 
+export const EVENT_DATE_MIN_YEARS_BACK = 5;
+export const EVENT_DATE_MAX_YEARS_AHEAD = 5;
+
 export const eventDateSchema = z
   .string()
   .min(1, "validation.date.required")
@@ -152,10 +155,24 @@ export const eventDateSchema = z
   .refine((v) => {
     const d = new Date(v);
     const now = new Date();
-    const minYear = now.getFullYear() - 100;
-    const maxYear = now.getFullYear() + 100;
+    const minYear = now.getFullYear() - EVENT_DATE_MIN_YEARS_BACK;
+    const maxYear = now.getFullYear() + EVENT_DATE_MAX_YEARS_AHEAD;
     return d.getFullYear() >= minYear && d.getFullYear() <= maxYear;
   }, "validation.date.outOfRange");
+
+export const optionalEventDateSchema = z
+  .string()
+  .refine((v) => !v || isValidDate(v), "validation.date.invalid")
+  .refine((v) => {
+    if (!v) return true;
+    const d = new Date(v);
+    const now = new Date();
+    const minYear = now.getFullYear() - EVENT_DATE_MIN_YEARS_BACK;
+    const maxYear = now.getFullYear() + EVENT_DATE_MAX_YEARS_AHEAD;
+    return d.getFullYear() >= minYear && d.getFullYear() <= maxYear;
+  }, "validation.date.outOfRange")
+  .optional()
+  .or(z.literal(""));
 
 export const passwordSchema = z
   .string()
