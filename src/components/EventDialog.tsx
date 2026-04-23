@@ -426,7 +426,7 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">{t("events.endDate")}</Label>
-                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} max={computeMaxEventDate()} />
+                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} max={computeMaxEndDate(formData.date)} />
                 <FieldError name="endDate" errors={errors} />
               </div>
             </div>
