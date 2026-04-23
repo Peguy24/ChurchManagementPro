@@ -42,7 +42,16 @@ import { Loader2, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, eventSchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, eventSchema, firstErrorMessage, EVENT_DATE_MAX_YEARS_AHEAD } from "@/lib/validation";
+
+const computeMaxEventDate = (): string => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + EVENT_DATE_MAX_YEARS_AHEAD);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 interface Event {
   id: string;
