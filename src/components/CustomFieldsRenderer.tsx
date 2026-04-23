@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+import { validateCustomFieldValue, type CustomFieldDefinition } from "@/lib/validation";
+import { FieldError } from "@/components/FieldError";
 
 interface CustomFieldsRendererProps {
   entityType: "member" | "branch" | "ministry" | "event" | "donation";
@@ -19,6 +21,7 @@ interface CustomFieldsRendererProps {
 export function CustomFieldsRenderer({ entityType, entityId, values, onChange }: CustomFieldsRendererProps) {
   const { t } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: fields } = useQuery({
     queryKey: ["custom-fields", entityType, tenantId],
@@ -63,6 +66,18 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
 
   if (!fields || fields.length === 0) return null;
 
+  const handleChange = (field: CustomFieldDefinition, value: string) => {
+    onChange(field.field_name, value);
+    if (errors[field.field_name]) {
+      setErrors((prev) => ({ ...prev, [field.field_name]: "" }));
+    }
+  };
+
+  const handleBlur = (field: CustomFieldDefinition) => {
+    const err = validateCustomFieldValue(field, values[field.field_name]);
+    setErrors((prev) => ({ ...prev, [field.field_name]: err ?? "" }));
+  };
+
   return (
     <div className="space-y-4 border-t pt-4">
       <h3 className="font-semibold">{t("customFields.rendererTitle")}</h3>
@@ -77,7 +92,8 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
             {field.field_type === "text" && (
               <Input
                 value={values[field.field_name] || ""}
-                onChange={(e) => onChange(field.field_name, e.target.value)}
+                onChange={(e) => handleChange(field as any, e.target.value)}
+                onBlur={() => handleBlur(field as any)}
                 required={field.is_required}
                 maxLength={255}
               />
@@ -85,7 +101,8 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
             {field.field_type === "textarea" && (
               <Textarea
                 value={values[field.field_name] || ""}
-                onChange={(e) => onChange(field.field_name, e.target.value)}
+                onChange={(e) => handleChange(field as any, e.target.value)}
+                onBlur={() => handleBlur(field as any)}
                 required={field.is_required}
                 maxLength={2000}
               />
@@ -96,7 +113,8 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
                 inputMode="decimal"
                 step="any"
                 value={values[field.field_name] || ""}
-                onChange={(e) => onChange(field.field_name, e.target.value)}
+                onChange={(e) => handleChange(field as any, e.target.value)}
+                onBlur={() => handleBlur(field as any)}
                 required={field.is_required}
               />
             )}
@@ -105,14 +123,18 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
                 type="date"
                 max={new Date().toISOString().split("T")[0]}
                 value={values[field.field_name] || ""}
-                onChange={(e) => onChange(field.field_name, e.target.value)}
+                onChange={(e) => handleChange(field as any, e.target.value)}
+                onBlur={() => handleBlur(field as any)}
                 required={field.is_required}
               />
             )}
             {field.field_type === "select" && (
               <Select
                 value={values[field.field_name] || ""}
-                onValueChange={(value) => onChange(field.field_name, value)}
+                onValueChange={(value) => {
+                  handleChange(field as any, value);
+                  setErrors((prev) => ({ ...prev, [field.field_name]: "" }));
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t("customFields.selectPlaceholder")} />
@@ -128,10 +150,11 @@ export function CustomFieldsRenderer({ entityType, entityId, values, onChange }:
               <div className="flex items-center space-x-2 mt-2">
                 <Checkbox
                   checked={values[field.field_name] === "true"}
-                  onCheckedChange={(checked) => onChange(field.field_name, checked ? "true" : "false")}
+                  onCheckedChange={(checked) => handleChange(field as any, checked ? "true" : "false")}
                 />
               </div>
             )}
+            <FieldError name={field.field_name} errors={errors} />
           </div>
         ))}
       </div>
