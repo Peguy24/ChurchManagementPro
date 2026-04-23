@@ -275,7 +275,7 @@ export const eventSchema = z
   .object({
     name: titleSchema,
     date: eventDateSchema,
-    endDate: optionalDateSchema,
+    endDate: optionalEventDateSchema,
     location: shortTextSchema.optional().or(z.literal("")),
     description: longTextSchema.optional().or(z.literal("")),
   })
