@@ -441,6 +441,85 @@ export const customFieldFullSchema = z
     { message: "validation.options.atLeastOne", path: ["fieldOptions"] },
   );
 
+/* --- Custom field VALUE validation (per type) ---------------------- */
+
+export type CustomFieldType = "text" | "textarea" | "number" | "date" | "select" | "checkbox";
+
+export interface CustomFieldDefinition {
+  field_name: string;
+  field_label: string;
+  field_type: CustomFieldType;
+  is_required?: boolean | null;
+  field_options?: any;
+}
+
+/**
+ * Validates a single custom field value against its declared type.
+ * Returns a translation key on error, or null when valid.
+ * Empty values are accepted unless `is_required` is true.
+ */
+export function validateCustomFieldValue(
+  field: CustomFieldDefinition,
+  rawValue: string | undefined | null,
+): string | null {
+  const value = (rawValue ?? "").toString();
+
+  if (!value.trim()) {
+    return field.is_required ? "validation.field.required" : null;
+  }
+
+  switch (field.field_type) {
+    case "text": {
+      if (value.length > 255) return "validation.field.tooLong255";
+      return null;
+    }
+    case "textarea": {
+      if (value.length > 2000) return "validation.field.tooLong2000";
+      return null;
+    }
+    case "number": {
+      // Allow optional sign, digits, optional decimal part
+      if (!/^-?\d+(\.\d+)?$/.test(value.trim())) return "validation.customField.invalidNumber";
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "validation.customField.invalidNumber";
+      return null;
+    }
+    case "date": {
+      if (!isValidDate(value)) return "validation.date.invalid";
+      return null;
+    }
+    case "select": {
+      const options: string[] = field.field_options?.options ?? [];
+      if (options.length > 0 && !options.includes(value)) {
+        return "validation.customField.invalidOption";
+      }
+      return null;
+    }
+    case "checkbox": {
+      if (value !== "true" && value !== "false") return "validation.customField.invalidBoolean";
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Validates a map of custom field values against their definitions.
+ * Returns a record of { field_name: errorKey } for fields that failed.
+ */
+export function validateCustomFieldValues(
+  fields: CustomFieldDefinition[],
+  values: Record<string, string>,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const field of fields) {
+    const err = validateCustomFieldValue(field, values[field.field_name]);
+    if (err) errors[field.field_name] = err;
+  }
+  return errors;
+}
+
 /* --- Attendance ----------------------------------------------------- */
 
 export const attendanceSchema = z.object({
