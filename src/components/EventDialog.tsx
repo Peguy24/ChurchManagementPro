@@ -42,7 +42,16 @@ import { Loader2, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, eventSchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, eventSchema, firstErrorMessage, EVENT_DATE_MAX_YEARS_AHEAD } from "@/lib/validation";
+
+const computeMaxEventDate = (): string => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + EVENT_DATE_MAX_YEARS_AHEAD);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 interface Event {
   id: string;
@@ -397,12 +406,12 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="date">{t("events.startDate")} *</Label>
-                <Input id="date" type="date" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (errors.date) setErrors((p) => ({ ...p, date: "" })); }} />
+                <Input id="date" type="date" value={formData.date} max={computeMaxEventDate()} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (errors.date) setErrors((p) => ({ ...p, date: "" })); }} />
                 <FieldError name="date" errors={errors} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">{t("events.endDate")}</Label>
-                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} />
+                <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => { setFormData({ ...formData, endDate: e.target.value }); if (errors.endDate) setErrors((p) => ({ ...p, endDate: "" })); }} min={formData.date} max={computeMaxEventDate()} />
                 <FieldError name="endDate" errors={errors} />
               </div>
             </div>
