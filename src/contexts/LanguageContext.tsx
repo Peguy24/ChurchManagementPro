@@ -3381,6 +3381,7 @@ const translations = {
       outOfRange: "La date doit être dans les 100 ans à partir d'aujourd'hui",
       endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
       notInFuture: "La date ne peut pas être dans le futur",
+      durationTooLong: "La durée de l'événement ne peut pas dépasser 1 an (366 jours)",
     },
     customField: {
       invalidNumber: "Ce champ doit être un nombre valide",
