@@ -1,10 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
+import { validateCustomFieldValue, type CustomFieldDefinition } from "@/lib/validation";
 
 export interface CustomFieldValue {
   custom_field_id: string;
   entity_id: string;
   field_value: string;
   tenant_id?: string;
+}
+
+/**
+ * Thrown when a custom field value fails validation. The `messageKey` is a
+ * translation key that callers should pass to `t()` before displaying.
+ */
+export class CustomFieldValidationError extends Error {
+  fieldName: string;
+  messageKey: string;
+  constructor(fieldName: string, messageKey: string) {
+    super(messageKey);
+    this.name = "CustomFieldValidationError";
+    this.fieldName = fieldName;
+    this.messageKey = messageKey;
+  }
 }
 
 /**
@@ -18,7 +34,7 @@ export async function saveCustomFieldValues(
 ) {
   let query = supabase
     .from("custom_fields")
-    .select("id, field_name")
+    .select("id, field_name, field_label, field_type, is_required, field_options")
     .eq("entity_type", entityType)
     .eq("is_active", true);
 
@@ -30,6 +46,14 @@ export async function saveCustomFieldValues(
 
   if (fieldsError) throw fieldsError;
   if (!fields || fields.length === 0) return;
+
+  // Pre-flight validation per type
+  for (const field of fields) {
+    const err = validateCustomFieldValue(field as CustomFieldDefinition, customFieldValues[field.field_name]);
+    if (err) {
+      throw new CustomFieldValidationError(field.field_name, err);
+    }
+  }
 
   const valuesToSave: CustomFieldValue[] = [];
 
