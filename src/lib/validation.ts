@@ -147,6 +147,7 @@ export const optionalPastDateSchema = z
 
 export const EVENT_DATE_MIN_YEARS_BACK = 5;
 export const EVENT_DATE_MAX_YEARS_AHEAD = 5;
+export const EVENT_MAX_DURATION_DAYS = 366;
 
 export const eventDateSchema = z
   .string()
@@ -282,6 +283,16 @@ export const eventSchema = z
   .refine(
     (d) => !d.endDate || new Date(d.endDate) >= new Date(d.date),
     { message: "validation.date.endBeforeStart", path: ["endDate"] },
+  )
+  .refine(
+    (d) => {
+      if (!d.endDate) return true;
+      const start = new Date(d.date).getTime();
+      const end = new Date(d.endDate).getTime();
+      const diffDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+      return diffDays <= EVENT_MAX_DURATION_DAYS;
+    },
+    { message: "validation.date.durationTooLong", path: ["endDate"] },
   );
 
 export const eventRegistrationSchema = z.object({

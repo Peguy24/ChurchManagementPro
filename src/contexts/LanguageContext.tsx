@@ -3381,6 +3381,7 @@ const translations = {
       outOfRange: "La date doit être dans les 100 ans à partir d'aujourd'hui",
       endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
       notInFuture: "La date ne peut pas être dans le futur",
+      durationTooLong: "La durée de l'événement ne peut pas dépasser 1 an (366 jours)",
     },
     customField: {
       invalidNumber: "Ce champ doit être un nombre valide",
@@ -6735,6 +6736,7 @@ const translations = {
       outOfRange: "Date must be within 100 years from today",
       endBeforeStart: "End date must be on or after start date",
       notInFuture: "Date cannot be in the future",
+      durationTooLong: "Event duration cannot exceed 1 year (366 days)",
     },
     customField: {
       invalidNumber: "This field must be a valid number",
@@ -10088,6 +10090,7 @@ const translations = {
       outOfRange: "Dat la dwe nan 100 ane apati jodi a",
       endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
       notInFuture: "Dat la pa ka nan lavni",
+      durationTooLong: "Dire evènman an pa ka depase 1 ane (366 jou)",
     },
     customField: {
       invalidNumber: "Chan sa a dwe yon nimewo valab",
