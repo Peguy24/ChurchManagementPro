@@ -235,8 +235,8 @@ export const resetPasswordSchema = z
   });
 
 export const memberSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
