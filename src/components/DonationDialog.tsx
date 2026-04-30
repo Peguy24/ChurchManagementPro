@@ -31,7 +31,7 @@ import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import { FieldError } from "@/components/FieldError";
 import { validateForm, donationSchema, firstErrorMessage } from "@/lib/validation";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText } from "@/lib/inputSanitize";
 
 interface DonationDialogProps {
   open: boolean;
@@ -459,7 +459,8 @@ export default function DonationDialog({
             <Input
               id="description"
               value={formData.description}
-              onChange={(e) => { setFormData({ ...formData, description: e.target.value }); if (errors.description) setErrors((p) => ({ ...p, description: "" })); }}
+              maxLength={200}
+              onChange={(e) => { setFormData({ ...formData, description: sanitizeLine(e.target.value, 200) }); if (errors.description) setErrors((p) => ({ ...p, description: "" })); }}
               placeholder={t("donations.descriptionPlaceholder")}
             />
             <FieldError name="description" errors={errors} />
@@ -513,7 +514,8 @@ export default function DonationDialog({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              maxLength={500}
+              onChange={(e) => setFormData({ ...formData, notes: sanitizeText(e.target.value, 500) })}
               placeholder={t("donations.additionalNotes")}
               rows={2}
             />

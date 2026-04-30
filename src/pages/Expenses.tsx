@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText, sanitizeReference } from "@/lib/inputSanitize";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -460,7 +460,8 @@ export default function Expenses() {
                     <Label>{t("expense.description")} *</Label>
                     <Input
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      maxLength={200}
+                      onChange={(e) => setFormData({ ...formData, description: sanitizeLine(e.target.value, 200) })}
                       placeholder={t("expense.descriptionPlaceholder")}
                     />
                   </div>
@@ -488,7 +489,8 @@ export default function Expenses() {
                       <Label>{t("expense.vendor")} *</Label>
                       <Input
                         value={formData.vendor}
-                        onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                        maxLength={100}
+                        onChange={(e) => setFormData({ ...formData, vendor: sanitizeLine(e.target.value, 100) })}
                         placeholder={t("expense.vendorPlaceholder")}
                       />
                     </div>
@@ -515,7 +517,8 @@ export default function Expenses() {
                       <Label>{t("expense.referenceNumber")}</Label>
                       <Input
                         value={formData.reference_number}
-                        onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
+                        maxLength={50}
+                        onChange={(e) => setFormData({ ...formData, reference_number: sanitizeReference(e.target.value, 50) })}
                         placeholder="N° justificatif (optionnel)"
                       />
                     </div>
@@ -607,7 +610,8 @@ export default function Expenses() {
                     <Label>{t("donations.notes")}</Label>
                     <Textarea
                       value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      maxLength={500}
+                      onChange={(e) => setFormData({ ...formData, notes: sanitizeText(e.target.value, 500) })}
                       placeholder="Notes additionnelles"
                       rows={2}
                     />

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeName, sanitizeLine, sanitizeReference, sanitizeText } from "@/lib/inputSanitize";
 import {
   Table,
   TableBody,
@@ -636,8 +636,9 @@ export default function Salaries() {
                         <Input
                           id="first_name"
                           value={employeeForm.first_name}
+                          maxLength={50}
                           onChange={(e) =>
-                            setEmployeeForm({ ...employeeForm, first_name: e.target.value })
+                            setEmployeeForm({ ...employeeForm, first_name: sanitizeName(e.target.value, 50) })
                           }
                           required
                         />
@@ -647,8 +648,9 @@ export default function Salaries() {
                         <Input
                           id="last_name"
                           value={employeeForm.last_name}
+                          maxLength={50}
                           onChange={(e) =>
-                            setEmployeeForm({ ...employeeForm, last_name: e.target.value })
+                            setEmployeeForm({ ...employeeForm, last_name: sanitizeName(e.target.value, 50) })
                           }
                           required
                         />
@@ -659,8 +661,9 @@ export default function Salaries() {
                       <Input
                         id="position"
                         value={employeeForm.position}
+                        maxLength={80}
                         onChange={(e) =>
-                          setEmployeeForm({ ...employeeForm, position: e.target.value })
+                          setEmployeeForm({ ...employeeForm, position: sanitizeLine(e.target.value, 80) })
                         }
                         placeholder={t("salariesPage.positionPlaceholder")}
                         required
@@ -673,8 +676,9 @@ export default function Salaries() {
                           id="email"
                           type="email"
                           value={employeeForm.email}
+                          maxLength={120}
                           onChange={(e) =>
-                            setEmployeeForm({ ...employeeForm, email: e.target.value })
+                            setEmployeeForm({ ...employeeForm, email: sanitizeLine(e.target.value, 120).trim() })
                           }
                         />
                       </div>
@@ -683,8 +687,9 @@ export default function Salaries() {
                         <Input
                           id="phone"
                           value={employeeForm.phone}
+                          maxLength={25}
                           onChange={(e) =>
-                            setEmployeeForm({ ...employeeForm, phone: e.target.value })
+                            setEmployeeForm({ ...employeeForm, phone: e.target.value.replace(/[^\d+\-()\s]/g, "").slice(0, 25) })
                           }
                         />
                       </div>
@@ -1056,8 +1061,9 @@ export default function Salaries() {
                 <Input
                   id="reference_number"
                   value={paymentForm.reference_number}
+                  maxLength={50}
                   onChange={(e) =>
-                    setPaymentForm({ ...paymentForm, reference_number: e.target.value })
+                    setPaymentForm({ ...paymentForm, reference_number: sanitizeReference(e.target.value, 50) })
                   }
                   placeholder={t("salariesPage.referencePlaceholder")}
                 />
@@ -1067,7 +1073,8 @@ export default function Salaries() {
                 <Input
                   id="payment_notes"
                   value={paymentForm.notes}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  maxLength={300}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: sanitizeText(e.target.value, 300) })}
                 />
               </div>
               <DialogFooter>
