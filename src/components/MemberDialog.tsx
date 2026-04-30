@@ -1534,12 +1534,16 @@ export default function MemberDialog({
                 <Textarea
                   id="childrenNames"
                   value={formData.childrenNames}
+                  maxLength={500}
                   onChange={(e) =>
-                    setFormData({ ...formData, childrenNames: e.target.value })
+                    setFormData({ ...formData, childrenNames: e.target.value.slice(0, 500) })
                   }
                   placeholder={lt.childrenNamesPlaceholder}
                   rows={3}
                 />
+                <p className="text-xs text-muted-foreground text-right">
+                  {formData.childrenNames.length}/500
+                </p>
               </div>
             </TabsContent>
           </Tabs>
