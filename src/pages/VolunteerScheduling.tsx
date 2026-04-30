@@ -360,11 +360,11 @@ export default function VolunteerScheduling() {
                   <div className="space-y-4">
                     <div>
                       <Label>{v('roleName')}</Label>
-                      <Input value={roleName} onChange={e => setRoleName(e.target.value)} placeholder={v('roleNamePlaceholder')} />
+                      <Input value={roleName} maxLength={80} onChange={e => setRoleName(sanitizeName(e.target.value, 80))} placeholder={v('roleNamePlaceholder')} />
                     </div>
                     <div>
                       <Label>{v('description')}</Label>
-                      <Textarea value={roleDescription} onChange={e => setRoleDescription(e.target.value)} placeholder={v('descriptionPlaceholder')} />
+                      <Textarea value={roleDescription} maxLength={300} onChange={e => setRoleDescription(sanitizeText(e.target.value, 300))} placeholder={v('descriptionPlaceholder')} />
                     </div>
                     <div>
                       <Label>{v('color')}</Label>
