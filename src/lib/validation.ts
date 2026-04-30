@@ -346,6 +346,7 @@ export const churchRequestSchema = z.object({
   contactName: nameSchema,
   email: emailSchema,
   phone: optionalPhoneSchema,
+  address: shortTextSchema.optional().or(z.literal("")),
   message: longTextSchema.optional().or(z.literal("")),
 });
 

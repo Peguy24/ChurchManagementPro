@@ -35,7 +35,30 @@ serve(async (req) => {
       });
     }
 
-    logStep("Request received", { church_name, contact_email, requested_plan });
+    // Server-side validation (defense in depth — re-check even if client is bypassed)
+    const trim = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+    const cn = trim(church_name);
+    const ctn = trim(contact_name);
+    const em = trim(contact_email).toLowerCase();
+    const ph = trim(contact_phone);
+    const ad = trim(address);
+    const ms = trim(message);
+
+    const validationError = (msg: string) =>
+      new Response(JSON.stringify({ error: msg }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+
+    if (cn.length < 1 || cn.length > 100) return validationError("Invalid church name (1–100 characters)");
+    if (ctn.length < 1 || ctn.length > 100) return validationError("Invalid contact name (1–100 characters)");
+    if (em.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return validationError("Invalid email address");
+    if (ph && (ph.length < 7 || ph.length > 20 || !/^[+\d()\-\s]+$/.test(ph))) return validationError("Invalid phone number");
+    if (ad.length > 255) return validationError("Address too long (max 255 characters)");
+    if (ms.length > 2000) return validationError("Message too long (max 2000 characters)");
+    if (!["basic", "standard", "premium"].includes(requested_plan)) return validationError("Invalid plan");
+
+    logStep("Request received", { church_name: cn, contact_email: em, requested_plan });
 
     // Check if email is already registered as a user
     const { data: existingUser } = await supabase.auth.admin.listUsers();

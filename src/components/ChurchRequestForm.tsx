@@ -84,6 +84,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       contactName: formData.contact_name,
       email: formData.contact_email,
       phone: formData.contact_phone,
+      address: formData.address,
       message: formData.message,
     });
     if (!validation.success) {
@@ -298,9 +299,11 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
             <Input
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, address: e.target.value }); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
               placeholder={t("churchForm.addressPlaceholder")}
+              maxLength={255}
             />
+            <FieldError name="address" errors={errors} />
           </div>
 
           <div className="space-y-2">
