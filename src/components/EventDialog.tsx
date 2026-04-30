@@ -386,7 +386,8 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
+                maxLength={120}
+                onChange={(e) => { setFormData({ ...formData, name: sanitizeName(e.target.value, 120) }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
               <FieldError name="name" errors={errors} />
             </div>
