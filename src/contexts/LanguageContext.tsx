@@ -10132,6 +10132,9 @@ const translations = {
       tooLong255: "Dwe gen mwens pase 255 karaktè",
       tooLong2000: "Dwe gen mwens pase 2000 karaktè",
     },
+    name: {
+      invalidChars: "Non an ka genyen sèlman lèt, espas, apostwòf ak tirè",
+    },
     title: {
       required: "Tit la obligatwa",
       tooLong: "Tit la dwe gen mwens pase 200 karaktè",
