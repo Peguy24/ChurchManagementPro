@@ -190,11 +190,12 @@ serve(async (req) => {
       }
     }
 
-    // Get all users associated with this tenant (to delete their auth accounts)
+    // Merge profiles directly tied to this tenant + any user_id collected earlier
     const { data: tenantProfiles } = await supabaseAdmin
       .from("profiles")
       .select("id")
       .eq("tenant_id", tenant_id);
+    (tenantProfiles || []).forEach((p: any) => p.id && userIdsToCheck.add(p.id));
 
     // Update profiles to remove tenant_id reference
     await supabaseAdmin
@@ -202,20 +203,101 @@ serve(async (req) => {
       .update({ tenant_id: null })
       .eq("tenant_id", tenant_id);
 
-    // Delete auth users that were associated with this tenant
-    if (tenantProfiles?.length) {
-      for (const profile of tenantProfiles) {
-        // Remove user_roles entries
-        await supabaseAdmin.from("user_roles").delete().eq("user_id", profile.id);
-        // Delete profile
-        await supabaseAdmin.from("profiles").delete().eq("id", profile.id);
-        // Delete the auth user so the email can be reused
-        const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(profile.id);
-        if (authDeleteError) {
-          console.log(`[DELETE-TENANT] Warning deleting auth user ${profile.id}: ${authDeleteError.message}`);
-        } else {
-          console.log(`[DELETE-TENANT] Auth user ${profile.id} deleted`);
+    // Delete each user's tenant artifacts and auth account if they have no other tenant role / platform role
+    for (const userId of userIdsToCheck) {
+      try {
+        // Skip if user holds a platform role (e.g., super admin)
+        const { data: platformRole } = await supabaseAdmin
+          .from("platform_user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (platformRole) {
+          console.log(`[DELETE-TENANT] Skipping platform user ${userId}`);
+          continue;
         }
+
+        // Remove tenant_user_roles for this tenant only (other tenants preserved)
+        await supabaseAdmin
+          .from("tenant_user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("tenant_id", tenant_id);
+
+        // If they still have roles in OTHER tenants, keep the auth user
+        const { data: otherRoles } = await supabaseAdmin
+          .from("tenant_user_roles")
+          .select("tenant_id")
+          .eq("user_id", userId)
+          .limit(1);
+        if (otherRoles && otherRoles.length > 0) {
+          console.log(`[DELETE-TENANT] User ${userId} still has roles in other tenants, keeping auth user`);
+          continue;
+        }
+
+        // Fully orphaned -> remove user_roles, profile, then auth user
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+        await supabaseAdmin.from("profiles").delete().eq("id", userId);
+        const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        if (authDeleteError) {
+          console.log(`[DELETE-TENANT] Warning deleting auth user ${userId}: ${authDeleteError.message}`);
+        } else {
+          console.log(`[DELETE-TENANT] Auth user ${userId} deleted`);
+        }
+      } catch (err) {
+        console.log(`[DELETE-TENANT] Error processing user ${userId}: ${err}`);
+      }
+    }
+
+    // Clean up any orphan rows referencing the released emails
+    if (emailsToRelease.size > 0) {
+      const emails = Array.from(emailsToRelease);
+      try {
+        await supabaseAdmin.from("admin_invitations").delete().in("email", emails);
+      } catch (_e) {}
+      try {
+        await supabaseAdmin.from("tenant_requests").delete().in("contact_email", emails);
+      } catch (_e) {}
+
+      // Sweep auth users by email — paginate and delete fully-orphaned matches
+      try {
+        let page = 1;
+        const perPage = 200;
+        while (true) {
+          const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+          const users = list?.users || [];
+          if (users.length === 0) break;
+          for (const u of users) {
+            const em = u.email?.toLowerCase();
+            if (!em || !emailsToRelease.has(em)) continue;
+            // Skip if has platform role or any tenant role
+            const { data: pr } = await supabaseAdmin
+              .from("platform_user_roles")
+              .select("role")
+              .eq("user_id", u.id)
+              .maybeSingle();
+            if (pr) continue;
+            const { data: tr } = await supabaseAdmin
+              .from("tenant_user_roles")
+              .select("tenant_id")
+              .eq("user_id", u.id)
+              .limit(1);
+            if (tr && tr.length > 0) continue;
+            await supabaseAdmin.from("user_roles").delete().eq("user_id", u.id);
+            await supabaseAdmin.from("profiles").delete().eq("id", u.id);
+            const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(u.id);
+            if (delErr) {
+              console.log(`[DELETE-TENANT] Sweep: failed to delete ${u.id}: ${delErr.message}`);
+            } else {
+              console.log(`[DELETE-TENANT] Sweep: deleted orphan auth user ${u.id} (${em})`);
+            }
+          }
+          if (users.length < perPage) break;
+          page++;
+          if (page > 50) break; // safety cap
+        }
+      } catch (sweepErr) {
+        console.log(`[DELETE-TENANT] Email sweep warning: ${sweepErr}`);
       }
     }
 
@@ -227,7 +309,7 @@ serve(async (req) => {
 
     if (deleteError) throw deleteError;
 
-    console.log(`[DELETE-TENANT] Tenant ${tenant_id} deleted successfully`);
+    console.log(`[DELETE-TENANT] Tenant ${tenant_id} deleted successfully (${emailsToRelease.size} emails released)`);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
