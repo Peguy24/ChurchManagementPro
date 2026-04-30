@@ -286,8 +286,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Input
                 id="phone"
                 type="tel"
+                maxLength={20}
                 value={formData.phone}
-                onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+                aria-invalid={!!errors.phone}
+                className={errors.phone ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, phone: e.target.value.slice(0, 20) }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
               />
               <FieldError name="phone" errors={errors} />
             </div>
@@ -297,8 +300,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Input
                 id="email"
                 type="email"
+                maxLength={255}
                 value={formData.email}
-                onChange={(e) => { setFormData({ ...formData, email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+                aria-invalid={!!errors.email}
+                className={errors.email ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, email: e.target.value.slice(0, 255) }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
               />
               <FieldError name="email" errors={errors} />
             </div>
