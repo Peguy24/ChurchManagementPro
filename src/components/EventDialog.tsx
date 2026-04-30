@@ -510,11 +510,11 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">{t("events.locationLabel")}</Label>
-              <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+              <Input id="location" value={formData.location} maxLength={150} onChange={(e) => setFormData({ ...formData, location: sanitizeLine(e.target.value, 150) })} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">{t("events.descriptionLabel")}</Label>
-              <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+              <Textarea id="description" value={formData.description} maxLength={1000} onChange={(e) => setFormData({ ...formData, description: sanitizeText(e.target.value, 1000) })} rows={3} />
             </div>
             {/* QR Code & Registration Link for existing events */}
             {isEditing && event && (
