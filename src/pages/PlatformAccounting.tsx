@@ -107,7 +107,13 @@ export default function PlatformAccounting() {
     notes: "",
     is_recurring: false,
     recurring_frequency: "",
+    tax_deductible: false,
+    tax_category: "",
+    receipt_url: "" as string,
+    receipt_filename: "" as string,
   });
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
 
   const resetForm = () => {
@@ -120,7 +126,12 @@ export default function PlatformAccounting() {
       notes: "",
       is_recurring: false,
       recurring_frequency: "",
+      tax_deductible: false,
+      tax_category: "",
+      receipt_url: "",
+      receipt_filename: "",
     });
+    setReceiptFile(null);
     setEditingExpense(null);
   };
 
