@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { detectLang, absenceAlertTranslations, formatDateLocalized } from "../_shared/email-translations.ts";
+import { detectLang, absenceAlertTranslations, formatDateLocalized, getTenantDefaultLang } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
