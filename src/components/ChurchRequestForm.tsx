@@ -255,6 +255,9 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 value={formData.church_name}
                 onChange={(e) => { setFormData({ ...formData, church_name: e.target.value }); if (errors.churchName) setErrors((p) => ({ ...p, churchName: "" })); }}
                 placeholder={t("churchForm.churchNamePlaceholder")}
+                aria-invalid={!!errors.churchName}
+                aria-describedby={errors.churchName ? "church_name-error" : undefined}
+                className={errors.churchName ? "border-destructive focus-visible:ring-destructive" : ""}
               />
               <FieldError name="churchName" errors={errors} />
             </div>
@@ -265,7 +268,15 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 value={formData.contact_name}
                 onChange={(e) => { setFormData({ ...formData, contact_name: e.target.value }); if (errors.contactName) setErrors((p) => ({ ...p, contactName: "" })); }}
                 placeholder={t("churchForm.yourNamePlaceholder")}
+                aria-invalid={!!errors.contactName}
+                aria-describedby={errors.contactName ? "contact_name-error" : "contact_name-hint"}
+                className={errors.contactName ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {!errors.contactName && (
+                <p id="contact_name-hint" className="text-xs text-muted-foreground">
+                  {t("churchForm.nameHint")}
+                </p>
+              )}
               <FieldError name="contactName" errors={errors} />
             </div>
           </div>
@@ -279,6 +290,8 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 value={formData.contact_email}
                 onChange={(e) => { setFormData({ ...formData, contact_email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
                 placeholder={t("churchForm.emailPlaceholder")}
+                aria-invalid={!!errors.email}
+                className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
               />
               <FieldError name="email" errors={errors} />
             </div>
