@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { todayISO, clampNotFuture } from "@/lib/inputSanitize";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -192,8 +193,9 @@ function ArchiveCard({ dataType, title, description, icon, isFinancial, tenantId
               <Input
                 type="date"
                 value={beforeDate}
+                max={todayISO()}
                 onChange={(e) => {
-                  setBeforeDate(e.target.value);
+                  setBeforeDate(clampNotFuture(e.target.value));
                   setPreviewCount(null);
                 }}
                 className="max-w-xs"

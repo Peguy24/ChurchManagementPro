@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { customFieldFullSchema, validateForm, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { sanitizeLine } from "@/lib/inputSanitize";
 
 interface CustomFieldDialogProps {
   open: boolean;
@@ -205,8 +206,11 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <Label>{t("customFields.fieldNameInternal")}</Label>
             <Input
               value={formData.field_name}
+              maxLength={50}
               onChange={(e) => {
-                setFormData({ ...formData, field_name: e.target.value });
+                // internal name: lowercase letters, digits, underscore only
+                const safe = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 50);
+                setFormData({ ...formData, field_name: safe });
                 if (errors.fieldName) setErrors({ ...errors, fieldName: "" });
               }}
               placeholder={t("customFields.fieldNamePlaceholder")}
@@ -220,8 +224,9 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <Label>{t("customFields.fieldLabelDisplay")}</Label>
             <Input
               value={formData.field_label}
+              maxLength={100}
               onChange={(e) => {
-                setFormData({ ...formData, field_label: e.target.value });
+                setFormData({ ...formData, field_label: sanitizeLine(e.target.value, 100) });
                 if (errors.fieldLabel) setErrors({ ...errors, fieldLabel: "" });
               }}
               placeholder={t("customFields.fieldLabelPlaceholder")}
@@ -245,7 +250,8 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
                 <div className="flex gap-2">
                   <Input
                     value={newOption}
-                    onChange={(e) => setNewOption(e.target.value)}
+                    maxLength={60}
+                    onChange={(e) => setNewOption(sanitizeLine(e.target.value, 60))}
                     placeholder={t("customFields.newOption")}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
@@ -267,11 +273,13 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <div>
               <Label>{t("customFields.displayOrder")}</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={formData.display_order}
-                onChange={(e) =>
-                  setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })
-                }
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+                  setFormData({ ...formData, display_order: digits ? parseInt(digits, 10) : 0 });
+                }}
               />
             </div>
 

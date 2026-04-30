@@ -19,6 +19,7 @@ import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { sanitizeName, sanitizeLine, sanitizeText, sanitizePhone, sanitizeHexColor, sanitizeReference } from "@/lib/inputSanitize";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -262,7 +263,8 @@ export default function ChurchSettings() {
                   <Input
                     id="church_name"
                     value={settings.church_name}
-                    onChange={(e) => { setSettings({ ...settings, church_name: e.target.value }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
+                    maxLength={120}
+                    onChange={(e) => { setSettings({ ...settings, church_name: sanitizeName(e.target.value, 120) }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
                     placeholder={t("churchSettings.churchNamePlaceholder")}
                   />
                   <FieldError name="church_name" errors={errors} />
@@ -275,7 +277,8 @@ export default function ChurchSettings() {
                   <Input
                     id="church_tax_id"
                     value={settings.church_tax_id}
-                    onChange={(e) => setSettings({ ...settings, church_tax_id: e.target.value })}
+                    maxLength={40}
+                    onChange={(e) => setSettings({ ...settings, church_tax_id: sanitizeReference(e.target.value, 40) })}
                     placeholder={t("churchSettings.taxIdPlaceholder")}
                   />
                 </div>
@@ -289,7 +292,8 @@ export default function ChurchSettings() {
                 <Textarea
                   id="church_address"
                   value={settings.church_address}
-                  onChange={(e) => setSettings({ ...settings, church_address: e.target.value })}
+                  maxLength={300}
+                  onChange={(e) => setSettings({ ...settings, church_address: sanitizeText(e.target.value, 300) })}
                   placeholder={t("churchSettings.addressPlaceholder")}
                   rows={2}
                 />
@@ -304,7 +308,9 @@ export default function ChurchSettings() {
                   <Input
                     id="church_phone"
                     value={settings.church_phone}
-                    onChange={(e) => { setSettings({ ...settings, church_phone: e.target.value }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
+                    maxLength={25}
+                    inputMode="tel"
+                    onChange={(e) => { setSettings({ ...settings, church_phone: sanitizePhone(e.target.value) }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
                     placeholder={t("churchSettings.phonePlaceholder")}
                   />
                   <FieldError name="church_phone" errors={errors} />
@@ -318,7 +324,8 @@ export default function ChurchSettings() {
                     id="church_email"
                     type="email"
                     value={settings.church_email}
-                    onChange={(e) => { setSettings({ ...settings, church_email: e.target.value }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
+                    maxLength={254}
+                    onChange={(e) => { setSettings({ ...settings, church_email: sanitizeLine(e.target.value, 254).toLowerCase() }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
                     placeholder={t("churchSettings.emailPlaceholder")}
                   />
                   <FieldError name="church_email" errors={errors} />
@@ -350,7 +357,8 @@ export default function ChurchSettings() {
                 <Textarea
                   id="fiscal_receipt_footer"
                   value={settings.fiscal_receipt_footer}
-                  onChange={(e) => setSettings({ ...settings, fiscal_receipt_footer: e.target.value })}
+                  maxLength={500}
+                  onChange={(e) => setSettings({ ...settings, fiscal_receipt_footer: sanitizeText(e.target.value, 500) })}
                   placeholder={t("churchSettings.receiptFooterPlaceholder")}
                   rows={3}
                 />
@@ -419,7 +427,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_primary_color}
-                      onChange={(e) => setSettings({ ...settings, card_primary_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_primary_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#3B82F6"
                       className="flex-1"
                     />
@@ -441,7 +450,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_secondary_color}
-                      onChange={(e) => setSettings({ ...settings, card_secondary_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_secondary_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#1E40AF"
                       className="flex-1"
                     />
@@ -463,7 +473,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_text_color}
-                      onChange={(e) => setSettings({ ...settings, card_text_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_text_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#FFFFFF"
                       className="flex-1"
                     />

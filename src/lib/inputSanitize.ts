@@ -73,6 +73,21 @@ export function sanitizeText(raw: string, maxLength = 200): string {
   return v.slice(0, maxLength);
 }
 
+/** Phone number: digits, +, spaces, dashes, parentheses, dots. */
+export function sanitizePhone(raw: string, maxLength = 25): string {
+  if (!raw) return "";
+  return raw.replace(/[^0-9+\-().\s]/g, "").slice(0, maxLength);
+}
+
+/** Hex color: #RRGGBB / #RGB only. */
+export function sanitizeHexColor(raw: string): string {
+  if (!raw) return "";
+  let v = raw.trim();
+  if (!v.startsWith("#")) v = "#" + v;
+  v = "#" + v.slice(1).replace(/[^0-9A-Fa-f]/g, "");
+  return v.slice(0, 7);
+}
+
 /** Single-line variant: also strips newlines. */
 export function sanitizeLine(raw: string, maxLength = 120): string {
   return sanitizeText(raw.replace(/[\r\n]+/g, " "), maxLength);
