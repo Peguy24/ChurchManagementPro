@@ -642,29 +642,29 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.description")} *</Label>
-                    <Textarea value={maintenanceForm.description} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} />
+                    <Textarea value={maintenanceForm.description} maxLength={1000} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: sanitizeText(e.target.value, 1000) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.cost")}</Label>
-                      <Input type="number" value={maintenanceForm.cost} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={maintenanceForm.cost} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: sanitizeAmount(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.date")} *</Label>
-                      <Input type="date" value={maintenanceForm.maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, maintenance_date: e.target.value })} />
+                      <Input type="date" value={maintenanceForm.maintenance_date} max={todayISO()} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, maintenance_date: clampNotFuture(e.target.value) })} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.performedBy")}</Label>
-                    <Input value={maintenanceForm.performed_by} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, performed_by: e.target.value })} />
+                    <Input value={maintenanceForm.performed_by} maxLength={100} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, performed_by: sanitizeName(e.target.value, 100) })} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.vendor")}</Label>
-                    <Input value={maintenanceForm.vendor} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, vendor: e.target.value })} />
+                    <Input value={maintenanceForm.vendor} maxLength={120} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, vendor: sanitizeLine(e.target.value, 120) })} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.nextMaintenance")}</Label>
-                    <Input type="date" value={maintenanceForm.next_maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, next_maintenance_date: e.target.value })} />
+                    <Input type="date" value={maintenanceForm.next_maintenance_date} min={todayISO()} max={maxFutureISO(3)} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, next_maintenance_date: clampMaxFuture(e.target.value, 3) })} />
                   </div>
                 </div>
                 <DialogFooter>
