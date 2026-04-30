@@ -334,7 +334,7 @@ export default function MemberDialog({
   member,
   onSuccess,
 }: MemberDialogProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const lt = localT[language];
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
