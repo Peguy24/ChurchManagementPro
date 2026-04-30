@@ -773,11 +773,11 @@ function InventoryContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.quantity")}</Label>
-                      <Input type="number" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} />
+                      <Input type="text" inputMode="numeric" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: sanitizeInt(e.target.value, 7) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.minStock")}</Label>
-                      <Input type="number" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: e.target.value })} />
+                      <Input type="text" inputMode="numeric" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: sanitizeInt(e.target.value, 7) })} />
                     </div>
                   </div>
                   <InventoryPhotoUpload
