@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import {
   Table,
   TableBody,
@@ -693,9 +694,10 @@ export default function Salaries() {
                       <Input
                         id="hire_date"
                         type="date"
+                        max={todayISO()}
                         value={employeeForm.hire_date}
                         onChange={(e) =>
-                          setEmployeeForm({ ...employeeForm, hire_date: e.target.value })
+                          setEmployeeForm({ ...employeeForm, hire_date: clampNotFuture(e.target.value) })
                         }
                       />
                     </div>
@@ -704,11 +706,11 @@ export default function Salaries() {
                         <Label htmlFor="salary_amount">{t("salariesPage.salaryAmount")} *</Label>
                         <Input
                           id="salary_amount"
-                          type="number"
-                          step="0.01"
+                          type="text"
+                          inputMode="decimal"
                           value={employeeForm.salary_amount}
                           onChange={(e) =>
-                            setEmployeeForm({ ...employeeForm, salary_amount: e.target.value })
+                            setEmployeeForm({ ...employeeForm, salary_amount: sanitizeAmount(e.target.value) })
                           }
                           required
                         />
@@ -946,10 +948,10 @@ export default function Salaries() {
                 <Label htmlFor="payment_amount">{t("salariesPage.amount")} *</Label>
                 <Input
                   id="payment_amount"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={paymentForm.amount}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, amount: sanitizeAmount(e.target.value) })}
                   required
                 />
               </div>
@@ -958,8 +960,9 @@ export default function Salaries() {
                 <Input
                   id="payment_date"
                   type="date"
+                  max={todayISO()}
                   value={paymentForm.payment_date}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: clampNotFuture(e.target.value) })}
                   required
                 />
               </div>
@@ -969,9 +972,10 @@ export default function Salaries() {
                   <Input
                     id="period_start"
                     type="date"
+                    max={todayISO()}
                     value={paymentForm.period_start}
                     onChange={(e) =>
-                      setPaymentForm({ ...paymentForm, period_start: e.target.value })
+                      setPaymentForm({ ...paymentForm, period_start: clampNotFuture(e.target.value) })
                     }
                     required
                   />
@@ -981,8 +985,9 @@ export default function Salaries() {
                   <Input
                     id="period_end"
                     type="date"
+                    max={todayISO()}
                     value={paymentForm.period_end}
-                    onChange={(e) => setPaymentForm({ ...paymentForm, period_end: e.target.value })}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, period_end: clampNotFuture(e.target.value) })}
                     required
                   />
                 </div>
