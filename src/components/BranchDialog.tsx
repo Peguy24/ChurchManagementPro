@@ -271,9 +271,13 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <Label htmlFor="address">{t("branches.address")}</Label>
             <Input
               id="address"
+              maxLength={255}
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              aria-invalid={!!errors.address}
+              className={errors.address ? "border-destructive" : ""}
+              onChange={(e) => { setFormData({ ...formData, address: e.target.value.slice(0, 255) }); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
             />
+            <FieldError name="address" errors={errors} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
