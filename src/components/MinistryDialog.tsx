@@ -26,7 +26,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, ministrySchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, ministrySchema, firstErrorMessage, nameSchema, longTextSchema } from "@/lib/validation";
+
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const r = schema.safeParse(value);
+  if (r.success) return null;
+  return r.error?.issues?.[0]?.message ?? null;
+};
 
 interface MinistryDialogProps {
   open: boolean;
@@ -177,8 +183,15 @@ export default function MinistryDialog({
               <Label htmlFor="name">{m("ministryNameLabel")} *</Label>
               <Input
                 id="name"
+                maxLength={100}
                 value={formData.name}
-                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
+                aria-invalid={!!errors.name}
+                className={errors.name ? "border-destructive" : ""}
+                onChange={(e) => {
+                  const v = e.target.value.slice(0, 100);
+                  setFormData({ ...formData, name: v });
+                  setErrors((p) => ({ ...p, name: liveCheck(nameSchema, v) ?? "" }));
+                }}
               />
               <FieldError name="name" errors={errors} />
             </div>
@@ -187,10 +200,20 @@ export default function MinistryDialog({
               <Label htmlFor="description">{m("description")}</Label>
               <Textarea
                 id="description"
+                maxLength={2000}
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                aria-invalid={!!errors.description}
+                className={errors.description ? "border-destructive" : ""}
+                onChange={(e) => {
+                  const v = e.target.value.slice(0, 2000);
+                  setFormData({ ...formData, description: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(longTextSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, description: err }));
+                }}
                 rows={3}
               />
+              <div className="text-xs text-muted-foreground text-right">{formData.description.length}/2000</div>
+              <FieldError name="description" errors={errors} />
             </div>
 
             <div className="grid gap-2">
