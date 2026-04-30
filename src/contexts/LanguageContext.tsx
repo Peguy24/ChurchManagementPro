@@ -2832,6 +2832,7 @@ const translations = {
       messagePlaceholder: "Dites-nous en plus sur votre église et vos besoins...",
       churchNamePlaceholder: "Ex: Église de la Grâce",
       yourNamePlaceholder: "Ex: Jean Dupont",
+      nameHint: "Lettres, espaces, apostrophes et tirets uniquement (pas de chiffres)",
       emailPlaceholder: "contact@eglise.com",
       phonePlaceholder: "+1 234 567 890",
       addressPlaceholder: "Adresse de l'église",
