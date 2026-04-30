@@ -787,7 +787,7 @@ function InventoryContent() {
                   />
                   <div className="space-y-2">
                     <Label>{t("inventory.notes")}</Label>
-                    <Textarea value={itemForm.notes} onChange={(e) => setItemForm({ ...itemForm, notes: e.target.value })} />
+                    <Textarea value={itemForm.notes} maxLength={1000} onChange={(e) => setItemForm({ ...itemForm, notes: sanitizeText(e.target.value, 1000) })} />
                   </div>
                 </div>
                 <DialogFooter>
