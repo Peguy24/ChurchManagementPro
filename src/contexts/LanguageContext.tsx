@@ -6756,6 +6756,9 @@ const translations = {
       tooLong255: "Must be less than 255 characters",
       tooLong2000: "Must be less than 2000 characters",
     },
+    name: {
+      invalidChars: "Name may only contain letters, spaces, apostrophes and hyphens",
+    },
     title: {
       required: "Title is required",
       tooLong: "Title must be less than 200 characters",
