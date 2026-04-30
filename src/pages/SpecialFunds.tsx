@@ -202,7 +202,7 @@ const SpecialFunds = () => {
                   </div>
                   <div>
                     <Label>{t("specialFundsPage.endDate")}</Label>
-                    <Input type="date" value={fundForm.end_date} onChange={(e) => setFundForm({ ...fundForm, end_date: e.target.value })} />
+                    <Input type="date" value={fundForm.end_date} max={maxFutureISO(3)} onChange={(e) => setFundForm({ ...fundForm, end_date: clampMaxFuture(e.target.value, 3) })} />
                   </div>
                 </div>
                 <div>
