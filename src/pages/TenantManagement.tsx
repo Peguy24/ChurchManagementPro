@@ -1001,7 +1001,8 @@ export default function TenantManagement() {
                               <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
                                 title={t("superAdmin.deleteChurch")}
                                 onClick={() => {
-                                  if (confirm(t("superAdmin.confirmDeleteMsg").replace("{name}", tenant.name))) {
+                                  const msg = t("superAdmin.confirmDeleteMsg").replace("{name}", tenant.name) + "\n\n" + t("superAdmin.deleteEnvNote");
+                                  if (confirm(msg)) {
                                     deleteTenantMutation.mutate(tenant.id);
                                   }
                                 }}>
