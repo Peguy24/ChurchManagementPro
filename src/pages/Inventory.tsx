@@ -698,7 +698,7 @@ function InventoryContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.name")} *</Label>
-                      <Input value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} />
+                      <Input value={itemForm.name} maxLength={120} onChange={(e) => setItemForm({ ...itemForm, name: sanitizeName(e.target.value, 120) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.category")} *</Label>
