@@ -716,7 +716,7 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.description")}</Label>
-                    <Textarea value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} />
+                    <Textarea value={itemForm.description} maxLength={1000} onChange={(e) => setItemForm({ ...itemForm, description: sanitizeText(e.target.value, 1000) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
