@@ -3379,6 +3379,9 @@ const translations = {
       tooLong255: "Doit contenir moins de 255 caractères",
       tooLong2000: "Doit contenir moins de 2000 caractères",
     },
+    name: {
+      invalidChars: "Le nom ne peut contenir que des lettres, espaces, apostrophes et tirets",
+    },
     title: {
       required: "Le titre est requis",
       tooLong: "Le titre doit contenir moins de 200 caractères",
