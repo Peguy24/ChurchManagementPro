@@ -41,6 +41,23 @@ export function clampNotFuture(value: string): string {
   return value > todayISO() ? todayISO() : value;
 }
 
+/** Returns yyyy-MM-dd for today + N years (cap for future dates). Default 3 years. */
+export function maxFutureISO(years = 3): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + years);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Clamps a yyyy-MM-dd date to be at most N years in the future. */
+export function clampMaxFuture(value: string, years = 3): string {
+  if (!value) return value;
+  const cap = maxFutureISO(years);
+  return value > cap ? cap : value;
+}
+
 /**
  * Generic text sanitizer.
  * - removes control chars
