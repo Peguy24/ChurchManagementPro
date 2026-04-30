@@ -30,7 +30,7 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema, optionalPhoneSchema, phoneSchema } from "@/lib/validation";
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
@@ -1046,15 +1046,26 @@ export default function MemberDialog({
                   <Label htmlFor="phone">{lt.phone} *</Label>
                   <Input
                     id="phone"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={formData.phone}
                     onChange={(e) => {
-                      setFormData({ ...formData, phone: e.target.value });
-                      if (errors.phone) setErrors({ ...errors, phone: "" });
+                      const v = e.target.value;
+                      setFormData({ ...formData, phone: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(phoneSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, phone: err }));
                     }}
                     placeholder="+1 (555) 123-4567"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? undefined : "phone-hint"}
+                    className={errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
                     required
                   />
-                  <FieldError name="phone" errors={errors} />
+                  {errors.phone ? (
+                    <FieldError name="phone" errors={errors} />
+                  ) : (
+                    <p id="phone-hint" className="text-xs text-muted-foreground">{t("phoneHint")}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">{lt.email}</Label>
@@ -1087,15 +1098,26 @@ export default function MemberDialog({
                 <Label htmlFor="emergencyPhone">{lt.emergencyPhone}</Label>
                 <Input
                   id="emergencyPhone"
+                  inputMode="tel"
                   value={formData.emergencyPhone}
                   onChange={(e) => {
-                    setFormData({ ...formData, emergencyPhone: e.target.value });
-                    if (errors.emergencyPhone) setErrors({ ...errors, emergencyPhone: "" });
+                    const v = e.target.value;
+                    setFormData({ ...formData, emergencyPhone: v });
+                    const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                    setErrors((p) => ({ ...p, emergencyPhone: err }));
                   }}
                   placeholder="+1 (555) 987-6543"
+                  aria-invalid={!!errors.emergencyPhone}
+                  aria-describedby={errors.emergencyPhone ? undefined : "emergencyPhone-hint"}
+                  className={errors.emergencyPhone ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
-                <FieldError name="emergencyPhone" errors={errors} />
+                {errors.emergencyPhone ? (
+                  <FieldError name="emergencyPhone" errors={errors} />
+                ) : (
+                  <p id="emergencyPhone-hint" className="text-xs text-muted-foreground">{t("phoneHint")}</p>
+                )}
               </div>
+
 
               {/* Address Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
@@ -1306,11 +1328,18 @@ export default function MemberDialog({
                   <Input
                     id="baptismDate"
                     type="date"
+                    max={todayInputValue()}
                     value={formData.baptismDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, baptismDate: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, baptismDate: v });
+                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, baptismDate: err }));
+                    }}
+                    aria-invalid={!!errors.baptismDate}
+                    className={errors.baptismDate ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="baptismDate" errors={errors} />
                 </div>
               </div>
 
@@ -1356,11 +1385,18 @@ export default function MemberDialog({
                 <Input
                   id="conversionDate"
                   type="date"
+                  max={todayInputValue()}
                   value={formData.conversionDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, conversionDate: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFormData({ ...formData, conversionDate: v });
+                    const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                    setErrors((p) => ({ ...p, conversionDate: err }));
+                  }}
+                  aria-invalid={!!errors.conversionDate}
+                  className={errors.conversionDate ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                <FieldError name="conversionDate" errors={errors} />
               </div>
 
               <div className="grid gap-2">
@@ -1440,11 +1476,18 @@ export default function MemberDialog({
                   <Input
                     id="marriageDate"
                     type="date"
+                    max={todayInputValue()}
                     value={formData.marriageDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, marriageDate: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, marriageDate: v });
+                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, marriageDate: err }));
+                    }}
+                    aria-invalid={!!errors.marriageDate}
+                    className={errors.marriageDate ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="marriageDate" errors={errors} />
                 </div>
               </div>
 
@@ -1463,15 +1506,22 @@ export default function MemberDialog({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="emergencyPhone">{lt.emergencyContact}</Label>
+                  <Label htmlFor="familyEmergency">{lt.emergencyContact}</Label>
                   <Input
                     id="familyEmergency"
+                    inputMode="tel"
                     value={formData.emergencyPhone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, emergencyPhone: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, emergencyPhone: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, emergencyPhone: err }));
+                    }}
                     placeholder="+1 (555) 987-6543"
+                    aria-invalid={!!errors.emergencyPhone}
+                    className={errors.emergencyPhone ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="emergencyPhone" errors={errors} />
                 </div>
               </div>
 
