@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { customFieldFullSchema, validateForm, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { sanitizeLine } from "@/lib/inputSanitize";
 
 interface CustomFieldDialogProps {
   open: boolean;
