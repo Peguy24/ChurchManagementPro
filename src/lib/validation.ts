@@ -58,6 +58,18 @@ export const optionalNameSchema = z
   .optional()
   .or(z.literal(""));
 
+/**
+ * Strict person-name schema: letters (incl. accented/Unicode), spaces,
+ * apostrophes, hyphens, and dots only. Rejects digits and other symbols.
+ * Use for first/last/contact names where digits are never valid.
+ */
+export const personNameSchema = z
+  .string()
+  .trim()
+  .min(1, "validation.field.required")
+  .max(100, "validation.field.tooLong100")
+  .regex(/^[\p{L}\p{M}'’\-.\s]+$/u, "validation.name.invalidChars");
+
 export const shortTextSchema = z
   .string()
   .trim()
@@ -343,7 +355,7 @@ export const supportSchema = z.object({
 
 export const churchRequestSchema = z.object({
   churchName: nameSchema,
-  contactName: nameSchema,
+  contactName: personNameSchema,
   email: emailSchema,
   phone: optionalPhoneSchema,
   address: shortTextSchema.optional().or(z.literal("")),

@@ -3379,6 +3379,9 @@ const translations = {
       tooLong255: "Doit contenir moins de 255 caractères",
       tooLong2000: "Doit contenir moins de 2000 caractères",
     },
+    name: {
+      invalidChars: "Le nom ne peut contenir que des lettres, espaces, apostrophes et tirets",
+    },
     title: {
       required: "Le titre est requis",
       tooLong: "Le titre doit contenir moins de 200 caractères",
@@ -6753,6 +6756,9 @@ const translations = {
       tooLong255: "Must be less than 255 characters",
       tooLong2000: "Must be less than 2000 characters",
     },
+    name: {
+      invalidChars: "Name may only contain letters, spaces, apostrophes and hyphens",
+    },
     title: {
       required: "Title is required",
       tooLong: "Title must be less than 200 characters",
@@ -10125,6 +10131,9 @@ const translations = {
       tooLong100: "Dwe gen mwens pase 100 karaktè",
       tooLong255: "Dwe gen mwens pase 255 karaktè",
       tooLong2000: "Dwe gen mwens pase 2000 karaktè",
+    },
+    name: {
+      invalidChars: "Non an ka genyen sèlman lèt, espas, apostwòf ak tirè",
     },
     title: {
       required: "Tit la obligatwa",

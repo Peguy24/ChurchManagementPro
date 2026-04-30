@@ -52,6 +52,7 @@ serve(async (req) => {
 
     if (cn.length < 1 || cn.length > 100) return validationError("Invalid church name (1–100 characters)");
     if (ctn.length < 1 || ctn.length > 100) return validationError("Invalid contact name (1–100 characters)");
+    if (!/^[\p{L}\p{M}'’\-.\s]+$/u.test(ctn)) return validationError("Contact name may only contain letters, spaces, apostrophes and hyphens");
     if (em.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return validationError("Invalid email address");
     if (ph && (ph.length < 7 || ph.length > 20 || !/^[+\d()\-\s]+$/.test(ph))) return validationError("Invalid phone number");
     if (ad.length > 255) return validationError("Address too long (max 255 characters)");
