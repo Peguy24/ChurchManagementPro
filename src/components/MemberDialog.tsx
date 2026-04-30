@@ -894,7 +894,7 @@ export default function MemberDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="personal" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="personal" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
                 <User className="h-4 w-4 shrink-0" />
