@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema } from "@/lib/validation";
+import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema, emailSchema, optionalPhoneSchema } from "@/lib/validation";
 
 /** Run a single Zod schema and return the i18n key of the first issue, or null. */
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
