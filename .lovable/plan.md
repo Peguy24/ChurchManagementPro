@@ -1,71 +1,71 @@
+# Goal
 
+When a Super Admin deletes a church, the contact email must immediately become reusable to register a brand-new church — with no "email already registered" error — in both Test and Live environments.
 
-# Add input validation across all client forms
+# What's happening today
 
-Currently the app has **no client-side input validation** beyond a few `type="email"` and `required` HTML attributes. Zod is already installed (`^3.25.76`) but never used in `src/`. This means users can submit empty names, oversized text, malformed emails, negative amounts, invalid phone numbers, etc. — and the only thing catching it is the database (which produces ugly error toasts) or, worse, nothing at all.
+The trial registration form (`auto-provision-tenant`) blocks an email if **either**:
+1. An auth user exists with that email, OR
+2. A row in `tenants.contact_email` matches.
 
-I'll introduce a centralized Zod-based validation layer and wire it into every form across the app, with friendly inline error messages.
+The `delete-tenant` function already:
+- Deletes `tenants`, `tenant_subscriptions`, `tenant_requests` (by `created_tenant_id`), `admin_invitations`, `profiles`, `user_roles`, and the auth users tied to the tenant via `profiles.tenant_id`.
 
-## What I'll build
+So in theory, deleting should free the email. The "email already registered" error in practice comes from a few real gaps:
 
-### 1. Shared validation library — `src/lib/validation.ts`
+1. **Test and Live are separate databases.** Deleting a church in Test does NOT delete it in Live (and vice-versa). After publishing, Live still has whatever rows existed there.
+2. **Orphan `tenant_requests` rows** with `status='pending'` (or any other value) for the same email are NOT cleaned up — they only get deleted when their `created_tenant_id` matches. Old request rows survive but the email check above only looks at `tenants` and auth users, so this isn't the blocker — but they pollute the admin queue.
+3. **Auth users not linked via `profiles.tenant_id`** (e.g., the admin signed up via the invitation link but their profile row never got `tenant_id` set, or they were a member of multiple churches) are left behind. The email check on line 65–67 then still finds them.
+4. **`admin_invitations` rows** referencing the email may linger if cleanup partially failed.
 
-A single source of truth for reusable field schemas and form schemas:
+# The plan
 
-- **Primitives**: `emailSchema`, `phoneSchema`, `nameSchema` (trim + 1–100 chars), `shortTextSchema` (≤255), `longTextSchema` (≤2000), `urlSchema`, `positiveAmountSchema`, `nonNegativeAmountSchema`, `dateSchema`, `passwordSchema` (≥8 chars, mix of letter+number).
-- **Composite form schemas** for each dialog/page (member, donation, event, expense, branch, ministry, support ticket, church request, join church, invites, auth signup/login, custom fields, visitor, employee, etc.).
-- A `validateForm(schema, data)` helper that returns `{ success, data, fieldErrors }` for easy mapping to UI state.
+## 1. Harden `delete-tenant` to fully release every email
 
-### 2. Reusable error display
+Update `supabase/functions/delete-tenant/index.ts`:
 
-A small `<FieldError>` component (reads from a `Record<string, string>` errors map) so every form renders inline errors consistently below inputs in `text-destructive` style.
+- Before deleting tables, collect **every email** associated with the tenant from these sources:
+  - `tenants.contact_email`
+  - `admin_invitations.email` for that tenant
+  - `tenant_requests.contact_email` for that tenant (by `created_tenant_id`)
+  - `profiles.id` → `auth.users.email` for every profile with `tenant_id = X`
+  - `tenant_user_roles.user_id` → `auth.users.email` for that tenant
+- Delete `tenant_requests` by `contact_email IN (collected_emails)` in addition to by `created_tenant_id`, so old pending/rejected rows are also cleared.
+- For each collected email, look up the auth user by email (`listUsers` + filter, or paginate) and `auth.admin.deleteUser` if that user has no remaining `tenant_user_roles` or `platform_user_roles`. Skip super-admins.
+- Delete any `admin_invitations` row matching the email globally.
+- Keep the existing per-table cleanup loop.
 
-### 3. Wire validation into every form
+This guarantees that after deletion no `tenants` row, no `auth.users` row, no `admin_invitations` row, and no leftover `tenant_requests` row holds the email.
 
-For each form below, I'll:
-- Add an `errors` state of `Record<string, string>`.
-- Call `validateForm(schema, formData)` at the top of `handleSubmit`; bail out + show toast + set errors if invalid.
-- Clear a field's error on change.
-- Render `<FieldError name="..." errors={errors} />` under each input.
+## 2. Make the email-check in `auto-provision-tenant` smarter
 
-**Forms to update (22 total):**
+Update `supabase/functions/auto-provision-tenant/index.ts`:
 
-| Area | Files |
-|---|---|
-| Auth | `pages/Auth.tsx` (signup, login, forgot password), `pages/ResetPassword.tsx`, `components/LoginOtpVerification.tsx` |
-| Members | `components/MemberDialog.tsx`, `components/JoinAsMemberDialog.tsx`, `pages/JoinChurch.tsx`, `components/MemberImportDialog.tsx` (per-row) |
-| Finance | `components/DonationDialog.tsx`, `pages/Expenses.tsx`, `pages/Budgets.tsx`, `pages/Salaries.tsx` |
-| Events & Attendance | `components/EventDialog.tsx`, `components/AttendanceDialog.tsx`, `pages/EventRegister.tsx` |
-| Org | `components/BranchDialog.tsx`, `components/MinistryDialog.tsx`, `components/CustomFieldDialog.tsx` |
-| Invites & Support | `components/AdminInviteDialog.tsx`, `components/SuperAdminInviteDialog.tsx`, `components/PlatformInviteDialog.tsx`, `components/SupportDialog.tsx`, `components/ChurchRequestForm.tsx` |
-| Settings | `pages/ChurchSettings.tsx`, `pages/TenantBranding.tsx`, `pages/Visitors.tsx`, `pages/PlatformPayroll.tsx`, `pages/TenantManagement.tsx`, `pages/TenantUserManagement.tsx` |
+- Keep the duplicate-email checks but only block when the email is genuinely in use:
+  - Block if `tenants.contact_email` exists.
+  - Block if an auth user exists **AND** that user has at least one row in `tenant_user_roles` or `platform_user_roles` (i.e., is actively part of another church or is a platform admin).
+  - If the auth user exists but is fully orphaned (no roles, no profile.tenant_id), delete it inline before proceeding so registration succeeds.
+- Return clearer, localized error messages when truly blocked (the form already shows them).
 
-### 4. Validation rules applied (examples)
+## 3. Document the Test ⇄ Live separation in the UI
 
-- **Email**: trim, RFC-valid, ≤255 chars.
-- **Names** (first/last/church/branch/ministry): trim, 1–100 chars, no leading/trailing whitespace.
-- **Phone**: optional, 7–20 chars, digits + `+ - ( ) space`.
-- **Amounts** (donations/expenses/salary): positive number, ≤9 999 999 999, max 2 decimals.
-- **Dates**: valid ISO date; events can't be more than 100 years past/future.
-- **Passwords** (signup/reset): ≥8 chars with at least one letter and one digit.
-- **Long text** (notes/messages/descriptions): ≤2000 chars.
-- **URLs** (logo/website): valid `http(s)://` URL, ≤500 chars.
-- **OTP code**: exactly 6 digits.
-- **Subject/title fields**: 1–200 chars.
+In the Super Admin "Tenant Management" delete confirmation, add a short note:
 
-### 5. What I will NOT touch
+> "Deletion only affects the current environment (Test or Live). To free this email in the other environment, delete the church there as well."
 
-- Server-side RLS and edge-function zod schemas (already in place where it matters — `send-event-registration-email`, `send-bulk-announcement`, etc.).
-- The Supabase generated files (`client.ts`, `types.ts`).
-- Any business logic — only validation gating before the existing submit handlers run.
+Files: the existing delete confirmation dialog under `src/pages/TenantManagement.tsx` (or component used there).
 
-## Out of scope
+## 4. Verification steps after deploy
 
-- Replacing the entire form layer with `react-hook-form` (would be a much larger refactor). This plan keeps existing controlled-state forms and just layers validation on top.
-- Translating new error messages — initial pass uses English defaults from the schema; a follow-up can move them through `useLanguage`.
+1. In Test: register a church with `foo@bar.com` → delete it → re-register with `foo@bar.com` → should succeed.
+2. Repeat in Live.
+3. Register `foo@bar.com` for church A, then try to register church B with the same email → should still be blocked with the localized message.
 
-## Files created / modified
+# Files to change
 
-- **Created**: `src/lib/validation.ts`, `src/components/FieldError.tsx`
-- **Modified**: ~22 form files listed above
+- `supabase/functions/delete-tenant/index.ts` — exhaustive email release.
+- `supabase/functions/auto-provision-tenant/index.ts` — orphan-aware duplicate check + auto-cleanup.
+- `src/pages/TenantManagement.tsx` (or the dialog component it uses) — Test/Live note in delete confirmation, localized in EN/FR/HT.
+- `src/contexts/LanguageContext.tsx` — three new translation keys for the note.
 
+No DB migrations needed.
