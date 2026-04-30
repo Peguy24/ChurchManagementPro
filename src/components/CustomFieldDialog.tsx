@@ -250,7 +250,8 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
                 <div className="flex gap-2">
                   <Input
                     value={newOption}
-                    onChange={(e) => setNewOption(e.target.value)}
+                    maxLength={60}
+                    onChange={(e) => setNewOption(sanitizeLine(e.target.value, 60))}
                     placeholder={t("customFields.newOption")}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
