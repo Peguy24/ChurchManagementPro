@@ -1235,17 +1235,17 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="joinDate">{lt.joinDate}</Label>
+                  <Label htmlFor="joinDate">{lt.joinDate} *</Label>
                   <Input
                     id="joinDate"
                     type="date"
                     max={todayInputValue()}
                     value={formData.joinDate}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, joinDate: v });
-                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, joinDate: err }));
+                      setErrors((p) => ({ ...p, joinDate: liveCheck(requiredPastDateSchema, v) ?? "" }));
                     }}
                     aria-invalid={!!errors.joinDate}
                     className={errors.joinDate ? "border-destructive focus-visible:ring-destructive" : ""}
