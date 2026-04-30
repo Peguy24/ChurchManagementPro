@@ -397,7 +397,7 @@ export const employeePaymentSchema = z
   );
 
 export const platformEmployeeSchema = z.object({
-  fullName: nameSchema,
+  fullName: personNameSchema,
   roleTitle: requiredShortTextSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
