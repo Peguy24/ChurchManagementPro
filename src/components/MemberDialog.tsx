@@ -1328,11 +1328,18 @@ export default function MemberDialog({
                   <Input
                     id="baptismDate"
                     type="date"
+                    max={todayInputValue()}
                     value={formData.baptismDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, baptismDate: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, baptismDate: v });
+                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, baptismDate: err }));
+                    }}
+                    aria-invalid={!!errors.baptismDate}
+                    className={errors.baptismDate ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="baptismDate" errors={errors} />
                 </div>
               </div>
 
