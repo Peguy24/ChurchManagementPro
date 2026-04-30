@@ -292,7 +292,8 @@ export default function ChurchSettings() {
                 <Textarea
                   id="church_address"
                   value={settings.church_address}
-                  onChange={(e) => setSettings({ ...settings, church_address: e.target.value })}
+                  maxLength={300}
+                  onChange={(e) => setSettings({ ...settings, church_address: sanitizeText(e.target.value, 300) })}
                   placeholder={t("churchSettings.addressPlaceholder")}
                   rows={2}
                 />
