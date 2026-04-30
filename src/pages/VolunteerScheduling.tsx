@@ -244,11 +244,11 @@ export default function VolunteerScheduling() {
                       </div>
                       <div>
                         <Label>{v('serviceDate')}</Label>
-                        <Input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
+                        <Input type="date" value={selectedDate} min={todayISO()} onChange={e => setSelectedDate(e.target.value)} />
                       </div>
                       <div>
                         <Label>{v('notes')}</Label>
-                        <Textarea value={scheduleNotes} onChange={e => setScheduleNotes(e.target.value)} placeholder={v('notesPlaceholder')} />
+                        <Textarea value={scheduleNotes} maxLength={500} onChange={e => setScheduleNotes(sanitizeText(e.target.value, 500))} placeholder={v('notesPlaceholder')} />
                       </div>
                       <Button onClick={saveSchedule} className="w-full">{v('save')}</Button>
                     </div>
