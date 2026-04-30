@@ -2833,6 +2833,8 @@ const translations = {
       churchNamePlaceholder: "Ex: Église de la Grâce",
       yourNamePlaceholder: "Ex: Jean Dupont",
       nameHint: "Lettres, espaces, apostrophes et tirets uniquement (pas de chiffres)",
+      emailHint: "Format : nom@domaine.com",
+      phoneHint: "Chiffres, +, -, ( ), espaces (7 à 20 caractères)",
       emailPlaceholder: "contact@eglise.com",
       phonePlaceholder: "+1 234 567 890",
       addressPlaceholder: "Adresse de l'église",
