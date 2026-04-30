@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema } from "@/lib/validation";
+import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema, emailSchema, optionalPhoneSchema } from "@/lib/validation";
 
 /** Run a single Zod schema and return the i18n key of the first issue, or null. */
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
@@ -306,21 +306,46 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
-                onChange={(e) => { setFormData({ ...formData, contact_email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, contact_email: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(emailSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, email: err }));
+                }}
                 placeholder={t("churchForm.emailPlaceholder")}
                 aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "contact_email-error" : "contact_email-hint"}
                 className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {!errors.email && (
+                <p id="contact_email-hint" className="text-xs text-muted-foreground">
+                  {t("churchForm.emailHint")}
+                </p>
+              )}
               <FieldError name="email" errors={errors} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact_phone">{t("churchForm.phone")}</Label>
               <Input
                 id="contact_phone"
+                inputMode="tel"
                 value={formData.contact_phone}
-                onChange={(e) => { setFormData({ ...formData, contact_phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, contact_phone: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, phone: err }));
+                }}
                 placeholder={t("churchForm.phonePlaceholder")}
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "contact_phone-error" : "contact_phone-hint"}
+                className={errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {!errors.phone && (
+                <p id="contact_phone-hint" className="text-xs text-muted-foreground">
+                  {t("churchForm.phoneHint")}
+                </p>
+              )}
               <FieldError name="phone" errors={errors} />
             </div>
           </div>
