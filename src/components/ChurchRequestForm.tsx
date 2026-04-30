@@ -12,7 +12,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, churchRequestSchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema } from "@/lib/validation";
+
+/** Run a single Zod schema and return the i18n key of the first issue, or null. */
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const r = schema.safeParse(value);
+  if (r.success) return null;
+  return r.error?.issues?.[0]?.message ?? null;
+};
 
 interface ChurchRequestFormProps {
   open: boolean;
@@ -253,7 +260,13 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
               <Input
                 id="church_name"
                 value={formData.church_name}
-                onChange={(e) => { setFormData({ ...formData, church_name: e.target.value }); if (errors.churchName) setErrors((p) => ({ ...p, churchName: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, church_name: v });
+                  // Live validate only after user has typed something; allow empty (handled on submit).
+                  const err = v.trim().length === 0 ? "" : (liveCheck(nameSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, churchName: err }));
+                }}
                 placeholder={t("churchForm.churchNamePlaceholder")}
                 aria-invalid={!!errors.churchName}
                 aria-describedby={errors.churchName ? "church_name-error" : undefined}
@@ -266,7 +279,12 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
               <Input
                 id="contact_name"
                 value={formData.contact_name}
-                onChange={(e) => { setFormData({ ...formData, contact_name: e.target.value }); if (errors.contactName) setErrors((p) => ({ ...p, contactName: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, contact_name: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(personNameSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, contactName: err }));
+                }}
                 placeholder={t("churchForm.yourNamePlaceholder")}
                 aria-invalid={!!errors.contactName}
                 aria-describedby={errors.contactName ? "contact_name-error" : "contact_name-hint"}
