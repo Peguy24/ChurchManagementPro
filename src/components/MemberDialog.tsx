@@ -658,23 +658,30 @@ export default function MemberDialog({
     }
   };
 
+  const [activeTab, setActiveTab] = useState<string>("personal");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const validation = validateForm(memberFullSchema, {
       firstName: formData.firstName,
       lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-      emergencyPhone: formData.emergencyPhone,
+      gender: formData.gender,
       dateOfBirth: formData.dateOfBirth,
+      phone: formData.phone,
+      email: formData.email,
+      city: formData.city,
+      country: formData.country,
       joinDate: formData.joinDate,
+      emergencyPhone: formData.emergencyPhone,
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
+      // All currently required fields live in the Personal tab — switch to it
+      setActiveTab("personal");
       toast({
         title: lt.error,
-        description: firstErrorMessage(validation.fieldErrors, (k) => k),
+        description: t(firstErrorMessage(validation.fieldErrors, (k) => k) || "validation.field.required"),
         variant: "destructive",
       });
       return;
