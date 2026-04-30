@@ -243,15 +243,15 @@ export const memberSchema = z.object({
 });
 
 export const joinAsMemberSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
 });
 
 export const joinChurchSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: emailSchema,
   phone: optionalPhoneSchema,
 });
