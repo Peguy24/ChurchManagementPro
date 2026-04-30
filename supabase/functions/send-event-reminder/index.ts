@@ -146,11 +146,15 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      // Determine the tenant's default language so members without their own
+      // preference receive the email in the church's configured language.
+      const tenantLang = await getTenantDefaultLang(supabaseClient, tenantId);
+
       // Build event list summary for the email
       for (const member of members) {
         if (!member.email) continue;
 
-        const lang = detectLang(member.user_id ? langMap[member.user_id] : null);
+        const lang = detectLang(member.user_id ? langMap[member.user_id] : null, tenantLang);
         const t = eventReminderTranslations[lang];
         const serviceDate = formatServiceDate(tomorrow, lang);
         const memberName = `${escapeHtml(member.first_name)} ${escapeHtml(member.last_name)}`;
