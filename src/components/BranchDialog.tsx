@@ -211,10 +211,17 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <Label htmlFor="description">{t("branches.description")}</Label>
             <Textarea
               id="description"
+              maxLength={2000}
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              aria-invalid={!!errors.description}
+              className={errors.description ? "border-destructive" : ""}
+              onChange={(e) => { setFormData({ ...formData, description: e.target.value.slice(0, 2000) }); if (errors.description) setErrors((p) => ({ ...p, description: "" })); }}
               rows={3}
             />
+            <div className="flex justify-between items-center">
+              <FieldError name="description" errors={errors} />
+              <span className="text-xs text-muted-foreground ml-auto">{formData.description.length}/2000</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
