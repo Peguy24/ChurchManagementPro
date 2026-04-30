@@ -40,3 +40,38 @@ export function clampNotFuture(value: string): string {
   if (!value) return value;
   return value > todayISO() ? todayISO() : value;
 }
+
+/**
+ * Generic text sanitizer.
+ * - removes control chars
+ * - collapses excessive whitespace
+ * - enforces a max length
+ */
+export function sanitizeText(raw: string, maxLength = 200): string {
+  if (!raw) return "";
+  // remove control chars (except \n and \t)
+  let v = raw.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
+  // strip leading whitespace to avoid space-only input
+  v = v.replace(/^\s+/, "");
+  return v.slice(0, maxLength);
+}
+
+/** Single-line variant: also strips newlines. */
+export function sanitizeLine(raw: string, maxLength = 120): string {
+  return sanitizeText(raw.replace(/[\r\n]+/g, " "), maxLength);
+}
+
+/** Reference / code: alphanumerics, dash, underscore, dot, slash, space. */
+export function sanitizeReference(raw: string, maxLength = 50): string {
+  if (!raw) return "";
+  return raw.replace(/[^A-Za-z0-9_\-./ ]/g, "").slice(0, maxLength);
+}
+
+/** Person/entity name: letters, spaces, common punctuation. */
+export function sanitizeName(raw: string, maxLength = 100): string {
+  if (!raw) return "";
+  let v = raw.replace(/[\u0000-\u001F\u007F]/g, "");
+  v = v.replace(/^\s+/, "");
+  return v.slice(0, maxLength);
+}
+
