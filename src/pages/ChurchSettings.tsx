@@ -19,6 +19,7 @@ import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
+import { sanitizeName, sanitizeLine, sanitizeText, sanitizePhone, sanitizeHexColor, sanitizeReference } from "@/lib/inputSanitize";
 
 interface ChurchSettingsData {
   church_name: string;
