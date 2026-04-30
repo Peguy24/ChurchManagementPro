@@ -49,6 +49,10 @@ interface PlatformExpense {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  receipt_url: string | null;
+  receipt_filename: string | null;
+  tax_deductible: boolean | null;
+  tax_category: string | null;
 }
 
 const categoryLabels: Record<string, Record<ExpenseCategory, string>> = {
