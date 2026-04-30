@@ -575,21 +575,21 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.event")}</Label>
-                    <Input value={usageForm.event_name} onChange={(e) => setUsageForm({ ...usageForm, event_name: e.target.value })} />
+                    <Input value={usageForm.event_name} maxLength={120} onChange={(e) => setUsageForm({ ...usageForm, event_name: sanitizeLine(e.target.value, 120) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.startDate")} *</Label>
-                      <Input type="date" value={usageForm.start_date} onChange={(e) => setUsageForm({ ...usageForm, start_date: e.target.value })} />
+                      <Input type="date" value={usageForm.start_date} max={maxFutureISO(3)} onChange={(e) => setUsageForm({ ...usageForm, start_date: clampMaxFuture(e.target.value, 3) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.endDate")}</Label>
-                      <Input type="date" value={usageForm.end_date} onChange={(e) => setUsageForm({ ...usageForm, end_date: e.target.value })} />
+                      <Input type="date" value={usageForm.end_date} min={usageForm.start_date || undefined} max={maxFutureISO(3)} onChange={(e) => setUsageForm({ ...usageForm, end_date: clampMaxFuture(e.target.value, 3) })} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.quantity")}</Label>
-                    <Input type="number" value={usageForm.quantity_used} onChange={(e) => setUsageForm({ ...usageForm, quantity_used: e.target.value })} />
+                    <Input type="text" inputMode="numeric" value={usageForm.quantity_used} onChange={(e) => setUsageForm({ ...usageForm, quantity_used: sanitizeInt(e.target.value, 6) })} />
                   </div>
                 </div>
                 <DialogFooter>
