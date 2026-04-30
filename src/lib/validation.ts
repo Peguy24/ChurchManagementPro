@@ -209,8 +209,8 @@ export const loginSchema = z.object({
 
 export const signupSchema = z
   .object({
-    firstName: nameSchema,
-    lastName: nameSchema,
+    firstName: personNameSchema,
+    lastName: personNameSchema,
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "validation.password.confirmRequired"),
@@ -235,23 +235,23 @@ export const resetPasswordSchema = z
   });
 
 export const memberSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
 });
 
 export const joinAsMemberSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
 });
 
 export const joinChurchSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: emailSchema,
   phone: optionalPhoneSchema,
 });
@@ -308,8 +308,8 @@ export const eventSchema = z
   );
 
 export const eventRegistrationSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
 });
@@ -363,8 +363,8 @@ export const churchRequestSchema = z.object({
 });
 
 export const visitorSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   notes: longTextSchema.optional().or(z.literal("")),
@@ -373,8 +373,8 @@ export const visitorSchema = z.object({
 /* --- Finance / HR --------------------------------------------------- */
 
 export const employeeSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   position: requiredShortTextSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
@@ -397,7 +397,7 @@ export const employeePaymentSchema = z
   );
 
 export const platformEmployeeSchema = z.object({
-  fullName: nameSchema,
+  fullName: personNameSchema,
   roleTitle: requiredShortTextSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
@@ -447,8 +447,8 @@ export const tenantManagementSchema = z.object({
 /* --- Member (extended) --------------------------------------------- */
 
 export const memberFullSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
