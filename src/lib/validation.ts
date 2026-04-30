@@ -308,8 +308,8 @@ export const eventSchema = z
   );
 
 export const eventRegistrationSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
 });
