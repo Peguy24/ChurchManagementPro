@@ -148,8 +148,44 @@ export default function PlatformAccounting() {
     },
   });
 
+  // Upload receipt to private bucket; returns storage path
+  const uploadReceipt = async (file: File): Promise<{ path: string; filename: string }> => {
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${user?.id || "shared"}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("platform-expense-receipts")
+      .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+    if (error) throw error;
+    return { path, filename: file.name };
+  };
+
+  const removeReceiptFromStorage = async (path: string) => {
+    if (!path) return;
+    await supabase.storage.from("platform-expense-receipts").remove([path]);
+  };
+
+  const openReceipt = async (path: string) => {
+    const { data, error } = await supabase.storage
+      .from("platform-expense-receipts")
+      .createSignedUrl(path, 60 * 10);
+    if (error || !data?.signedUrl) {
+      toast.error(t("platformAccounting.receiptOpenError"));
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      let receipt_url: string | null = data.receipt_url || null;
+      let receipt_filename: string | null = data.receipt_filename || null;
+      if (receiptFile) {
+        setUploading(true);
+        const up = await uploadReceipt(receiptFile);
+        receipt_url = up.path;
+        receipt_filename = up.filename;
+        setUploading(false);
+      }
       const { error } = await supabase.from("platform_expenses").insert({
         amount: parseFloat(data.amount),
         expense_date: data.expense_date,
@@ -159,6 +195,10 @@ export default function PlatformAccounting() {
         notes: data.notes || null,
         is_recurring: data.is_recurring,
         recurring_frequency: data.is_recurring ? data.recurring_frequency : null,
+        tax_deductible: data.tax_deductible,
+        tax_category: data.tax_category || null,
+        receipt_url,
+        receipt_filename,
         created_by: user?.id,
       });
       if (error) throw error;
@@ -169,11 +209,29 @@ export default function PlatformAccounting() {
       setDialogOpen(false);
       resetForm();
     },
-    onError: () => toast.error(t("platformAccounting.errorAdding")),
+    onError: () => { setUploading(false); toast.error(t("platformAccounting.errorAdding")); },
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      let receipt_url: string | null = data.receipt_url || null;
+      let receipt_filename: string | null = data.receipt_filename || null;
+      if (receiptFile) {
+        setUploading(true);
+        // Remove old file if any
+        if (editingExpense?.receipt_url) {
+          await removeReceiptFromStorage(editingExpense.receipt_url);
+        }
+        const up = await uploadReceipt(receiptFile);
+        receipt_url = up.path;
+        receipt_filename = up.filename;
+        setUploading(false);
+      } else if (editingExpense?.receipt_url && !data.receipt_url) {
+        // User cleared the receipt
+        await removeReceiptFromStorage(editingExpense.receipt_url);
+        receipt_url = null;
+        receipt_filename = null;
+      }
       const { error } = await supabase
         .from("platform_expenses")
         .update({
@@ -185,6 +243,10 @@ export default function PlatformAccounting() {
           notes: data.notes || null,
           is_recurring: data.is_recurring,
           recurring_frequency: data.is_recurring ? data.recurring_frequency : null,
+          tax_deductible: data.tax_deductible,
+          tax_category: data.tax_category || null,
+          receipt_url,
+          receipt_filename,
         })
         .eq("id", id);
       if (error) throw error;
@@ -195,12 +257,15 @@ export default function PlatformAccounting() {
       setDialogOpen(false);
       resetForm();
     },
-    onError: () => toast.error(t("platformAccounting.errorUpdating")),
+    onError: () => { setUploading(false); toast.error(t("platformAccounting.errorUpdating")); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("platform_expenses").delete().eq("id", id);
+    mutationFn: async (expense: PlatformExpense) => {
+      if (expense.receipt_url) {
+        await removeReceiptFromStorage(expense.receipt_url);
+      }
+      const { error } = await supabase.from("platform_expenses").delete().eq("id", expense.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -213,6 +278,10 @@ export default function PlatformAccounting() {
   const handleSubmit = () => {
     if (!formData.amount || !formData.description) {
       toast.error(t("platformAccounting.fillRequired"));
+      return;
+    }
+    if (receiptFile && receiptFile.size > 10 * 1024 * 1024) {
+      toast.error(t("platformAccounting.receiptTooLarge"));
       return;
     }
     if (editingExpense) {
@@ -233,7 +302,12 @@ export default function PlatformAccounting() {
       notes: expense.notes || "",
       is_recurring: expense.is_recurring || false,
       recurring_frequency: expense.recurring_frequency || "",
+      tax_deductible: !!expense.tax_deductible,
+      tax_category: expense.tax_category || "",
+      receipt_url: expense.receipt_url || "",
+      receipt_filename: expense.receipt_filename || "",
     });
+    setReceiptFile(null);
     setDialogOpen(true);
   };
 
