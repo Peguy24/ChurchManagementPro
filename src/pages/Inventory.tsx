@@ -731,15 +731,15 @@ function InventoryContent() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.purchaseDate")}</Label>
-                      <Input type="date" value={itemForm.purchase_date} onChange={(e) => setItemForm({ ...itemForm, purchase_date: e.target.value })} />
+                      <Input type="date" value={itemForm.purchase_date} max={todayISO()} onChange={(e) => setItemForm({ ...itemForm, purchase_date: clampNotFuture(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.purchasePrice")}</Label>
-                      <Input type="number" value={itemForm.purchase_price} onChange={(e) => setItemForm({ ...itemForm, purchase_price: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={itemForm.purchase_price} onChange={(e) => setItemForm({ ...itemForm, purchase_price: sanitizeAmount(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.currentValue")}</Label>
-                      <Input type="number" value={itemForm.current_value} onChange={(e) => setItemForm({ ...itemForm, current_value: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={itemForm.current_value} onChange={(e) => setItemForm({ ...itemForm, current_value: sanitizeAmount(e.target.value) })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
