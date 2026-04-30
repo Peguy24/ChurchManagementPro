@@ -17,7 +17,13 @@ import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, 
 import { exportToCsv, type CsvColumn, formatDateForCsv } from '@/lib/csvExport';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { validateForm, visitorSchema, firstErrorMessage } from '@/lib/validation';
+import { validateForm, visitorSchema, firstErrorMessage, personNameSchema, optionalPhoneSchema, optionalEmailSchema, longTextSchema } from '@/lib/validation';
+
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const r = schema.safeParse(value);
+  if (r.success) return null;
+  return r.error?.issues?.[0]?.message ?? null;
+};
 import { FieldError } from '@/components/FieldError';
 
 interface Visitor {
@@ -267,12 +273,72 @@ export default function Visitors() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>{t('visitors.firstName')}</Label><Input value={firstName} onChange={e => { setFirstName(e.target.value); if (errors.firstName) setErrors(p => ({ ...p, firstName: '' })); }} /><FieldError name="firstName" errors={errors} /></div>
-                  <div><Label>{t('visitors.lastName')}</Label><Input value={lastName} onChange={e => { setLastName(e.target.value); if (errors.lastName) setErrors(p => ({ ...p, lastName: '' })); }} /><FieldError name="lastName" errors={errors} /></div>
+                  <div>
+                    <Label>{t('visitors.firstName')}</Label>
+                    <Input
+                      maxLength={100}
+                      value={firstName}
+                      aria-invalid={!!errors.firstName}
+                      className={errors.firstName ? 'border-destructive' : ''}
+                      onChange={e => {
+                        const v = e.target.value.slice(0, 100);
+                        setFirstName(v);
+                        setErrors(p => ({ ...p, firstName: liveCheck(personNameSchema, v) ?? '' }));
+                      }}
+                    />
+                    <FieldError name="firstName" errors={errors} />
+                  </div>
+                  <div>
+                    <Label>{t('visitors.lastName')}</Label>
+                    <Input
+                      maxLength={100}
+                      value={lastName}
+                      aria-invalid={!!errors.lastName}
+                      className={errors.lastName ? 'border-destructive' : ''}
+                      onChange={e => {
+                        const v = e.target.value.slice(0, 100);
+                        setLastName(v);
+                        setErrors(p => ({ ...p, lastName: liveCheck(personNameSchema, v) ?? '' }));
+                      }}
+                    />
+                    <FieldError name="lastName" errors={errors} />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>{t('visitors.phone')}</Label><Input value={phone} onChange={e => { setPhone(e.target.value); if (errors.phone) setErrors(p => ({ ...p, phone: '' })); }} /><FieldError name="phone" errors={errors} /></div>
-                  <div><Label>{t('visitors.email')}</Label><Input type="email" value={email} onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: '' })); }} /><FieldError name="email" errors={errors} /></div>
+                  <div>
+                    <Label>{t('visitors.phone')}</Label>
+                    <Input
+                      inputMode="tel"
+                      maxLength={20}
+                      value={phone}
+                      aria-invalid={!!errors.phone}
+                      className={errors.phone ? 'border-destructive' : ''}
+                      onChange={e => {
+                        const v = e.target.value.replace(/[^+\d()\-\s]/g, '').slice(0, 20);
+                        setPhone(v);
+                        const err = v.trim().length === 0 ? '' : (liveCheck(optionalPhoneSchema, v) ?? '');
+                        setErrors(p => ({ ...p, phone: err }));
+                      }}
+                    />
+                    <FieldError name="phone" errors={errors} />
+                  </div>
+                  <div>
+                    <Label>{t('visitors.email')}</Label>
+                    <Input
+                      type="email"
+                      maxLength={255}
+                      value={email}
+                      aria-invalid={!!errors.email}
+                      className={errors.email ? 'border-destructive' : ''}
+                      onChange={e => {
+                        const v = e.target.value.slice(0, 255);
+                        setEmail(v);
+                        const err = v.trim().length === 0 ? '' : (liveCheck(optionalEmailSchema, v) ?? '');
+                        setErrors(p => ({ ...p, email: err }));
+                      }}
+                    />
+                    <FieldError name="email" errors={errors} />
+                  </div>
                 </div>
                 <div><Label>{t('visitors.visitDate')}</Label><Input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} /></div>
                 <div>
@@ -284,7 +350,23 @@ export default function Visitors() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>{t('visitors.notes')}</Label><Textarea value={visitorNotes} onChange={e => { setVisitorNotes(e.target.value); if (errors.notes) setErrors(p => ({ ...p, notes: '' })); }} /><FieldError name="notes" errors={errors} /></div>
+                <div>
+                  <Label>{t('visitors.notes')}</Label>
+                  <Textarea
+                    maxLength={2000}
+                    value={visitorNotes}
+                    aria-invalid={!!errors.notes}
+                    className={errors.notes ? 'border-destructive' : ''}
+                    onChange={e => {
+                      const v = e.target.value.slice(0, 2000);
+                      setVisitorNotes(v);
+                      const err = v.trim().length === 0 ? '' : (liveCheck(longTextSchema, v) ?? '');
+                      setErrors(p => ({ ...p, notes: err }));
+                    }}
+                  />
+                  <div className="text-xs text-muted-foreground text-right">{visitorNotes.length}/2000</div>
+                  <FieldError name="notes" errors={errors} />
+                </div>
                 <Button onClick={saveVisitor} className="w-full">{t('visitors.save')}</Button>
               </div>
             </DialogContent>
