@@ -438,6 +438,10 @@ export default function PlatformAccounting() {
               <Download className="mr-2 h-4 w-4" />
               {t("superAdmin.exportCsv")}
             </Button>
+            <Button variant="outline" onClick={handleTaxExport}>
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              {t("platformAccounting.taxExport")}
+            </Button>
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button>
