@@ -244,7 +244,7 @@ export default function VolunteerScheduling() {
                       </div>
                       <div>
                         <Label>{v('serviceDate')}</Label>
-                        <Input type="date" value={selectedDate} min={todayISO()} onChange={e => setSelectedDate(e.target.value)} />
+                        <Input type="date" value={selectedDate} min={todayISO()} max={maxFutureISO(3)} onChange={e => setSelectedDate(clampMaxFuture(e.target.value, 3))} />
                       </div>
                       <div>
                         <Label>{v('notes')}</Label>
