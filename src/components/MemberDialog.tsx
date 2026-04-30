@@ -1011,14 +1011,20 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="gender">{lt.gender}</Label>
+                  <Label htmlFor="gender">{lt.gender} *</Label>
                   <Select
                     value={formData.gender || "none"}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, gender: value === "none" ? "" : value })
-                    }
+                    onValueChange={(value) => {
+                      const v = value === "none" ? "" : value;
+                      setFormData({ ...formData, gender: v });
+                      setErrors((p) => ({ ...p, gender: v ? "" : "validation.field.required" }));
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      id="gender"
+                      aria-invalid={!!errors.gender}
+                      className={errors.gender ? "border-destructive focus-visible:ring-destructive" : ""}
+                    >
                       <SelectValue placeholder={lt.selectGender} />
                     </SelectTrigger>
                     <SelectContent>
@@ -1027,6 +1033,7 @@ export default function MemberDialog({
                       <SelectItem value="F">{lt.female}</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FieldError name="gender" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="dateOfBirth">{lt.dateOfBirth}</Label>
