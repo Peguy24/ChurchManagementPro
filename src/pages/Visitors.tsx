@@ -126,6 +126,12 @@ export default function Visitors() {
       toast({ title: t('visitors.error'), description: firstErrorMessage(validation.fieldErrors, t), variant: 'destructive' });
       return;
     }
+    const today = format(new Date(), 'yyyy-MM-dd');
+    if (visitDate && visitDate > today) {
+      setErrors(p => ({ ...p, visitDate: t('validation.date.future') }));
+      toast({ title: t('visitors.error'), description: t('validation.date.future'), variant: 'destructive' });
+      return;
+    }
     setErrors({});
     try {
       await supabase.from('visitors').insert(forInsert({
@@ -340,7 +346,23 @@ export default function Visitors() {
                     <FieldError name="email" errors={errors} />
                   </div>
                 </div>
-                <div><Label>{t('visitors.visitDate')}</Label><Input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} /></div>
+                <div>
+                  <Label>{t('visitors.visitDate')}</Label>
+                  <Input
+                    type="date"
+                    value={visitDate}
+                    max={format(new Date(), 'yyyy-MM-dd')}
+                    aria-invalid={!!errors.visitDate}
+                    className={errors.visitDate ? 'border-destructive' : ''}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setVisitDate(v);
+                      const today = format(new Date(), 'yyyy-MM-dd');
+                      setErrors(p => ({ ...p, visitDate: v && v > today ? t('validation.date.future') : '' }));
+                    }}
+                  />
+                  <FieldError name="visitDate" errors={errors} />
+                </div>
                 <div>
                   <Label>{t('visitors.howHeard')}</Label>
                   <Select value={howHeard} onValueChange={setHowHeard}>
