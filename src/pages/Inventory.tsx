@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText, ArrowLeft } from "lucide-react";
-import { sanitizeAmount, sanitizeLine, sanitizeName, sanitizeText, sanitizeReference, todayISO, clampNotFuture, maxFutureISO, clampMaxFuture } from "@/lib/inputSanitize";
+import { sanitizeAmount, sanitizeLine, sanitizeName, sanitizeText, sanitizeReference, sanitizeInt, todayISO, clampNotFuture, maxFutureISO, clampMaxFuture } from "@/lib/inputSanitize";
 import { SignedImage } from "@/components/SignedImage";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
