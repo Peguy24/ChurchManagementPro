@@ -735,6 +735,8 @@ export default function PlatformAccounting() {
                     <TableHead>{t("platformAccounting.category")}</TableHead>
                     <TableHead>{t("platformAccounting.vendor")}</TableHead>
                     <TableHead className="text-right">{t("platformAccounting.amount")}</TableHead>
+                    <TableHead className="text-center">{t("platformAccounting.receipt")}</TableHead>
+                    <TableHead className="text-center">{t("platformAccounting.tax")}</TableHead>
                     <TableHead className="text-right">{t("platformAccounting.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -755,12 +757,35 @@ export default function PlatformAccounting() {
                       <TableCell>{getCatLabel(expense.category)}</TableCell>
                       <TableCell>{expense.vendor || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="text-center">
+                        {expense.receipt_url ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openReceipt(expense.receipt_url as string)}
+                            title={expense.receipt_filename || ""}
+                          >
+                            <FileText className="h-4 w-4 text-primary" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {expense.tax_deductible ? (
+                          <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded">
+                            {expense.tax_category || t("platformAccounting.taxDeductibleShort")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(expense)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(expense.id)}>
+                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(expense)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
