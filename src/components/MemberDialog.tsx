@@ -1214,15 +1214,21 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="country">{lt.country}</Label>
+                    <Label htmlFor="country">{lt.country} *</Label>
                     <Input
                       id="country"
                       value={formData.country}
-                      onChange={(e) =>
-                        setFormData({ ...formData, country: e.target.value })
-                      }
+                      required
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormData({ ...formData, country: v });
+                        setErrors((p) => ({ ...p, country: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                      }}
                       placeholder="United States"
+                      aria-invalid={!!errors.country}
+                      className={errors.country ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="country" errors={errors} />
                   </div>
                 </div>
               </div>
