@@ -373,8 +373,8 @@ export const visitorSchema = z.object({
 /* --- Finance / HR --------------------------------------------------- */
 
 export const employeeSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   position: requiredShortTextSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
