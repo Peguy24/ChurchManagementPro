@@ -30,7 +30,7 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema } from "@/lib/validation";
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
@@ -334,7 +334,7 @@ export default function MemberDialog({
   member,
   onSuccess,
 }: MemberDialogProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const lt = localT[language];
   const { toast } = useToast();
   const { tenantId } = useCurrentTenant();
@@ -1061,14 +1061,25 @@ export default function MemberDialog({
                   <Input
                     id="email"
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
                     value={formData.email}
                     onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      if (errors.email) setErrors({ ...errors, email: "" });
+                      const v = e.target.value;
+                      setFormData({ ...formData, email: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(optionalEmailSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, email: err }));
                     }}
                     placeholder="john@example.com"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? undefined : "email-hint"}
+                    className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
-                  <FieldError name="email" errors={errors} />
+                  {errors.email ? (
+                    <FieldError name="email" errors={errors} />
+                  ) : (
+                    <p id="email-hint" className="text-xs text-muted-foreground">{t("emailHint")}</p>
+                  )}
                 </div>
               </div>
 
