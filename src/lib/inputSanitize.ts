@@ -107,3 +107,9 @@ export function sanitizeName(raw: string, maxLength = 100): string {
   return v.slice(0, maxLength);
 }
 
+
+/** Non-negative integer string (digits only, configurable max digits). */
+export function sanitizeInt(raw: string, maxDigits = 7): string {
+  if (!raw) return "";
+  return raw.replace(/[^0-9]/g, "").slice(0, maxDigits);
+}

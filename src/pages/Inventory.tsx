@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Package, Wrench, History, AlertTriangle, Search, Edit, Trash2, Eye, Tags, ImageIcon, FileText, ArrowLeft } from "lucide-react";
+import { sanitizeAmount, sanitizeLine, sanitizeName, sanitizeText, sanitizeReference, sanitizeInt, todayISO, clampNotFuture, maxFutureISO, clampMaxFuture } from "@/lib/inputSanitize";
 import { SignedImage } from "@/components/SignedImage";
 import InventoryBarcodeScanner from "@/components/InventoryBarcodeScanner";
 import InventoryLabelPrinter from "@/components/InventoryLabelPrinter";
@@ -574,21 +575,21 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.event")}</Label>
-                    <Input value={usageForm.event_name} onChange={(e) => setUsageForm({ ...usageForm, event_name: e.target.value })} />
+                    <Input value={usageForm.event_name} maxLength={120} onChange={(e) => setUsageForm({ ...usageForm, event_name: sanitizeLine(e.target.value, 120) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.startDate")} *</Label>
-                      <Input type="date" value={usageForm.start_date} onChange={(e) => setUsageForm({ ...usageForm, start_date: e.target.value })} />
+                      <Input type="date" value={usageForm.start_date} max={maxFutureISO(3)} onChange={(e) => setUsageForm({ ...usageForm, start_date: clampMaxFuture(e.target.value, 3) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.endDate")}</Label>
-                      <Input type="date" value={usageForm.end_date} onChange={(e) => setUsageForm({ ...usageForm, end_date: e.target.value })} />
+                      <Input type="date" value={usageForm.end_date} min={usageForm.start_date || undefined} max={maxFutureISO(3)} onChange={(e) => setUsageForm({ ...usageForm, end_date: clampMaxFuture(e.target.value, 3) })} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.quantity")}</Label>
-                    <Input type="number" value={usageForm.quantity_used} onChange={(e) => setUsageForm({ ...usageForm, quantity_used: e.target.value })} />
+                    <Input type="text" inputMode="numeric" value={usageForm.quantity_used} onChange={(e) => setUsageForm({ ...usageForm, quantity_used: sanitizeInt(e.target.value, 6) })} />
                   </div>
                 </div>
                 <DialogFooter>
@@ -641,29 +642,29 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.description")} *</Label>
-                    <Textarea value={maintenanceForm.description} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} />
+                    <Textarea value={maintenanceForm.description} maxLength={1000} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: sanitizeText(e.target.value, 1000) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.cost")}</Label>
-                      <Input type="number" value={maintenanceForm.cost} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={maintenanceForm.cost} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: sanitizeAmount(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.date")} *</Label>
-                      <Input type="date" value={maintenanceForm.maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, maintenance_date: e.target.value })} />
+                      <Input type="date" value={maintenanceForm.maintenance_date} max={todayISO()} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, maintenance_date: clampNotFuture(e.target.value) })} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.performedBy")}</Label>
-                    <Input value={maintenanceForm.performed_by} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, performed_by: e.target.value })} />
+                    <Input value={maintenanceForm.performed_by} maxLength={100} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, performed_by: sanitizeName(e.target.value, 100) })} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.vendor")}</Label>
-                    <Input value={maintenanceForm.vendor} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, vendor: e.target.value })} />
+                    <Input value={maintenanceForm.vendor} maxLength={120} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, vendor: sanitizeLine(e.target.value, 120) })} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.nextMaintenance")}</Label>
-                    <Input type="date" value={maintenanceForm.next_maintenance_date} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, next_maintenance_date: e.target.value })} />
+                    <Input type="date" value={maintenanceForm.next_maintenance_date} min={todayISO()} max={maxFutureISO(3)} onChange={(e) => setMaintenanceForm({ ...maintenanceForm, next_maintenance_date: clampMaxFuture(e.target.value, 3) })} />
                   </div>
                 </div>
                 <DialogFooter>
@@ -697,7 +698,7 @@ function InventoryContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.name")} *</Label>
-                      <Input value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} />
+                      <Input value={itemForm.name} maxLength={120} onChange={(e) => setItemForm({ ...itemForm, name: sanitizeName(e.target.value, 120) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.category")} *</Label>
@@ -715,30 +716,30 @@ function InventoryContent() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t("inventory.description")}</Label>
-                    <Textarea value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} />
+                    <Textarea value={itemForm.description} maxLength={1000} onChange={(e) => setItemForm({ ...itemForm, description: sanitizeText(e.target.value, 1000) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.serialNumber")}</Label>
-                      <Input value={itemForm.serial_number} onChange={(e) => setItemForm({ ...itemForm, serial_number: e.target.value })} />
+                      <Input value={itemForm.serial_number} maxLength={60} onChange={(e) => setItemForm({ ...itemForm, serial_number: sanitizeReference(e.target.value, 60) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.location")}</Label>
-                      <Input value={itemForm.location} onChange={(e) => setItemForm({ ...itemForm, location: e.target.value })} />
+                      <Input value={itemForm.location} maxLength={120} onChange={(e) => setItemForm({ ...itemForm, location: sanitizeLine(e.target.value, 120) })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.purchaseDate")}</Label>
-                      <Input type="date" value={itemForm.purchase_date} onChange={(e) => setItemForm({ ...itemForm, purchase_date: e.target.value })} />
+                      <Input type="date" value={itemForm.purchase_date} max={todayISO()} onChange={(e) => setItemForm({ ...itemForm, purchase_date: clampNotFuture(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.purchasePrice")}</Label>
-                      <Input type="number" value={itemForm.purchase_price} onChange={(e) => setItemForm({ ...itemForm, purchase_price: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={itemForm.purchase_price} onChange={(e) => setItemForm({ ...itemForm, purchase_price: sanitizeAmount(e.target.value) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.currentValue")}</Label>
-                      <Input type="number" value={itemForm.current_value} onChange={(e) => setItemForm({ ...itemForm, current_value: e.target.value })} />
+                      <Input type="text" inputMode="decimal" value={itemForm.current_value} onChange={(e) => setItemForm({ ...itemForm, current_value: sanitizeAmount(e.target.value) })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -772,11 +773,11 @@ function InventoryContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.quantity")}</Label>
-                      <Input type="number" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} />
+                      <Input type="text" inputMode="numeric" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: sanitizeInt(e.target.value, 7) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.minStock")}</Label>
-                      <Input type="number" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: e.target.value })} />
+                      <Input type="text" inputMode="numeric" value={itemForm.min_quantity} onChange={(e) => setItemForm({ ...itemForm, min_quantity: sanitizeInt(e.target.value, 7) })} />
                     </div>
                   </div>
                   <InventoryPhotoUpload
@@ -786,7 +787,7 @@ function InventoryContent() {
                   />
                   <div className="space-y-2">
                     <Label>{t("inventory.notes")}</Label>
-                    <Textarea value={itemForm.notes} onChange={(e) => setItemForm({ ...itemForm, notes: e.target.value })} />
+                    <Textarea value={itemForm.notes} maxLength={1000} onChange={(e) => setItemForm({ ...itemForm, notes: sanitizeText(e.target.value, 1000) })} />
                   </div>
                 </div>
                 <DialogFooter>
@@ -892,7 +893,8 @@ function InventoryContent() {
                       <Input
                         placeholder={t("inventory.searchPlaceholder")}
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        maxLength={100}
+                        onChange={(e) => setSearchTerm(sanitizeLine(e.target.value, 100))}
                         className="pl-8 w-[200px]"
                       />
                     </div>
