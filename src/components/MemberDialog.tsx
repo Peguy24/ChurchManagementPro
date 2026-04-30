@@ -1036,17 +1036,17 @@ export default function MemberDialog({
                   <FieldError name="gender" errors={errors} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="dateOfBirth">{lt.dateOfBirth}</Label>
+                  <Label htmlFor="dateOfBirth">{lt.dateOfBirth} *</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
                     max={todayInputValue()}
                     value={formData.dateOfBirth}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, dateOfBirth: v });
-                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, dateOfBirth: err }));
+                      setErrors((p) => ({ ...p, dateOfBirth: liveCheck(requiredPastDateSchema, v) ?? "" }));
                     }}
                     aria-invalid={!!errors.dateOfBirth}
                     className={errors.dateOfBirth ? "border-destructive focus-visible:ring-destructive" : ""}
