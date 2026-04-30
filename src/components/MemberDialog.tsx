@@ -30,7 +30,13 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema } from "@/lib/validation";
+
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const result = schema.safeParse(value);
+  if (result.success) return null;
+  return result.error?.issues?.[0]?.message ?? null;
+};
 import { FieldError } from "@/components/FieldError";
 
 const localT: Record<Language, Record<string, string>> = {
@@ -964,11 +970,15 @@ export default function MemberDialog({
                     id="lastName"
                     value={formData.lastName}
                     onChange={(e) => {
-                      setFormData({ ...formData, lastName: e.target.value });
-                      if (errors.lastName) setErrors({ ...errors, lastName: "" });
+                      const v = e.target.value;
+                      setFormData({ ...formData, lastName: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(personNameSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, lastName: err }));
                     }}
                     placeholder="Smith"
                     required
+                    aria-invalid={!!errors.lastName}
+                    className={errors.lastName ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
                   <FieldError name="lastName" errors={errors} />
                 </div>
@@ -978,11 +988,15 @@ export default function MemberDialog({
                     id="firstName"
                     value={formData.firstName}
                     onChange={(e) => {
-                      setFormData({ ...formData, firstName: e.target.value });
-                      if (errors.firstName) setErrors({ ...errors, firstName: "" });
+                      const v = e.target.value;
+                      setFormData({ ...formData, firstName: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(personNameSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, firstName: err }));
                     }}
                     placeholder="John"
                     required
+                    aria-invalid={!!errors.firstName}
+                    className={errors.firstName ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
                   <FieldError name="firstName" errors={errors} />
                 </div>
@@ -1012,11 +1026,18 @@ export default function MemberDialog({
                   <Input
                     id="dateOfBirth"
                     type="date"
+                    max={todayInputValue()}
                     value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dateOfBirth: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, dateOfBirth: v });
+                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, dateOfBirth: err }));
+                    }}
+                    aria-invalid={!!errors.dateOfBirth}
+                    className={errors.dateOfBirth ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="dateOfBirth" errors={errors} />
                 </div>
               </div>
 
