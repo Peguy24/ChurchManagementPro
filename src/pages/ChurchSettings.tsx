@@ -263,7 +263,8 @@ export default function ChurchSettings() {
                   <Input
                     id="church_name"
                     value={settings.church_name}
-                    onChange={(e) => { setSettings({ ...settings, church_name: e.target.value }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
+                    maxLength={120}
+                    onChange={(e) => { setSettings({ ...settings, church_name: sanitizeName(e.target.value, 120) }); if (errors.church_name) setErrors((p) => ({ ...p, church_name: "" })); }}
                     placeholder={t("churchSettings.churchNamePlaceholder")}
                   />
                   <FieldError name="church_name" errors={errors} />
@@ -276,7 +277,8 @@ export default function ChurchSettings() {
                   <Input
                     id="church_tax_id"
                     value={settings.church_tax_id}
-                    onChange={(e) => setSettings({ ...settings, church_tax_id: e.target.value })}
+                    maxLength={40}
+                    onChange={(e) => setSettings({ ...settings, church_tax_id: sanitizeReference(e.target.value, 40) })}
                     placeholder={t("churchSettings.taxIdPlaceholder")}
                   />
                 </div>
