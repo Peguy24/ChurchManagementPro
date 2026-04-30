@@ -30,7 +30,7 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema, optionalPhoneSchema, phoneSchema } from "@/lib/validation";
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
