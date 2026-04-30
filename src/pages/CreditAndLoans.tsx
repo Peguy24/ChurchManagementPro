@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText, maxFutureISO, clampMaxFuture } from "@/lib/inputSanitize";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -300,7 +300,7 @@ const CreditAndLoans = () => {
                   </div>
                   <div>
                     <Label>{t("creditAndLoans.dueDate")}</Label>
-                    <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                    <Input type="date" min={form.start_date || todayISO()} max={maxFutureISO(3)} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: clampMaxFuture(e.target.value, 3) })} />
                   </div>
                 </div>
                 <div>

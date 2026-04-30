@@ -15,7 +15,7 @@ import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, Edit, Trash2, Calendar, Users, UserCheck } from 'lucide-react';
-import { sanitizeLine, sanitizeText, sanitizeName, todayISO } from '@/lib/inputSanitize';
+import { sanitizeLine, sanitizeText, sanitizeName, todayISO, maxFutureISO, clampMaxFuture } from '@/lib/inputSanitize';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
@@ -244,7 +244,7 @@ export default function VolunteerScheduling() {
                       </div>
                       <div>
                         <Label>{v('serviceDate')}</Label>
-                        <Input type="date" value={selectedDate} min={todayISO()} onChange={e => setSelectedDate(e.target.value)} />
+                        <Input type="date" value={selectedDate} min={todayISO()} max={maxFutureISO(3)} onChange={e => setSelectedDate(clampMaxFuture(e.target.value, 3))} />
                       </div>
                       <div>
                         <Label>{v('notes')}</Label>
