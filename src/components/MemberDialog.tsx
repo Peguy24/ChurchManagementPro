@@ -1404,12 +1404,16 @@ export default function MemberDialog({
                 <Textarea
                   id="christianExperience"
                   value={formData.christianExperience}
+                  maxLength={2000}
                   onChange={(e) =>
-                    setFormData({ ...formData, christianExperience: e.target.value })
+                    setFormData({ ...formData, christianExperience: e.target.value.slice(0, 2000) })
                   }
                   placeholder={lt.christianExperiencePlaceholder}
                   rows={4}
                 />
+                <p className="text-xs text-muted-foreground text-right">
+                  {formData.christianExperience.length}/2000
+                </p>
               </div>
 
               {/* Ministry Selection */}
@@ -1530,12 +1534,16 @@ export default function MemberDialog({
                 <Textarea
                   id="childrenNames"
                   value={formData.childrenNames}
+                  maxLength={500}
                   onChange={(e) =>
-                    setFormData({ ...formData, childrenNames: e.target.value })
+                    setFormData({ ...formData, childrenNames: e.target.value.slice(0, 500) })
                   }
                   placeholder={lt.childrenNamesPlaceholder}
                   rows={3}
                 />
+                <p className="text-xs text-muted-foreground text-right">
+                  {formData.childrenNames.length}/500
+                </p>
               </div>
             </TabsContent>
           </Tabs>
