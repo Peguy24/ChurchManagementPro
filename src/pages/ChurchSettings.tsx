@@ -308,7 +308,9 @@ export default function ChurchSettings() {
                   <Input
                     id="church_phone"
                     value={settings.church_phone}
-                    onChange={(e) => { setSettings({ ...settings, church_phone: e.target.value }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
+                    maxLength={25}
+                    inputMode="tel"
+                    onChange={(e) => { setSettings({ ...settings, church_phone: sanitizePhone(e.target.value) }); if (errors.church_phone) setErrors((p) => ({ ...p, church_phone: "" })); }}
                     placeholder={t("churchSettings.phonePlaceholder")}
                   />
                   <FieldError name="church_phone" errors={errors} />
@@ -322,7 +324,8 @@ export default function ChurchSettings() {
                     id="church_email"
                     type="email"
                     value={settings.church_email}
-                    onChange={(e) => { setSettings({ ...settings, church_email: e.target.value }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
+                    maxLength={254}
+                    onChange={(e) => { setSettings({ ...settings, church_email: sanitizeLine(e.target.value, 254).toLowerCase() }); if (errors.church_email) setErrors((p) => ({ ...p, church_email: "" })); }}
                     placeholder={t("churchSettings.emailPlaceholder")}
                   />
                   <FieldError name="church_email" errors={errors} />
