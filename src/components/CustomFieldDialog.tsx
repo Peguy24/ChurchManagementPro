@@ -273,11 +273,13 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <div>
               <Label>{t("customFields.displayOrder")}</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={formData.display_order}
-                onChange={(e) =>
-                  setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })
-                }
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+                  setFormData({ ...formData, display_order: digits ? parseInt(digits, 10) : 0 });
+                }}
               />
             </div>
 
