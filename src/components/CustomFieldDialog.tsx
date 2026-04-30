@@ -206,8 +206,11 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <Label>{t("customFields.fieldNameInternal")}</Label>
             <Input
               value={formData.field_name}
+              maxLength={50}
               onChange={(e) => {
-                setFormData({ ...formData, field_name: e.target.value });
+                // internal name: lowercase letters, digits, underscore only
+                const safe = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 50);
+                setFormData({ ...formData, field_name: safe });
                 if (errors.fieldName) setErrors({ ...errors, fieldName: "" });
               }}
               placeholder={t("customFields.fieldNamePlaceholder")}
