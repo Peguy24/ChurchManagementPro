@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { sanitizeLine } from "@/lib/inputSanitize";
 import {
   Select,
   SelectContent,
@@ -378,7 +379,8 @@ export default function AuditReportTab() {
           <Input
             placeholder={lt.search}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(sanitizeLine(e.target.value, 100))}
+            maxLength={100}
             className="pl-10"
           />
         </div>
