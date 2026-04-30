@@ -9594,6 +9594,8 @@ const translations = {
       churchNamePlaceholder: "Egz: Legliz Lagras",
       yourNamePlaceholder: "Egz: Jean Dupont",
       nameHint: "Sèlman lèt, espas, apostwòf ak tirè (pa gen chif)",
+      emailHint: "Fòma: non@domèn.com",
+      phoneHint: "Chif, +, -, ( ), espas (7 a 20 karaktè)",
       emailPlaceholder: "kontak@legliz.com",
       phonePlaceholder: "+1 234 567 890",
       addressPlaceholder: "Adrès legliz la",
