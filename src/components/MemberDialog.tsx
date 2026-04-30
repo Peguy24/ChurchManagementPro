@@ -30,7 +30,7 @@ import PhotoCropper from "./PhotoCropper";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, optionalEmailSchema, optionalPhoneSchema, phoneSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, requiredPastDateSchema, optionalEmailSchema, emailSchema, optionalPhoneSchema, phoneSchema, requiredShortTextSchema } from "@/lib/validation";
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
@@ -658,23 +658,30 @@ export default function MemberDialog({
     }
   };
 
+  const [activeTab, setActiveTab] = useState<string>("personal");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const validation = validateForm(memberFullSchema, {
       firstName: formData.firstName,
       lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-      emergencyPhone: formData.emergencyPhone,
+      gender: formData.gender,
       dateOfBirth: formData.dateOfBirth,
+      phone: formData.phone,
+      email: formData.email,
+      city: formData.city,
+      country: formData.country,
       joinDate: formData.joinDate,
+      emergencyPhone: formData.emergencyPhone,
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
+      // All currently required fields live in the Personal tab — switch to it
+      setActiveTab("personal");
       toast({
         title: lt.error,
-        description: firstErrorMessage(validation.fieldErrors, (k) => k),
+        description: t(firstErrorMessage(validation.fieldErrors, (k) => k) || "validation.field.required"),
         variant: "destructive",
       });
       return;
@@ -887,7 +894,7 @@ export default function MemberDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="personal" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="personal" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
                 <User className="h-4 w-4 shrink-0" />
@@ -1004,14 +1011,20 @@ export default function MemberDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="gender">{lt.gender}</Label>
+                  <Label htmlFor="gender">{lt.gender} *</Label>
                   <Select
                     value={formData.gender || "none"}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, gender: value === "none" ? "" : value })
-                    }
+                    onValueChange={(value) => {
+                      const v = value === "none" ? "" : value;
+                      setFormData({ ...formData, gender: v });
+                      setErrors((p) => ({ ...p, gender: v ? "" : "validation.field.required" }));
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      id="gender"
+                      aria-invalid={!!errors.gender}
+                      className={errors.gender ? "border-destructive focus-visible:ring-destructive" : ""}
+                    >
                       <SelectValue placeholder={lt.selectGender} />
                     </SelectTrigger>
                     <SelectContent>
@@ -1020,19 +1033,20 @@ export default function MemberDialog({
                       <SelectItem value="F">{lt.female}</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FieldError name="gender" errors={errors} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="dateOfBirth">{lt.dateOfBirth}</Label>
+                  <Label htmlFor="dateOfBirth">{lt.dateOfBirth} *</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
                     max={todayInputValue()}
                     value={formData.dateOfBirth}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, dateOfBirth: v });
-                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, dateOfBirth: err }));
+                      setErrors((p) => ({ ...p, dateOfBirth: liveCheck(requiredPastDateSchema, v) ?? "" }));
                     }}
                     aria-invalid={!!errors.dateOfBirth}
                     className={errors.dateOfBirth ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -1068,18 +1082,18 @@ export default function MemberDialog({
                   )}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">{lt.email}</Label>
+                  <Label htmlFor="email">{lt.email} *</Label>
                   <Input
                     id="email"
                     type="email"
                     inputMode="email"
                     autoComplete="email"
                     value={formData.email}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, email: v });
-                      const err = v.trim().length === 0 ? "" : (liveCheck(optionalEmailSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, email: err }));
+                      setErrors((p) => ({ ...p, email: liveCheck(emailSchema, v) ?? "" }));
                     }}
                     placeholder="john@example.com"
                     aria-invalid={!!errors.email}
@@ -1159,15 +1173,21 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="city">{lt.city}</Label>
+                    <Label htmlFor="city">{lt.city} *</Label>
                     <Input
                       id="city"
                       value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
+                      required
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormData({ ...formData, city: v });
+                        setErrors((p) => ({ ...p, city: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                      }}
                       placeholder="New York"
+                      aria-invalid={!!errors.city}
+                      className={errors.city ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="city" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="zipCode">{lt.zipCode}</Label>
@@ -1194,32 +1214,38 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="country">{lt.country}</Label>
+                    <Label htmlFor="country">{lt.country} *</Label>
                     <Input
                       id="country"
                       value={formData.country}
-                      onChange={(e) =>
-                        setFormData({ ...formData, country: e.target.value })
-                      }
+                      required
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormData({ ...formData, country: v });
+                        setErrors((p) => ({ ...p, country: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                      }}
                       placeholder="United States"
+                      aria-invalid={!!errors.country}
+                      className={errors.country ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="country" errors={errors} />
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="joinDate">{lt.joinDate}</Label>
+                  <Label htmlFor="joinDate">{lt.joinDate} *</Label>
                   <Input
                     id="joinDate"
                     type="date"
                     max={todayInputValue()}
                     value={formData.joinDate}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, joinDate: v });
-                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, joinDate: err }));
+                      setErrors((p) => ({ ...p, joinDate: liveCheck(requiredPastDateSchema, v) ?? "" }));
                     }}
                     aria-invalid={!!errors.joinDate}
                     className={errors.joinDate ? "border-destructive focus-visible:ring-destructive" : ""}

@@ -446,14 +446,24 @@ export const tenantManagementSchema = z.object({
 
 /* --- Member (extended) --------------------------------------------- */
 
+// Required date in the past (not future, must be a real date).
+export const requiredPastDateSchema = z
+  .string()
+  .min(1, "validation.date.required")
+  .refine(isValidDate, "validation.date.invalid")
+  .refine(isNotInFuture, "validation.date.notInFuture");
+
 export const memberFullSchema = z.object({
   firstName: personNameSchema,
   lastName: personNameSchema,
-  email: optionalEmailSchema,
-  phone: optionalPhoneSchema,
+  gender: z.string().trim().min(1, "validation.field.required"),
+  dateOfBirth: requiredPastDateSchema,
+  phone: phoneSchema,
+  email: emailSchema,
+  city: requiredShortTextSchema,
+  country: requiredShortTextSchema,
+  joinDate: requiredPastDateSchema,
   emergencyPhone: optionalPhoneSchema,
-  dateOfBirth: optionalPastDateSchema,
-  joinDate: optionalPastDateSchema,
 });
 
 /* --- Custom fields (extended with select-options check) ------------ */
