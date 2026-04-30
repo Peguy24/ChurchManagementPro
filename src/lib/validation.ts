@@ -363,8 +363,8 @@ export const churchRequestSchema = z.object({
 });
 
 export const visitorSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   notes: longTextSchema.optional().or(z.literal("")),
