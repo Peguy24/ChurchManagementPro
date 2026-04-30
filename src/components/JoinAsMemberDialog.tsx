@@ -12,7 +12,13 @@ import { Send, Loader2, User, Heart, Users, GraduationCap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, joinAsMemberSchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, joinAsMemberSchema, firstErrorMessage, optionalPhoneSchema } from "@/lib/validation";
+
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const r = schema.safeParse(value);
+  if (r.success) return null;
+  return r.error?.issues?.[0]?.message ?? null;
+};
 
 interface JoinAsMemberDialogProps {
   open: boolean;
@@ -200,7 +206,19 @@ export default function JoinAsMemberDialog({ open, onOpenChange }: JoinAsMemberD
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t("joinForm.phone")}</Label>
-                  <Input value={formData.phone} onChange={(e) => { updateField("phone", e.target.value); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }} />
+                  <Input
+                    inputMode="tel"
+                    maxLength={20}
+                    value={formData.phone}
+                    aria-invalid={!!errors.phone}
+                    className={errors.phone ? "border-destructive" : ""}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^+\d()\-\s]/g, "").slice(0, 20);
+                      updateField("phone", v);
+                      const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, phone: err }));
+                    }}
+                  />
                   <FieldError name="phone" errors={errors} />
                 </div>
                 <div className="space-y-2">
@@ -211,7 +229,20 @@ export default function JoinAsMemberDialog({ open, onOpenChange }: JoinAsMemberD
               </div>
               <div className="space-y-2">
                 <Label>{t("joinForm.emergencyPhone")}</Label>
-                <Input value={formData.emergencyPhone} onChange={(e) => updateField("emergencyPhone", e.target.value)} />
+                <Input
+                  inputMode="tel"
+                  maxLength={20}
+                  value={formData.emergencyPhone}
+                  aria-invalid={!!errors.emergencyPhone}
+                  className={errors.emergencyPhone ? "border-destructive" : ""}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^+\d()\-\s]/g, "").slice(0, 20);
+                    updateField("emergencyPhone", v);
+                    const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                    setErrors((p) => ({ ...p, emergencyPhone: err }));
+                  }}
+                />
+                <FieldError name="emergencyPhone" errors={errors} />
               </div>
               <h4 className="font-semibold text-sm pt-2">{t("joinForm.address")}</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
