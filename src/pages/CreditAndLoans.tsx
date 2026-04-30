@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText } from "@/lib/inputSanitize";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -277,11 +277,11 @@ const CreditAndLoans = () => {
               <div className="space-y-4">
                 <div>
                   <Label>{t("creditAndLoans.counterparty")}</Label>
-                  <Input value={form.counterparty} onChange={(e) => setForm({ ...form, counterparty: e.target.value })} placeholder={t("creditAndLoans.counterpartyPlaceholder")} />
+                  <Input value={form.counterparty} maxLength={100} onChange={(e) => setForm({ ...form, counterparty: sanitizeLine(e.target.value, 100) })} placeholder={t("creditAndLoans.counterpartyPlaceholder")} />
                 </div>
                 <div>
                   <Label>{t("creditAndLoans.description")}</Label>
-                  <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <Input value={form.description} maxLength={200} onChange={(e) => setForm({ ...form, description: sanitizeLine(e.target.value, 200) })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -305,7 +305,7 @@ const CreditAndLoans = () => {
                 </div>
                 <div>
                   <Label>{t("creditAndLoans.notes")}</Label>
-                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                  <Textarea value={form.notes} maxLength={500} onChange={(e) => setForm({ ...form, notes: sanitizeText(e.target.value, 500) })} />
                 </div>
                 <Button onClick={() => createMutation.mutate()} disabled={!form.counterparty || !form.description || !form.total_amount || createMutation.isPending} className="w-full">
                   {createMutation.isPending ? t("common.saving") : t("common.save")}
@@ -508,7 +508,7 @@ const CreditAndLoans = () => {
 
                 <div>
                   <Label>{t("creditAndLoans.notes")}</Label>
-                  <Textarea value={paymentForm.notes} onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })} />
+                  <Textarea value={paymentForm.notes} maxLength={500} onChange={(e) => setPaymentForm({ ...paymentForm, notes: sanitizeText(e.target.value, 500) })} />
                 </div>
                 <Button
                   onClick={() => paymentMutation.mutate()}

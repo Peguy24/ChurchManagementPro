@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeReference } from "@/lib/inputSanitize";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -191,7 +191,8 @@ const CashRegister = () => {
                   <Label>{t("cashRegisterPage.registerName")} *</Label>
                   <Input
                     value={registerForm.name}
-                    onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                    maxLength={80}
+                    onChange={(e) => setRegisterForm({ ...registerForm, name: sanitizeLine(e.target.value, 80) })}
                     placeholder={t("cashRegisterPage.registerNamePlaceholder")}
                   />
                 </div>
@@ -210,9 +211,10 @@ const CashRegister = () => {
                 <div>
                   <Label>{t("cashRegisterPage.initialBalance")}</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={registerForm.current_balance}
-                    onChange={(e) => setRegisterForm({ ...registerForm, current_balance: e.target.value })}
+                    onChange={(e) => setRegisterForm({ ...registerForm, current_balance: sanitizeAmount(e.target.value) })}
                     placeholder="0"
                   />
                 </div>
@@ -313,14 +315,16 @@ const CashRegister = () => {
                       <Label>{t("cashRegisterPage.description")}</Label>
                       <Input
                         value={transactionForm.description}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                        maxLength={200}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, description: sanitizeLine(e.target.value, 200) })}
                       />
                     </div>
                     <div>
                       <Label>{t("cashRegisterPage.reference")}</Label>
                       <Input
                         value={transactionForm.reference_number}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, reference_number: e.target.value })}
+                        maxLength={50}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, reference_number: sanitizeReference(e.target.value, 50) })}
                         placeholder={t("cashRegisterPage.referencePlaceholder")}
                       />
                     </div>

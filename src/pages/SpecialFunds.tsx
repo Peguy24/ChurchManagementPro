@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeText } from "@/lib/inputSanitize";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -173,7 +173,8 @@ const SpecialFunds = () => {
                   <Label>{t("specialFundsPage.fundName")} *</Label>
                   <Input
                     value={fundForm.name}
-                    onChange={(e) => setFundForm({ ...fundForm, name: e.target.value })}
+                    maxLength={100}
+                    onChange={(e) => setFundForm({ ...fundForm, name: sanitizeLine(e.target.value, 100) })}
                     placeholder={t("specialFundsPage.fundNamePlaceholder")}
                   />
                 </div>
@@ -181,7 +182,8 @@ const SpecialFunds = () => {
                   <Label>{t("specialFundsPage.description")}</Label>
                   <Textarea
                     value={fundForm.description}
-                    onChange={(e) => setFundForm({ ...fundForm, description: e.target.value })}
+                    maxLength={500}
+                    onChange={(e) => setFundForm({ ...fundForm, description: sanitizeText(e.target.value, 500) })}
                   />
                 </div>
                 <div>
@@ -305,7 +307,8 @@ const SpecialFunds = () => {
                       <Label>{t("specialFundsPage.description")}</Label>
                       <Input
                         value={transactionForm.description}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                        maxLength={200}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, description: sanitizeLine(e.target.value, 200) })}
                       />
                     </div>
                     <div>

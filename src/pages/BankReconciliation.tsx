@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
+import { sanitizeAmount, clampNotFuture, todayISO, sanitizeLine, sanitizeReference } from "@/lib/inputSanitize";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -312,7 +312,8 @@ export default function BankReconciliation() {
                   <Label>{t("bank.accountName")} *</Label>
                   <Input
                     value={accountForm.name}
-                    onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                    maxLength={80}
+                    onChange={(e) => setAccountForm({ ...accountForm, name: sanitizeLine(e.target.value, 80) })}
                     placeholder="Ex: Compte Principal"
                   />
                 </div>
@@ -321,7 +322,8 @@ export default function BankReconciliation() {
                     <Label>{t("bank.accountNumber")}</Label>
                     <Input
                       value={accountForm.account_number}
-                      onChange={(e) => setAccountForm({ ...accountForm, account_number: e.target.value })}
+                      maxLength={40}
+                      onChange={(e) => setAccountForm({ ...accountForm, account_number: sanitizeReference(e.target.value, 40) })}
                       placeholder="XXXX-XXXX-XXXX"
                     />
                   </div>
@@ -329,7 +331,8 @@ export default function BankReconciliation() {
                     <Label>{t("bank.bankName")}</Label>
                     <Input
                       value={accountForm.bank_name}
-                      onChange={(e) => setAccountForm({ ...accountForm, bank_name: e.target.value })}
+                      maxLength={80}
+                      onChange={(e) => setAccountForm({ ...accountForm, bank_name: sanitizeLine(e.target.value, 80) })}
                       placeholder="Nom de la banque"
                     />
                   </div>
@@ -568,8 +571,9 @@ export default function BankReconciliation() {
                           <Label>{t("expense.referenceNumber")}</Label>
                           <Input
                             value={transactionForm.reference_number}
+                            maxLength={50}
                             onChange={(e) =>
-                              setTransactionForm({ ...transactionForm, reference_number: e.target.value })
+                              setTransactionForm({ ...transactionForm, reference_number: sanitizeReference(e.target.value, 50) })
                             }
                             placeholder="N° de référence"
                           />
@@ -579,7 +583,8 @@ export default function BankReconciliation() {
                         <Label>{t("expense.description")}</Label>
                         <Input
                           value={transactionForm.description}
-                          onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                          maxLength={200}
+                          onChange={(e) => setTransactionForm({ ...transactionForm, description: sanitizeLine(e.target.value, 200) })}
                           placeholder="Description de la transaction"
                         />
                       </div>
