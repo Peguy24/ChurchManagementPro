@@ -209,8 +209,8 @@ export const loginSchema = z.object({
 
 export const signupSchema = z
   .object({
-    firstName: nameSchema,
-    lastName: nameSchema,
+    firstName: personNameSchema,
+    lastName: personNameSchema,
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "validation.password.confirmRequired"),
