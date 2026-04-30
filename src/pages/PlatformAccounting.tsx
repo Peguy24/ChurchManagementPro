@@ -372,8 +372,52 @@ export default function PlatformAccounting() {
       { key: "amount", header: t("platformAccounting.amount"), formatter: (v: number) => formatCurrencyForCsv(v) },
       { key: "vendor", header: t("platformAccounting.vendor") },
       { key: "is_recurring", header: t("platformAccounting.recurring"), formatter: (v: boolean) => v ? "Yes" : "No" },
+      { key: "tax_deductible", header: t("platformAccounting.taxDeductible"), formatter: (v: boolean) => v ? "Yes" : "No" },
+      { key: "tax_category", header: t("platformAccounting.taxCategory") },
+      { key: "receipt_filename", header: t("platformAccounting.receipt") },
     ];
     exportToCsv(filteredExpenses, columns, `platform_expenses_${new Date().toISOString().split("T")[0]}`);
+    toast.success(t("superAdmin.csvExported"));
+  };
+
+  // Tax-ready export: only tax_deductible items, with totals per tax category appended
+  const handleTaxExport = () => {
+    const taxItems = filteredExpenses.filter((e) => e.tax_deductible);
+    if (!taxItems.length) {
+      toast.error(t("platformAccounting.noTaxData"));
+      return;
+    }
+    const columns = [
+      { key: "expense_date", header: t("common.date"), formatter: (v: string) => formatDateForCsv(v) },
+      { key: "description", header: t("platformAccounting.description") },
+      { key: "category", header: t("platformAccounting.category"), formatter: (v: string) => categoryLabels[language]?.[v as ExpenseCategory] || v },
+      { key: "tax_category", header: t("platformAccounting.taxCategory") },
+      { key: "amount", header: t("platformAccounting.amount"), formatter: (v: number) => formatCurrencyForCsv(v) },
+      { key: "vendor", header: t("platformAccounting.vendor") },
+      { key: "receipt_filename", header: t("platformAccounting.receipt") },
+      { key: "notes", header: t("platformAccounting.notes") },
+    ];
+    // Compute totals by tax_category and append as summary rows
+    const totals = new Map<string, number>();
+    taxItems.forEach((e) => {
+      const k = e.tax_category || t("platformAccounting.untagged");
+      totals.set(k, (totals.get(k) || 0) + Number(e.amount));
+    });
+    const grandTotal = taxItems.reduce((s, e) => s + Number(e.amount), 0);
+    const summaryRows: any[] = [
+      {} as any,
+      { description: `=== ${t("platformAccounting.taxSummary")} ===` } as any,
+      ...Array.from(totals.entries()).map(([cat, total]) => ({
+        description: cat,
+        amount: total,
+      })),
+      { description: t("platformAccounting.grandTotal"), amount: grandTotal } as any,
+    ];
+    exportToCsv(
+      [...taxItems, ...summaryRows] as any[],
+      columns,
+      `tax_report_${new Date().toISOString().split("T")[0]}`
+    );
     toast.success(t("superAdmin.csvExported"));
   };
 
