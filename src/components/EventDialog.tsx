@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
 import { FieldError } from "@/components/FieldError";
 import { validateForm, eventSchema, firstErrorMessage, EVENT_DATE_MAX_YEARS_AHEAD, EVENT_MAX_DURATION_DAYS } from "@/lib/validation";
+import { sanitizeLine, sanitizeText, sanitizeName } from "@/lib/inputSanitize";
 
 const formatDateInput = (d: Date): string => {
   const y = d.getFullYear();
