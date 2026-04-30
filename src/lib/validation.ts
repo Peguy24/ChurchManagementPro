@@ -447,8 +447,8 @@ export const tenantManagementSchema = z.object({
 /* --- Member (extended) --------------------------------------------- */
 
 export const memberFullSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
