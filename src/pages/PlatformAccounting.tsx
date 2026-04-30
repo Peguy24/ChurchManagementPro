@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator } from "lucide-react";
+import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator, Paperclip, FileText, Upload, X, FileSpreadsheet } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
