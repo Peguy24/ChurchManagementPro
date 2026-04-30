@@ -13,7 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, branchSchema, firstErrorMessage, optionalPhoneSchema } from "@/lib/validation";
+import { validateForm, branchSchema, firstErrorMessage, optionalPhoneSchema, optionalEmailSchema } from "@/lib/validation";
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const r = schema.safeParse(value);
@@ -316,7 +316,12 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                 value={formData.email}
                 aria-invalid={!!errors.email}
                 className={errors.email ? "border-destructive" : ""}
-                onChange={(e) => { setFormData({ ...formData, email: e.target.value.slice(0, 255) }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value.slice(0, 255);
+                  setFormData({ ...formData, email: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(optionalEmailSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, email: err }));
+                }}
               />
               <FieldError name="email" errors={errors} />
             </div>
