@@ -893,7 +893,8 @@ function InventoryContent() {
                       <Input
                         placeholder={t("inventory.searchPlaceholder")}
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        maxLength={100}
+                        onChange={(e) => setSearchTerm(sanitizeLine(e.target.value, 100))}
                         className="pl-8 w-[200px]"
                       />
                     </div>
