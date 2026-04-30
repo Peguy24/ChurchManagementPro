@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -285,17 +286,17 @@ const CreditAndLoans = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{t("creditAndLoans.totalAmount")}</Label>
-                    <Input type="number" value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: e.target.value })} />
+                    <Input type="text" inputMode="decimal" value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: sanitizeAmount(e.target.value) })} />
                   </div>
                   <div>
                     <Label>{t("creditAndLoans.interestRate")}</Label>
-                    <Input type="number" value={form.interest_rate} onChange={(e) => setForm({ ...form, interest_rate: e.target.value })} />
+                    <Input type="text" inputMode="decimal" value={form.interest_rate} onChange={(e) => setForm({ ...form, interest_rate: sanitizeAmount(e.target.value) })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{t("creditAndLoans.startDate")}</Label>
-                    <Input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+                    <Input type="date" max={todayISO()} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: clampNotFuture(e.target.value) })} />
                   </div>
                   <div>
                     <Label>{t("creditAndLoans.dueDate")}</Label>
@@ -442,11 +443,11 @@ const CreditAndLoans = () => {
                 </div>
                 <div>
                   <Label>{t("creditAndLoans.paymentAmount")}</Label>
-                  <Input type="number" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+                  <Input type="text" inputMode="decimal" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: sanitizeAmount(e.target.value) })} />
                 </div>
                 <div>
                   <Label>{t("creditAndLoans.paymentDate")}</Label>
-                  <Input type="date" value={paymentForm.payment_date} onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })} />
+                  <Input type="date" max={todayISO()} value={paymentForm.payment_date} onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: clampNotFuture(e.target.value) })} />
                 </div>
                 <div>
                   <Label>{t("creditAndLoans.paymentMethod")}</Label>
