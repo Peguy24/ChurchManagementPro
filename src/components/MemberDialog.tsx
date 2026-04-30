@@ -1046,15 +1046,26 @@ export default function MemberDialog({
                   <Label htmlFor="phone">{lt.phone} *</Label>
                   <Input
                     id="phone"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={formData.phone}
                     onChange={(e) => {
-                      setFormData({ ...formData, phone: e.target.value });
-                      if (errors.phone) setErrors({ ...errors, phone: "" });
+                      const v = e.target.value;
+                      setFormData({ ...formData, phone: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(phoneSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, phone: err }));
                     }}
                     placeholder="+1 (555) 123-4567"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? undefined : "phone-hint"}
+                    className={errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
                     required
                   />
-                  <FieldError name="phone" errors={errors} />
+                  {errors.phone ? (
+                    <FieldError name="phone" errors={errors} />
+                  ) : (
+                    <p id="phone-hint" className="text-xs text-muted-foreground">{t("phoneHint")}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">{lt.email}</Label>
@@ -1087,15 +1098,26 @@ export default function MemberDialog({
                 <Label htmlFor="emergencyPhone">{lt.emergencyPhone}</Label>
                 <Input
                   id="emergencyPhone"
+                  inputMode="tel"
                   value={formData.emergencyPhone}
                   onChange={(e) => {
-                    setFormData({ ...formData, emergencyPhone: e.target.value });
-                    if (errors.emergencyPhone) setErrors({ ...errors, emergencyPhone: "" });
+                    const v = e.target.value;
+                    setFormData({ ...formData, emergencyPhone: v });
+                    const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                    setErrors((p) => ({ ...p, emergencyPhone: err }));
                   }}
                   placeholder="+1 (555) 987-6543"
+                  aria-invalid={!!errors.emergencyPhone}
+                  aria-describedby={errors.emergencyPhone ? undefined : "emergencyPhone-hint"}
+                  className={errors.emergencyPhone ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
-                <FieldError name="emergencyPhone" errors={errors} />
+                {errors.emergencyPhone ? (
+                  <FieldError name="emergencyPhone" errors={errors} />
+                ) : (
+                  <p id="emergencyPhone-hint" className="text-xs text-muted-foreground">{t("phoneHint")}</p>
+                )}
               </div>
+
 
               {/* Address Section */}
               <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
