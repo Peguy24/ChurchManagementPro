@@ -55,6 +55,56 @@ serve(async (req) => {
 
     console.log(`[DELETE-TENANT] Deleting tenant ${tenant_id} by user ${user.email}`);
 
+    // ========== Collect every email associated with this tenant ==========
+    const emailsToRelease = new Set<string>();
+    const userIdsToCheck = new Set<string>();
+
+    try {
+      const { data: tenantRow } = await supabaseAdmin
+        .from("tenants")
+        .select("contact_email")
+        .eq("id", tenant_id)
+        .maybeSingle();
+      if (tenantRow?.contact_email) emailsToRelease.add(tenantRow.contact_email.toLowerCase());
+    } catch (_e) {}
+
+    try {
+      const { data: invs } = await supabaseAdmin
+        .from("admin_invitations")
+        .select("email")
+        .eq("tenant_id", tenant_id);
+      (invs || []).forEach((r: any) => r.email && emailsToRelease.add(r.email.toLowerCase()));
+    } catch (_e) {}
+
+    try {
+      const { data: reqs } = await supabaseAdmin
+        .from("tenant_requests")
+        .select("contact_email")
+        .eq("created_tenant_id", tenant_id);
+      (reqs || []).forEach((r: any) => r.contact_email && emailsToRelease.add(r.contact_email.toLowerCase()));
+    } catch (_e) {}
+
+    try {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, email")
+        .eq("tenant_id", tenant_id);
+      (profs || []).forEach((p: any) => {
+        if (p.email) emailsToRelease.add(p.email.toLowerCase());
+        if (p.id) userIdsToCheck.add(p.id);
+      });
+    } catch (_e) {}
+
+    try {
+      const { data: roles } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .select("user_id")
+        .eq("tenant_id", tenant_id);
+      (roles || []).forEach((r: any) => r.user_id && userIdsToCheck.add(r.user_id));
+    } catch (_e) {}
+
+    console.log(`[DELETE-TENANT] Collected ${emailsToRelease.size} emails, ${userIdsToCheck.size} user ids`);
+
     // Delete in order to respect foreign keys
     const tables = [
       { table: "subscription_audit_logs", column: "tenant_id" },
