@@ -31,6 +31,7 @@ import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import { FieldError } from "@/components/FieldError";
 import { validateForm, donationSchema, firstErrorMessage } from "@/lib/validation";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 
 interface DonationDialogProps {
   open: boolean;
@@ -323,8 +324,9 @@ export default function DonationDialog({
             <Input
               id="donationDate"
               type="date"
+              max={todayISO()}
               value={formData.donationDate}
-              onChange={(e) => setFormData({ ...formData, donationDate: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, donationDate: clampNotFuture(e.target.value) })}
               required
             />
           </div>
@@ -334,11 +336,10 @@ export default function DonationDialog({
             <Label htmlFor="amount">{t("donations.amount")} ({currencyCode}) *</Label>
             <Input
               id="amount"
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
               value={formData.amount}
-              onChange={(e) => { setFormData({ ...formData, amount: e.target.value }); if (errors.amount) setErrors((p) => ({ ...p, amount: "" })); }}
+              onChange={(e) => { setFormData({ ...formData, amount: sanitizeAmount(e.target.value) }); if (errors.amount) setErrors((p) => ({ ...p, amount: "" })); }}
               placeholder="0.00"
             />
             <FieldError name="amount" errors={errors} />
