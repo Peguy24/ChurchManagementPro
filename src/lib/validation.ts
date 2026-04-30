@@ -355,7 +355,7 @@ export const supportSchema = z.object({
 
 export const churchRequestSchema = z.object({
   churchName: nameSchema,
-  contactName: nameSchema,
+  contactName: personNameSchema,
   email: emailSchema,
   phone: optionalPhoneSchema,
   address: shortTextSchema.optional().or(z.literal("")),
