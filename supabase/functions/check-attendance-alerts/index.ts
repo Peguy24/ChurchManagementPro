@@ -157,8 +157,10 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      const tenantLang = await getTenantDefaultLang(supabaseClient, tenant.id);
+
       for (const alert of alerts) {
-        const lang = detectLang(alert.userId ? langMap[alert.userId] : null);
+        const lang = detectLang(alert.userId ? langMap[alert.userId] : null, tenantLang);
         const t = attendanceAlertTranslations[lang];
         const safeName = escapeHtml(alert.memberName);
         const variables = { member_name: safeName, attendance_rate: `${alert.currentMonthRate.toFixed(0)}%` };
