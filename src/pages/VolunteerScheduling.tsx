@@ -15,7 +15,7 @@ import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, Edit, Trash2, Calendar, Users, UserCheck } from 'lucide-react';
-import { sanitizeLine, sanitizeText, sanitizeName, todayISO } from '@/lib/inputSanitize';
+import { sanitizeLine, sanitizeText, sanitizeName, todayISO, maxFutureISO, clampMaxFuture } from '@/lib/inputSanitize';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
