@@ -357,7 +357,8 @@ export default function ChurchSettings() {
                 <Textarea
                   id="fiscal_receipt_footer"
                   value={settings.fiscal_receipt_footer}
-                  onChange={(e) => setSettings({ ...settings, fiscal_receipt_footer: e.target.value })}
+                  maxLength={500}
+                  onChange={(e) => setSettings({ ...settings, fiscal_receipt_footer: sanitizeText(e.target.value, 500) })}
                   placeholder={t("churchSettings.receiptFooterPlaceholder")}
                   rows={3}
                 />
