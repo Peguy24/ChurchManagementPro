@@ -193,8 +193,9 @@ function ArchiveCard({ dataType, title, description, icon, isFinancial, tenantId
               <Input
                 type="date"
                 value={beforeDate}
+                max={todayISO()}
                 onChange={(e) => {
-                  setBeforeDate(e.target.value);
+                  setBeforeDate(clampNotFuture(e.target.value));
                   setPreviewCount(null);
                 }}
                 className="max-w-xs"
