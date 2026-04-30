@@ -128,8 +128,8 @@ export default function Visitors() {
     }
     const today = format(new Date(), 'yyyy-MM-dd');
     if (visitDate && visitDate > today) {
-      setErrors(p => ({ ...p, visitDate: t('validation.date.future') }));
-      toast({ title: t('visitors.error'), description: t('validation.date.future'), variant: 'destructive' });
+      setErrors(p => ({ ...p, visitDate: t('validation.date.notInFuture') }));
+      toast({ title: t('visitors.error'), description: t('validation.date.notInFuture'), variant: 'destructive' });
       return;
     }
     setErrors({});
@@ -358,7 +358,7 @@ export default function Visitors() {
                       const v = e.target.value;
                       setVisitDate(v);
                       const today = format(new Date(), 'yyyy-MM-dd');
-                      setErrors(p => ({ ...p, visitDate: v && v > today ? t('validation.date.future') : '' }));
+                      setErrors(p => ({ ...p, visitDate: v && v > today ? t('validation.date.notInFuture') : '' }));
                     }}
                   />
                   <FieldError name="visitDate" errors={errors} />
