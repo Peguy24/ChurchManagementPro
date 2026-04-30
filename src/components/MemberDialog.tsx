@@ -1191,11 +1191,18 @@ export default function MemberDialog({
                   <Input
                     id="joinDate"
                     type="date"
+                    max={todayInputValue()}
                     value={formData.joinDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, joinDate: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, joinDate: v });
+                      const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, joinDate: err }));
+                    }}
+                    aria-invalid={!!errors.joinDate}
+                    className={errors.joinDate ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="joinDate" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="status">{lt.status}</Label>
