@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -302,9 +303,10 @@ const CashRegister = () => {
                     <div>
                       <Label>{t("cashRegisterPage.amount")} *</Label>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         value={transactionForm.amount}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, amount: sanitizeAmount(e.target.value) })}
                       />
                     </div>
                     <div>
@@ -326,8 +328,9 @@ const CashRegister = () => {
                       <Label>{t("cashRegisterPage.date")}</Label>
                       <Input
                         type="date"
+                        max={todayISO()}
                         value={transactionForm.transaction_date}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, transaction_date: e.target.value })}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, transaction_date: clampNotFuture(e.target.value) })}
                       />
                     </div>
                     <Button onClick={() => createTransaction.mutate()} disabled={!transactionForm.amount || createTransaction.isPending}>
