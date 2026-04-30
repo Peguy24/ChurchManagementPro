@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator } from "lucide-react";
+import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator, Paperclip, FileText, Upload, X, FileSpreadsheet } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/lib/currency";
@@ -48,6 +49,10 @@ interface PlatformExpense {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  receipt_url: string | null;
+  receipt_filename: string | null;
+  tax_deductible: boolean | null;
+  tax_category: string | null;
 }
 
 const categoryLabels: Record<string, Record<ExpenseCategory, string>> = {
@@ -102,7 +107,13 @@ export default function PlatformAccounting() {
     notes: "",
     is_recurring: false,
     recurring_frequency: "",
+    tax_deductible: false,
+    tax_category: "",
+    receipt_url: "" as string,
+    receipt_filename: "" as string,
   });
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
 
   const resetForm = () => {
@@ -115,7 +126,12 @@ export default function PlatformAccounting() {
       notes: "",
       is_recurring: false,
       recurring_frequency: "",
+      tax_deductible: false,
+      tax_category: "",
+      receipt_url: "",
+      receipt_filename: "",
     });
+    setReceiptFile(null);
     setEditingExpense(null);
   };
 
@@ -132,8 +148,44 @@ export default function PlatformAccounting() {
     },
   });
 
+  // Upload receipt to private bucket; returns storage path
+  const uploadReceipt = async (file: File): Promise<{ path: string; filename: string }> => {
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${user?.id || "shared"}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("platform-expense-receipts")
+      .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+    if (error) throw error;
+    return { path, filename: file.name };
+  };
+
+  const removeReceiptFromStorage = async (path: string) => {
+    if (!path) return;
+    await supabase.storage.from("platform-expense-receipts").remove([path]);
+  };
+
+  const openReceipt = async (path: string) => {
+    const { data, error } = await supabase.storage
+      .from("platform-expense-receipts")
+      .createSignedUrl(path, 60 * 10);
+    if (error || !data?.signedUrl) {
+      toast.error(t("platformAccounting.receiptOpenError"));
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      let receipt_url: string | null = data.receipt_url || null;
+      let receipt_filename: string | null = data.receipt_filename || null;
+      if (receiptFile) {
+        setUploading(true);
+        const up = await uploadReceipt(receiptFile);
+        receipt_url = up.path;
+        receipt_filename = up.filename;
+        setUploading(false);
+      }
       const { error } = await supabase.from("platform_expenses").insert({
         amount: parseFloat(data.amount),
         expense_date: data.expense_date,
@@ -143,6 +195,10 @@ export default function PlatformAccounting() {
         notes: data.notes || null,
         is_recurring: data.is_recurring,
         recurring_frequency: data.is_recurring ? data.recurring_frequency : null,
+        tax_deductible: data.tax_deductible,
+        tax_category: data.tax_category || null,
+        receipt_url,
+        receipt_filename,
         created_by: user?.id,
       });
       if (error) throw error;
@@ -153,11 +209,29 @@ export default function PlatformAccounting() {
       setDialogOpen(false);
       resetForm();
     },
-    onError: () => toast.error(t("platformAccounting.errorAdding")),
+    onError: () => { setUploading(false); toast.error(t("platformAccounting.errorAdding")); },
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      let receipt_url: string | null = data.receipt_url || null;
+      let receipt_filename: string | null = data.receipt_filename || null;
+      if (receiptFile) {
+        setUploading(true);
+        // Remove old file if any
+        if (editingExpense?.receipt_url) {
+          await removeReceiptFromStorage(editingExpense.receipt_url);
+        }
+        const up = await uploadReceipt(receiptFile);
+        receipt_url = up.path;
+        receipt_filename = up.filename;
+        setUploading(false);
+      } else if (editingExpense?.receipt_url && !data.receipt_url) {
+        // User cleared the receipt
+        await removeReceiptFromStorage(editingExpense.receipt_url);
+        receipt_url = null;
+        receipt_filename = null;
+      }
       const { error } = await supabase
         .from("platform_expenses")
         .update({
@@ -169,6 +243,10 @@ export default function PlatformAccounting() {
           notes: data.notes || null,
           is_recurring: data.is_recurring,
           recurring_frequency: data.is_recurring ? data.recurring_frequency : null,
+          tax_deductible: data.tax_deductible,
+          tax_category: data.tax_category || null,
+          receipt_url,
+          receipt_filename,
         })
         .eq("id", id);
       if (error) throw error;
@@ -179,12 +257,15 @@ export default function PlatformAccounting() {
       setDialogOpen(false);
       resetForm();
     },
-    onError: () => toast.error(t("platformAccounting.errorUpdating")),
+    onError: () => { setUploading(false); toast.error(t("platformAccounting.errorUpdating")); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("platform_expenses").delete().eq("id", id);
+    mutationFn: async (expense: PlatformExpense) => {
+      if (expense.receipt_url) {
+        await removeReceiptFromStorage(expense.receipt_url);
+      }
+      const { error } = await supabase.from("platform_expenses").delete().eq("id", expense.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -197,6 +278,10 @@ export default function PlatformAccounting() {
   const handleSubmit = () => {
     if (!formData.amount || !formData.description) {
       toast.error(t("platformAccounting.fillRequired"));
+      return;
+    }
+    if (receiptFile && receiptFile.size > 10 * 1024 * 1024) {
+      toast.error(t("platformAccounting.receiptTooLarge"));
       return;
     }
     if (editingExpense) {
@@ -217,7 +302,12 @@ export default function PlatformAccounting() {
       notes: expense.notes || "",
       is_recurring: expense.is_recurring || false,
       recurring_frequency: expense.recurring_frequency || "",
+      tax_deductible: !!expense.tax_deductible,
+      tax_category: expense.tax_category || "",
+      receipt_url: expense.receipt_url || "",
+      receipt_filename: expense.receipt_filename || "",
     });
+    setReceiptFile(null);
     setDialogOpen(true);
   };
 
@@ -282,8 +372,52 @@ export default function PlatformAccounting() {
       { key: "amount", header: t("platformAccounting.amount"), formatter: (v: number) => formatCurrencyForCsv(v) },
       { key: "vendor", header: t("platformAccounting.vendor") },
       { key: "is_recurring", header: t("platformAccounting.recurring"), formatter: (v: boolean) => v ? "Yes" : "No" },
+      { key: "tax_deductible", header: t("platformAccounting.taxDeductible"), formatter: (v: boolean) => v ? "Yes" : "No" },
+      { key: "tax_category", header: t("platformAccounting.taxCategory") },
+      { key: "receipt_filename", header: t("platformAccounting.receipt") },
     ];
     exportToCsv(filteredExpenses, columns, `platform_expenses_${new Date().toISOString().split("T")[0]}`);
+    toast.success(t("superAdmin.csvExported"));
+  };
+
+  // Tax-ready export: only tax_deductible items, with totals per tax category appended
+  const handleTaxExport = () => {
+    const taxItems = filteredExpenses.filter((e) => e.tax_deductible);
+    if (!taxItems.length) {
+      toast.error(t("platformAccounting.noTaxData"));
+      return;
+    }
+    const columns = [
+      { key: "expense_date", header: t("common.date"), formatter: (v: string) => formatDateForCsv(v) },
+      { key: "description", header: t("platformAccounting.description") },
+      { key: "category", header: t("platformAccounting.category"), formatter: (v: string) => categoryLabels[language]?.[v as ExpenseCategory] || v },
+      { key: "tax_category", header: t("platformAccounting.taxCategory") },
+      { key: "amount", header: t("platformAccounting.amount"), formatter: (v: number) => formatCurrencyForCsv(v) },
+      { key: "vendor", header: t("platformAccounting.vendor") },
+      { key: "receipt_filename", header: t("platformAccounting.receipt") },
+      { key: "notes", header: t("platformAccounting.notes") },
+    ];
+    // Compute totals by tax_category and append as summary rows
+    const totals = new Map<string, number>();
+    taxItems.forEach((e) => {
+      const k = e.tax_category || t("platformAccounting.untagged");
+      totals.set(k, (totals.get(k) || 0) + Number(e.amount));
+    });
+    const grandTotal = taxItems.reduce((s, e) => s + Number(e.amount), 0);
+    const summaryRows: any[] = [
+      {} as any,
+      { description: `=== ${t("platformAccounting.taxSummary")} ===` } as any,
+      ...Array.from(totals.entries()).map(([cat, total]) => ({
+        description: cat,
+        amount: total,
+      })),
+      { description: t("platformAccounting.grandTotal"), amount: grandTotal } as any,
+    ];
+    exportToCsv(
+      [...taxItems, ...summaryRows] as any[],
+      columns,
+      `tax_report_${new Date().toISOString().split("T")[0]}`
+    );
     toast.success(t("superAdmin.csvExported"));
   };
 
@@ -304,6 +438,10 @@ export default function PlatformAccounting() {
               <Download className="mr-2 h-4 w-4" />
               {t("superAdmin.exportCsv")}
             </Button>
+            <Button variant="outline" onClick={handleTaxExport}>
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              {t("platformAccounting.taxExport")}
+            </Button>
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button>
@@ -311,7 +449,7 @@ export default function PlatformAccounting() {
                   {t("platformAccounting.addExpense")}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingExpense ? t("platformAccounting.editExpense") : t("platformAccounting.addExpense")}
@@ -353,6 +491,79 @@ export default function PlatformAccounting() {
                     <Label>{t("platformAccounting.notes")}</Label>
                     <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                   </div>
+
+                  {/* Receipt / Justificatif */}
+                  <div className="space-y-2 rounded-md border p-3">
+                    <Label className="flex items-center gap-2">
+                      <Paperclip className="h-4 w-4" />
+                      {t("platformAccounting.receipt")}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">{t("platformAccounting.receiptHelp")}</p>
+                    {(formData.receipt_url || receiptFile) ? (
+                      <div className="flex items-center gap-2 text-sm">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <span className="flex-1 truncate">
+                          {receiptFile?.name || formData.receipt_filename || t("platformAccounting.receiptAttached")}
+                        </span>
+                        {formData.receipt_url && !receiptFile && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => openReceipt(formData.receipt_url)}>
+                            {t("platformAccounting.viewReceipt")}
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setReceiptFile(null);
+                            setFormData({ ...formData, receipt_url: "", receipt_filename: "" });
+                          }}
+                          aria-label={t("platformAccounting.removeReceipt")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 cursor-pointer rounded-md border border-dashed py-3 text-sm hover:bg-accent/50">
+                        <Upload className="h-4 w-4" />
+                        <span>{t("platformAccounting.uploadReceipt")}</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) setReceiptFile(f);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Tax info */}
+                  <div className="space-y-2 rounded-md border p-3">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="tax_deductible"
+                        checked={formData.tax_deductible}
+                        onCheckedChange={(v) => setFormData({ ...formData, tax_deductible: !!v })}
+                      />
+                      <Label htmlFor="tax_deductible" className="cursor-pointer">
+                        {t("platformAccounting.taxDeductible")}
+                      </Label>
+                    </div>
+                    {formData.tax_deductible && (
+                      <div>
+                        <Label>{t("platformAccounting.taxCategory")}</Label>
+                        <Input
+                          value={formData.tax_category}
+                          onChange={(e) => setFormData({ ...formData, tax_category: e.target.value })}
+                          placeholder={t("platformAccounting.taxCategoryPlaceholder")}
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-center gap-3">
                     <Switch checked={formData.is_recurring} onCheckedChange={(v) => setFormData({ ...formData, is_recurring: v })} />
                     <Label>{t("platformAccounting.recurring")}</Label>
@@ -370,8 +581,8 @@ export default function PlatformAccounting() {
                       </Select>
                     </div>
                   )}
-                  <Button onClick={handleSubmit} className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingExpense ? t("common.save") : t("platformAccounting.addExpense")}
+                  <Button onClick={handleSubmit} className="w-full" disabled={createMutation.isPending || updateMutation.isPending || uploading}>
+                    {uploading ? t("platformAccounting.uploading") : (editingExpense ? t("common.save") : t("platformAccounting.addExpense"))}
                   </Button>
                 </div>
               </DialogContent>
@@ -524,6 +735,8 @@ export default function PlatformAccounting() {
                     <TableHead>{t("platformAccounting.category")}</TableHead>
                     <TableHead>{t("platformAccounting.vendor")}</TableHead>
                     <TableHead className="text-right">{t("platformAccounting.amount")}</TableHead>
+                    <TableHead className="text-center">{t("platformAccounting.receipt")}</TableHead>
+                    <TableHead className="text-center">{t("platformAccounting.tax")}</TableHead>
                     <TableHead className="text-right">{t("platformAccounting.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -544,12 +757,35 @@ export default function PlatformAccounting() {
                       <TableCell>{getCatLabel(expense.category)}</TableCell>
                       <TableCell>{expense.vendor || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="text-center">
+                        {expense.receipt_url ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openReceipt(expense.receipt_url as string)}
+                            title={expense.receipt_filename || ""}
+                          >
+                            <FileText className="h-4 w-4 text-primary" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {expense.tax_deductible ? (
+                          <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded">
+                            {expense.tax_category || t("platformAccounting.taxDeductibleShort")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(expense)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(expense.id)}>
+                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(expense)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
