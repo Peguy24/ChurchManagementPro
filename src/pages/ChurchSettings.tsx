@@ -427,7 +427,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_primary_color}
-                      onChange={(e) => setSettings({ ...settings, card_primary_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_primary_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#3B82F6"
                       className="flex-1"
                     />
@@ -449,7 +450,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_secondary_color}
-                      onChange={(e) => setSettings({ ...settings, card_secondary_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_secondary_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#1E40AF"
                       className="flex-1"
                     />
@@ -471,7 +473,8 @@ export default function ChurchSettings() {
                     />
                     <Input
                       value={settings.card_text_color}
-                      onChange={(e) => setSettings({ ...settings, card_text_color: e.target.value })}
+                      maxLength={7}
+                      onChange={(e) => setSettings({ ...settings, card_text_color: sanitizeHexColor(e.target.value) })}
                       placeholder="#FFFFFF"
                       className="flex-1"
                     />
