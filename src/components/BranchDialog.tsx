@@ -181,8 +181,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Label htmlFor="name">{t("branches.branchName")} *</Label>
               <Input
                 id="name"
+                maxLength={100}
                 value={formData.name}
-                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
+                aria-invalid={!!errors.name}
+                className={errors.name ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value.slice(0, 100) }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
               <FieldError name="name" errors={errors} />
             </div>
@@ -208,10 +211,17 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <Label htmlFor="description">{t("branches.description")}</Label>
             <Textarea
               id="description"
+              maxLength={2000}
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              aria-invalid={!!errors.description}
+              className={errors.description ? "border-destructive" : ""}
+              onChange={(e) => { setFormData({ ...formData, description: e.target.value.slice(0, 2000) }); if (errors.description) setErrors((p) => ({ ...p, description: "" })); }}
               rows={3}
             />
+            <div className="flex justify-between items-center">
+              <FieldError name="description" errors={errors} />
+              <span className="text-xs text-muted-foreground ml-auto">{formData.description.length}/2000</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,9 +271,13 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
             <Label htmlFor="address">{t("branches.address")}</Label>
             <Input
               id="address"
+              maxLength={255}
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              aria-invalid={!!errors.address}
+              className={errors.address ? "border-destructive" : ""}
+              onChange={(e) => { setFormData({ ...formData, address: e.target.value.slice(0, 255) }); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
             />
+            <FieldError name="address" errors={errors} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,8 +286,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Input
                 id="phone"
                 type="tel"
+                maxLength={20}
                 value={formData.phone}
-                onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+                aria-invalid={!!errors.phone}
+                className={errors.phone ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, phone: e.target.value.slice(0, 20) }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
               />
               <FieldError name="phone" errors={errors} />
             </div>
@@ -283,8 +300,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Input
                 id="email"
                 type="email"
+                maxLength={255}
                 value={formData.email}
-                onChange={(e) => { setFormData({ ...formData, email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+                aria-invalid={!!errors.email}
+                className={errors.email ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, email: e.target.value.slice(0, 255) }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
               />
               <FieldError name="email" errors={errors} />
             </div>
