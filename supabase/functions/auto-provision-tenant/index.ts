@@ -61,21 +61,11 @@ serve(async (req) => {
 
     logStep("Request received", { church_name: cn, contact_email: em, requested_plan });
 
-    // Check if email is already registered as a user
-    const { data: existingUser } = await supabase.auth.admin.listUsers();
-    const emailExists = existingUser?.users?.some(u => u.email?.toLowerCase() === contact_email.toLowerCase());
-    if (emailExists) {
-      return new Response(JSON.stringify({ error: "This email is already registered. Please use a different email address." }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
-    }
-
-    // Check if email already has a tenant
+    // Check if email already has an active tenant (this is a hard block)
     const { data: existingTenantContact } = await supabase
       .from("tenants")
       .select("id")
-      .eq("contact_email", contact_email.toLowerCase())
+      .eq("contact_email", em)
       .maybeSingle();
 
     if (existingTenantContact) {
@@ -84,6 +74,62 @@ serve(async (req) => {
         status: 400,
       });
     }
+
+    // Check if email is registered as an auth user — only block if user is actually in use
+    let existingUserId: string | null = null;
+    try {
+      let page = 1;
+      const perPage = 200;
+      while (page <= 50) {
+        const { data: list } = await supabase.auth.admin.listUsers({ page, perPage });
+        const users = list?.users || [];
+        if (users.length === 0) break;
+        const match = users.find(u => u.email?.toLowerCase() === em);
+        if (match) { existingUserId = match.id; break; }
+        if (users.length < perPage) break;
+        page++;
+      }
+    } catch (e) {
+      logStep("listUsers warning", { error: String(e) });
+    }
+
+    if (existingUserId) {
+      // Block only if this user has an actual role somewhere
+      const { data: platformRole } = await supabase
+        .from("platform_user_roles")
+        .select("role")
+        .eq("user_id", existingUserId)
+        .maybeSingle();
+      const { data: tenantRoles } = await supabase
+        .from("tenant_user_roles")
+        .select("tenant_id")
+        .eq("user_id", existingUserId)
+        .limit(1);
+
+      if (platformRole || (tenantRoles && tenantRoles.length > 0)) {
+        return new Response(JSON.stringify({ error: "This email is already registered. Please use a different email address." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      // Orphan auth user — clean it up so registration can proceed
+      logStep("Cleaning up orphan auth user", { userId: existingUserId, email: em });
+      await supabase.from("user_roles").delete().eq("user_id", existingUserId);
+      await supabase.from("profiles").delete().eq("id", existingUserId);
+      const { error: delErr } = await supabase.auth.admin.deleteUser(existingUserId);
+      if (delErr) {
+        logStep("Failed to delete orphan auth user", { error: delErr.message });
+        return new Response(JSON.stringify({ error: "This email is already registered. Please use a different email address." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+    }
+
+    // Also clear stale tenant_requests / admin_invitations referencing this email
+    try { await supabase.from("admin_invitations").delete().eq("email", em); } catch (_e) {}
+    try { await supabase.from("tenant_requests").delete().eq("contact_email", em); } catch (_e) {}
 
     // 1. Generate slug
     const baseSlug = church_name.toLowerCase()
