@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import EventQRCode from "@/components/EventQRCode";
 import { FieldError } from "@/components/FieldError";
 import { validateForm, eventSchema, firstErrorMessage, EVENT_DATE_MAX_YEARS_AHEAD, EVENT_MAX_DURATION_DAYS } from "@/lib/validation";
+import { sanitizeLine, sanitizeText, sanitizeName } from "@/lib/inputSanitize";
 
 const formatDateInput = (d: Date): string => {
   const y = d.getFullYear();
@@ -385,7 +386,8 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
+                maxLength={120}
+                onChange={(e) => { setFormData({ ...formData, name: sanitizeName(e.target.value, 120) }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
               <FieldError name="name" errors={errors} />
             </div>
@@ -463,10 +465,13 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
                 </Button>
                 <Input
                   id="expectedAttendees"
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.expectedAttendees}
-                  onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
+                    setFormData({ ...formData, expectedAttendees: digits ? parseInt(digits, 10) : 0 });
+                  }}
                   className="text-center"
                 />
                 <Button
@@ -505,11 +510,11 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">{t("events.locationLabel")}</Label>
-              <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+              <Input id="location" value={formData.location} maxLength={150} onChange={(e) => setFormData({ ...formData, location: sanitizeLine(e.target.value, 150) })} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">{t("events.descriptionLabel")}</Label>
-              <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+              <Textarea id="description" value={formData.description} maxLength={1000} onChange={(e) => setFormData({ ...formData, description: sanitizeText(e.target.value, 1000) })} rows={3} />
             </div>
             {/* QR Code & Registration Link for existing events */}
             {isEditing && event && (

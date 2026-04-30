@@ -15,6 +15,7 @@ import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, Edit, Trash2, Calendar, Users, UserCheck } from 'lucide-react';
+import { sanitizeLine, sanitizeText, sanitizeName, todayISO } from '@/lib/inputSanitize';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
@@ -243,11 +244,11 @@ export default function VolunteerScheduling() {
                       </div>
                       <div>
                         <Label>{v('serviceDate')}</Label>
-                        <Input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
+                        <Input type="date" value={selectedDate} min={todayISO()} onChange={e => setSelectedDate(e.target.value)} />
                       </div>
                       <div>
                         <Label>{v('notes')}</Label>
-                        <Textarea value={scheduleNotes} onChange={e => setScheduleNotes(e.target.value)} placeholder={v('notesPlaceholder')} />
+                        <Textarea value={scheduleNotes} maxLength={500} onChange={e => setScheduleNotes(sanitizeText(e.target.value, 500))} placeholder={v('notesPlaceholder')} />
                       </div>
                       <Button onClick={saveSchedule} className="w-full">{v('save')}</Button>
                     </div>
@@ -359,11 +360,11 @@ export default function VolunteerScheduling() {
                   <div className="space-y-4">
                     <div>
                       <Label>{v('roleName')}</Label>
-                      <Input value={roleName} onChange={e => setRoleName(e.target.value)} placeholder={v('roleNamePlaceholder')} />
+                      <Input value={roleName} maxLength={80} onChange={e => setRoleName(sanitizeName(e.target.value, 80))} placeholder={v('roleNamePlaceholder')} />
                     </div>
                     <div>
                       <Label>{v('description')}</Label>
-                      <Textarea value={roleDescription} onChange={e => setRoleDescription(e.target.value)} placeholder={v('descriptionPlaceholder')} />
+                      <Textarea value={roleDescription} maxLength={300} onChange={e => setRoleDescription(sanitizeText(e.target.value, 300))} placeholder={v('descriptionPlaceholder')} />
                     </div>
                     <div>
                       <Label>{v('color')}</Label>
