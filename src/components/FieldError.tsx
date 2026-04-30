@@ -1,3 +1,4 @@
+import { AlertCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FieldErrorProps {
@@ -7,7 +8,7 @@ interface FieldErrorProps {
 }
 
 /**
- * Inline form-field error message.
+ * Inline form-field error message with icon for visibility.
  *
  * The error stored in `errors[name]` is expected to be a translation key
  * (see `src/lib/validation.ts`). It is resolved through the current
@@ -19,14 +20,14 @@ export function FieldError({ name, errors, className = "" }: FieldErrorProps) {
   const raw = errors?.[name];
   if (!raw) return null;
   const translated = t(raw);
-  // `t` returns the key itself when no translation is found — that's fine
-  // because legacy callers may already pass plain English strings.
   return (
     <p
       role="alert"
-      className={`text-xs text-destructive mt-1 ${className}`.trim()}
+      aria-live="polite"
+      className={`flex items-start gap-1 text-xs text-destructive mt-1 ${className}`.trim()}
     >
-      {translated}
+      <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-px" aria-hidden="true" />
+      <span>{translated}</span>
     </p>
   );
 }
