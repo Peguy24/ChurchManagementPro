@@ -224,8 +224,9 @@ export function CustomFieldDialog({ open, onOpenChange, field, onSuccess }: Cust
             <Label>{t("customFields.fieldLabelDisplay")}</Label>
             <Input
               value={formData.field_label}
+              maxLength={100}
               onChange={(e) => {
-                setFormData({ ...formData, field_label: e.target.value });
+                setFormData({ ...formData, field_label: sanitizeLine(e.target.value, 100) });
                 if (errors.fieldLabel) setErrors({ ...errors, fieldLabel: "" });
               }}
               placeholder={t("customFields.fieldLabelPlaceholder")}
