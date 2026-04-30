@@ -2807,7 +2807,11 @@ export type Database = {
           id: string
           is_recurring: boolean | null
           notes: string | null
+          receipt_filename: string | null
+          receipt_url: string | null
           recurring_frequency: string | null
+          tax_category: string | null
+          tax_deductible: boolean
           updated_at: string
           vendor: string | null
         }
@@ -2821,7 +2825,11 @@ export type Database = {
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
+          receipt_filename?: string | null
+          receipt_url?: string | null
           recurring_frequency?: string | null
+          tax_category?: string | null
+          tax_deductible?: boolean
           updated_at?: string
           vendor?: string | null
         }
@@ -2835,7 +2843,11 @@ export type Database = {
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
+          receipt_filename?: string | null
+          receipt_url?: string | null
           recurring_frequency?: string | null
+          tax_category?: string | null
+          tax_deductible?: boolean
           updated_at?: string
           vendor?: string | null
         }
