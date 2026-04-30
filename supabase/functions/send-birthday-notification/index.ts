@@ -123,10 +123,12 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      const tenantLang = await getTenantDefaultLang(supabaseClient, tenant.id);
+
       for (const member of todaysBirthdays) {
         if (!member.email) continue;
 
-        const lang = detectLang(member.user_id ? langMap[member.user_id] : null);
+        const lang = detectLang(member.user_id ? langMap[member.user_id] : null, tenantLang);
         const safeFirstName = escapeHtml(member.first_name);
         const safeLastName = escapeHtml(member.last_name);
         const memberName = `${safeFirstName} ${safeLastName}`;
