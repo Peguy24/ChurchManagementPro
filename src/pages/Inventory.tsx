@@ -721,11 +721,11 @@ function InventoryContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("inventory.serialNumber")}</Label>
-                      <Input value={itemForm.serial_number} onChange={(e) => setItemForm({ ...itemForm, serial_number: e.target.value })} />
+                      <Input value={itemForm.serial_number} maxLength={60} onChange={(e) => setItemForm({ ...itemForm, serial_number: sanitizeReference(e.target.value, 60) })} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("inventory.location")}</Label>
-                      <Input value={itemForm.location} onChange={(e) => setItemForm({ ...itemForm, location: e.target.value })} />
+                      <Input value={itemForm.location} maxLength={120} onChange={(e) => setItemForm({ ...itemForm, location: sanitizeLine(e.target.value, 120) })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
