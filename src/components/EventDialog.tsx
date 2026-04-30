@@ -465,10 +465,13 @@ export default function EventDialog({ open, onOpenChange, event, onSuccess }: Ev
                 </Button>
                 <Input
                   id="expectedAttendees"
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.expectedAttendees}
-                  onChange={(e) => setFormData({ ...formData, expectedAttendees: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
+                    setFormData({ ...formData, expectedAttendees: digits ? parseInt(digits, 10) : 0 });
+                  }}
                   className="text-center"
                 />
                 <Button
