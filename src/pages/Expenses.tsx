@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -438,9 +439,10 @@ export default function Expenses() {
                     <div className="space-y-2">
                       <Label>{t("donations.amount")} *</Label>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, amount: sanitizeAmount(e.target.value) })}
                         placeholder="0.00"
                       />
                     </div>
@@ -448,8 +450,9 @@ export default function Expenses() {
                       <Label>{t("common.date")} *</Label>
                       <Input
                         type="date"
+                        max={todayISO()}
                         value={formData.expense_date}
-                        onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, expense_date: clampNotFuture(e.target.value) })}
                       />
                     </div>
                   </div>
@@ -698,14 +701,16 @@ export default function Expenses() {
               </Select>
               <Input
                 type="date"
+                max={todayISO()}
                 value={filters.startDate}
-                onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                onChange={(e) => setFilters({ ...filters, startDate: clampNotFuture(e.target.value) })}
                 placeholder={t("common.startDate")}
               />
               <Input
                 type="date"
+                max={todayISO()}
                 value={filters.endDate}
-                onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                onChange={(e) => setFilters({ ...filters, endDate: clampNotFuture(e.target.value) })}
                 placeholder={t("common.endDate")}
               />
             </div>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -337,9 +338,10 @@ export default function BankReconciliation() {
                   <div className="space-y-2">
                     <Label>{t("bank.initialBalance")}</Label>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={accountForm.current_balance}
-                      onChange={(e) => setAccountForm({ ...accountForm, current_balance: e.target.value })}
+                      onChange={(e) => setAccountForm({ ...accountForm, current_balance: sanitizeAmount(e.target.value) })}
                       placeholder="0.00"
                     />
                   </div>
@@ -542,9 +544,10 @@ export default function BankReconciliation() {
                         <div className="space-y-2">
                           <Label>{t("donations.amount")} *</Label>
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={transactionForm.amount}
-                            onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                            onChange={(e) => setTransactionForm({ ...transactionForm, amount: sanitizeAmount(e.target.value) })}
                             placeholder="0.00"
                           />
                         </div>
@@ -554,9 +557,10 @@ export default function BankReconciliation() {
                           <Label>{t("common.date")}</Label>
                           <Input
                             type="date"
+                            max={todayISO()}
                             value={transactionForm.transaction_date}
                             onChange={(e) =>
-                              setTransactionForm({ ...transactionForm, transaction_date: e.target.value })
+                              setTransactionForm({ ...transactionForm, transaction_date: clampNotFuture(e.target.value) })
                             }
                           />
                         </div>

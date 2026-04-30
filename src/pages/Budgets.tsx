@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sanitizeAmount } from "@/lib/inputSanitize";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -235,9 +236,10 @@ export default function Budgets() {
                     <div className="space-y-2">
                       <Label>{t("budget.plannedAmount")}</Label>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         value={formData.planned_amount}
-                        onChange={(e) => { setFormData({ ...formData, planned_amount: e.target.value }); if (errors.planned_amount) setErrors((p) => ({ ...p, planned_amount: "" })); }}
+                        onChange={(e) => { setFormData({ ...formData, planned_amount: sanitizeAmount(e.target.value) }); if (errors.planned_amount) setErrors((p) => ({ ...p, planned_amount: "" })); }}
                         placeholder="0.00"
                       />
                       <FieldError name="planned_amount" errors={errors} />

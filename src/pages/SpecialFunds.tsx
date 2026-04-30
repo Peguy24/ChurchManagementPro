@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sanitizeAmount, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -186,9 +187,10 @@ const SpecialFunds = () => {
                 <div>
                   <Label>{t("specialFundsPage.target")}</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={fundForm.target_amount}
-                    onChange={(e) => setFundForm({ ...fundForm, target_amount: e.target.value })}
+                    onChange={(e) => setFundForm({ ...fundForm, target_amount: sanitizeAmount(e.target.value) })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -293,9 +295,10 @@ const SpecialFunds = () => {
                     <div>
                       <Label>{t("specialFundsPage.amount")} *</Label>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         value={transactionForm.amount}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, amount: sanitizeAmount(e.target.value) })}
                       />
                     </div>
                     <div>
@@ -309,8 +312,9 @@ const SpecialFunds = () => {
                       <Label>{t("specialFundsPage.date")}</Label>
                       <Input
                         type="date"
+                        max={todayISO()}
                         value={transactionForm.transaction_date}
-                        onChange={(e) => setTransactionForm({ ...transactionForm, transaction_date: e.target.value })}
+                        onChange={(e) => setTransactionForm({ ...transactionForm, transaction_date: clampNotFuture(e.target.value) })}
                       />
                     </div>
                     <Button onClick={() => createTransaction.mutate()} disabled={!transactionForm.amount || createTransaction.isPending}>
