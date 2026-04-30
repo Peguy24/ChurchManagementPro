@@ -306,21 +306,46 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
-                onChange={(e) => { setFormData({ ...formData, contact_email: e.target.value }); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, contact_email: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(emailSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, email: err }));
+                }}
                 placeholder={t("churchForm.emailPlaceholder")}
                 aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "contact_email-error" : "contact_email-hint"}
                 className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {!errors.email && (
+                <p id="contact_email-hint" className="text-xs text-muted-foreground">
+                  {t("churchForm.emailHint")}
+                </p>
+              )}
               <FieldError name="email" errors={errors} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact_phone">{t("churchForm.phone")}</Label>
               <Input
                 id="contact_phone"
+                inputMode="tel"
                 value={formData.contact_phone}
-                onChange={(e) => { setFormData({ ...formData, contact_phone: e.target.value }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFormData({ ...formData, contact_phone: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, phone: err }));
+                }}
                 placeholder={t("churchForm.phonePlaceholder")}
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "contact_phone-error" : "contact_phone-hint"}
+                className={errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {!errors.phone && (
+                <p id="contact_phone-hint" className="text-xs text-muted-foreground">
+                  {t("churchForm.phoneHint")}
+                </p>
+              )}
               <FieldError name="phone" errors={errors} />
             </div>
           </div>
