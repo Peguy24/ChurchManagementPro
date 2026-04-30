@@ -13,7 +13,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, branchSchema, firstErrorMessage } from "@/lib/validation";
+import { validateForm, branchSchema, firstErrorMessage, optionalPhoneSchema } from "@/lib/validation";
+
+const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
+  const r = schema.safeParse(value);
+  if (r.success) return null;
+  return r.error?.issues?.[0]?.message ?? null;
+};
 
 interface Branch {
   id: string;
@@ -290,7 +296,13 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
                 value={formData.phone}
                 aria-invalid={!!errors.phone}
                 className={errors.phone ? "border-destructive" : ""}
-                onChange={(e) => { setFormData({ ...formData, phone: e.target.value.slice(0, 20) }); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^+\d()\-\s]/g, "").slice(0, 20);
+                  setFormData({ ...formData, phone: v });
+                  const err = v.trim().length === 0 ? "" : (liveCheck(optionalPhoneSchema, v) ?? "");
+                  setErrors((p) => ({ ...p, phone: err }));
+                }}
+                inputMode="tel"
               />
               <FieldError name="phone" errors={errors} />
             </div>
