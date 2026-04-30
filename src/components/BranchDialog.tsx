@@ -181,8 +181,11 @@ export const BranchDialog = ({ open, onOpenChange, branch, onSuccess }: BranchDi
               <Label htmlFor="name">{t("branches.branchName")} *</Label>
               <Input
                 id="name"
+                maxLength={100}
                 value={formData.name}
-                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
+                aria-invalid={!!errors.name}
+                className={errors.name ? "border-destructive" : ""}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value.slice(0, 100) }); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
               />
               <FieldError name="name" errors={errors} />
             </div>
