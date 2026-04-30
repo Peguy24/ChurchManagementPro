@@ -449,7 +449,7 @@ export default function PlatformAccounting() {
                   {t("platformAccounting.addExpense")}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingExpense ? t("platformAccounting.editExpense") : t("platformAccounting.addExpense")}
@@ -491,6 +491,79 @@ export default function PlatformAccounting() {
                     <Label>{t("platformAccounting.notes")}</Label>
                     <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                   </div>
+
+                  {/* Receipt / Justificatif */}
+                  <div className="space-y-2 rounded-md border p-3">
+                    <Label className="flex items-center gap-2">
+                      <Paperclip className="h-4 w-4" />
+                      {t("platformAccounting.receipt")}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">{t("platformAccounting.receiptHelp")}</p>
+                    {(formData.receipt_url || receiptFile) ? (
+                      <div className="flex items-center gap-2 text-sm">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <span className="flex-1 truncate">
+                          {receiptFile?.name || formData.receipt_filename || t("platformAccounting.receiptAttached")}
+                        </span>
+                        {formData.receipt_url && !receiptFile && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => openReceipt(formData.receipt_url)}>
+                            {t("platformAccounting.viewReceipt")}
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setReceiptFile(null);
+                            setFormData({ ...formData, receipt_url: "", receipt_filename: "" });
+                          }}
+                          aria-label={t("platformAccounting.removeReceipt")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 cursor-pointer rounded-md border border-dashed py-3 text-sm hover:bg-accent/50">
+                        <Upload className="h-4 w-4" />
+                        <span>{t("platformAccounting.uploadReceipt")}</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) setReceiptFile(f);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Tax info */}
+                  <div className="space-y-2 rounded-md border p-3">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="tax_deductible"
+                        checked={formData.tax_deductible}
+                        onCheckedChange={(v) => setFormData({ ...formData, tax_deductible: !!v })}
+                      />
+                      <Label htmlFor="tax_deductible" className="cursor-pointer">
+                        {t("platformAccounting.taxDeductible")}
+                      </Label>
+                    </div>
+                    {formData.tax_deductible && (
+                      <div>
+                        <Label>{t("platformAccounting.taxCategory")}</Label>
+                        <Input
+                          value={formData.tax_category}
+                          onChange={(e) => setFormData({ ...formData, tax_category: e.target.value })}
+                          placeholder={t("platformAccounting.taxCategoryPlaceholder")}
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-center gap-3">
                     <Switch checked={formData.is_recurring} onCheckedChange={(v) => setFormData({ ...formData, is_recurring: v })} />
                     <Label>{t("platformAccounting.recurring")}</Label>
@@ -508,8 +581,8 @@ export default function PlatformAccounting() {
                       </Select>
                     </div>
                   )}
-                  <Button onClick={handleSubmit} className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingExpense ? t("common.save") : t("platformAccounting.addExpense")}
+                  <Button onClick={handleSubmit} className="w-full" disabled={createMutation.isPending || updateMutation.isPending || uploading}>
+                    {uploading ? t("platformAccounting.uploading") : (editingExpense ? t("common.save") : t("platformAccounting.addExpense"))}
                   </Button>
                 </div>
               </DialogContent>
