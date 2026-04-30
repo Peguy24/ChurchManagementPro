@@ -1173,15 +1173,21 @@ export default function MemberDialog({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="city">{lt.city}</Label>
+                    <Label htmlFor="city">{lt.city} *</Label>
                     <Input
                       id="city"
                       value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
+                      required
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormData({ ...formData, city: v });
+                        setErrors((p) => ({ ...p, city: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                      }}
                       placeholder="New York"
+                      aria-invalid={!!errors.city}
+                      className={errors.city ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="city" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="zipCode">{lt.zipCode}</Label>
