@@ -6212,6 +6212,7 @@ const translations = {
       messagePlaceholder: "Tell us more about your church and your needs...",
       churchNamePlaceholder: "e.g.: Grace Church",
       yourNamePlaceholder: "e.g.: John Smith",
+      nameHint: "Letters, spaces, apostrophes and hyphens only (no digits)",
       emailPlaceholder: "contact@church.com",
       phonePlaceholder: "+1 234 567 890",
       addressPlaceholder: "Church address",
