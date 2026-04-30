@@ -84,6 +84,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       contactName: formData.contact_name,
       email: formData.contact_email,
       phone: formData.contact_phone,
+      address: formData.address,
       message: formData.message,
     });
     if (!validation.success) {
