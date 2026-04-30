@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { detectLang, attendanceAlertTranslations } from "../_shared/email-translations.ts";
+import { detectLang, attendanceAlertTranslations, getTenantDefaultLang } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -157,8 +157,10 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      const tenantLang = await getTenantDefaultLang(supabaseClient, tenant.id);
+
       for (const alert of alerts) {
-        const lang = detectLang(alert.userId ? langMap[alert.userId] : null);
+        const lang = detectLang(alert.userId ? langMap[alert.userId] : null, tenantLang);
         const t = attendanceAlertTranslations[lang];
         const safeName = escapeHtml(alert.memberName);
         const variables = { member_name: safeName, attendance_rate: `${alert.currentMonthRate.toFixed(0)}%` };

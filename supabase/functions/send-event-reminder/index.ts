@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { detectLang, eventReminderTranslations, formatServiceDate } from "../_shared/email-translations.ts";
+import { detectLang, eventReminderTranslations, formatServiceDate, getTenantDefaultLang } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -146,11 +146,15 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      // Determine the tenant's default language so members without their own
+      // preference receive the email in the church's configured language.
+      const tenantLang = await getTenantDefaultLang(supabaseClient, tenantId);
+
       // Build event list summary for the email
       for (const member of members) {
         if (!member.email) continue;
 
-        const lang = detectLang(member.user_id ? langMap[member.user_id] : null);
+        const lang = detectLang(member.user_id ? langMap[member.user_id] : null, tenantLang);
         const t = eventReminderTranslations[lang];
         const serviceDate = formatServiceDate(tomorrow, lang);
         const memberName = `${escapeHtml(member.first_name)} ${escapeHtml(member.last_name)}`;

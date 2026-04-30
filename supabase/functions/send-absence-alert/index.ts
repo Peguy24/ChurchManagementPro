@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { detectLang, absenceAlertTranslations, formatDateLocalized } from "../_shared/email-translations.ts";
+import { detectLang, absenceAlertTranslations, formatDateLocalized, getTenantDefaultLang } from "../_shared/email-translations.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -113,10 +113,10 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get member email and user_id
+    // Get member email, user_id, and tenant
     const { data: member, error: memberError } = await supabaseClient
       .from("members")
-      .select("email, user_id")
+      .select("email, user_id, tenant_id")
       .eq("id", member_id)
       .single();
 
@@ -131,15 +131,17 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Detect member language
-    let lang = detectLang(null);
+    // Resolve the church's configured language as fallback,
+    // then prefer the member's own preference if set.
+    const tenantLang = await getTenantDefaultLang(supabaseClient, member.tenant_id);
+    let lang = tenantLang;
     if (member.user_id) {
       const { data: profile } = await supabaseClient
         .from("profiles")
         .select("language")
         .eq("id", member.user_id)
         .maybeSingle();
-      lang = detectLang(profile?.language);
+      lang = detectLang(profile?.language, tenantLang);
     }
 
     const t = absenceAlertTranslations[lang];

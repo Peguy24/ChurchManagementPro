@@ -3,12 +3,57 @@
 
 export type EmailLang = 'fr' | 'en' | 'ht';
 
-export function detectLang(raw?: string | null): EmailLang {
-  if (!raw) return 'fr';
+export function detectLang(raw?: string | null, fallback: EmailLang = 'en'): EmailLang {
+  if (!raw) return fallback;
   const l = raw.toLowerCase().trim();
   if (l === 'en') return 'en';
   if (l === 'ht') return 'ht';
-  return 'fr';
+  if (l === 'fr') return 'fr';
+  return fallback;
+}
+
+// Fetch the church's (tenant's) default language by looking at the most common
+// language across approved admin profiles. Falls back to 'en' if undeterminable.
+// Pass any Supabase client (service role recommended in edge functions).
+export async function getTenantDefaultLang(
+  supabaseClient: any,
+  tenantId: string,
+): Promise<EmailLang> {
+  if (!tenantId) return 'en';
+  try {
+    const { data: roles } = await supabaseClient
+      .from('tenant_user_roles')
+      .select('user_id')
+      .eq('tenant_id', tenantId)
+      .eq('role', 'admin')
+      .eq('is_approved', true);
+    const adminIds = (roles || []).map((r: any) => r.user_id).filter(Boolean);
+    if (adminIds.length === 0) {
+      // No admins — fall back to any profile in the tenant
+      const { data: anyProfile } = await supabaseClient
+        .from('profiles')
+        .select('language')
+        .eq('tenant_id', tenantId)
+        .not('language', 'is', null)
+        .limit(1)
+        .maybeSingle();
+      return detectLang(anyProfile?.language, 'en');
+    }
+    const { data: profiles } = await supabaseClient
+      .from('profiles')
+      .select('language')
+      .in('id', adminIds);
+    const counts: Record<EmailLang, number> = { fr: 0, en: 0, ht: 0 };
+    for (const p of profiles || []) {
+      const l = detectLang(p.language, 'en');
+      counts[l]++;
+    }
+    const winner = (Object.entries(counts) as [EmailLang, number][])
+      .sort((a, b) => b[1] - a[1])[0];
+    return winner && winner[1] > 0 ? winner[0] : 'en';
+  } catch {
+    return 'en';
+  }
 }
 
 // ----- Birthday -----
