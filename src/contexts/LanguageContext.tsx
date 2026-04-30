@@ -228,6 +228,10 @@ const translations = {
       followUpSMS: "SMS",
       followUpMeeting: "Rencontre",
       error: "Erreur",
+      searchPlaceholder: "Rechercher par nom, email ou téléphone...",
+      dateFrom: "Du",
+      dateTo: "Au",
+      clearFilters: "Effacer les filtres",
     },
     eventCalendar: {
       title: "Calendrier des Événements",
@@ -3619,6 +3623,10 @@ const translations = {
       followUpSMS: "SMS",
       followUpMeeting: "Meeting",
       error: "Error",
+      searchPlaceholder: "Search by name, email or phone...",
+      dateFrom: "From",
+      dateTo: "To",
+      clearFilters: "Clear filters",
     },
     eventCalendar: {
       title: "Event Calendar",
@@ -7000,6 +7008,10 @@ const translations = {
       followUpSMS: "SMS",
       followUpMeeting: "Rankont",
       error: "Erè",
+      searchPlaceholder: "Chèche pa non, imel oswa telefòn...",
+      dateFrom: "Depi",
+      dateTo: "Jiska",
+      clearFilters: "Efase filt yo",
     },
     eventCalendar: {
       title: "Kalandriye Evènman",

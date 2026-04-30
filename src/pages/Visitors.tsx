@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare, Download } from 'lucide-react';
+import { Plus, UserPlus, Phone, Mail, Calendar, ArrowRight, CheckCircle, Clock, Eye, Trash2, MessageSquare, Download, Search, X } from 'lucide-react';
 import { exportToCsv, type CsvColumn, formatDateForCsv } from '@/lib/csvExport';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -67,6 +67,10 @@ export default function Visitors() {
   const [loading, setLoading] = useState(true);
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
   const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const [visitorDialogOpen, setVisitorDialogOpen] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -209,7 +213,23 @@ export default function Visitors() {
     fetchFollowUps(visitor.id);
   }
 
-  const filteredVisitors = filter === 'all' ? visitors : visitors.filter(v => v.follow_up_status === filter);
+  const filteredVisitors = visitors.filter(v => {
+    if (filter !== 'all' && v.follow_up_status !== filter) return false;
+    if (sourceFilter !== 'all' && (v.how_heard || '') !== sourceFilter) return false;
+    if (dateFrom && v.visit_date < dateFrom) return false;
+    if (dateTo && v.visit_date > dateTo) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const haystack = `${v.first_name} ${v.last_name} ${v.email || ''} ${v.phone || ''}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const hasActiveFilters = filter !== 'all' || sourceFilter !== 'all' || dateFrom !== '' || dateTo !== '' || searchQuery !== '';
+  const clearFilters = () => {
+    setFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); setSearchQuery('');
+  };
 
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     new: { label: t('visitors.statusNew'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: UserPlus },
@@ -404,14 +424,55 @@ export default function Visitors() {
           <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{stats.converted}</p><p className="text-sm text-muted-foreground">{t('visitors.converted')}</p></CardContent></Card>
         </div>
 
-        {/* Filter */}
-        <div className="flex gap-2 flex-wrap">
-          {[{ key: 'all', label: t('visitors.all') }, ...Object.entries(statusConfig).map(([k, v]) => ({ key: k, label: v.label }))].map(f => (
-            <Button key={f.key} variant={filter === f.key ? 'default' : 'outline'} size="sm" onClick={() => setFilter(f.key)}>
-              {f.label}
-            </Button>
-          ))}
-        </div>
+        {/* Search & Filters */}
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('visitors.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
+                maxLength={100}
+                className="pl-9"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">{t('visitors.howHeard')}</Label>
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('visitors.all')}</SelectItem>
+                    {howHeardOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">{t('visitors.dateFrom')}</Label>
+                <Input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">{t('visitors.dateTo')}</Label>
+                <Input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {[{ key: 'all', label: t('visitors.all') }, ...Object.entries(statusConfig).map(([k, v]) => ({ key: k, label: v.label }))].map(f => (
+                <Button key={f.key} variant={filter === f.key ? 'default' : 'outline'} size="sm" onClick={() => setFilter(f.key)}>
+                  {f.label}
+                </Button>
+              ))}
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto">
+                  <X className="h-4 w-4 mr-1" />
+                  {t('visitors.clearFilters')}
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">{filteredVisitors.length} / {visitors.length}</p>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Visitors List */}
