@@ -1385,11 +1385,18 @@ export default function MemberDialog({
                 <Input
                   id="conversionDate"
                   type="date"
+                  max={todayInputValue()}
                   value={formData.conversionDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, conversionDate: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFormData({ ...formData, conversionDate: v });
+                    const err = !v ? "" : (liveCheck(optionalPastDateSchema, v) ?? "");
+                    setErrors((p) => ({ ...p, conversionDate: err }));
+                  }}
+                  aria-invalid={!!errors.conversionDate}
+                  className={errors.conversionDate ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                <FieldError name="conversionDate" errors={errors} />
               </div>
 
               <div className="grid gap-2">
