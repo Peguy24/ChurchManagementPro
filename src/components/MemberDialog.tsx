@@ -1495,11 +1495,18 @@ export default function MemberDialog({
                   <Input
                     id="spouseName"
                     value={formData.spouseName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, spouseName: e.target.value })
-                    }
+                    maxLength={100}
+                    onChange={(e) => {
+                      const v = e.target.value.slice(0, 100);
+                      setFormData({ ...formData, spouseName: v });
+                      const err = v.trim().length === 0 ? "" : (liveCheck(personNameSchema, v) ?? "");
+                      setErrors((p) => ({ ...p, spouseName: err }));
+                    }}
                     placeholder={lt.spouseNamePlaceholder}
+                    aria-invalid={!!errors.spouseName}
+                    className={errors.spouseName ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="spouseName" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="marriageDate">{lt.marriageDate}</Label>
