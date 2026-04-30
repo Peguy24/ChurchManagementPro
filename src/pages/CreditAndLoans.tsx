@@ -300,7 +300,7 @@ const CreditAndLoans = () => {
                   </div>
                   <div>
                     <Label>{t("creditAndLoans.dueDate")}</Label>
-                    <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                    <Input type="date" min={form.start_date || todayISO()} max={maxFutureISO(3)} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: clampMaxFuture(e.target.value, 3) })} />
                   </div>
                 </div>
                 <div>
