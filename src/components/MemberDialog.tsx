@@ -1082,18 +1082,18 @@ export default function MemberDialog({
                   )}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">{lt.email}</Label>
+                  <Label htmlFor="email">{lt.email} *</Label>
                   <Input
                     id="email"
                     type="email"
                     inputMode="email"
                     autoComplete="email"
                     value={formData.email}
+                    required
                     onChange={(e) => {
                       const v = e.target.value;
                       setFormData({ ...formData, email: v });
-                      const err = v.trim().length === 0 ? "" : (liveCheck(optionalEmailSchema, v) ?? "");
-                      setErrors((p) => ({ ...p, email: err }));
+                      setErrors((p) => ({ ...p, email: liveCheck(emailSchema, v) ?? "" }));
                     }}
                     placeholder="john@example.com"
                     aria-invalid={!!errors.email}
