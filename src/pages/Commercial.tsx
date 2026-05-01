@@ -26,6 +26,14 @@ const Commercial = () => {
   const isYearly = billingInterval === "yearly";
 
   // Reset to default platform colors on Commercial page (override tenant branding)
+  // Capture referral code from URL (?ref=CODE) and persist for signup flow
+  useEffect(() => {
+    const refCode = new URLSearchParams(window.location.search).get("ref");
+    if (refCode) {
+      sessionStorage.setItem("referral_code", refCode.trim().toUpperCase());
+    }
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     const defaults = {

@@ -245,6 +245,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     settings: "Platform Settings",
     payroll: "Payroll",
     taxes: "Taxes",
+    referrals: "Referrals",
   },
   fr: {
     dashboard: "Tableau de bord",
@@ -268,6 +269,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     settings: "Configuration Plateforme",
     payroll: "Paie",
     taxes: "Fiscalité",
+    referrals: "Parrainages",
   },
   ht: {
     dashboard: "Tablo Debò",
@@ -291,6 +293,7 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     settings: "Konfigirasyon Platfòm",
     payroll: "Pewòl",
     taxes: "Taks",
+    referrals: "Referans",
   },
 };
 
@@ -322,6 +325,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/payroll", icon: Users, label: sl("payroll") },
         { to: "/super-admin/taxes", icon: FileText, label: sl("taxes") },
+        { to: "/super-admin/referrals", icon: Sparkles, label: sl("referrals") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
     },
