@@ -3132,6 +3132,125 @@ export type Database = {
           },
         ]
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          applied_by_role: string
+          created_at: string
+          days_added: number
+          id: string
+          notes: string | null
+          referral_id: string
+          reward_type: Database["public"]["Enums"]["referral_reward_type"]
+          stripe_coupon_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          applied_by_role?: string
+          created_at?: string
+          days_added?: number
+          id?: string
+          notes?: string | null
+          referral_id: string
+          reward_type: Database["public"]["Enums"]["referral_reward_type"]
+          stripe_coupon_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          applied_by_role?: string
+          created_at?: string
+          days_added?: number
+          id?: string
+          notes?: string | null
+          referral_id?: string
+          reward_type?: Database["public"]["Enums"]["referral_reward_type"]
+          stripe_coupon_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          notes: string | null
+          qualified_at: string | null
+          referral_code: string
+          referred_reward_applied: boolean
+          referred_tenant_id: string
+          referrer_reward_applied: boolean
+          referrer_tenant_id: string
+          rewarded_at: string | null
+          status: Database["public"]["Enums"]["referral_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          notes?: string | null
+          qualified_at?: string | null
+          referral_code: string
+          referred_reward_applied?: boolean
+          referred_tenant_id: string
+          referrer_reward_applied?: boolean
+          referrer_tenant_id: string
+          rewarded_at?: string | null
+          status?: Database["public"]["Enums"]["referral_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          notes?: string | null
+          qualified_at?: string | null
+          referral_code?: string
+          referred_reward_applied?: boolean
+          referred_tenant_id?: string
+          referrer_reward_applied?: boolean
+          referrer_tenant_id?: string
+          rewarded_at?: string | null
+          status?: Database["public"]["Enums"]["referral_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           created_at: string | null
@@ -4410,7 +4529,20 @@ export type Database = {
         Args: { _event_id: string; _tenant_id: string }
         Returns: boolean
       }
+      generate_referral_code_for_tenant: {
+        Args: { _tenant_id: string }
+        Returns: string
+      }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
+      get_referral_code_info: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          is_active: boolean
+          referrer_name: string
+          referrer_tenant_id: string
+        }[]
+      }
       get_tenant_by_slug: {
         Args: { _slug: string }
         Returns: {
@@ -4459,6 +4591,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_tenant_referral_stats: { Args: { _tenant_id: string }; Returns: Json }
       get_tenant_storage_mb: { Args: { _tenant_id: string }; Returns: number }
       get_tenant_storage_usage: {
         Args: { _tenant_id: string }
@@ -4568,6 +4701,13 @@ export type Database = {
         | "moderator"
         | "support"
         | "sales"
+      referral_reward_type: "trial_extension" | "stripe_coupon"
+      referral_status:
+        | "pending"
+        | "qualified"
+        | "rewarded"
+        | "expired"
+        | "rejected"
       subscription_plan:
         | "basic"
         | "standard"
@@ -4727,6 +4867,14 @@ export const Constants = {
         "moderator",
         "support",
         "sales",
+      ],
+      referral_reward_type: ["trial_extension", "stripe_coupon"],
+      referral_status: [
+        "pending",
+        "qualified",
+        "rewarded",
+        "expired",
+        "rejected",
       ],
       subscription_plan: ["basic", "standard", "premium", "enterprise", "free"],
       tenant_status: ["active", "suspended", "trial", "cancelled"],

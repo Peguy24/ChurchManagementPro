@@ -286,6 +286,15 @@ serve(async (req) => {
         const paidAmount = invoice.amount_paid ? (invoice.amount_paid / 100).toFixed(2) : "0";
         await notifyTenantAdmins("payment_succeeded", tenantId, paidAmount);
 
+        // Trigger referral qualification (only acts if tenant was referred and not already processed)
+        try {
+          await supabase.functions.invoke("qualify-referral", {
+            body: { referredTenantId: tenantId, source: "stripe_webhook" },
+          });
+        } catch (refErr) {
+          logStep("Referral qualification skipped", { error: String(refErr) });
+        }
+
         logStep("Payment succeeded processed", { email });
         break;
       }

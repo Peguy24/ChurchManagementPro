@@ -57,3 +57,11 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.check-subscription-alerts]
     verify_jwt = false
+  [functions.generate-referral-code]
+    verify_jwt = false
+  [functions.track-referral-signup]
+    verify_jwt = false
+  [functions.qualify-referral]
+    verify_jwt = false
+  [functions.apply-referral-reward]
+    verify_jwt = false
