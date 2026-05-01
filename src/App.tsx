@@ -93,6 +93,8 @@ const DataManagement = lazy(() => import("./pages/DataManagement"));
 const LegalDocuments = lazy(() => import("./pages/LegalDocuments"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 const SelectChurch = lazy(() => import("./pages/SelectChurch"));
+const Referrals = lazy(() => import("./pages/Referrals"));
+const SuperAdminReferrals = lazy(() => import("./pages/SuperAdminReferrals"));
 
 const queryClient = new QueryClient();
 
@@ -176,6 +178,8 @@ const App = () => (
               <Route path="/settings/backup" element={<ProtectedRoute><FeatureGate feature="dataBackup" featureKey="dataBackup" requiredPlan="professionnel"><DataBackup /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/data-management" element={<ProtectedRoute requireAdmin><FeatureGate feature="dataBackup" featureKey="dataBackup" requiredPlan="professionnel"><DataManagement /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+              <Route path="/settings/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+              <Route path="/super-admin/referrals" element={<ProtectedRoute requireSuperAdmin><SuperAdminReferrals /></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
               <Route path="/super-admin/accounting" element={<ProtectedRoute requireSuperAdmin><PlatformAccounting /></ProtectedRoute>} />
