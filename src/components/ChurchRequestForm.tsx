@@ -113,6 +113,8 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
     setIsSubmitting(true);
     try {
+      const refCode = new URLSearchParams(window.location.search).get("ref")
+        || sessionStorage.getItem("referral_code");
       const { data, error } = await supabase.functions.invoke('auto-provision-tenant', {
         body: {
           church_name: formData.church_name,
@@ -129,6 +131,18 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       if (data?.error) throw new Error(data.error);
 
       setResult(data as ProvisionResult);
+
+      // Track referral if a ref code was provided
+      if (refCode && data?.tenantId) {
+        try {
+          await supabase.functions.invoke("track-referral-signup", {
+            body: { code: refCode, referredTenantId: data.tenantId },
+          });
+          sessionStorage.removeItem("referral_code");
+        } catch (refErr) {
+          console.warn("Referral tracking failed:", refErr);
+        }
+      }
 
       // Record policy acceptances
       if (data?.tenantId || data?.slug) {
