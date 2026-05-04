@@ -1,71 +1,54 @@
-# Goal
+## Goal
+Rebuild `Church_Manager_Pro_Pastor_Pitch.pptx` so it uses:
+1. The **real Church Manager Pro logo** (`/public/images/church-management-pro-logo.png`) — not any tenant logo.
+2. **Real in-app screenshots** of the tenant dashboard (not just the public marketing page).
 
-When a Super Admin deletes a church, the contact email must immediately become reusable to register a brand-new church — with no "email already registered" error — in both Test and Live environments.
+## Approach
 
-# What's happening today
+### Step 1 — Capture real dashboard screenshots
+Drive the browser through the **published** site (`https://cogmpw-sys.lovable.app`) where you're already logged in, and screenshot these screens at 1536×864:
 
-The trial registration form (`auto-provision-tenant`) blocks an email if **either**:
-1. An auth user exists with that email, OR
-2. A row in `tenants.contact_email` matches.
+1. `/dashboard` — main overview with stats cards
+2. `/members` — member list with filters
+3. `/attendance` — attendance tracking with punctuality (Early / On Time / Late)
+4. `/donations` — donations / contributions
+5. `/finances` (or `/recettes` + `/expenses`) — internal income & expenses
+6. `/events` — event list
+7. `/settings/branches` — multi-church / branch structure
+8. `/super-admin` — platform overview (if you want me to include it; tells the "we operate this seriously" story)
 
-The `delete-tenant` function already:
-- Deletes `tenants`, `tenant_subscriptions`, `tenant_requests` (by `created_tenant_id`), `admin_invitations`, `profiles`, `user_roles`, and the auth users tied to the tenant via `profiles.tenant_id`.
+If any route doesn't match, I'll observe the sidebar and adapt.
 
-So in theory, deleting should free the email. The "email already registered" error in practice comes from a few real gaps:
+If the browser session doesn't carry your login (likely — browser tool uses a separate session), I'll pause and ask you to either:
+- Paste the email/password so I can log in once, OR
+- Upload the screenshots yourself.
 
-1. **Test and Live are separate databases.** Deleting a church in Test does NOT delete it in Live (and vice-versa). After publishing, Live still has whatever rows existed there.
-2. **Orphan `tenant_requests` rows** with `status='pending'` (or any other value) for the same email are NOT cleaned up — they only get deleted when their `created_tenant_id` matches. Old request rows survive but the email check above only looks at `tenants` and auth users, so this isn't the blocker — but they pollute the admin queue.
-3. **Auth users not linked via `profiles.tenant_id`** (e.g., the admin signed up via the invitation link but their profile row never got `tenant_id` set, or they were a member of multiple churches) are left behind. The email check on line 65–67 then still finds them.
-4. **`admin_invitations` rows** referencing the email may linger if cleanup partially failed.
+### Step 2 — Rebuild the PPTX
+Regenerate `Church_Manager_Pro_Pastor_Pitch_v2.pptx` with the same 15-slide structure (Navy `#1E2761` / Gold `#D4AF37` / Cream palette, Georgia + Calibri), but:
+- **Title slide & every footer**: embed `church-management-pro-logo.png` (top-left, ~0.6" tall).
+- **Replace public-page screenshots** with the real dashboard captures, mapped to the relevant slides:
+  - Slide 4 (Member Management) → `/members` screenshot
+  - Slide 5 (Attendance) → `/attendance` screenshot
+  - Slide 6 (Financial Transparency) → `/finances` or `/donations`
+  - Slide 7 (Multi-Branch) → `/settings/branches`
+  - Slide 8 (Events) → `/events`
+  - Slide 11 (Dashboard at a Glance) → `/dashboard`
+- Keep all text/structure from the previous version.
 
-# The plan
+### Step 3 — QA
+- Convert PPTX → PDF → JPEG per slide.
+- Visually inspect each slide for: logo present & not stretched, screenshots not cut off, text legible over images, no overlaps.
+- Fix and re-render until clean.
+- Save to `/mnt/documents/Church_Manager_Pro_Pastor_Pitch_v2.pptx`.
 
-## 1. Harden `delete-tenant` to fully release every email
+## Technical details
+- Logo source: `public/images/church-management-pro-logo.png` (embed as base64).
+- Screenshot capture: `browser--navigate_to_sandbox` + `browser--screenshot`, save PNGs to `/tmp/`.
+- Generation: Node + `pptxgenjs`.
+- QA: `soffice --convert-to pdf` + `pdftoppm -jpeg -r 150`.
 
-Update `supabase/functions/delete-tenant/index.ts`:
-
-- Before deleting tables, collect **every email** associated with the tenant from these sources:
-  - `tenants.contact_email`
-  - `admin_invitations.email` for that tenant
-  - `tenant_requests.contact_email` for that tenant (by `created_tenant_id`)
-  - `profiles.id` → `auth.users.email` for every profile with `tenant_id = X`
-  - `tenant_user_roles.user_id` → `auth.users.email` for that tenant
-- Delete `tenant_requests` by `contact_email IN (collected_emails)` in addition to by `created_tenant_id`, so old pending/rejected rows are also cleared.
-- For each collected email, look up the auth user by email (`listUsers` + filter, or paginate) and `auth.admin.deleteUser` if that user has no remaining `tenant_user_roles` or `platform_user_roles`. Skip super-admins.
-- Delete any `admin_invitations` row matching the email globally.
-- Keep the existing per-table cleanup loop.
-
-This guarantees that after deletion no `tenants` row, no `auth.users` row, no `admin_invitations` row, and no leftover `tenant_requests` row holds the email.
-
-## 2. Make the email-check in `auto-provision-tenant` smarter
-
-Update `supabase/functions/auto-provision-tenant/index.ts`:
-
-- Keep the duplicate-email checks but only block when the email is genuinely in use:
-  - Block if `tenants.contact_email` exists.
-  - Block if an auth user exists **AND** that user has at least one row in `tenant_user_roles` or `platform_user_roles` (i.e., is actively part of another church or is a platform admin).
-  - If the auth user exists but is fully orphaned (no roles, no profile.tenant_id), delete it inline before proceeding so registration succeeds.
-- Return clearer, localized error messages when truly blocked (the form already shows them).
-
-## 3. Document the Test ⇄ Live separation in the UI
-
-In the Super Admin "Tenant Management" delete confirmation, add a short note:
-
-> "Deletion only affects the current environment (Test or Live). To free this email in the other environment, delete the church there as well."
-
-Files: the existing delete confirmation dialog under `src/pages/TenantManagement.tsx` (or component used there).
-
-## 4. Verification steps after deploy
-
-1. In Test: register a church with `foo@bar.com` → delete it → re-register with `foo@bar.com` → should succeed.
-2. Repeat in Live.
-3. Register `foo@bar.com` for church A, then try to register church B with the same email → should still be blocked with the localized message.
-
-# Files to change
-
-- `supabase/functions/delete-tenant/index.ts` — exhaustive email release.
-- `supabase/functions/auto-provision-tenant/index.ts` — orphan-aware duplicate check + auto-cleanup.
-- `src/pages/TenantManagement.tsx` (or the dialog component it uses) — Test/Live note in delete confirmation, localized in EN/FR/HT.
-- `src/contexts/LanguageContext.tsx` — three new translation keys for the note.
-
-No DB migrations needed.
+## What I need from you before starting
+**Confirm one** so I know how to get into the dashboard:
+- (A) The browser session might already be logged in via the published domain — I'll try first; if it fails I'll stop and ask.
+- (B) You give me a test admin login (email + password + 2FA off if possible) to use.
+- (C) You upload the dashboard screenshots yourself and I just assemble the deck.
