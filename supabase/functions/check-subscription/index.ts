@@ -67,21 +67,26 @@ serve(async (req) => {
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    
+
     let userId: string;
     let userEmail: string;
-    
+
     try {
-      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-      if (userError || !userData?.user) {
-        logStep("Auth failed", { error: userError?.message });
+      // Use anon client + getClaims for JWT validation (compatible with signing keys)
+      const anonClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      );
+      const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims) {
+        logStep("Auth failed", { error: claimsError?.message });
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 401,
         });
       }
-      userId = userData.user.id;
-      userEmail = userData.user.email ?? "";
+      userId = claimsData.claims.sub as string;
+      userEmail = (claimsData.claims.email as string) ?? "";
     } catch (authErr) {
       logStep("Auth exception", { error: String(authErr) });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
