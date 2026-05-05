@@ -685,6 +685,66 @@ const Commercial = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section id="faq" className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto px-4 sm:px-6 relative">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <Badge className="mb-4 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/10 text-primary border-primary/20 text-xs sm:text-sm">
+              <HelpCircle className="w-3 h-3 mr-2" />
+              {t("commercial.faqBadge")}
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+              {t("commercial.faqTitle")}
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
+              {t("commercial.faqSubtitle")}
+            </p>
+          </div>
+
+          <div className="max-w-3xl mx-auto">
+            <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                <AccordionItem
+                  key={n}
+                  value={`item-${n}`}
+                  className="border border-border/60 bg-card/60 backdrop-blur-sm rounded-xl px-4 sm:px-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all data-[state=open]:border-primary/40 data-[state=open]:shadow-lg data-[state=open]:shadow-primary/5"
+                >
+                  <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5 [&[data-state=open]>svg]:text-primary">
+                    <span className="flex items-start gap-3 pr-2">
+                      <span className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-primary to-secondary text-white text-xs sm:text-sm font-bold flex items-center justify-center mt-0.5">
+                        {n}
+                      </span>
+                      <span className="min-w-0">{t(`commercial.faq${n}Q`)}</span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed pl-9 sm:pl-10 pb-5">
+                    {t(`commercial.faq${n}A`)}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            <div className="mt-10 sm:mt-12 text-center">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                {t("commercial.faqMoreQuestions")}
+              </p>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setRequestFormOpen(true)}
+                className="border-2 group"
+              >
+                <Mail className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                {t("commercial.faqContactUs")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-dark to-primary" />
