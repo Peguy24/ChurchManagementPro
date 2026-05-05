@@ -236,10 +236,16 @@ const Commercial = () => {
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm shadow-primary/5">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary blur-md opacity-40 rounded-full" />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain relative" width={40} height={40} />
+            </div>
+            <span className="hidden sm:inline-block font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Church Manager Pro
+            </span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
