@@ -237,28 +237,28 @@ const Commercial = () => {
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm shadow-primary/5">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="relative flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary blur-md opacity-40 rounded-full" />
-              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain relative" width={40} height={40} />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-9 sm:h-10 object-contain relative" width={40} height={40} />
             </div>
-            <span className="hidden sm:inline-block font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="hidden md:inline-block font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
               Church Manager Pro
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_features")}</a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_pricing")}</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">{t("commercial.nav_testimonials")}</a>
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_features")}</a>
+            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_pricing")}</a>
+            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_testimonials")}</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <LanguageSelector />
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden sm:flex">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden lg:flex">
               <Shield className="w-4 h-4 mr-2" />
               {t("commercial.admin")}
             </Button>
-            <Button size="sm" onClick={() => setRequestFormOpen(true)} className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-opacity">
+            <Button size="sm" onClick={() => setRequestFormOpen(true)} className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-opacity text-xs sm:text-sm px-3 sm:px-4">
               {t("commercial.getStarted")}
             </Button>
           </div>
