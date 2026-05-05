@@ -412,8 +412,9 @@ const Commercial = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/30 to-background" />
+      <section id="pricing" className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-background" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-16">
             <Badge className="mb-4 px-4 py-2 bg-primary/10 text-primary border-primary/20">
@@ -427,92 +428,99 @@ const Commercial = () => {
               {t("commercial.pricingSubtitle")}
             </p>
             {/* Billing toggle */}
-            <div className="flex items-center justify-center gap-3 mt-6">
+            <div className="inline-flex items-center justify-center gap-1 mt-8 p-1.5 rounded-2xl bg-muted/60 border border-border/60 backdrop-blur-sm">
               <button
                 onClick={() => setBillingInterval("monthly")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  !isYearly ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  !isYearly ? "bg-background text-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t("sub.monthly")}
               </button>
               <button
                 onClick={() => setBillingInterval("yearly")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  isYearly ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                  isYearly ? "bg-background text-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t("sub.yearly")}
-                <Badge className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 border-green-500/20">
+                <Badge className="text-[10px] px-2 py-0.5 bg-green-500/15 text-green-600 border-green-500/30 hover:bg-green-500/20">
                   {t("sub.save15")}
                 </Badge>
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <Card 
-                key={index} 
-                className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-2 ${
-                  plan.popular 
-                    ? 'border-2 border-primary shadow-2xl shadow-primary/20 scale-105' 
-                    : 'border-2 hover:border-primary/50'
-                }`}
-              >
+              <div key={index} className="relative">
                 {plan.popular && (
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-white text-center py-2 text-sm font-medium">
-                    <Star className="w-4 h-4 inline mr-1" />
-                    {t("commercial.mostPopular")}
-                  </div>
+                  <div className="absolute -inset-[2px] bg-gradient-to-br from-primary via-secondary to-primary rounded-2xl opacity-75 blur-sm" />
                 )}
-                <CardHeader className={`text-center ${plan.popular ? 'pt-12' : 'pt-6'}`}>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-base">{plan.description}</CardDescription>
-                  <div className="mt-6">
-                    {isYearly ? (
-                      <>
-                        <span className="text-2xl line-through text-muted-foreground mr-2">${parseInt(plan.price) * 12}</span>
-                        <span className="text-5xl font-bold">${plan.yearlyPrice}</span>
-                        <span className="text-muted-foreground text-lg">{plan.period}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-5xl font-bold">${plan.price}</span>
-                        <span className="text-muted-foreground text-lg">{plan.period}</span>
-                      </>
-                    )}
-                  </div>
-                  {isYearly && (
-                    <p className="text-xs text-muted-foreground mt-1">{t("sub.billedAnnually")}</p>
+                <Card 
+                  className={`relative h-full overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-card ${
+                    plan.popular 
+                      ? 'border-0 shadow-2xl shadow-primary/20 lg:scale-105' 
+                      : 'border-2 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10'
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-white text-center py-2 text-sm font-semibold tracking-wide">
+                      <Star className="w-4 h-4 inline mr-1.5 fill-white" />
+                      {t("commercial.mostPopular")}
+                    </div>
                   )}
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <ul className="space-y-4">
-                    {plan.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-primary" />
+                  <CardHeader className={`text-center ${plan.popular ? 'pt-12' : 'pt-8'}`}>
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardDescription className="text-base min-h-[3rem]">{plan.description}</CardDescription>
+                    <div className="mt-6">
+                      {isYearly ? (
+                        <div className="flex flex-col items-center">
+                          <span className="text-sm line-through text-muted-foreground">${parseInt(plan.price) * 12}{t("commercial.perMonth")}</span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-5xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">${plan.yearlyPrice}</span>
+                            <span className="text-muted-foreground text-base">{plan.period}</span>
+                          </div>
                         </div>
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={`w-full mt-8 ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-primary to-primary-dark hover:opacity-90' 
-                        : ''
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => handlePlanSelect(plan.planKey)}
-                  >
-                    {t("commercial.choosePlan")}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
+                      ) : (
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-5xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">${plan.price}</span>
+                          <span className="text-muted-foreground text-lg">{plan.period}</span>
+                        </div>
+                      )}
+                    </div>
+                    {isYearly && (
+                      <p className="text-xs text-muted-foreground mt-2">{t("sub.billedAnnually")}</p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+                    <ul className="space-y-3.5">
+                      {plan.features.map((feature, fIndex) => (
+                        <li key={fIndex} className="flex items-start gap-3">
+                          <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-gradient-to-br from-primary to-secondary' : 'bg-primary/10'}`}>
+                            <Check className={`w-3 h-3 ${plan.popular ? 'text-white' : 'text-primary'}`} strokeWidth={3} />
+                          </div>
+                          <span className="text-sm leading-relaxed">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button 
+                      className={`w-full mt-8 group ${
+                        plan.popular 
+                          ? 'bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 shadow-lg shadow-primary/25' 
+                          : ''
+                      }`}
+                      variant={plan.popular ? "default" : "outline"}
+                      size="lg"
+                      onClick={() => handlePlanSelect(plan.planKey)}
+                    >
+                      {t("commercial.choosePlan")}
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
