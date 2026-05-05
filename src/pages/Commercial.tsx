@@ -6,8 +6,9 @@ import {
   Users, Calendar, DollarSign, BarChart3, QrCode, Building2, 
   Package, Mail, Shield, Globe, Check, ArrowRight, Star,
   Church, Heart, Clock, Smartphone,
-  Sparkles, Zap, ChevronRight, Play, TrendingUp
+  Sparkles, Zap, ChevronRight, Play, TrendingUp, HelpCircle
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate, Link } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
