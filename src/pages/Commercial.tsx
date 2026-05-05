@@ -319,9 +319,9 @@ const Commercial = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/50">
                 {stats.map((stat, index) => (
-                  <div key={index} className="text-center lg:text-left">
-                    <div className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div key={index} className="text-center lg:text-left group">
+                    <div className="text-2xl md:text-3xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent group-hover:scale-105 transition-transform inline-block">{stat.value}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
