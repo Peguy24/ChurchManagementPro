@@ -642,38 +642,38 @@ const Commercial = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 px-4 py-2 bg-secondary/10 text-secondary border-secondary/20">
+      <section id="testimonials" className="py-16 sm:py-20 md:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <Badge className="mb-4 px-3 py-1.5 sm:px-4 sm:py-2 bg-secondary/10 text-secondary border-secondary/20 text-xs sm:text-sm">
               <Heart className="w-3 h-3 mr-2" />
               {t("commercial.testimonialsBadge")}
             </Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
               {t("commercial.testimonialsTitle")}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/30 transition-all duration-300 hover:shadow-xl">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary" />
-                <CardContent className="pt-8">
+                <CardContent className="pt-7 sm:pt-8 px-5 sm:px-6">
                   <div className="flex justify-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-muted-foreground mb-6 italic text-center">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-6 italic text-center leading-relaxed">
                     "{testimonial.text}"
                   </p>
                   <div className="flex items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold flex-shrink-0">
                       {testimonial.avatar}
                     </div>
-                    <div>
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.church}</p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm sm:text-base truncate">{testimonial.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{testimonial.church}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -684,29 +684,29 @@ const Commercial = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-dark to-primary" />
         <div className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:40px_40px]" />
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-secondary rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-10 left-0 sm:left-10 w-56 sm:w-72 h-56 sm:h-72 bg-white rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-10 right-0 sm:right-10 w-72 sm:w-96 h-72 sm:h-96 bg-secondary rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
         </div>
-        <div className="container mx-auto px-4 relative text-center">
+        <div className="container mx-auto px-4 sm:px-6 relative text-center">
           <div className="max-w-3xl mx-auto">
-            <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center mx-auto mb-8 shadow-2xl">
-              <Heart className="w-10 h-10 text-white" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl">
+              <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-5 sm:mb-6 text-white leading-tight">
               {t("commercial.ctaTitle")}
             </h2>
-            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-white/80 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
               {t("commercial.ctaSubtitle")}
             </p>
             <Button 
               size="lg" 
               variant="secondary"
               onClick={() => setRequestFormOpen(true)}
-              className="text-lg px-8 py-6 h-auto shadow-xl hover:scale-105 transition-transform"
+              className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto shadow-xl hover:scale-105 transition-transform"
             >
               {t("commercial.ctaButton")}
               <Sparkles className="w-5 h-5 ml-2" />
@@ -716,13 +716,13 @@ const Commercial = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+      <footer className="py-10 sm:py-12 border-t bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-5 md:gap-6">
             <div className="flex items-center gap-3">
-              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-10 object-contain" width={40} height={40} />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-9 sm:h-10 object-contain" width={40} height={40} />
             </div>
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
               <Link to="/legal/terms_of_use" className="text-muted-foreground hover:text-foreground transition-colors">
                 {language === "fr" ? "Conditions d'utilisation" : language === "ht" ? "Kondisyon itilizasyon" : "Terms of Use"}
               </Link>
@@ -733,7 +733,7 @@ const Commercial = () => {
                 {language === "fr" ? "Conditions de paiement" : language === "ht" ? "Kondisyon peman" : "Payment Terms"}
               </Link>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">
               {t("commercial.footer")}
             </p>
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>
