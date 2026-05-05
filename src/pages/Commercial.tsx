@@ -252,6 +252,7 @@ const Commercial = () => {
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_features")}</a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_pricing")}</a>
             <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors text-sm">{t("commercial.nav_testimonials")}</a>
+            <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors text-sm">FAQ</a>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <LanguageSelector />
