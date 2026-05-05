@@ -266,24 +266,24 @@ const Commercial = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
-        <div className="absolute inset-0 overflow-hidden">
+      <section className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-40 md:pb-32">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Subtle grid pattern */}
           <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(to_right,hsl(var(--foreground))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground))_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_75%)]" />
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 to-secondary/5 rounded-full blur-3xl" />
+          <div className="absolute top-20 left-0 sm:left-10 w-56 sm:w-72 h-56 sm:h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-0 sm:right-10 w-72 sm:w-96 h-72 sm:h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[800px] h-[500px] sm:h-[800px] bg-gradient-to-r from-primary/5 to-secondary/5 rounded-full blur-3xl" />
         </div>
 
-        <div className="container mx-auto px-4 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 sm:px-6 relative">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <div className="text-center lg:text-left animate-fade-in">
-              <Badge className="mb-6 px-4 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+              <Badge className="mb-5 sm:mb-6 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 text-xs sm:text-sm">
                 <Sparkles className="w-3 h-3 mr-2" />
                 {t("commercial.heroBadge")}
               </Badge>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-5 sm:mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   {t("commercial.heroTitle1")}
                 </span>
@@ -293,15 +293,15 @@ const Commercial = () => {
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-7 sm:mb-8 max-w-xl mx-auto lg:mx-0">
                 {t("commercial.heroSubtitle")}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-8">
                 <Button 
                   size="lg" 
                   onClick={() => setRequestFormOpen(true)} 
-                  className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-all shadow-lg shadow-primary/25 group"
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-all shadow-lg shadow-primary/25 group"
                 >
                   {t("commercial.trialButton")}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -309,7 +309,7 @@ const Commercial = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="group border-2"
+                  className="w-full sm:w-auto group border-2"
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
@@ -317,17 +317,17 @@ const Commercial = () => {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/50">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 sm:pt-8 border-t border-border/50">
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center lg:text-left group">
-                    <div className="text-2xl md:text-3xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent group-hover:scale-105 transition-transform inline-block">{stat.value}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</div>
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent group-hover:scale-105 transition-transform inline-block">{stat.value}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="relative animate-fade-in mt-4 lg:mt-0 px-4 sm:px-6 lg:px-0" style={{ animationDelay: '0.2s' }}>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10">
                 <img 
                   src={heroImage} 
@@ -340,26 +340,26 @@ const Commercial = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               </div>
               
-              <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-xl border animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <Check className="w-5 h-5 text-green-500" />
+              <div className="absolute -bottom-4 sm:-bottom-6 left-0 sm:-left-6 bg-card p-3 sm:p-4 rounded-xl shadow-xl border animate-fade-in max-w-[200px] sm:max-w-none" style={{ animationDelay: '0.4s' }}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm">{t("commercial.floatingMembers")}</p>
-                    <p className="text-xs text-muted-foreground">{t("commercial.floatingMembersDesc")}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-xs sm:text-sm truncate">{t("commercial.floatingMembers")}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t("commercial.floatingMembersDesc")}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="absolute -top-4 -right-4 bg-card p-4 rounded-xl shadow-xl border animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-primary" />
+              <div className="absolute -top-3 sm:-top-4 right-0 sm:-right-4 bg-card p-3 sm:p-4 rounded-xl shadow-xl border animate-fade-in max-w-[200px] sm:max-w-none" style={{ animationDelay: '0.6s' }}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm">{t("commercial.floatingAttendance")}</p>
-                    <p className="text-xs text-muted-foreground">{t("commercial.floatingAttendanceDesc")}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-xs sm:text-sm truncate">{t("commercial.floatingAttendance")}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t("commercial.floatingAttendanceDesc")}</p>
                   </div>
                 </div>
               </div>
