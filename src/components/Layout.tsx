@@ -276,6 +276,11 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     payroll: "Paie",
     taxes: "Fiscalité",
     referrals: "Parrainages",
+    grpOverview: "Vue d'ensemble",
+    grpChurches: "Églises & Utilisateurs",
+    grpFinance: "Finance & Facturation",
+    grpEngagement: "Engagement & Communication",
+    grpPlatform: "Plateforme & Paramètres",
   },
   ht: {
     dashboard: "Tablo Debò",
