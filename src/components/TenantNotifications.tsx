@@ -197,6 +197,7 @@ export default function TenantNotifications() {
   const [open, setOpen] = useState(false);
   const dateLocale = language === "fr" ? fr : enUS;
   const ui = uiTranslations[language] || uiTranslations.en;
+  const { openCustomerPortal, portalLoading } = useSubscription();
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ["tenant-notifications", tenantId],
