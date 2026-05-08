@@ -350,9 +350,28 @@ export default function TenantNotifications() {
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3 whitespace-pre-line">
                           {translateMessage(notif, language)}
                         </p>
+                        {(notif.notification_type === "payment_failed" || notif.notification_type === "payment_method_updated") && (
+                          <Button
+                            size="sm"
+                            variant={notif.notification_type === "payment_failed" ? "default" : "outline"}
+                            className="mt-2 h-7 text-xs"
+                            disabled={portalLoading}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openCustomerPortal();
+                            }}
+                          >
+                            {portalLoading ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <CreditCard className="h-3 w-3 mr-1" />
+                            )}
+                            {ui.updatePayment}
+                          </Button>
+                        )}
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {formatDistanceToNow(new Date(notif.created_at), {
                             addSuffix: true,
