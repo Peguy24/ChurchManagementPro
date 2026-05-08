@@ -53,9 +53,12 @@ export default function TaxExemptionReviews() {
 
     const { data: refundRows } = await supabase
       .from("tax_exemption_refunds")
-      .select("tenant_id, tax_amount_refunded, currency, status");
+      .select("tenant_id, tax_amount_refunded, currency, status, created_at, stripe_invoice_id, stripe_refund_id, failure_reason")
+      .order("created_at", { ascending: false });
     const totals: Record<string, RefundTotal> = {};
+    const byTenant: Record<string, any[]> = {};
     (refundRows ?? []).forEach((r: any) => {
+      (byTenant[r.tenant_id] ||= []).push(r);
       if (r.status !== "succeeded") return;
       const t = totals[r.tenant_id] ?? { tenant_id: r.tenant_id, total: 0, count: 0, currency: r.currency };
       t.total += Number(r.tax_amount_refunded);
@@ -63,6 +66,7 @@ export default function TaxExemptionReviews() {
       totals[r.tenant_id] = t;
     });
     setRefunds(totals);
+    setRefundRowsByTenant(byTenant);
 
     setLoading(false);
   };
