@@ -163,6 +163,16 @@ export default function TaxExemptionReviews() {
                           "—"
                         )}
                       </TableCell>
+                      <TableCell className="text-xs">
+                        {refunds[r.tenant_id] ? (
+                          <span className="font-medium">
+                            {refunds[r.tenant_id].currency.toUpperCase()} {refunds[r.tenant_id].total.toFixed(2)}
+                            <span className="text-muted-foreground ml-1">({refunds[r.tenant_id].count})</span>
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
                       <TableCell className="text-right space-x-2">
                         {r.status === "approved" ? (
                           <Button
