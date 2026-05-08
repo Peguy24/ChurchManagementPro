@@ -34,6 +34,7 @@ export default function TaxExemptionSection() {
   const [ein, setEin] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [refunds, setRefunds] = useState<Array<{ id: string; tax_amount_refunded: number; currency: string; created_at: string; status: string; stripe_refund_id: string | null }>>([]);
 
   const fetchData = async () => {
     if (!tenantId) return;
