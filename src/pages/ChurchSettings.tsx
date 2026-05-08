@@ -20,6 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
 import { sanitizeName, sanitizeLine, sanitizeText, sanitizePhone, sanitizeHexColor, sanitizeReference } from "@/lib/inputSanitize";
+import TaxExemptionSection from "@/components/TaxExemptionSection";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -572,6 +573,8 @@ export default function ChurchSettings() {
               </div>
             </CardContent>
           </Card>
+
+          <TaxExemptionSection />
 
           <div className="flex justify-end">
             <Button type="submit" disabled={updateSettings.isPending}>
