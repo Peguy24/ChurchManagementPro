@@ -78,7 +78,7 @@ export default function TaxExemptionReviews() {
 
   const action = async (row: Row, act: "approve" | "reject" | "revoke", reason?: string) => {
     setWorking(row.id);
-    const { error } = await supabase.functions.invoke("update-tax-exempt-status", {
+    const { data, error } = await supabase.functions.invoke("update-tax-exempt-status", {
       body: { tenant_id: row.tenant_id, action: act, rejection_reason: reason },
     });
     setWorking(null);
@@ -86,7 +86,18 @@ export default function TaxExemptionReviews() {
       toast.error(error.message);
       return;
     }
-    toast.success(`Exemption ${act}d`);
+    if (act === "approve") {
+      const total = Number((data as any)?.refund_total ?? 0);
+      const count = Number((data as any)?.refund_count ?? 0);
+      const cur = String((data as any)?.currency ?? "usd").toUpperCase();
+      if (count > 0) {
+        toast.success(`Approved. Refunded ${cur} ${total.toFixed(2)} across ${count} invoice${count > 1 ? "s" : ""}.`);
+      } else {
+        toast.success("Approved. No tax to refund.");
+      }
+    } else {
+      toast.success(`Exemption ${act}d`);
+    }
     setRejectFor(null);
     setRejectReason("");
     load();
