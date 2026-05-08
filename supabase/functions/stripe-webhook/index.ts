@@ -318,6 +318,95 @@ serve(async (req) => {
         break;
       }
 
+      // ─── Tax-exemption refund lifecycle ───
+      case "refund.created":
+      case "refund.updated":
+      case "charge.refund.updated":
+      case "refund.failed": {
+        const refund = event.data.object as Stripe.Refund;
+        const refundId = refund.id;
+
+        // Map Stripe refund status to our DB status
+        let dbStatus: string;
+        let failureReason: string | null = null;
+        switch (refund.status) {
+          case "succeeded":
+            dbStatus = "succeeded";
+            break;
+          case "failed":
+          case "canceled":
+            dbStatus = "failed";
+            failureReason = refund.failure_reason || refund.status || null;
+            break;
+          case "pending":
+          case "requires_action":
+          default:
+            dbStatus = "pending";
+        }
+
+        // Locate our row by stripe_refund_id (preferred) or fallback to invoice/payment_intent
+        const { data: existing } = await supabase
+          .from("tax_exemption_refunds")
+          .select("id, tenant_id, status")
+          .eq("stripe_refund_id", refundId)
+          .maybeSingle();
+
+        if (!existing) {
+          logStep("Refund not tracked in tax_exemption_refunds (likely unrelated)", { refundId });
+          break;
+        }
+
+        if (existing.status === dbStatus) {
+          logStep("Refund status unchanged, skipping", { refundId, status: dbStatus });
+          break;
+        }
+
+        const { error: updErr } = await supabase
+          .from("tax_exemption_refunds")
+          .update({
+            status: dbStatus,
+            failure_reason: failureReason,
+          })
+          .eq("id", existing.id);
+
+        if (updErr) {
+          logStep("Failed to update tax refund row", { error: updErr.message });
+        } else {
+          logStep("Tax refund status synced", { refundId, dbStatus });
+        }
+
+        // Notify tenant + super admin on terminal states
+        if (dbStatus === "failed") {
+          const tenantName = await getTenantName(supabase, existing.tenant_id);
+          const amountStr = refund.amount ? (refund.amount / 100).toFixed(2) : "0";
+
+          await supabase.from("tenant_notifications").insert({
+            tenant_id: existing.tenant_id,
+            notification_type: "tax_refund_failed",
+            severity: "error",
+            title: "Tax refund failed",
+            message: `amount:${amountStr}|reason:${failureReason || "unknown"}`,
+            metadata: { refund_id: refundId, reason: failureReason },
+          });
+
+          await notifySuperAdmin("tax_refund_failed", {
+            tenantName,
+            tenantEmail: "",
+            amount: amountStr,
+          });
+        } else if (dbStatus === "succeeded") {
+          await supabase.from("tenant_notifications").insert({
+            tenant_id: existing.tenant_id,
+            notification_type: "tax_refund_succeeded",
+            severity: "info",
+            title: "Tax refund completed",
+            message: `amount:${refund.amount ? (refund.amount / 100).toFixed(2) : "0"}`,
+            metadata: { refund_id: refundId },
+          });
+        }
+        break;
+      }
+
       default:
         logStep("Unhandled event type", { type: event.type });
     }
