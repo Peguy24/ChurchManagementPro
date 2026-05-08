@@ -170,6 +170,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Tout effacer",
     loading: "Chargement...",
     empty: "Aucune notification",
+    updatePayment: "Mettre à jour mon paiement",
   },
   en: {
     title: "Notifications",
@@ -177,6 +178,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Clear all",
     loading: "Loading...",
     empty: "No notifications",
+    updatePayment: "Update my payment",
   },
   ht: {
     title: "Notifikasyon",
@@ -184,6 +186,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Efase tout",
     loading: "Chajman...",
     empty: "Pa gen notifikasyon",
+    updatePayment: "Mete ajou peman mwen",
   },
 };
 
