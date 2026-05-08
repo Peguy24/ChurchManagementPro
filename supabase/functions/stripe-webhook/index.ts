@@ -221,9 +221,9 @@ serve(async (req) => {
               tenant_id: tenantId,
               notification_type: "plan_changed",
               severity: "info",
-              title: "Forfait mis à jour",
-              message: `Votre abonnement est désormais sur le forfait ${planName}. Les nouvelles fonctionnalités sont disponibles immédiatement.`,
-              metadata: { plan: planKey, subscription_id: subscription.id },
+              title: "plan_changed",
+              message: "",
+              metadata: { plan: planKey, plan_name: planName, subscription_id: subscription.id },
             });
             logStep("Plan change notification sent", { email, planKey });
           }
