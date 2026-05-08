@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
+import { exportRefundsCSV, exportRefundsPDF, filterRefundsByPeriod, type RefundPeriod } from "@/utils/exportTaxRefunds";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Status = "none" | "pending" | "approved" | "rejected";
 
