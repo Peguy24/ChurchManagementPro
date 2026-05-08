@@ -985,6 +985,11 @@ export default function TenantManagement() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-0.5">
+                              {tenant.subscription?.managed_by_admin && (
+                                <Badge variant="outline" className="mr-1 border-amber-500 text-amber-700 dark:text-amber-300 text-[10px] px-1.5 py-0">
+                                  {t("superAdmin.managedByAdminBadge") || "Admin-managed"}
+                                </Badge>
+                              )}
                               <Button variant="ghost" size="icon"
                                 className={`h-7 w-7 ${tenant.subscription?.status === "active" ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}
                                 onClick={() => openPlanActivationDialog(tenant)}
