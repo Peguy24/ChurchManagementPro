@@ -14,16 +14,16 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 // Monthly Price IDs for each plan - synced with useSubscription.tsx
 const PRICE_IDS = {
-  essentiel: "price_1TIVUcF3VvKmdn5GYXcFcGh4",
-  professionnel: "price_1TIVVDF3VvKmdn5Gjf1yY160",
-  entreprise: "price_1TIVVwF3VvKmdn5GV4rCswUg",
+  essentiel: "price_1TUhjWFTm4C7ouBeeJJFjU6H",
+  professionnel: "price_1TUhkAFTm4C7ouBe4gEfoISY",
+  entreprise: "price_1TUhkXFTm4C7ouBegvYgbfhy",
 };
 
 // Yearly Price IDs (15% discount)
 const YEARLY_PRICE_IDS = {
-  essentiel: "price_1TIVUxF3VvKmdn5GC7fA2VyK",
-  professionnel: "price_1TIVVfF3VvKmdn5GXC0UT8N8",
-  entreprise: "price_1TIVWFF3VvKmdn5G7yPSifLh",
+  essentiel: "price_1TUhlxFTm4C7ouBe3XTZHbE5",
+  professionnel: "price_1TUhmQFTm4C7ouBeuvlNyb6t",
+  entreprise: "price_1TUhnEFTm4C7ouBeA4qdh6Qd",
 };
 
 // Plan limits for direct DB activation (free access)
@@ -257,9 +257,9 @@ serve(async (req) => {
           }
 
           const PRODUCT_TO_PLAN: Record<string, string> = {
-            "prod_Tqetfpt7pnhNFf": "essentiel",
-            "prod_TqetHNAL0zc5kD": "professionnel",
-            "prod_TqeuZk0jVNwjEp": "entreprise",
+            "prod_UTf3WP0cKpe9nL": "essentiel",
+            "prod_UTf4OlDmzUl7gM": "professionnel",
+            "prod_UTf4SPRIVqmMpJ": "entreprise",
           };
           const currentProduct = existingSubs.data[0].items.data[0].price.product as string;
           const previousPlanName = PRODUCT_TO_PLAN[currentProduct] || "unknown";

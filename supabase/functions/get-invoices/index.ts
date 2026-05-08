@@ -66,12 +66,12 @@ serve(async (req) => {
       "price_1TBi3DF3VvKmdn5GxgjBbhoe", // Essentiel yearly (old)
       "price_1TBi3bF3VvKmdn5G51dRztux", // Professionnel yearly (old)
       "price_1TBi4AF3VvKmdn5G1d7gKP8O", // Entreprise yearly (old)
-      "price_1TIVUcF3VvKmdn5GYXcFcGh4", // Essentiel monthly (new)
-      "price_1TIVVDF3VvKmdn5Gjf1yY160", // Professionnel monthly (new)
-      "price_1TIVVwF3VvKmdn5GV4rCswUg", // Entreprise monthly (new)
-      "price_1TIVUxF3VvKmdn5GC7fA2VyK", // Essentiel yearly (new)
-      "price_1TIVVfF3VvKmdn5GXC0UT8N8", // Professionnel yearly (new)
-      "price_1TIVWFF3VvKmdn5G7yPSifLh", // Entreprise yearly (new)
+      "price_1TUhjWFTm4C7ouBeeJJFjU6H", // Essentiel monthly (new)
+      "price_1TUhkAFTm4C7ouBe4gEfoISY", // Professionnel monthly (new)
+      "price_1TUhkXFTm4C7ouBegvYgbfhy", // Entreprise monthly (new)
+      "price_1TUhlxFTm4C7ouBe3XTZHbE5", // Essentiel yearly (new)
+      "price_1TUhmQFTm4C7ouBeuvlNyb6t", // Professionnel yearly (new)
+      "price_1TUhnEFTm4C7ouBeA4qdh6Qd", // Entreprise yearly (new)
     ]);
 
     // Get invoices for this customer
