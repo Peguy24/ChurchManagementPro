@@ -25,8 +25,16 @@ interface Row {
   tenant?: { name: string; contact_email: string | null };
 }
 
+interface RefundTotal {
+  tenant_id: string;
+  total: number;
+  count: number;
+  currency: string;
+}
+
 export default function TaxExemptionReviews() {
   const [rows, setRows] = useState<Row[]>([]);
+  const [refunds, setRefunds] = useState<Record<string, RefundTotal>>({});
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<string | null>(null);
   const [rejectFor, setRejectFor] = useState<Row | null>(null);
@@ -40,6 +48,20 @@ export default function TaxExemptionReviews() {
       .order("submitted_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRows((data ?? []) as any);
+
+    const { data: refundRows } = await supabase
+      .from("tax_exemption_refunds")
+      .select("tenant_id, tax_amount_refunded, currency, status");
+    const totals: Record<string, RefundTotal> = {};
+    (refundRows ?? []).forEach((r: any) => {
+      if (r.status !== "succeeded") return;
+      const t = totals[r.tenant_id] ?? { tenant_id: r.tenant_id, total: 0, count: 0, currency: r.currency };
+      t.total += Number(r.tax_amount_refunded);
+      t.count += 1;
+      totals[r.tenant_id] = t;
+    });
+    setRefunds(totals);
+
     setLoading(false);
   };
 
