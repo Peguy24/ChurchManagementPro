@@ -130,9 +130,9 @@ serve(async (req) => {
       
       // Map product ID to plan name
       const PRODUCT_TO_PLAN: Record<string, string> = {
-        "prod_Tqetfpt7pnhNFf": "essentiel",
-        "prod_TqetHNAL0zc5kD": "professionnel",
-        "prod_TqeuZk0jVNwjEp": "entreprise",
+        "prod_UTf3WP0cKpe9nL": "essentiel",
+        "prod_UTf4OlDmzUl7gM": "professionnel",
+        "prod_UTf4SPRIVqmMpJ": "entreprise",
         "prod_UA271d9Xzge6lN": "essentiel",
         "prod_UA2716VZhzrvjd": "professionnel",
         "prod_UA28jB4cFz2aZ7": "entreprise",

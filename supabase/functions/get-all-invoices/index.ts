@@ -94,12 +94,12 @@ serve(async (req) => {
       "price_1TBi3DF3VvKmdn5GxgjBbhoe",
       "price_1TBi3bF3VvKmdn5G51dRztux",
       "price_1TBi4AF3VvKmdn5G1d7gKP8O",
-      "price_1TIVUcF3VvKmdn5GYXcFcGh4",
-      "price_1TIVVDF3VvKmdn5Gjf1yY160",
-      "price_1TIVVwF3VvKmdn5GV4rCswUg",
-      "price_1TIVUxF3VvKmdn5GC7fA2VyK",
-      "price_1TIVVfF3VvKmdn5GXC0UT8N8",
-      "price_1TIVWFF3VvKmdn5G7yPSifLh",
+      "price_1TUhjWFTm4C7ouBeeJJFjU6H",
+      "price_1TUhkAFTm4C7ouBe4gEfoISY",
+      "price_1TUhkXFTm4C7ouBegvYgbfhy",
+      "price_1TUhlxFTm4C7ouBe3XTZHbE5",
+      "price_1TUhmQFTm4C7ouBeuvlNyb6t",
+      "price_1TUhnEFTm4C7ouBeA4qdh6Qd",
     ]);
 
     const planNameMap: Record<string, string> = {
@@ -109,12 +109,12 @@ serve(async (req) => {
       "price_1TBi3DF3VvKmdn5GxgjBbhoe": "Essentiel (Annual)",
       "price_1TBi3bF3VvKmdn5G51dRztux": "Professionnel (Annual)",
       "price_1TBi4AF3VvKmdn5G1d7gKP8O": "Entreprise (Annual)",
-      "price_1TIVUcF3VvKmdn5GYXcFcGh4": "Essentiel (Monthly)",
-      "price_1TIVVDF3VvKmdn5Gjf1yY160": "Professionnel (Monthly)",
-      "price_1TIVVwF3VvKmdn5GV4rCswUg": "Entreprise (Monthly)",
-      "price_1TIVUxF3VvKmdn5GC7fA2VyK": "Essentiel (Annual)",
-      "price_1TIVVfF3VvKmdn5GXC0UT8N8": "Professionnel (Annual)",
-      "price_1TIVWFF3VvKmdn5G7yPSifLh": "Entreprise (Annual)",
+      "price_1TUhjWFTm4C7ouBeeJJFjU6H": "Essentiel (Monthly)",
+      "price_1TUhkAFTm4C7ouBe4gEfoISY": "Professionnel (Monthly)",
+      "price_1TUhkXFTm4C7ouBegvYgbfhy": "Entreprise (Monthly)",
+      "price_1TUhlxFTm4C7ouBe3XTZHbE5": "Essentiel (Annual)",
+      "price_1TUhmQFTm4C7ouBeuvlNyb6t": "Professionnel (Annual)",
+      "price_1TUhnEFTm4C7ouBeA4qdh6Qd": "Entreprise (Annual)",
     };
 
     // Fetch invoices from Stripe for this period
