@@ -136,6 +136,7 @@ export default function TaxExemptionReviews() {
                     <TableHead>Status</TableHead>
                     <TableHead>Submitted</TableHead>
                     <TableHead>Certificate</TableHead>
+                    <TableHead>Tax Refunded</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
