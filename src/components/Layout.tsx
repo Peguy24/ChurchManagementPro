@@ -325,6 +325,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/payroll", icon: Users, label: sl("payroll") },
         { to: "/super-admin/taxes", icon: FileText, label: sl("taxes") },
+        { to: "/super-admin/tax-exemptions", icon: ShieldCheck, label: "Tax Exemptions" },
         { to: "/super-admin/referrals", icon: Sparkles, label: sl("referrals") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
