@@ -311,34 +311,67 @@ export default function SuperAdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[
-                  { icon: Eye, label: t("superAdmin.exploreChurchData"), path: "/super-admin/explore" },
-                  { icon: Users, label: t("superAdmin.userManagement"), path: "/settings/users" },
-                  { icon: Activity, label: t("superAdmin.activityLog.title"), path: "/super-admin/activity" },
-                  { icon: BarChart3, label: t("superAdmin.revenue.title"), path: "/super-admin/revenue" },
-                  { icon: Heart, label: t("superAdmin.health.title"), path: "/super-admin/health" },
-                  { icon: Megaphone, label: t("superAdmin.banners.title"), path: "/super-admin/banners" },
-                  { icon: CreditCard, label: t("superAdmin.overrides.title"), path: "/super-admin/subscriptions" },
-                  { icon: ShieldAlert, label: t("superAdmin.churn.title"), path: "/super-admin/churn" },
-                  { icon: GitCompareArrows, label: t("superAdmin.comparison.title"), path: "/super-admin/comparison" },
-                  { icon: Palette, label: t("superAdmin.whiteLabel.title"), path: "/super-admin/branding" },
-                  { icon: DollarSign, label: t("superAdmin.payments.title"), path: "/super-admin/payments" },
-                  { icon: Users, label: language === "fr" ? "Paie" : language === "ht" ? "Pewòl" : "Payroll", path: "/super-admin/payroll" },
-                  { icon: Receipt, label: language === "fr" ? "Fiscalité" : language === "ht" ? "Taks" : "Taxes", path: "/super-admin/taxes" },
-                  { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
-                ].map((item) => (
-                  <Button
-                  key={item.path}
-                    variant="outline"
-                    className="w-full justify-start text-left truncate"
-                    onClick={() => item.path === "__presentation__" ? setShowPresDialog(true) : navigate(item.path)}
-                  >
-                    <item.icon className="mr-2 h-4 w-4 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </Button>
-                ))}
-              </div>
+              {(() => {
+                const groups = {
+                  tenants: {
+                    label: language === "fr" ? "Églises" : language === "ht" ? "Legliz" : "Churches",
+                    items: [
+                      { icon: Eye, label: t("superAdmin.exploreChurchData"), path: "/super-admin/explore" },
+                      { icon: Users, label: t("superAdmin.userManagement"), path: "/settings/users" },
+                      { icon: GitCompareArrows, label: t("superAdmin.comparison.title"), path: "/super-admin/comparison" },
+                      { icon: Heart, label: t("superAdmin.health.title"), path: "/super-admin/health" },
+                      { icon: ShieldAlert, label: t("superAdmin.churn.title"), path: "/super-admin/churn" },
+                    ],
+                  },
+                  finance: {
+                    label: language === "fr" ? "Finance" : language === "ht" ? "Finans" : "Finance",
+                    items: [
+                      { icon: BarChart3, label: t("superAdmin.revenue.title"), path: "/super-admin/revenue" },
+                      { icon: CreditCard, label: t("superAdmin.overrides.title"), path: "/super-admin/subscriptions" },
+                      { icon: DollarSign, label: t("superAdmin.payments.title"), path: "/super-admin/payments" },
+                      { icon: Users, label: language === "fr" ? "Paie" : language === "ht" ? "Pewòl" : "Payroll", path: "/super-admin/payroll" },
+                      { icon: Receipt, label: language === "fr" ? "Fiscalité" : language === "ht" ? "Taks" : "Taxes", path: "/super-admin/taxes" },
+                    ],
+                  },
+                  platform: {
+                    label: language === "fr" ? "Plateforme" : language === "ht" ? "Platfòm" : "Platform",
+                    items: [
+                      { icon: Activity, label: t("superAdmin.activityLog.title"), path: "/super-admin/activity" },
+                      { icon: Megaphone, label: t("superAdmin.banners.title"), path: "/super-admin/banners" },
+                      { icon: Palette, label: t("superAdmin.whiteLabel.title"), path: "/super-admin/branding" },
+                      { icon: FileText, label: language === "fr" ? "Présentation commerciale" : "Sales Presentation", path: "__presentation__" },
+                    ],
+                  },
+                };
+                const renderItems = (items: any[]) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {items.map((item) => (
+                      <Button
+                        key={item.path}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left truncate"
+                        onClick={() => item.path === "__presentation__" ? setShowPresDialog(true) : navigate(item.path)}
+                      >
+                        <item.icon className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                );
+                return (
+                  <Tabs defaultValue="tenants" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="tenants">{groups.tenants.label}</TabsTrigger>
+                      <TabsTrigger value="finance">{groups.finance.label}</TabsTrigger>
+                      <TabsTrigger value="platform">{groups.platform.label}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="tenants" className="mt-3">{renderItems(groups.tenants.items)}</TabsContent>
+                    <TabsContent value="finance" className="mt-3">{renderItems(groups.finance.items)}</TabsContent>
+                    <TabsContent value="platform" className="mt-3">{renderItems(groups.platform.items)}</TabsContent>
+                  </Tabs>
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
