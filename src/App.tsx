@@ -95,6 +95,7 @@ const LegalPage = lazy(() => import("./pages/LegalPage"));
 const SelectChurch = lazy(() => import("./pages/SelectChurch"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const SuperAdminReferrals = lazy(() => import("./pages/SuperAdminReferrals"));
+const TaxExemptionReviews = lazy(() => import("./pages/TaxExemptionReviews"));
 
 const queryClient = new QueryClient();
 
@@ -197,6 +198,7 @@ const App = () => (
               <Route path="/super-admin/branding" element={<ProtectedRoute requireSuperAdmin><SuperAdminWhiteLabel /></ProtectedRoute>} />
               <Route path="/super-admin/payroll" element={<ProtectedRoute requireSuperAdmin><PlatformPayroll /></ProtectedRoute>} />
               <Route path="/super-admin/taxes" element={<ProtectedRoute requireSuperAdmin><PlatformTaxRecords /></ProtectedRoute>} />
+              <Route path="/super-admin/tax-exemptions" element={<ProtectedRoute requireSuperAdmin><TaxExemptionReviews /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
