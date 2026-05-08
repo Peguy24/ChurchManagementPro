@@ -574,6 +574,8 @@ export default function ChurchSettings() {
             </CardContent>
           </Card>
 
+          <TaxExemptionSection />
+
           <div className="flex justify-end">
             <Button type="submit" disabled={updateSettings.isPending}>
               {updateSettings.isPending ? (
