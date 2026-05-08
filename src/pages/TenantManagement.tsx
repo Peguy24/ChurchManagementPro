@@ -56,6 +56,7 @@ interface TenantSubscription {
   features: Record<string, boolean>;
   trial_ends_at: string | null;
   current_period_end: string;
+  managed_by_admin?: boolean;
 }
 
 interface TenantWithSubscription extends Tenant {
