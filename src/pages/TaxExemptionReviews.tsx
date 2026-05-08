@@ -171,10 +171,30 @@ export default function TaxExemptionReviews() {
                       </TableCell>
                       <TableCell className="text-xs">
                         {refunds[r.tenant_id] ? (
-                          <span className="font-medium">
-                            {refunds[r.tenant_id].currency.toUpperCase()} {refunds[r.tenant_id].total.toFixed(2)}
-                            <span className="text-muted-foreground ml-1">({refunds[r.tenant_id].count})</span>
-                          </span>
+                          <div className="space-y-1">
+                            <span className="font-medium">
+                              {refunds[r.tenant_id].currency.toUpperCase()} {refunds[r.tenant_id].total.toFixed(2)}
+                              <span className="text-muted-foreground ml-1">({refunds[r.tenant_id].count})</span>
+                            </span>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                              >
+                                <Download className="h-3 w-3 mr-1" />CSV
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => exportRefundsPDF(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                              >
+                                <Download className="h-3 w-3 mr-1" />PDF
+                              </Button>
+                            </div>
+                          </div>
                         ) : (
                           "—"
                         )}
