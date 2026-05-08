@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw } from "lucide-react";
+import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw, Download } from "lucide-react";
+import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
 
 interface Row {
   id: string;
