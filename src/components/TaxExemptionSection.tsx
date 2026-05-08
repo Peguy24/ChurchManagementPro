@@ -163,16 +163,27 @@ export default function TaxExemptionSection() {
             )}
             {refunds.length > 0 && (
               <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="text-sm font-medium">
                     {t("taxExemption.refundsIssued") || "Refunds Issued"}
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => exportRefundsCSV(tenantName, refunds)}>
+                  <div className="flex gap-2 items-center">
+                    <Select value={period} onValueChange={(v) => setPeriod(v as RefundPeriod)}>
+                      <SelectTrigger className="h-8 w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("taxExemption.periodAll") || "All time"}</SelectItem>
+                        <SelectItem value="week">{t("taxExemption.periodWeek") || "Last week"}</SelectItem>
+                        <SelectItem value="month">{t("taxExemption.periodMonth") || "Last month"}</SelectItem>
+                        <SelectItem value="year">{t("taxExemption.periodYear") || "Last year"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsCSV(tenantName, filterRefundsByPeriod(refunds, period))}>
                       <Download className="h-3.5 w-3.5 mr-1" />
                       CSV
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => exportRefundsPDF(tenantName, refunds)}>
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsPDF(tenantName, filterRefundsByPeriod(refunds, period))}>
                       <Download className="h-3.5 w-3.5 mr-1" />
                       PDF
                     </Button>
@@ -183,7 +194,7 @@ export default function TaxExemptionSection() {
                     "We automatically refunded sales tax charged before your exemption was approved."}
                 </div>
                 <ul className="space-y-1 text-sm">
-                  {refunds.map((r) => (
+                  {filterRefundsByPeriod(refunds, period).map((r) => (
                     <li key={r.id} className="flex items-center justify-between border-t pt-1">
                       <span className="text-muted-foreground">
                         {new Date(r.created_at).toLocaleDateString()}
