@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw, Download } from "lucide-react";
-import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
+import { exportRefundsCSV, exportRefundsPDF, filterRefundsByPeriod, type RefundPeriod } from "@/utils/exportTaxRefunds";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Row {
   id: string;
