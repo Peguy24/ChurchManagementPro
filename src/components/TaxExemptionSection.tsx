@@ -159,10 +159,22 @@ export default function TaxExemptionSection() {
                 </AlertDescription>
               </Alert>
             )}
-            {status === "approved" && refunds.length > 0 && (
+            {refunds.length > 0 && (
               <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-                <div className="text-sm font-medium">
-                  {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">
+                    {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsCSV(tenantName, refunds)}>
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      CSV
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsPDF(tenantName, refunds)}>
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      PDF
+                    </Button>
+                  </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {t("taxExemption.refundsNote") ||
