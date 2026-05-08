@@ -34,6 +34,7 @@ export default function TaxExemptionSection() {
   const [ein, setEin] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [refunds, setRefunds] = useState<Array<{ id: string; tax_amount_refunded: number; currency: string; created_at: string; status: string; stripe_refund_id: string | null }>>([]);
 
   const fetchData = async () => {
     if (!tenantId) return;
@@ -54,6 +55,12 @@ export default function TaxExemptionSection() {
         setSignedUrl(signed?.signedUrl ?? null);
       }
     }
+    const { data: refundData } = await supabase
+      .from("tax_exemption_refunds")
+      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false });
+    setRefunds((refundData ?? []) as any);
     setLoading(false);
   };
 
@@ -147,6 +154,32 @@ export default function TaxExemptionSection() {
                     "Your church is approved tax-exempt. Future invoices will not include sales tax."}
                 </AlertDescription>
               </Alert>
+            )}
+            {status === "approved" && refunds.length > 0 && (
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                <div className="text-sm font-medium">
+                  {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("taxExemption.refundsNote") ||
+                    "We automatically refunded sales tax charged before your exemption was approved."}
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {refunds.map((r) => (
+                    <li key={r.id} className="flex items-center justify-between border-t pt-1">
+                      <span className="text-muted-foreground">
+                        {new Date(r.created_at).toLocaleDateString()}
+                        {r.status === "failed" && (
+                          <span className="ml-2 text-destructive">(failed)</span>
+                        )}
+                      </span>
+                      <span className="font-medium">
+                        {r.currency.toUpperCase()} {Number(r.tax_amount_refunded).toFixed(2)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             {status === "rejected" && exemption?.rejection_reason && (
               <Alert variant="destructive">
