@@ -176,13 +176,74 @@ serve(async (req) => {
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const status = subscription.status === "trialing" ? "trialing" : subscription.status === "active" ? "active" : subscription.status;
 
+        // Detect plan change: previous_attributes contains items if plan changed
+        const previousAttrs = (event.data as any).previous_attributes || {};
+        const planChanged = event.type === "customer.subscription.updated"
+          && (previousAttrs.items || previousAttrs.plan);
+
         if (planKey) {
           await syncSubscription(supabase, tenantId, planKey, status, periodEnd);
           const tenantName = await getTenantName(supabase, tenantId);
           await notifySuperAdmin("plan_updated", { tenantName, tenantEmail: email, newPlan: planKey });
+
+          if (planChanged) {
+            const planName = planKey.charAt(0).toUpperCase() + planKey.slice(1);
+            await notifyTenantAdmins("plan_changed", tenantId, planName);
+            await supabase.from("tenant_notifications").insert({
+              tenant_id: tenantId,
+              notification_type: "plan_changed",
+              severity: "info",
+              title: "Forfait mis à jour",
+              message: `Votre abonnement est désormais sur le forfait ${planName}. Les nouvelles fonctionnalités sont disponibles immédiatement.`,
+              metadata: { plan: planKey, subscription_id: subscription.id },
+            });
+            logStep("Plan change notification sent", { email, planKey });
+          }
         }
 
-        logStep("Subscription updated processed", { email, planKey, status });
+        logStep("Subscription updated processed", { email, planKey, status, planChanged });
+        break;
+      }
+
+      // ─── Payment method updated via Customer Portal ───
+      case "payment_method.attached":
+      case "customer.updated": {
+        // For customer.updated, only act if default payment method changed
+        if (event.type === "customer.updated") {
+          const prev = (event.data as any).previous_attributes || {};
+          const invoiceSettingsChanged = prev.invoice_settings
+            && Object.prototype.hasOwnProperty.call(prev.invoice_settings, "default_payment_method");
+          if (!invoiceSettingsChanged) break;
+        }
+
+        const obj = event.data.object as any;
+        const customerId = (obj.customer || obj.id) as string;
+        if (!customerId) break;
+
+        let email: string | null = null;
+        try {
+          const customer = await stripe.customers.retrieve(customerId);
+          email = (customer as Stripe.Customer).email || null;
+        } catch (e) {
+          logStep("Could not retrieve customer for PM update", { error: String(e) });
+          break;
+        }
+        if (!email) break;
+
+        const tenantId = await getTenantByEmail(supabase, email);
+        if (!tenantId) break;
+
+        await notifyTenantAdmins("payment_method_updated", tenantId);
+        await supabase.from("tenant_notifications").insert({
+          tenant_id: tenantId,
+          notification_type: "payment_method_updated",
+          severity: "info",
+          title: "Méthode de paiement mise à jour",
+          message: "Votre méthode de paiement de facturation a été mise à jour avec succès. Les prochains prélèvements utiliseront cette nouvelle méthode. Si vous n'êtes pas à l'origine de ce changement, contactez le support immédiatement.",
+          metadata: { customer_id: customerId },
+        });
+
+        logStep("Payment method updated notification sent", { email });
         break;
       }
 
