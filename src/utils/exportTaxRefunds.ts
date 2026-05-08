@@ -11,6 +11,20 @@ export interface RefundExportRow {
   failure_reason?: string | null;
 }
 
+export type RefundPeriod = "all" | "week" | "month" | "year";
+
+export function filterRefundsByPeriod<T extends { created_at: string }>(rows: T[], period: RefundPeriod): T[] {
+  if (period === "all") return rows;
+  const now = Date.now();
+  const ms =
+    period === "week" ? 7 * 86400 * 1000 : period === "month" ? 30 * 86400 * 1000 : 365 * 86400 * 1000;
+  const cutoff = now - ms;
+  return rows.filter((r) => {
+    const t = new Date(r.created_at).getTime();
+    return !Number.isNaN(t) && t >= cutoff;
+  });
+}
+
 const fmtDate = (s: string) => {
   try {
     return new Date(s).toLocaleDateString();

@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw, Download } from "lucide-react";
-import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
+import { exportRefundsCSV, exportRefundsPDF, filterRefundsByPeriod, type RefundPeriod } from "@/utils/exportTaxRefunds";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Row {
   id: string;
@@ -37,6 +38,7 @@ export default function TaxExemptionReviews() {
   const [rows, setRows] = useState<Row[]>([]);
   const [refunds, setRefunds] = useState<Record<string, RefundTotal>>({});
   const [refundRowsByTenant, setRefundRowsByTenant] = useState<Record<string, any[]>>({});
+  const [period, setPeriod] = useState<RefundPeriod>("all");
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<string | null>(null);
   const [rejectFor, setRejectFor] = useState<Row | null>(null);
@@ -125,7 +127,23 @@ export default function TaxExemptionReviews() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Submitted Certificates</CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle>Submitted Certificates</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Export period:</span>
+                <Select value={period} onValueChange={(v) => setPeriod(v as RefundPeriod)}>
+                  <SelectTrigger className="h-8 w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All time</SelectItem>
+                    <SelectItem value="week">Last week</SelectItem>
+                    <SelectItem value="month">Last month</SelectItem>
+                    <SelectItem value="year">Last year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -181,7 +199,7 @@ export default function TaxExemptionReviews() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-6 px-2 text-xs"
-                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", filterRefundsByPeriod(refundRowsByTenant[r.tenant_id] || [], period))}
                               >
                                 <Download className="h-3 w-3 mr-1" />CSV
                               </Button>
@@ -189,7 +207,7 @@ export default function TaxExemptionReviews() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-6 px-2 text-xs"
-                                onClick={() => exportRefundsPDF(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                                onClick={() => exportRefundsPDF(r.tenant?.name || "Church", filterRefundsByPeriod(refundRowsByTenant[r.tenant_id] || [], period))}
                               >
                                 <Download className="h-3 w-3 mr-1" />PDF
                               </Button>
