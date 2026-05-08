@@ -55,6 +55,12 @@ export default function TaxExemptionSection() {
         setSignedUrl(signed?.signedUrl ?? null);
       }
     }
+    const { data: refundData } = await supabase
+      .from("tax_exemption_refunds")
+      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false });
+    setRefunds((refundData ?? []) as any);
     setLoading(false);
   };
 
