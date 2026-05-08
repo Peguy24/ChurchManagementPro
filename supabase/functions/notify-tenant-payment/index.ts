@@ -50,17 +50,34 @@ const colorSchemes: Record<PaymentEvent, { bg: string; accent: string }> = {
   payment_method_updated: { bg: "#7C3AED", accent: "#A78BFA" },
 };
 
+const labels: Record<string, { plan: string; date: string; viewBilling: string; nextSteps: string }> = {
+  fr: { plan: "Forfait", date: "Date du changement", viewBilling: "Voir le détail de la facturation", nextSteps: "Prochaines étapes" },
+  en: { plan: "Plan", date: "Change date", viewBilling: "View billing details", nextSteps: "Next steps" },
+  ht: { plan: "Plan", date: "Dat chanjman an", viewBilling: "Wè detay faktirasyon", nextSteps: "Pwochen etap yo" },
+};
+
+function formatDateTime(lang: string): string {
+  const locale = lang === "fr" ? "fr-FR" : lang === "ht" ? "fr-FR" : "en-US";
+  return new Date().toLocaleString(locale, {
+    day: "2-digit", month: "long", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    timeZone: "America/Port-au-Prince",
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { eventType, tenantId, amount, language = "fr" } = await req.json() as {
+    const { eventType, tenantId, amount, language = "fr", planName, billingUrl } = await req.json() as {
       eventType: PaymentEvent;
       tenantId: string;
       amount?: string;
       language?: string;
+      planName?: string;
+      billingUrl?: string;
     };
 
     if (!eventType || !tenantId) {
@@ -72,6 +89,7 @@ serve(async (req) => {
 
     const lang = ["en", "fr", "ht"].includes(language) ? language : "fr";
     const t = translations[eventType]?.[lang] || translations[eventType]?.fr;
+    const lbl = labels[lang] || labels.fr;
     if (!t) {
       return new Response(JSON.stringify({ error: "Invalid event type" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -120,8 +138,34 @@ serve(async (req) => {
       });
     }
 
+    // Fetch current plan from DB if not provided
+    let currentPlan = planName;
+    if (!currentPlan) {
+      const { data: sub } = await supabase
+        .from("tenant_subscriptions")
+        .select("plan")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      const dbToLabel: Record<string, string> = { basic: "Essentiel", standard: "Professionnel", premium: "Entreprise" };
+      currentPlan = sub?.plan ? (dbToLabel[sub.plan] || sub.plan) : "—";
+    }
+
     const colors = colorSchemes[eventType];
-    const bodyText = t.body.replace(/\{amount\}/g, amount || "0").replace(/\$\{amount\}/g, amount || "0");
+    const bodyText = t.body.replace(/\{amount\}/g, amount || currentPlan || "0").replace(/\$\{amount\}/g, amount || "0");
+    const eventDateStr = formatDateTime(lang);
+    const billingLink = billingUrl || "https://cogmpw-sys.lovable.app/settings/subscription";
+
+    // Details box (plan + date)
+    const detailsBox = `
+      <div style="background: #f8fafc; border-left: 3px solid ${colors.bg}; padding: 14px 18px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0; color: #475569; font-size: 13px;">
+          <strong style="color: #0f172a;">${lbl.plan}:</strong> ${currentPlan}
+        </p>
+        <p style="margin: 0; color: #475569; font-size: 13px;">
+          <strong style="color: #0f172a;">${lbl.date}:</strong> ${eventDateStr}
+        </p>
+      </div>
+    `;
 
     const resend = new Resend(resendApiKey);
     await resend.emails.send({
@@ -130,7 +174,7 @@ serve(async (req) => {
       subject: `${t.subject} — ${tenantName}`,
       html: `
         <!DOCTYPE html>
-        <html>
+        <html lang="${lang}">
         <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -138,15 +182,21 @@ serve(async (req) => {
               <h1 style="color: #ffffff; margin: 0; font-size: 22px;">${t.title}</h1>
             </div>
             <div style="padding: 30px;">
-              <p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
                 ${bodyText}
               </p>
-              <div style="text-align: center; margin: 25px 0;">
-                <a href="https://cogmpw-sys.lovable.app/settings/subscription"
+              ${detailsBox}
+              <div style="text-align: center; margin: 25px 0 15px 0;">
+                <a href="${billingLink}"
                    style="display: inline-block; background: ${colors.bg}; color: #ffffff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                   ${t.cta}
                 </a>
               </div>
+              <p style="text-align: center; margin: 0 0 20px 0;">
+                <a href="${billingLink}" style="color: ${colors.bg}; font-size: 13px; text-decoration: underline;">
+                  ${lbl.viewBilling}
+                </a>
+              </p>
               <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
                 ${t.footer}
               </p>
