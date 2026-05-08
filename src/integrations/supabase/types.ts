@@ -3689,6 +3689,56 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_exemption_refunds: {
+        Row: {
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          status: string
+          stripe_invoice_id: string
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string | null
+          tax_amount_refunded: number
+          tax_exemption_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          status?: string
+          stripe_invoice_id: string
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          tax_amount_refunded?: number
+          tax_exemption_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          status?: string
+          stripe_invoice_id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          tax_amount_refunded?: number
+          tax_exemption_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_exemption_refunds_tax_exemption_id_fkey"
+            columns: ["tax_exemption_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_tax_exemptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_custom_role_permissions: {
         Row: {
           custom_role_id: string
