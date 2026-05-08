@@ -8,6 +8,8 @@ import {
   Calendar, Briefcase, Users, XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Loader2, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -168,6 +170,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Tout effacer",
     loading: "Chargement...",
     empty: "Aucune notification",
+    updatePayment: "Mettre à jour mon paiement",
   },
   en: {
     title: "Notifications",
@@ -175,6 +178,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Clear all",
     loading: "Loading...",
     empty: "No notifications",
+    updatePayment: "Update my payment",
   },
   ht: {
     title: "Notifikasyon",
@@ -182,6 +186,7 @@ const uiTranslations: Record<string, Record<string, string>> = {
     clearAll: "Efase tout",
     loading: "Chajman...",
     empty: "Pa gen notifikasyon",
+    updatePayment: "Mete ajou peman mwen",
   },
 };
 
@@ -192,6 +197,7 @@ export default function TenantNotifications() {
   const [open, setOpen] = useState(false);
   const dateLocale = language === "fr" ? fr : enUS;
   const ui = uiTranslations[language] || uiTranslations.en;
+  const { openCustomerPortal, portalLoading } = useSubscription();
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ["tenant-notifications", tenantId],
@@ -344,9 +350,28 @@ export default function TenantNotifications() {
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3 whitespace-pre-line">
                           {translateMessage(notif, language)}
                         </p>
+                        {(notif.notification_type === "payment_failed" || notif.notification_type === "payment_method_updated") && (
+                          <Button
+                            size="sm"
+                            variant={notif.notification_type === "payment_failed" ? "default" : "outline"}
+                            className="mt-2 h-7 text-xs"
+                            disabled={portalLoading}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openCustomerPortal();
+                            }}
+                          >
+                            {portalLoading ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <CreditCard className="h-3 w-3 mr-1" />
+                            )}
+                            {ui.updatePayment}
+                          </Button>
+                        )}
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {formatDistanceToNow(new Date(notif.created_at), {
                             addSuffix: true,
