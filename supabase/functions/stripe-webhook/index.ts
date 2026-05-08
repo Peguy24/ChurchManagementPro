@@ -216,7 +216,7 @@ serve(async (req) => {
 
           if (planChanged) {
             const planName = planKey.charAt(0).toUpperCase() + planKey.slice(1);
-            await notifyTenantAdmins("plan_changed", tenantId, planName);
+            await notifyTenantAdmins("plan_changed", tenantId, planName, { planName });
             await supabase.from("tenant_notifications").insert({
               tenant_id: tenantId,
               notification_type: "plan_changed",
