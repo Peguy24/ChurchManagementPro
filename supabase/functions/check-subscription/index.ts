@@ -115,7 +115,7 @@ serve(async (req) => {
     const { data: tenantSub } = userTenantId
       ? await supabaseClient
           .from("tenant_subscriptions")
-          .select("plan, status, current_period_end, trial_ends_at")
+          .select("plan, status, current_period_end, trial_ends_at, managed_by_admin")
           .eq("tenant_id", userTenantId)
           .maybeSingle()
       : { data: null };
@@ -124,7 +124,30 @@ serve(async (req) => {
       tenantId: userTenantId,
       tenantStatus: tenantSub?.status,
       tenantPlan: tenantSub?.plan,
+      managedByAdmin: (tenantSub as any)?.managed_by_admin,
     });
+
+    // Short-circuit: admin-managed subscriptions never query Stripe
+    if (tenantSub && (tenantSub as any).managed_by_admin === true) {
+      const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
+      const subscriptionEnd = getDbSubscriptionEnd(tenantSub);
+      logStep("Admin-managed subscription, returning DB state", {
+        plan: mappedPlan,
+        status: tenantSub.status,
+      });
+      return new Response(JSON.stringify({
+        subscribed: isDbSubscribedStatus(tenantSub.status),
+        plan: mappedPlan,
+        status: tenantSub.status,
+        subscription_end: subscriptionEnd,
+        managed_by_admin: true,
+        has_stripe_customer: false,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
