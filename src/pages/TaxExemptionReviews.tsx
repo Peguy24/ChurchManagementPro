@@ -127,7 +127,23 @@ export default function TaxExemptionReviews() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Submitted Certificates</CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle>Submitted Certificates</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Export period:</span>
+                <Select value={period} onValueChange={(v) => setPeriod(v as RefundPeriod)}>
+                  <SelectTrigger className="h-8 w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All time</SelectItem>
+                    <SelectItem value="week">Last week</SelectItem>
+                    <SelectItem value="month">Last month</SelectItem>
+                    <SelectItem value="year">Last year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
