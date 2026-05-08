@@ -3702,6 +3702,7 @@ export type Database = {
           tax_amount_refunded: number
           tax_exemption_id: string | null
           tenant_id: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -3715,6 +3716,7 @@ export type Database = {
           tax_amount_refunded?: number
           tax_exemption_id?: string | null
           tenant_id: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -3728,6 +3730,7 @@ export type Database = {
           tax_amount_refunded?: number
           tax_exemption_id?: string | null
           tenant_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
