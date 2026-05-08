@@ -4093,6 +4093,7 @@ export type Database = {
           current_period_start: string | null
           features: Json | null
           id: string
+          managed_by_admin: boolean
           max_branches: number | null
           max_members: number | null
           max_storage_mb: number | null
@@ -4110,6 +4111,7 @@ export type Database = {
           current_period_start?: string | null
           features?: Json | null
           id?: string
+          managed_by_admin?: boolean
           max_branches?: number | null
           max_members?: number | null
           max_storage_mb?: number | null
@@ -4127,6 +4129,7 @@ export type Database = {
           current_period_start?: string | null
           features?: Json | null
           id?: string
+          managed_by_admin?: boolean
           max_branches?: number | null
           max_members?: number | null
           max_storage_mb?: number | null
