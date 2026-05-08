@@ -17,6 +17,7 @@ import { exportToCsv, formatDateForCsv, formatCurrencyForCsv } from "@/lib/csvEx
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
