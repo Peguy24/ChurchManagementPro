@@ -302,6 +302,15 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      // Stripe Tax: auto-calculate sales tax (NJ etc.).
+      // Customers flagged tax_exempt='exempt' (approved church 501c3) are billed $0 tax automatically.
+      automatic_tax: { enabled: true },
+      // Required by automatic_tax: keep customer address/name in sync with checkout
+      ...(customerId
+        ? { customer_update: { address: "auto", name: "auto" } as any }
+        : {}),
+      tax_id_collection: { enabled: true },
+      billing_address_collection: "required",
       success_url: `${origin}/settings/subscription?checkout=success`,
       cancel_url: `${origin}/settings/subscription?checkout=cancelled`,
       metadata: {
