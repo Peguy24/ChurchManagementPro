@@ -57,7 +57,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_event_created: "Nouvel événement créé",
     new_expense_recorded: "Nouvelle dépense enregistrée",
     new_membership_request: "Nouvelle demande d'adhésion",
-    payment_failed: "Paiement échoué",
+    payment_failed: "Échec de paiement — Action requise",
+    payment_method_updated: "Méthode de paiement mise à jour",
+    plan_changed: "Forfait mis à jour",
     free_access_ended_plan_restored: "Accès gratuit terminé — plan précédent réactivé",
     free_access_ended_select_plan: "Accès gratuit terminé — veuillez sélectionner un plan",
     discount_ended: "Votre réduction a pris fin",
@@ -68,7 +70,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_event_created: "New event created",
     new_expense_recorded: "New expense recorded",
     new_membership_request: "New membership request",
-    payment_failed: "Payment failed",
+    payment_failed: "Payment failed — Action required",
+    payment_method_updated: "Payment method updated",
+    plan_changed: "Plan updated",
     free_access_ended_plan_restored: "Free access ended — previous plan reactivated",
     free_access_ended_select_plan: "Free access ended — please select a plan",
     discount_ended: "Your discount has ended",
@@ -79,7 +83,9 @@ const notifTitleTranslations: Record<string, Record<string, string>> = {
     new_event_created: "Nouvo evènman kreye",
     new_expense_recorded: "Nouvo depans anrejistre",
     new_membership_request: "Nouvo demann manm",
-    payment_failed: "Peman echwe",
+    payment_failed: "Peman echwe — Aksyon nesesè",
+    payment_method_updated: "Metòd peman mete ajou",
+    plan_changed: "Plan mete ajou",
     free_access_ended_plan_restored: "Aksè gratis fini — plan anvan an reaktive",
     free_access_ended_select_plan: "Aksè gratis fini — tanpri chwazi yon plan",
     discount_ended: "Rabè ou a fini",
@@ -156,6 +162,64 @@ function translateMessage(notif: TenantNotification, language: string): string {
       ht: `${meta.name} ta renmen rejwenn legliz ou a.`,
     };
     return templates[language] || templates.en;
+  }
+
+  if (type === "plan_changed") {
+    const planName = meta.plan_name || meta.plan || "";
+    const templates: Record<string, string> = {
+      fr: `Votre abonnement est désormais sur le forfait ${planName}. Les nouvelles fonctionnalités sont disponibles immédiatement.`,
+      en: `Your subscription is now on the ${planName} plan. New features are available immediately.`,
+      ht: `Abònman ou kounye a sou plan ${planName}. Nouvo fonksyonalite yo disponib imedyatman.`,
+    };
+    return templates[language] || templates.en;
+  }
+
+  if (type === "payment_method_updated") {
+    const templates: Record<string, string> = {
+      fr: "Votre méthode de paiement de facturation a été mise à jour avec succès. Les prochains prélèvements utiliseront cette nouvelle méthode. Si vous n'êtes pas à l'origine de ce changement, contactez le support immédiatement.",
+      en: "Your billing payment method was updated successfully. Future charges will use this new method. If you did not make this change, contact support immediately.",
+      ht: "Metòd peman ou pou faktirasyon mete ajou avèk siksè. Pwochèn prelèvman yo ap itilize nouvo metòd sa a. Si se pa ou ki fè chanjman sa a, kontakte sipò touswit.",
+    };
+    return templates[language] || templates.en;
+  }
+
+  if (type === "payment_failed") {
+    const amount = meta.amount ?? "0";
+    const currency = meta.currency || "USD";
+    const attempt = meta.attempt_count ?? 1;
+    const nextAttemptISO = meta.next_payment_attempt;
+    const dateLocale = language === "fr" ? "fr-FR" : language === "ht" ? "fr-FR" : "en-US";
+    const nextRetryStr = nextAttemptISO
+      ? new Date(nextAttemptISO).toLocaleDateString(dateLocale, { day: "2-digit", month: "long", year: "numeric" })
+      : null;
+    if (language === "en") {
+      return [
+        `Your payment of ${amount} ${currency} failed (attempt ${attempt}).`,
+        `Next steps:`,
+        `1. Update your payment method in Settings → Subscription.`,
+        `2. Make sure your card is not expired and has sufficient funds.`,
+        nextRetryStr ? `3. Stripe will automatically retry on ${nextRetryStr}.` : `3. Update your payment to resume billing.`,
+        `Without action, your access will be suspended after several failed attempts.`,
+      ].join("\n");
+    }
+    if (language === "ht") {
+      return [
+        `Peman ou ${amount} ${currency} echwe (eseye ${attempt}).`,
+        `Pwochèn etap:`,
+        `1. Mete ajou metòd peman ou nan Paramèt → Abònman.`,
+        `2. Verifye kat ou pa ekspire e gen ase lajan.`,
+        nextRetryStr ? `3. Stripe ap eseye ankò otomatikman ${nextRetryStr}.` : `3. Mete ajou peman ou pou rekòmanse faktirasyon.`,
+        `San aksyon, aksè ou ap sispann apre plizyè eseye echwe.`,
+      ].join("\n");
+    }
+    return [
+      `Votre paiement de ${amount} ${currency} a échoué (tentative ${attempt}).`,
+      `Prochaines étapes :`,
+      `1. Mettez à jour votre méthode de paiement dans Paramètres → Abonnement.`,
+      `2. Vérifiez que votre carte n'est pas expirée et dispose de fonds suffisants.`,
+      nextRetryStr ? `3. Stripe réessaiera automatiquement le ${nextRetryStr}.` : `3. Mettez à jour votre paiement pour relancer la facturation.`,
+      `Sans action, votre accès sera suspendu après plusieurs tentatives échouées.`,
+    ].join("\n");
   }
 
   // Fallback: return raw message
