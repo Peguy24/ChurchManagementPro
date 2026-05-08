@@ -461,7 +461,8 @@ export default function TenantManagement() {
           max_users: planConfig.users,
           max_storage_mb: planConfig.storage,
           trial_ends_at: null,
-        })
+          managed_by_admin: activate,
+        } as any)
         .eq("tenant_id", tenantId);
 
       if (error) throw error;
