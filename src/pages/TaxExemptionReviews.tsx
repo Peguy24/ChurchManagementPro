@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw } from "lucide-react";
+import { Loader2, FileText, ShieldCheck, ShieldX, RotateCcw, Download } from "lucide-react";
+import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
 
 interface Row {
   id: string;
@@ -35,6 +36,7 @@ interface RefundTotal {
 export default function TaxExemptionReviews() {
   const [rows, setRows] = useState<Row[]>([]);
   const [refunds, setRefunds] = useState<Record<string, RefundTotal>>({});
+  const [refundRowsByTenant, setRefundRowsByTenant] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<string | null>(null);
   const [rejectFor, setRejectFor] = useState<Row | null>(null);
@@ -51,9 +53,12 @@ export default function TaxExemptionReviews() {
 
     const { data: refundRows } = await supabase
       .from("tax_exemption_refunds")
-      .select("tenant_id, tax_amount_refunded, currency, status");
+      .select("tenant_id, tax_amount_refunded, currency, status, created_at, stripe_invoice_id, stripe_refund_id, failure_reason")
+      .order("created_at", { ascending: false });
     const totals: Record<string, RefundTotal> = {};
+    const byTenant: Record<string, any[]> = {};
     (refundRows ?? []).forEach((r: any) => {
+      (byTenant[r.tenant_id] ||= []).push(r);
       if (r.status !== "succeeded") return;
       const t = totals[r.tenant_id] ?? { tenant_id: r.tenant_id, total: 0, count: 0, currency: r.currency };
       t.total += Number(r.tax_amount_refunded);
@@ -61,6 +66,7 @@ export default function TaxExemptionReviews() {
       totals[r.tenant_id] = t;
     });
     setRefunds(totals);
+    setRefundRowsByTenant(byTenant);
 
     setLoading(false);
   };
@@ -165,10 +171,30 @@ export default function TaxExemptionReviews() {
                       </TableCell>
                       <TableCell className="text-xs">
                         {refunds[r.tenant_id] ? (
-                          <span className="font-medium">
-                            {refunds[r.tenant_id].currency.toUpperCase()} {refunds[r.tenant_id].total.toFixed(2)}
-                            <span className="text-muted-foreground ml-1">({refunds[r.tenant_id].count})</span>
-                          </span>
+                          <div className="space-y-1">
+                            <span className="font-medium">
+                              {refunds[r.tenant_id].currency.toUpperCase()} {refunds[r.tenant_id].total.toFixed(2)}
+                              <span className="text-muted-foreground ml-1">({refunds[r.tenant_id].count})</span>
+                            </span>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                              >
+                                <Download className="h-3 w-3 mr-1" />CSV
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => exportRefundsPDF(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                              >
+                                <Download className="h-3 w-3 mr-1" />PDF
+                              </Button>
+                            </div>
+                          </div>
                         ) : (
                           "—"
                         )}

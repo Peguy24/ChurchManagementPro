@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Upload, ShieldCheck, FileText, AlertCircle } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, FileText, AlertCircle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
 
 type Status = "none" | "pending" | "approved" | "rejected";
 
@@ -34,7 +35,8 @@ export default function TaxExemptionSection() {
   const [ein, setEin] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [refunds, setRefunds] = useState<Array<{ id: string; tax_amount_refunded: number; currency: string; created_at: string; status: string; stripe_refund_id: string | null }>>([]);
+  const [refunds, setRefunds] = useState<Array<{ id: string; tax_amount_refunded: number; currency: string; created_at: string; status: string; stripe_refund_id: string | null; stripe_invoice_id: string | null; failure_reason: string | null }>>([]);
+  const [tenantName, setTenantName] = useState<string>("Church");
 
   const fetchData = async () => {
     if (!tenantId) return;
@@ -57,10 +59,12 @@ export default function TaxExemptionSection() {
     }
     const { data: refundData } = await supabase
       .from("tax_exemption_refunds")
-      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id")
+      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id, stripe_invoice_id, failure_reason")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
     setRefunds((refundData ?? []) as any);
+    const { data: tenantRow } = await supabase.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+    if (tenantRow?.name) setTenantName(tenantRow.name);
     setLoading(false);
   };
 
@@ -155,10 +159,22 @@ export default function TaxExemptionSection() {
                 </AlertDescription>
               </Alert>
             )}
-            {status === "approved" && refunds.length > 0 && (
+            {refunds.length > 0 && (
               <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-                <div className="text-sm font-medium">
-                  {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">
+                    {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsCSV(tenantName, refunds)}>
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      CSV
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => exportRefundsPDF(tenantName, refunds)}>
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      PDF
+                    </Button>
+                  </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {t("taxExemption.refundsNote") ||
