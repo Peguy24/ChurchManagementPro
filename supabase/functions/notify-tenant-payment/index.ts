@@ -7,77 +7,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-type PaymentEvent = "payment_succeeded" | "payment_failed" | "subscription_cancelled";
+type PaymentEvent =
+  | "payment_succeeded"
+  | "payment_failed"
+  | "subscription_cancelled"
+  | "plan_changed"
+  | "payment_method_updated";
 
 const translations: Record<PaymentEvent, Record<string, { subject: string; title: string; body: string; cta: string; footer: string }>> = {
   payment_succeeded: {
-    en: {
-      subject: "✅ Payment Confirmed",
-      title: "Payment Successfully Processed",
-      body: "Your payment of <strong>${amount}</strong> has been successfully processed. Your subscription remains active.",
-      cta: "View Subscription",
-      footer: "Thank you for your continued support.",
-    },
-    fr: {
-      subject: "✅ Paiement Confirmé",
-      title: "Paiement Traité avec Succès",
-      body: "Votre paiement de <strong>{amount} $</strong> a été traité avec succès. Votre abonnement reste actif.",
-      cta: "Voir l'abonnement",
-      footer: "Merci pour votre soutien continu.",
-    },
-    ht: {
-      subject: "✅ Peman Konfime",
-      title: "Peman Trete ak Siksè",
-      body: "Peman ou de <strong>${amount}</strong> trete ak siksè. Abònman ou rete aktif.",
-      cta: "Wè abònman",
-      footer: "Mèsi pou sipò kontinyèl ou.",
-    },
+    en: { subject: "✅ Payment Confirmed", title: "Payment Successfully Processed", body: "Your payment of <strong>${amount}</strong> has been successfully processed. Your subscription remains active.", cta: "View Subscription", footer: "Thank you for your continued support." },
+    fr: { subject: "✅ Paiement Confirmé", title: "Paiement Traité avec Succès", body: "Votre paiement de <strong>{amount} $</strong> a été traité avec succès. Votre abonnement reste actif.", cta: "Voir l'abonnement", footer: "Merci pour votre soutien continu." },
+    ht: { subject: "✅ Peman Konfime", title: "Peman Trete ak Siksè", body: "Peman ou de <strong>${amount}</strong> trete ak siksè. Abònman ou rete aktif.", cta: "Wè abònman", footer: "Mèsi pou sipò kontinyèl ou." },
   },
   payment_failed: {
-    en: {
-      subject: "⚠️ Payment Failed",
-      title: "Payment Could Not Be Processed",
-      body: "We were unable to process your payment of <strong>${amount}</strong>. Please update your payment method to avoid service interruption.",
-      cta: "Update Payment Method",
-      footer: "If you need assistance, please contact our support team.",
-    },
-    fr: {
-      subject: "⚠️ Échec de Paiement",
-      title: "Le Paiement n'a Pas Pu Être Traité",
-      body: "Nous n'avons pas pu traiter votre paiement de <strong>{amount} $</strong>. Veuillez mettre à jour votre méthode de paiement pour éviter une interruption de service.",
-      cta: "Mettre à jour le paiement",
-      footer: "Si vous avez besoin d'aide, contactez notre équipe de support.",
-    },
-    ht: {
-      subject: "⚠️ Peman Echwe",
-      title: "Peman Pa t Kapab Trete",
-      body: "Nou pa t kapab trete peman ou de <strong>${amount}</strong>. Tanpri mete ajou metòd peman ou pou evite entèripsyon sèvis.",
-      cta: "Mete ajou peman",
-      footer: "Si ou bezwen èd, kontakte ekip sipò nou.",
-    },
+    en: { subject: "⚠️ Payment Failed", title: "Payment Could Not Be Processed", body: "We were unable to process your payment of <strong>${amount}</strong>. Please update your payment method to avoid service interruption.", cta: "Update Payment Method", footer: "If you need assistance, please contact our support team." },
+    fr: { subject: "⚠️ Échec de Paiement", title: "Le Paiement n'a Pas Pu Être Traité", body: "Nous n'avons pas pu traiter votre paiement de <strong>{amount} $</strong>. Veuillez mettre à jour votre méthode de paiement pour éviter une interruption de service.", cta: "Mettre à jour le paiement", footer: "Si vous avez besoin d'aide, contactez notre équipe de support." },
+    ht: { subject: "⚠️ Peman Echwe", title: "Peman Pa t Kapab Trete", body: "Nou pa t kapab trete peman ou de <strong>${amount}</strong>. Tanpri mete ajou metòd peman ou pou evite entèripsyon sèvis.", cta: "Mete ajou peman", footer: "Si ou bezwen èd, kontakte ekip sipò nou." },
   },
   subscription_cancelled: {
-    en: {
-      subject: "🔔 Subscription Cancelled",
-      title: "Your Subscription Has Been Cancelled",
-      body: "Your subscription has been cancelled. You can continue using the service until the end of your current billing period. You can resubscribe at any time.",
-      cta: "Resubscribe",
-      footer: "We're sorry to see you go. If you change your mind, we're here for you.",
-    },
-    fr: {
-      subject: "🔔 Abonnement Annulé",
-      title: "Votre Abonnement a Été Annulé",
-      body: "Votre abonnement a été annulé. Vous pouvez continuer à utiliser le service jusqu'à la fin de votre période de facturation en cours. Vous pouvez vous réabonner à tout moment.",
-      cta: "Se réabonner",
-      footer: "Nous sommes désolés de vous voir partir. Si vous changez d'avis, nous sommes là pour vous.",
-    },
-    ht: {
-      subject: "🔔 Abònman Anile",
-      title: "Abònman Ou Anile",
-      body: "Abònman ou anile. Ou ka kontinye itilize sèvis la jiska fen peryòd faktirasyon aktyèl ou. Ou ka re-abòne nenpòt lè.",
-      cta: "Re-abòne",
-      footer: "Nou regrèt wè ou ale. Si ou chanje lide, nou la pou ou.",
-    },
+    en: { subject: "🔔 Subscription Cancelled", title: "Your Subscription Has Been Cancelled", body: "Your subscription has been cancelled. You can continue using the service until the end of your current billing period. You can resubscribe at any time.", cta: "Resubscribe", footer: "We're sorry to see you go. If you change your mind, we're here for you." },
+    fr: { subject: "🔔 Abonnement Annulé", title: "Votre Abonnement a Été Annulé", body: "Votre abonnement a été annulé. Vous pouvez continuer à utiliser le service jusqu'à la fin de votre période de facturation en cours. Vous pouvez vous réabonner à tout moment.", cta: "Se réabonner", footer: "Nous sommes désolés de vous voir partir. Si vous changez d'avis, nous sommes là pour vous." },
+    ht: { subject: "🔔 Abònman Anile", title: "Abònman Ou Anile", body: "Abònman ou anile. Ou ka kontinye itilize sèvis la jiska fen peryòd faktirasyon aktyèl ou. Ou ka re-abòne nenpòt lè.", cta: "Re-abòne", footer: "Nou regrèt wè ou ale. Si ou chanje lide, nou la pou ou." },
+  },
+  plan_changed: {
+    en: { subject: "🔄 Plan Updated", title: "Your Subscription Plan Has Changed", body: "Your subscription has been updated to the <strong>{amount}</strong> plan. The new features and limits are available immediately.", cta: "View Subscription", footer: "If you didn't make this change, please contact support immediately." },
+    fr: { subject: "🔄 Forfait Mis à Jour", title: "Votre Forfait d'Abonnement a Changé", body: "Votre abonnement a été mis à jour vers le forfait <strong>{amount}</strong>. Les nouvelles fonctionnalités et limites sont disponibles immédiatement.", cta: "Voir l'abonnement", footer: "Si vous n'êtes pas à l'origine de ce changement, contactez le support immédiatement." },
+    ht: { subject: "🔄 Plan Mete Ajou", title: "Plan Abònman Ou Chanje", body: "Abònman ou mete ajou nan plan <strong>{amount}</strong> la. Nouvo fonksyonalite ak limit yo disponib imedyatman.", cta: "Wè abònman", footer: "Si se pa ou ki fè chanjman sa, kontakte sipò a imedyatman." },
+  },
+  payment_method_updated: {
+    en: { subject: "💳 Payment Method Updated", title: "Your Payment Method Was Updated", body: "Your billing payment method has been successfully updated. Future charges will use this new method.", cta: "Manage Billing", footer: "If you didn't make this change, please contact support immediately." },
+    fr: { subject: "💳 Méthode de Paiement Mise à Jour", title: "Votre Méthode de Paiement a Été Mise à Jour", body: "Votre méthode de paiement de facturation a été mise à jour avec succès. Les prochains prélèvements utiliseront cette nouvelle méthode.", cta: "Gérer la facturation", footer: "Si vous n'êtes pas à l'origine de ce changement, contactez le support immédiatement." },
+    ht: { subject: "💳 Metòd Peman Mete Ajou", title: "Metòd Peman Ou Mete Ajou", body: "Metòd peman faktirasyon ou mete ajou ak siksè. Pwochen frè yo pral itilize nouvo metòd sa.", cta: "Jere faktirasyon", footer: "Si se pa ou ki fè chanjman sa, kontakte sipò a imedyatman." },
   },
 };
 
@@ -85,6 +46,8 @@ const colorSchemes: Record<PaymentEvent, { bg: string; accent: string }> = {
   payment_succeeded: { bg: "#059669", accent: "#10B981" },
   payment_failed: { bg: "#DC2626", accent: "#EF4444" },
   subscription_cancelled: { bg: "#6B7280", accent: "#9CA3AF" },
+  plan_changed: { bg: "#2563EB", accent: "#3B82F6" },
+  payment_method_updated: { bg: "#7C3AED", accent: "#A78BFA" },
 };
 
 serve(async (req) => {
