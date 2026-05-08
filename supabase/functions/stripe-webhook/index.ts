@@ -266,8 +266,8 @@ serve(async (req) => {
           tenant_id: tenantId,
           notification_type: "payment_method_updated",
           severity: "info",
-          title: "Méthode de paiement mise à jour",
-          message: "Votre méthode de paiement de facturation a été mise à jour avec succès. Les prochains prélèvements utiliseront cette nouvelle méthode. Si vous n'êtes pas à l'origine de ce changement, contactez le support immédiatement.",
+          title: "payment_method_updated",
+          message: "",
           metadata: { customer_id: customerId },
         });
 
