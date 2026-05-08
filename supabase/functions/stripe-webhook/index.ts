@@ -215,12 +215,19 @@ serve(async (req) => {
       // ─── Invoice payment failed ───
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const email = invoice.customer_email;
+        const email = invoice.customer_email
+          || (invoice.customer ? ((await stripe.customers.retrieve(invoice.customer as string)) as Stripe.Customer).email : null);
 
-        if (!email) break;
+        if (!email) {
+          logStep("No email on failed invoice", { invoiceId: invoice.id });
+          break;
+        }
 
         const tenantId = await getTenantByEmail(supabase, email);
-        if (!tenantId) break;
+        if (!tenantId) {
+          logStep("No tenant for failed invoice", { email });
+          break;
+        }
 
         // Update status to past_due
         await supabase
@@ -228,27 +235,53 @@ serve(async (req) => {
           .update({ status: "past_due" })
           .eq("tenant_id", tenantId);
 
+        const amountStr = invoice.amount_due ? (invoice.amount_due / 100).toFixed(2) : "0";
+        const currency = (invoice.currency || "usd").toUpperCase();
+        const attemptCount = invoice.attempt_count ?? 1;
+        const nextAttemptISO = invoice.next_payment_attempt
+          ? new Date(invoice.next_payment_attempt * 1000).toISOString()
+          : null;
+        const hostedInvoiceUrl = invoice.hosted_invoice_url || null;
+
         const tenantName = await getTenantName(supabase, tenantId);
         await notifySuperAdmin("payment_failed", {
           tenantName,
           tenantEmail: email,
-          amount: invoice.amount_due ? (invoice.amount_due / 100).toFixed(2) : "unknown",
+          amount: amountStr,
         });
 
-        // Create tenant notification
+        // Create rich in-app notification with next steps
+        const nextRetryStr = nextAttemptISO
+          ? new Date(nextAttemptISO).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
+          : null;
+        const inAppMessage = [
+          `Votre paiement de ${amountStr} ${currency} a échoué (tentative ${attemptCount}).`,
+          `Prochaines étapes :`,
+          `1. Mettez à jour votre méthode de paiement dans Paramètres → Abonnement.`,
+          `2. Vérifiez que votre carte n'est pas expirée et dispose de fonds suffisants.`,
+          nextRetryStr ? `3. Stripe réessaiera automatiquement le ${nextRetryStr}.` : `3. Mettez à jour votre paiement pour relancer la facturation.`,
+          `Sans action, votre accès sera suspendu après plusieurs tentatives échouées.`,
+        ].join("\n");
+
         await supabase.from("tenant_notifications").insert({
           tenant_id: tenantId,
           notification_type: "payment_failed",
           severity: "error",
-          title: "Échec de paiement",
-          message: "Votre paiement a échoué. Veuillez mettre à jour votre méthode de paiement.",
-          metadata: { invoice_id: invoice.id },
+          title: "Échec de paiement — Action requise",
+          message: inAppMessage,
+          metadata: {
+            invoice_id: invoice.id,
+            amount: amountStr,
+            currency,
+            attempt_count: attemptCount,
+            next_payment_attempt: nextAttemptISO,
+            hosted_invoice_url: hostedInvoiceUrl,
+          },
         });
 
-        const amountStr = invoice.amount_due ? (invoice.amount_due / 100).toFixed(2) : "0";
         await notifyTenantAdmins("payment_failed", tenantId, amountStr);
 
-        logStep("Payment failed processed", { email });
+        logStep("Payment failed processed", { email, attemptCount, nextAttemptISO });
         break;
       }
 
