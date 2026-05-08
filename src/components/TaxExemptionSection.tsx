@@ -155,6 +155,32 @@ export default function TaxExemptionSection() {
                 </AlertDescription>
               </Alert>
             )}
+            {status === "approved" && refunds.length > 0 && (
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                <div className="text-sm font-medium">
+                  {t("taxExemption.refundsIssued") || "Refunds Issued"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("taxExemption.refundsNote") ||
+                    "We automatically refunded sales tax charged before your exemption was approved."}
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {refunds.map((r) => (
+                    <li key={r.id} className="flex items-center justify-between border-t pt-1">
+                      <span className="text-muted-foreground">
+                        {new Date(r.created_at).toLocaleDateString()}
+                        {r.status === "failed" && (
+                          <span className="ml-2 text-destructive">(failed)</span>
+                        )}
+                      </span>
+                      <span className="font-medium">
+                        {r.currency.toUpperCase()} {Number(r.tax_amount_refunded).toFixed(2)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {status === "rejected" && exemption?.rejection_reason && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
