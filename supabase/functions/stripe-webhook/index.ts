@@ -339,25 +339,12 @@ serve(async (req) => {
           amount: amountStr,
         });
 
-        // Create rich in-app notification with next steps
-        const nextRetryStr = nextAttemptISO
-          ? new Date(nextAttemptISO).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
-          : null;
-        const inAppMessage = [
-          `Votre paiement de ${amountStr} ${currency} a échoué (tentative ${attemptCount}).`,
-          `Prochaines étapes :`,
-          `1. Mettez à jour votre méthode de paiement dans Paramètres → Abonnement.`,
-          `2. Vérifiez que votre carte n'est pas expirée et dispose de fonds suffisants.`,
-          nextRetryStr ? `3. Stripe réessaiera automatiquement le ${nextRetryStr}.` : `3. Mettez à jour votre paiement pour relancer la facturation.`,
-          `Sans action, votre accès sera suspendu après plusieurs tentatives échouées.`,
-        ].join("\n");
-
         await supabase.from("tenant_notifications").insert({
           tenant_id: tenantId,
           notification_type: "payment_failed",
           severity: "error",
-          title: "Échec de paiement — Action requise",
-          message: inAppMessage,
+          title: "payment_failed",
+          message: "",
           metadata: {
             invoice_id: invoice.id,
             amount: amountStr,
