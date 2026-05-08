@@ -25,7 +25,7 @@ export function filterRefundsByPeriod<T extends { created_at: string }>(rows: T[
   });
 }
 
-
+const fmtDate = (s: string) => {
   try {
     return new Date(s).toLocaleDateString();
   } catch {
