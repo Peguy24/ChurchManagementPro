@@ -59,10 +59,12 @@ export default function TaxExemptionSection() {
     }
     const { data: refundData } = await supabase
       .from("tax_exemption_refunds")
-      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id")
+      .select("id, tax_amount_refunded, currency, created_at, status, stripe_refund_id, stripe_invoice_id, failure_reason")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
     setRefunds((refundData ?? []) as any);
+    const { data: tenantRow } = await supabase.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+    if (tenantRow?.name) setTenantName(tenantRow.name);
     setLoading(false);
   };
 
