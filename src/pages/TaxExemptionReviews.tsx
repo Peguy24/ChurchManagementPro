@@ -199,7 +199,7 @@ export default function TaxExemptionReviews() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-6 px-2 text-xs"
-                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", refundRowsByTenant[r.tenant_id] || [])}
+                                onClick={() => exportRefundsCSV(r.tenant?.name || "Church", filterRefundsByPeriod(refundRowsByTenant[r.tenant_id] || [], period))}
                               >
                                 <Download className="h-3 w-3 mr-1" />CSV
                               </Button>
