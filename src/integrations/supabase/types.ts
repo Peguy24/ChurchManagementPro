@@ -4095,6 +4095,62 @@ export type Database = {
           },
         ]
       }
+      tenant_tax_exemptions: {
+        Row: {
+          certificate_url: string | null
+          created_at: string
+          ein_number: string | null
+          expires_at: string | null
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["tax_exemption_status"]
+          submitted_at: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string
+          ein_number?: string | null
+          expires_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["tax_exemption_status"]
+          submitted_at?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string
+          ein_number?: string | null
+          expires_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["tax_exemption_status"]
+          submitted_at?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_tax_exemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           branches_count: number | null
@@ -4714,6 +4770,7 @@ export type Database = {
         | "premium"
         | "enterprise"
         | "free"
+      tax_exemption_status: "none" | "pending" | "approved" | "rejected"
       tenant_status: "active" | "suspended" | "trial" | "cancelled"
       transaction_status: "pending" | "approved" | "rejected"
       transaction_type: "income" | "expense"
@@ -4877,6 +4934,7 @@ export const Constants = {
         "rejected",
       ],
       subscription_plan: ["basic", "standard", "premium", "enterprise", "free"],
+      tax_exemption_status: ["none", "pending", "approved", "rejected"],
       tenant_status: ["active", "suspended", "trial", "cancelled"],
       transaction_status: ["pending", "approved", "rejected"],
       transaction_type: ["income", "expense"],
