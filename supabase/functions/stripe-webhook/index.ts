@@ -66,6 +66,17 @@ async function syncSubscription(
     return;
   }
 
+  // Skip Stripe sync entirely for admin-managed subscriptions (test/comp churches)
+  const { data: existing } = await supabase
+    .from("tenant_subscriptions")
+    .select("managed_by_admin")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if ((existing as any)?.managed_by_admin === true) {
+    logStep("Skipping Stripe sync — subscription is admin-managed", { tenantId });
+    return;
+  }
+
   const { error } = await supabase
     .from("tenant_subscriptions")
     .update({
