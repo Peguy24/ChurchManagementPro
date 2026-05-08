@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Upload, ShieldCheck, FileText, AlertCircle } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, FileText, AlertCircle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { exportRefundsCSV, exportRefundsPDF } from "@/utils/exportTaxRefunds";
 
 type Status = "none" | "pending" | "approved" | "rejected";
 
