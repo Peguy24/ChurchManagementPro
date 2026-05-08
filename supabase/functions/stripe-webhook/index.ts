@@ -103,15 +103,43 @@ async function notifySuperAdmin(eventType: string, details: Record<string, unkno
   }
 }
 
-async function notifyTenantAdmins(eventType: string, tenantId: string, amount?: string) {
+async function getTenantLanguage(supabase: ReturnType<typeof getSupabaseClient>, tenantId: string): Promise<string> {
   try {
+    const { data } = await supabase
+      .from("tenants")
+      .select("preferred_language, language")
+      .eq("id", tenantId)
+      .maybeSingle();
+    const lang = (data as any)?.preferred_language || (data as any)?.language;
+    return ["en", "fr", "ht"].includes(lang) ? lang : "fr";
+  } catch {
+    return "fr";
+  }
+}
+
+async function notifyTenantAdmins(
+  eventType: string,
+  tenantId: string,
+  amount?: string,
+  extra?: { planName?: string; billingUrl?: string; language?: string },
+) {
+  try {
+    const supabase = getSupabaseClient();
+    const language = extra?.language || (await getTenantLanguage(supabase, tenantId));
     await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-tenant-payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
       },
-      body: JSON.stringify({ eventType, tenantId, amount, language: "fr" }),
+      body: JSON.stringify({
+        eventType,
+        tenantId,
+        amount,
+        language,
+        planName: extra?.planName,
+        billingUrl: extra?.billingUrl || "https://cogmpw-sys.lovable.app/settings/subscription",
+      }),
     });
   } catch (e) {
     logStep("Failed to notify tenant admins", { error: String(e) });
