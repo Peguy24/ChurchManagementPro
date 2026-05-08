@@ -305,6 +305,11 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     payroll: "Pewòl",
     taxes: "Taks",
     referrals: "Referans",
+    grpOverview: "Apèsi",
+    grpChurches: "Legliz & Itilizatè",
+    grpFinance: "Finans & Faktirasyon",
+    grpEngagement: "Angajman & Kominikasyon",
+    grpPlatform: "Platfòm & Paramèt",
   },
 };
 
