@@ -247,6 +247,11 @@ const superAdminNavLabels: Record<string, Record<string, string>> = {
     payroll: "Payroll",
     taxes: "Taxes",
     referrals: "Referrals",
+    grpOverview: "Overview",
+    grpChurches: "Churches & Users",
+    grpFinance: "Finance & Billing",
+    grpEngagement: "Engagement & Communication",
+    grpPlatform: "Platform & Settings",
   },
   fr: {
     dashboard: "Tableau de bord",
