@@ -36,6 +36,7 @@ interface RefundTotal {
 export default function TaxExemptionReviews() {
   const [rows, setRows] = useState<Row[]>([]);
   const [refunds, setRefunds] = useState<Record<string, RefundTotal>>({});
+  const [refundRowsByTenant, setRefundRowsByTenant] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<string | null>(null);
   const [rejectFor, setRejectFor] = useState<Row | null>(null);
