@@ -623,6 +623,14 @@ const Commercial = () => {
               <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-9 sm:h-10 object-contain" width={40} height={40} />
             </div>
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
+              <a href="mailto:support@churchmanagementpro.com" className="text-muted-foreground hover:text-foreground transition-colors">
+                support@churchmanagementpro.com
+              </a>
+              <a href="tel:+19084944977" className="text-muted-foreground hover:text-foreground transition-colors">
+                +1 (908) 494-4977
+              </a>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
               <Link to="/legal/terms_of_use" className="text-muted-foreground hover:text-foreground transition-colors">
                 {language === "fr" ? "Conditions d'utilisation" : language === "ht" ? "Kondisyon itilizasyon" : "Terms of Use"}
               </Link>
