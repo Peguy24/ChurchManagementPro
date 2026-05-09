@@ -280,11 +280,6 @@ const Commercial = () => {
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <div className="text-center lg:text-left animate-fade-in">
-              <Badge className="mb-5 sm:mb-6 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 text-xs sm:text-sm">
-                <Sparkles className="w-3 h-3 mr-2" />
-                {t("commercial.heroBadge")}
-              </Badge>
-              
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-5 sm:mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   {t("commercial.heroTitle1")}
