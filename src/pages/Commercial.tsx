@@ -366,48 +366,6 @@ const Commercial = () => {
       </section>
 
 
-      {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 md:py-24">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <Badge className="mb-4 px-3 py-1.5 sm:px-4 sm:py-2 bg-secondary/10 text-secondary border-secondary/20 text-xs sm:text-sm">
-              <Zap className="w-3 h-3 mr-2" />
-              {t("commercial.featuresBadge")}
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-              {t("commercial.featuresTitle")}
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
-              {t("commercial.featuresSubtitle")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="group relative overflow-hidden border border-border/60 bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1.5"
-              >
-                <div className={`absolute -top-px left-0 right-0 h-px bg-gradient-to-r ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${feature.color} opacity-10 rounded-bl-full transition-all duration-500 group-hover:w-48 group-hover:h-48 group-hover:opacity-20`} />
-                <CardHeader className="relative">
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 sm:mb-4 shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
-                    <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl flex items-center justify-between gap-2">
-                    <span className="min-w-0">{feature.title}</span>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 flex-shrink-0" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base leading-relaxed">{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-background" />
