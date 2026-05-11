@@ -117,6 +117,18 @@ export function ContactForm({ language }: ContactFormProps) {
             <Textarea id="contact-message" value={message} onChange={(e) => setMessage(e.target.value.slice(0, 2000))} maxLength={2000} rows={5} placeholder={t.placeholderMsg} required />
             <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
           </div>
+          {/* Honeypot — hidden from real users */}
+          <div aria-hidden="true" className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" style={{ position: "absolute" }}>
+            <label htmlFor="contact-website">Website</label>
+            <input
+              id="contact-website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             {loading ? t.sending : t.send}
