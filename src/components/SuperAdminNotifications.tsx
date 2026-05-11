@@ -169,7 +169,13 @@ export default function SuperAdminNotifications() {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["platform-notifications"] });
           const n = payload.new as PlatformNotification;
-          if (n?.title) toast.info(n.title, { description: n.message });
+          if (!n?.title) return;
+          // Respect per-user pref: contact_message toasts only when channel is toast/both
+          if (n.notification_type === "contact_message") {
+            const ch = prefs?.contact_message_channel ?? "both";
+            if (ch !== "toast" && ch !== "both") return;
+          }
+          toast.info(n.title, { description: n.message });
         },
       )
       .on(
