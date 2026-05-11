@@ -54,7 +54,9 @@ export function ContactForm({ language }: ContactFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [loading, setLoading] = useState(false);
+  const [mountedAt] = useState(() => Date.now());
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,15 +67,28 @@ export function ContactForm({ language }: ContactFormProps) {
       toast({ title: t.invalid, variant: "destructive" });
       return;
     }
+    // Client-side throttle: 1 submission per 30s per browser
+    const lastSent = Number(localStorage.getItem("contact_last_sent") || 0);
+    if (Date.now() - lastSent < 30_000) {
+      toast({ title: t.error, variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-public-contact", {
-        body: { name: cleanName, email: cleanEmail, message: cleanMsg },
+        body: {
+          name: cleanName,
+          email: cleanEmail,
+          message: cleanMsg,
+          website, // honeypot — must be empty
+          elapsedMs: Date.now() - mountedAt,
+        },
       });
       if (error || (data as { error?: string } | null)?.error) {
         throw new Error((data as { error?: string } | null)?.error || error?.message || "Failed");
       }
       toast({ title: t.success });
+      localStorage.setItem("contact_last_sent", String(Date.now()));
       setName(""); setEmail(""); setMessage("");
     } catch (err) {
       console.error(err);
@@ -101,6 +116,18 @@ export function ContactForm({ language }: ContactFormProps) {
             <Label htmlFor="contact-message">{t.message}</Label>
             <Textarea id="contact-message" value={message} onChange={(e) => setMessage(e.target.value.slice(0, 2000))} maxLength={2000} rows={5} placeholder={t.placeholderMsg} required />
             <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
+          </div>
+          {/* Honeypot — hidden from real users */}
+          <div aria-hidden="true" className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" style={{ position: "absolute" }}>
+            <label htmlFor="contact-website">Website</label>
+            <input
+              id="contact-website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
           </div>
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
