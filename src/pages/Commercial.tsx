@@ -615,6 +615,25 @@ const Commercial = () => {
         </div>
       </section>
 
+      {/* Contact Form */}
+      <section id="contact" className="py-12 sm:py-16 border-t bg-background">
+        <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+              {language === "fr" ? "Contactez notre équipe" : language === "ht" ? "Kontakte ekip nou an" : "Contact our team"}
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {language === "fr"
+                ? "Une question ? Envoyez-nous un message, nous répondons rapidement."
+                : language === "ht"
+                ? "Yon kesyon ? Voye yon mesaj ban nou, n ap reponn vit."
+                : "Have a question? Send us a message — we reply quickly."}
+            </p>
+          </div>
+          <ContactForm language={language} />
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-10 sm:py-12 border-t bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6">
