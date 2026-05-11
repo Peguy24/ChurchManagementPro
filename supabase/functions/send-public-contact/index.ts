@@ -103,10 +103,59 @@ serve(async (req) => {
         <h2>New contact form submission</h2>
         <p><strong>Name:</strong> ${escapeHtml(name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Language:</strong> ${language}</p>
         <hr>
         <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
       `,
     });
+
+    // Confirmation email to the visitor (best-effort, never blocks success)
+    const confirmations = {
+      fr: {
+        subject: "Nous avons bien reçu votre message",
+        greeting: `Bonjour ${escapeHtml(name)},`,
+        body: "Merci de nous avoir contactés. Notre équipe a bien reçu votre message et vous répondra dans les plus brefs délais.",
+        recap: "Récapitulatif de votre message :",
+        signature: "L'équipe Church Manager Pro",
+      },
+      ht: {
+        subject: "Nou resevwa mesaj ou",
+        greeting: `Bonjou ${escapeHtml(name)},`,
+        body: "Mèsi paske ou kontakte nou. Ekip nou resevwa mesaj ou epi n ap reponn ou pi vit posib.",
+        recap: "Rezime mesaj ou :",
+        signature: "Ekip Church Manager Pro",
+      },
+      en: {
+        subject: "We received your message",
+        greeting: `Hello ${escapeHtml(name)},`,
+        body: "Thank you for reaching out. Our team has received your message and will get back to you as soon as possible.",
+        recap: "Your message:",
+        signature: "The Church Manager Pro team",
+      },
+    } as const;
+    const c = confirmations[language];
+
+    try {
+      await resend.emails.send({
+        from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+        to: [email],
+        reply_to: SUPPORT_EMAIL,
+        subject: c.subject,
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #1f2937; max-width: 560px; margin: 0 auto; padding: 24px;">
+            <h2 style="color: #111827; margin: 0 0 16px;">${c.greeting}</h2>
+            <p style="font-size: 14px; line-height: 1.6;">${c.body}</p>
+            <div style="margin-top: 20px; padding: 16px; background: #f9fafb; border-left: 4px solid #2563eb; border-radius: 4px;">
+              <p style="margin: 0 0 8px; font-weight: 600; font-size: 13px; color: #374151;">${c.recap}</p>
+              <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #4b5563; white-space: pre-wrap;">${escapeHtml(message)}</p>
+            </div>
+            <p style="margin-top: 24px; font-size: 13px; color: #6b7280;">${c.signature}</p>
+          </div>
+        `,
+      });
+    } catch (confirmErr) {
+      console.error("Confirmation email failed (non-fatal):", confirmErr);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
