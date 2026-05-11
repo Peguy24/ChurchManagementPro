@@ -191,6 +191,33 @@ serve(async (req) => {
       console.error("Failed to create platform notification (non-fatal):", notifErr);
     }
 
+    // Email opted-in Super Admins
+    try {
+      const { data: recipients } = await supabaseAdmin.rpc("get_contact_message_email_recipients");
+      const toList = (recipients ?? [])
+        .map((r: { email: string | null }) => r.email)
+        .filter((e: string | null): e is string => !!e);
+      if (toList.length > 0) {
+        await resend.emails.send({
+          from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+          to: toList,
+          reply_to: email,
+          subject: `[Contact] New message from ${name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; color:#1f2937; max-width:560px;">
+              <h2 style="color:#111827;">New contact form submission</h2>
+              <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+              <p><strong>Language:</strong> ${language}</p>
+              <div style="margin-top:16px; padding:14px; background:#f9fafb; border-left:4px solid #2563eb; border-radius:4px; white-space:pre-wrap;">${escapeHtml(message)}</div>
+              <p style="margin-top:20px; font-size:12px; color:#6b7280;">You receive these emails because your Super Admin notification preferences include email alerts. Update them in the notifications panel.</p>
+            </div>
+          `,
+        });
+      }
+    } catch (adminEmailErr) {
+      console.error("Super-admin email broadcast failed (non-fatal):", adminEmailErr);
+    }
+
     await resend.emails.send({
       from: "Church Manager Pro <noreply@churchmanagementpro.com>",
       to: [SUPPORT_EMAIL],

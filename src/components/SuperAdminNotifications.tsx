@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, X, AlertTriangle, Clock, XCircle, Info, Check, RefreshCw } from "lucide-react";
+import { Bell, X, AlertTriangle, Clock, XCircle, Info, Check, RefreshCw, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +11,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
@@ -46,7 +56,41 @@ export default function SuperAdminNotifications() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const dateLocale = language === "fr" ? fr : enUS;
+
+  type ContactChannel = "toast" | "email" | "both" | "none";
+
+  const { data: prefs } = useQuery({
+    queryKey: ["super-admin-notif-prefs"],
+    queryFn: async (): Promise<{ contact_message_channel: ContactChannel }> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { contact_message_channel: "both" };
+      const { data } = await supabase
+        .from("super_admin_notification_prefs" as any)
+        .select("contact_message_channel")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return { contact_message_channel: ((data as any)?.contact_message_channel as ContactChannel) ?? "both" };
+    },
+  });
+
+  const savePrefs = useMutation({
+    mutationFn: async (channel: ContactChannel) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("super_admin_notification_prefs" as any)
+        .upsert({ user_id: user.id, contact_message_channel: channel }, { onConflict: "user_id" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["super-admin-notif-prefs"] });
+      toast.success(t("common.saved") || "Saved");
+      setPrefsOpen(false);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+  });
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ["platform-notifications"],
@@ -125,7 +169,13 @@ export default function SuperAdminNotifications() {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["platform-notifications"] });
           const n = payload.new as PlatformNotification;
-          if (n?.title) toast.info(n.title, { description: n.message });
+          if (!n?.title) return;
+          // Respect per-user pref: contact_message toasts only when channel is toast/both
+          if (n.notification_type === "contact_message") {
+            const ch = prefs?.contact_message_channel ?? "both";
+            if (ch !== "toast" && ch !== "both") return;
+          }
+          toast.info(n.title, { description: n.message });
         },
       )
       .on(
@@ -137,7 +187,7 @@ export default function SuperAdminNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, prefs?.contact_message_channel]);
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -151,6 +201,7 @@ export default function SuperAdminNotifications() {
   };
 
   return (
+    <>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
@@ -167,6 +218,15 @@ export default function SuperAdminNotifications() {
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <h3 className="font-semibold text-sm">{t("superAdmin.notifications.title")}</h3>
           <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPrefsOpen(true)}
+              title={t("superAdmin.notifications.preferences") || "Preferences"}
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -257,5 +317,49 @@ export default function SuperAdminNotifications() {
         </ScrollArea>
       </PopoverContent>
     </Popover>
+
+    <Dialog open={prefsOpen} onOpenChange={setPrefsOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t("superAdmin.notifications.preferences") || "Notification preferences"}</DialogTitle>
+          <DialogDescription>
+            {t("superAdmin.notifications.contactMessageHint") ||
+              "Choose how you want to be alerted about new contact messages from the website."}
+          </DialogDescription>
+        </DialogHeader>
+        <RadioGroup
+          value={prefs?.contact_message_channel ?? "both"}
+          onValueChange={(v) => savePrefs.mutate(v as ContactChannel)}
+          className="gap-2 py-2"
+        >
+          {(["both", "toast", "email", "none"] as ContactChannel[]).map((opt) => (
+            <Label
+              key={opt}
+              htmlFor={`pref-${opt}`}
+              className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-accent/40"
+            >
+              <RadioGroupItem id={`pref-${opt}`} value={opt} className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium capitalize">
+                  {t(`superAdmin.notifications.channel.${opt}`) || opt}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {opt === "both" && (t("superAdmin.notifications.channel.bothDesc") || "In-app toast and email.")}
+                  {opt === "toast" && (t("superAdmin.notifications.channel.toastDesc") || "In-app toast only.")}
+                  {opt === "email" && (t("superAdmin.notifications.channel.emailDesc") || "Email only.")}
+                  {opt === "none" && (t("superAdmin.notifications.channel.noneDesc") || "No alerts (still visible in the bell list).")}
+                </div>
+              </div>
+            </Label>
+          ))}
+        </RadioGroup>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setPrefsOpen(false)}>
+            {t("common.close") || "Close"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

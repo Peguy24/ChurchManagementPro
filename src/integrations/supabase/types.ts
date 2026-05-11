@@ -3657,6 +3657,27 @@ export type Database = {
         }
         Relationships: []
       }
+      super_admin_notification_prefs: {
+        Row: {
+          contact_message_channel: Database["public"]["Enums"]["contact_notif_channel"]
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           admin_response: string | null
@@ -4693,6 +4714,13 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: string
       }
+      get_contact_message_email_recipients: {
+        Args: never
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
       get_referral_code_info: {
         Args: { _code: string }
@@ -4847,6 +4875,7 @@ export type Database = {
         | "secretary"
         | "volunteer"
         | "user"
+      contact_notif_channel: "toast" | "email" | "both" | "none"
       custom_field_type:
         | "text"
         | "textarea"
@@ -5013,6 +5042,7 @@ export const Constants = {
         "volunteer",
         "user",
       ],
+      contact_notif_channel: ["toast", "email", "both", "none"],
       custom_field_type: [
         "text",
         "textarea",
