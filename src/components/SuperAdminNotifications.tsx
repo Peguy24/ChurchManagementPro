@@ -221,6 +221,15 @@ export default function SuperAdminNotifications() {
               variant="ghost"
               size="icon"
               className="h-7 w-7"
+              onClick={() => setPrefsOpen(true)}
+              title={t("superAdmin.notifications.preferences") || "Preferences"}
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
               onClick={() => refreshAlerts.mutate()}
               disabled={refreshAlerts.isPending}
             >
