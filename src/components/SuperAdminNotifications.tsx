@@ -39,6 +39,7 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; badgeVariant: "dest
   trial_expired: { icon: XCircle, badgeVariant: "destructive" },
   payment_issue: { icon: AlertTriangle, badgeVariant: "destructive" },
   tenant_inactive: { icon: Info, badgeVariant: "outline" },
+  contact_message: { icon: Info, badgeVariant: "secondary" },
 };
 
 export default function SuperAdminNotifications() {
