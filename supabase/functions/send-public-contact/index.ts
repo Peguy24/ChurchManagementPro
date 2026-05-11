@@ -113,19 +113,25 @@ serve(async (req) => {
     const langRaw = String(body.language ?? "en").toLowerCase();
     const language: "fr" | "ht" | "en" = langRaw === "fr" || langRaw === "ht" ? langRaw : "en";
 
-    // Honeypot: real users never fill this field
+    // Verify captcha if client provided one (used to bypass rate-limit / timing gates)
+    const captchaSolved = body.captcha ? await verifyCaptcha(body.captcha) : false;
+
+    // Rate limit — bypassable with a valid captcha
+    if (!captchaSolved && isRateLimited(ip)) {
+      return await captchaChallengeResponse(429, "Too many requests. Please solve the captcha to continue.");
+    }
+
+    // Honeypot: real users never fill this field — silent drop
     if (website.length > 0) {
       console.warn("Honeypot triggered from", ip);
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
-    // Submitted suspiciously fast (< 2s) → likely bot
-    if (elapsedMs > 0 && elapsedMs < 2000) {
+    // Submitted suspiciously fast (< 2s) → bot-like; require captcha instead of dropping
+    if (!captchaSolved && elapsedMs > 0 && elapsedMs < 2000) {
       console.warn("Submission too fast from", ip, elapsedMs);
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      return await captchaChallengeResponse(200, "Please confirm you are human.");
     }
 
     if (name.length < 2 || name.length > 100) {
