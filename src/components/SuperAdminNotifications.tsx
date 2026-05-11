@@ -317,5 +317,49 @@ export default function SuperAdminNotifications() {
         </ScrollArea>
       </PopoverContent>
     </Popover>
+
+    <Dialog open={prefsOpen} onOpenChange={setPrefsOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t("superAdmin.notifications.preferences") || "Notification preferences"}</DialogTitle>
+          <DialogDescription>
+            {t("superAdmin.notifications.contactMessageHint") ||
+              "Choose how you want to be alerted about new contact messages from the website."}
+          </DialogDescription>
+        </DialogHeader>
+        <RadioGroup
+          value={prefs?.contact_message_channel ?? "both"}
+          onValueChange={(v) => savePrefs.mutate(v as ContactChannel)}
+          className="gap-2 py-2"
+        >
+          {(["both", "toast", "email", "none"] as ContactChannel[]).map((opt) => (
+            <Label
+              key={opt}
+              htmlFor={`pref-${opt}`}
+              className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-accent/40"
+            >
+              <RadioGroupItem id={`pref-${opt}`} value={opt} className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium capitalize">
+                  {t(`superAdmin.notifications.channel.${opt}`) || opt}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {opt === "both" && (t("superAdmin.notifications.channel.bothDesc") || "In-app toast and email.")}
+                  {opt === "toast" && (t("superAdmin.notifications.channel.toastDesc") || "In-app toast only.")}
+                  {opt === "email" && (t("superAdmin.notifications.channel.emailDesc") || "Email only.")}
+                  {opt === "none" && (t("superAdmin.notifications.channel.noneDesc") || "No alerts (still visible in the bell list).")}
+                </div>
+              </div>
+            </Label>
+          ))}
+        </RadioGroup>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setPrefsOpen(false)}>
+            {t("common.close") || "Close"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
