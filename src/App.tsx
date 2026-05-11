@@ -96,6 +96,7 @@ const SelectChurch = lazy(() => import("./pages/SelectChurch"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const SuperAdminReferrals = lazy(() => import("./pages/SuperAdminReferrals"));
 const TaxExemptionReviews = lazy(() => import("./pages/TaxExemptionReviews"));
+const ContactMessages = lazy(() => import("./pages/ContactMessages"));
 
 const queryClient = new QueryClient();
 
