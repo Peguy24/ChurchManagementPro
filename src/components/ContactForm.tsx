@@ -88,6 +88,7 @@ export function ContactForm({ language }: ContactFormProps) {
         throw new Error((data as { error?: string } | null)?.error || error?.message || "Failed");
       }
       toast({ title: t.success });
+      localStorage.setItem("contact_last_sent", String(Date.now()));
       setName(""); setEmail(""); setMessage("");
     } catch (err) {
       console.error(err);
