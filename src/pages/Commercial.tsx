@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useNavigate, Link } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
 import { ContactForm } from "@/components/ContactForm";
+import TestimonialsSection from "@/components/TestimonialsSection";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
