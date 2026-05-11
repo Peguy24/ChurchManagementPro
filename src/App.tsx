@@ -200,6 +200,7 @@ const App = () => (
               <Route path="/super-admin/payroll" element={<ProtectedRoute requireSuperAdmin><PlatformPayroll /></ProtectedRoute>} />
               <Route path="/super-admin/taxes" element={<ProtectedRoute requireSuperAdmin><PlatformTaxRecords /></ProtectedRoute>} />
               <Route path="/super-admin/tax-exemptions" element={<ProtectedRoute requireSuperAdmin><TaxExemptionReviews /></ProtectedRoute>} />
+              <Route path="/super-admin/contact-messages" element={<ProtectedRoute requireSuperAdmin><ContactMessages /></ProtectedRoute>} />
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
