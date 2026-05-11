@@ -205,29 +205,8 @@ const Commercial = () => {
     }
   };
 
-  const testimonials = [
-    {
-      name: t("commercial.testimonial1Name"),
-      church: t("commercial.testimonial1Church"),
-      text: t("commercial.testimonial1Text"),
-      rating: 5,
-      avatar: "JP"
-    },
-    {
-      name: t("commercial.testimonial2Name"),
-      church: t("commercial.testimonial2Church"),
-      text: t("commercial.testimonial2Text"),
-      rating: 5,
-      avatar: "SM"
-    },
-    {
-      name: t("commercial.testimonial3Name"),
-      church: t("commercial.testimonial3Church"),
-      text: t("commercial.testimonial3Text"),
-      rating: 5,
-      avatar: "PT"
-    }
-  ];
+  // Testimonials are rendered by <TestimonialsSection /> which fetches approved reviews
+  // and falls back to commercial.testimonial1/2/3 keys when none are approved yet.
 
   const stats = [
     { value: "500+", label: t("commercial.stat_churches") },
