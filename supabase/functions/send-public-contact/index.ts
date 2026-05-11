@@ -60,6 +60,8 @@ serve(async (req) => {
     const message = String(body.message ?? "").trim();
     const website = String(body.website ?? "");
     const elapsedMs = Number(body.elapsedMs ?? 0);
+    const langRaw = String(body.language ?? "en").toLowerCase();
+    const language: "fr" | "ht" | "en" = langRaw === "fr" || langRaw === "ht" ? langRaw : "en";
 
     // Honeypot: real users never fill this field
     if (website.length > 0) {
