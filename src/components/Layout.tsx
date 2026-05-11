@@ -363,6 +363,8 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/communication", icon: Mail, label: sl("communication") },
         { to: "/super-admin/banners", icon: Megaphone, label: sl("banners") },
         { to: "/super-admin/referrals", icon: Sparkles, label: sl("referrals") },
+        { to: "/super-admin/contact-messages", icon: Mail, label: "Contact Messages" },
+        { to: "/super-admin/reviews", icon: Star, label: "Client Reviews" },
       ],
     },
     {
