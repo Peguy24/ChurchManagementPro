@@ -602,6 +602,77 @@ export type Database = {
           },
         ]
       }
+      client_reviews: {
+        Row: {
+          church_name: string
+          city: string | null
+          consent_public_display: boolean
+          country: string | null
+          created_at: string
+          id: string
+          language: string
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_notes: string | null
+          rating: number
+          reviewer_name: string
+          reviewer_role: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          tenant_id: string | null
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          church_name: string
+          city?: string | null
+          consent_public_display?: boolean
+          country?: string | null
+          created_at?: string
+          id?: string
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_notes?: string | null
+          rating: number
+          reviewer_name: string
+          reviewer_role?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          tenant_id?: string | null
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          church_name?: string
+          city?: string | null
+          consent_public_display?: boolean
+          country?: string | null
+          created_at?: string
+          id?: string
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_notes?: string | null
+          rating?: number
+          reviewer_name?: string
+          reviewer_role?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          tenant_id?: string | null
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -3659,18 +3730,21 @@ export type Database = {
       }
       super_admin_notification_prefs: {
         Row: {
+          client_review_channel: string
           contact_message_channel: Database["public"]["Enums"]["contact_notif_channel"]
           created_at: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          client_review_channel?: string
           contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
           created_at?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          client_review_channel?: string
           contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
           created_at?: string
           updated_at?: string
@@ -4714,6 +4788,13 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: string
       }
+      get_client_review_email_recipients: {
+        Args: never
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
       get_contact_message_email_recipients: {
         Args: never
         Returns: {
@@ -4897,6 +4978,7 @@ export type Database = {
         | "rewarded"
         | "expired"
         | "rejected"
+      review_status: "pending" | "approved" | "rejected"
       subscription_plan:
         | "basic"
         | "standard"
@@ -5067,6 +5149,7 @@ export const Constants = {
         "expired",
         "rejected",
       ],
+      review_status: ["pending", "approved", "rejected"],
       subscription_plan: ["basic", "standard", "premium", "enterprise", "free"],
       tax_exemption_status: ["none", "pending", "approved", "rejected"],
       tenant_status: ["active", "suspended", "trial", "cancelled"],
