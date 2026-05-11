@@ -11,6 +11,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate, Link } from "react-router-dom";
 import { ChurchRequestForm } from "@/components/ChurchRequestForm";
+import { ContactForm } from "@/components/ContactForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -612,6 +613,25 @@ const Commercial = () => {
               <Sparkles className="w-5 h-5 ml-2" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Contact Form */}
+      <section id="contact" className="py-12 sm:py-16 border-t bg-background">
+        <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+              {language === "fr" ? "Contactez notre équipe" : language === "ht" ? "Kontakte ekip nou an" : "Contact our team"}
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {language === "fr"
+                ? "Une question ? Envoyez-nous un message, nous répondons rapidement."
+                : language === "ht"
+                ? "Yon kesyon ? Voye yon mesaj ban nou, n ap reponn vit."
+                : "Have a question? Send us a message — we reply quickly."}
+            </p>
+          </div>
+          <ContactForm language={language} />
         </div>
       </section>
 
