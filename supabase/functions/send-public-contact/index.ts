@@ -98,11 +98,6 @@ serve(async (req) => {
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
       req.headers.get("cf-connecting-ip") ||
       "unknown";
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
-        status: 429, headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
 
     const body = await req.json();
     const name = String(body.name ?? "").trim();
