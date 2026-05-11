@@ -150,6 +150,20 @@ serve(async (req) => {
       });
     }
 
+    // Persist to DB (best-effort, never blocks email)
+    try {
+      await supabaseAdmin.from("contact_messages").insert({
+        name,
+        email,
+        message,
+        language,
+        ip_address: ip,
+        user_agent: req.headers.get("user-agent")?.slice(0, 500) ?? null,
+      });
+    } catch (dbErr) {
+      console.error("Failed to persist contact message (non-fatal):", dbErr);
+    }
+
     await resend.emails.send({
       from: "Church Manager Pro <noreply@churchmanagementpro.com>",
       to: [SUPPORT_EMAIL],
