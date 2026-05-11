@@ -18,10 +18,37 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+    if (isRateLimited(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+        status: 429, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const body = await req.json();
     const name = String(body.name ?? "").trim();
     const email = String(body.email ?? "").trim();
     const message = String(body.message ?? "").trim();
+    const website = String(body.website ?? "");
+    const elapsedMs = Number(body.elapsedMs ?? 0);
+
+    // Honeypot: real users never fill this field
+    if (website.length > 0) {
+      console.warn("Honeypot triggered from", ip);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    // Submitted suspiciously fast (< 2s) → likely bot
+    if (elapsedMs > 0 && elapsedMs < 2000) {
+      console.warn("Submission too fast from", ip, elapsedMs);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     if (name.length < 2 || name.length > 100) {
       return new Response(JSON.stringify({ error: "Invalid name" }), {
