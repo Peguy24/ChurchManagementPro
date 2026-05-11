@@ -28,6 +28,7 @@ export default function Dashboard() {
   const { formatAmount } = useCurrency();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardTitle: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
