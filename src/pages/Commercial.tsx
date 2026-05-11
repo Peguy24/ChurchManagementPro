@@ -482,47 +482,7 @@ const Commercial = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 sm:py-20 md:py-24">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <Badge className="mb-4 px-3 py-1.5 sm:px-4 sm:py-2 bg-secondary/10 text-secondary border-secondary/20 text-xs sm:text-sm">
-              <Heart className="w-3 h-3 mr-2" />
-              {t("commercial.testimonialsBadge")}
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-              {t("commercial.testimonialsTitle")}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/30 transition-all duration-300 hover:shadow-xl">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary" />
-                <CardContent className="pt-7 sm:pt-8 px-5 sm:px-6">
-                  <div className="flex justify-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-6 italic text-center leading-relaxed">
-                    "{testimonial.text}"
-                  </p>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {testimonial.avatar}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm sm:text-base truncate">{testimonial.name}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{testimonial.church}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection />
 
       {/* FAQ Section */}
       <section id="faq" className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
