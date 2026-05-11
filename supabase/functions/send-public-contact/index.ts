@@ -40,6 +40,56 @@ function isRateLimited(ip: string): boolean {
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+// ---------- CAPTCHA (HMAC-signed math challenge, no external service) ----------
+const CAPTCHA_SECRET = Deno.env.get("CRON_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "fallback-captcha-secret";
+const CAPTCHA_TTL_MS = 5 * 60 * 1000;
+const usedCaptchaNonces = new Map<string, number>(); // nonce -> expiry
+
+const enc = new TextEncoder();
+async function hmacHex(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw", enc.encode(CAPTCHA_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function makeCaptcha(): Promise<{ a: number; b: number; nonce: string; expiry: number; sig: string }> {
+  const a = 1 + Math.floor(Math.random() * 9);
+  const b = 1 + Math.floor(Math.random() * 9);
+  const nonce = crypto.randomUUID();
+  const expiry = Date.now() + CAPTCHA_TTL_MS;
+  const sig = await hmacHex(`${a}|${b}|${nonce}|${expiry}`);
+  return { a, b, nonce, expiry, sig };
+}
+
+async function verifyCaptcha(c: { a?: unknown; b?: unknown; nonce?: unknown; expiry?: unknown; sig?: unknown; answer?: unknown }): Promise<boolean> {
+  const a = Number(c.a), b = Number(c.b), expiry = Number(c.expiry);
+  const nonce = String(c.nonce ?? ""), sig = String(c.sig ?? ""), answer = Number(c.answer);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(expiry) || !nonce || !sig || !Number.isFinite(answer)) return false;
+  if (Date.now() > expiry) return false;
+  // Single-use
+  if (usedCaptchaNonces.has(nonce)) return false;
+  const expected = await hmacHex(`${a}|${b}|${nonce}|${expiry}`);
+  if (expected !== sig) return false;
+  if (a + b !== answer) return false;
+  usedCaptchaNonces.set(nonce, expiry);
+  // Cleanup
+  if (usedCaptchaNonces.size > 5000) {
+    const now = Date.now();
+    for (const [k, exp] of usedCaptchaNonces) if (exp < now) usedCaptchaNonces.delete(k);
+  }
+  return true;
+}
+
+async function captchaChallengeResponse(status: number, errorMessage: string) {
+  const challenge = await makeCaptcha();
+  return new Response(
+    JSON.stringify({ error: errorMessage, captchaRequired: true, challenge }),
+    { status, headers: { "Content-Type": "application/json", ...corsHeaders } },
+  );
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -48,11 +98,6 @@ serve(async (req) => {
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
       req.headers.get("cf-connecting-ip") ||
       "unknown";
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
-        status: 429, headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
 
     const body = await req.json();
     const name = String(body.name ?? "").trim();
@@ -63,19 +108,25 @@ serve(async (req) => {
     const langRaw = String(body.language ?? "en").toLowerCase();
     const language: "fr" | "ht" | "en" = langRaw === "fr" || langRaw === "ht" ? langRaw : "en";
 
-    // Honeypot: real users never fill this field
+    // Verify captcha if client provided one (used to bypass rate-limit / timing gates)
+    const captchaSolved = body.captcha ? await verifyCaptcha(body.captcha) : false;
+
+    // Rate limit — bypassable with a valid captcha
+    if (!captchaSolved && isRateLimited(ip)) {
+      return await captchaChallengeResponse(429, "Too many requests. Please solve the captcha to continue.");
+    }
+
+    // Honeypot: real users never fill this field — silent drop
     if (website.length > 0) {
       console.warn("Honeypot triggered from", ip);
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
-    // Submitted suspiciously fast (< 2s) → likely bot
-    if (elapsedMs > 0 && elapsedMs < 2000) {
+    // Submitted suspiciously fast (< 2s) → bot-like; require captcha instead of dropping
+    if (!captchaSolved && elapsedMs > 0 && elapsedMs < 2000) {
       console.warn("Submission too fast from", ip, elapsedMs);
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      return await captchaChallengeResponse(200, "Please confirm you are human.");
     }
 
     if (name.length < 2 || name.length > 100) {
