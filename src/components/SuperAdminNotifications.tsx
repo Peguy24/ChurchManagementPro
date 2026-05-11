@@ -56,7 +56,41 @@ export default function SuperAdminNotifications() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const dateLocale = language === "fr" ? fr : enUS;
+
+  type ContactChannel = "toast" | "email" | "both" | "none";
+
+  const { data: prefs } = useQuery({
+    queryKey: ["super-admin-notif-prefs"],
+    queryFn: async (): Promise<{ contact_message_channel: ContactChannel }> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { contact_message_channel: "both" };
+      const { data } = await supabase
+        .from("super_admin_notification_prefs" as any)
+        .select("contact_message_channel")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return { contact_message_channel: ((data as any)?.contact_message_channel as ContactChannel) ?? "both" };
+    },
+  });
+
+  const savePrefs = useMutation({
+    mutationFn: async (channel: ContactChannel) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("super_admin_notification_prefs" as any)
+        .upsert({ user_id: user.id, contact_message_channel: channel }, { onConflict: "user_id" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["super-admin-notif-prefs"] });
+      toast.success(t("common.saved") || "Saved");
+      setPrefsOpen(false);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+  });
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ["platform-notifications"],
