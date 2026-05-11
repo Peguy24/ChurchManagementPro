@@ -187,7 +187,7 @@ export default function SuperAdminNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, prefs?.contact_message_channel]);
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
