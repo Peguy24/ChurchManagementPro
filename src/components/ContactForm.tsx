@@ -82,6 +82,7 @@ export function ContactForm({ language }: ContactFormProps) {
           message: cleanMsg,
           website, // honeypot — must be empty
           elapsedMs: Date.now() - mountedAt,
+          language,
         },
       });
       if (error || (data as { error?: string } | null)?.error) {
