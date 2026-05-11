@@ -97,6 +97,7 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const SuperAdminReferrals = lazy(() => import("./pages/SuperAdminReferrals"));
 const TaxExemptionReviews = lazy(() => import("./pages/TaxExemptionReviews"));
 const ContactMessages = lazy(() => import("./pages/ContactMessages"));
+const ClientReviews = lazy(() => import("./pages/ClientReviews"));
 
 const queryClient = new QueryClient();
 
