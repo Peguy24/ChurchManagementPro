@@ -17,6 +17,9 @@ import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Button } from "@/components/ui/button";
+import { MessageSquareQuote, Star } from "lucide-react";
+import LeaveReviewDialog from "@/components/LeaveReviewDialog";
 
 
 export default function Dashboard() {
