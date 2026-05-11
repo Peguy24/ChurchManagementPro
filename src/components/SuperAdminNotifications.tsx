@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -39,6 +39,7 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; badgeVariant: "dest
   trial_expired: { icon: XCircle, badgeVariant: "destructive" },
   payment_issue: { icon: AlertTriangle, badgeVariant: "destructive" },
   tenant_inactive: { icon: Info, badgeVariant: "outline" },
+  contact_message: { icon: Info, badgeVariant: "secondary" },
 };
 
 export default function SuperAdminNotifications() {
@@ -114,12 +115,37 @@ export default function SuperAdminNotifications() {
     onError: () => toast.error(t("superAdmin.notifications.checkError")),
   });
 
+  // Real-time subscription: refresh + toast on new platform notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel("platform-notifications-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "platform_notifications" },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["platform-notifications"] });
+          const n = payload.new as PlatformNotification;
+          if (n?.title) toast.info(n.title, { description: n.message });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "platform_notifications" },
+        () => queryClient.invalidateQueries({ queryKey: ["platform-notifications"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       trial_expiring: t("superAdmin.notifications.trialExpiring"),
       trial_expired: t("superAdmin.notifications.trialExpired"),
       payment_issue: t("superAdmin.notifications.paymentIssue"),
       tenant_inactive: t("superAdmin.notifications.tenantInactive"),
+      contact_message: t("superAdmin.notifications.contactMessage") || "Contact message",
     };
     return labels[type] || type;
   };

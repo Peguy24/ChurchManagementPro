@@ -151,17 +151,44 @@ serve(async (req) => {
     }
 
     // Persist to DB (best-effort, never blocks email)
+    let insertedMessageId: string | null = null;
     try {
-      await supabaseAdmin.from("contact_messages").insert({
-        name,
-        email,
-        message,
-        language,
-        ip_address: ip,
-        user_agent: req.headers.get("user-agent")?.slice(0, 500) ?? null,
-      });
+      const { data: inserted } = await supabaseAdmin
+        .from("contact_messages")
+        .insert({
+          name,
+          email,
+          message,
+          language,
+          ip_address: ip,
+          user_agent: req.headers.get("user-agent")?.slice(0, 500) ?? null,
+        })
+        .select("id")
+        .single();
+      insertedMessageId = inserted?.id ?? null;
     } catch (dbErr) {
       console.error("Failed to persist contact message (non-fatal):", dbErr);
+    }
+
+    // Notify Super Admins in real time via platform_notifications
+    try {
+      const preview = message.length > 140 ? message.slice(0, 140) + "..." : message;
+      await supabaseAdmin.from("platform_notifications").insert({
+        notification_type: "contact_message",
+        severity: "info",
+        title: `New contact message from ${name}`,
+        message: preview,
+        tenant_id: null,
+        metadata: {
+          contact_message_id: insertedMessageId,
+          name,
+          email,
+          language,
+          ip,
+        },
+      });
+    } catch (notifErr) {
+      console.error("Failed to create platform notification (non-fatal):", notifErr);
     }
 
     await resend.emails.send({
