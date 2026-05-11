@@ -602,6 +602,54 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          handled_at: string | null
+          handled_by: string | null
+          handled_notes: string | null
+          id: string
+          ip_address: string | null
+          language: string
+          message: string
+          name: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          handled_at?: string | null
+          handled_by?: string | null
+          handled_notes?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string
+          message: string
+          name: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          handled_notes?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string
+          message?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       credit_operations: {
         Row: {
           amount_paid: number

@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabaseAdmin = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -143,6 +148,20 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Message must be 10-2000 characters" }), {
         status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
+    }
+
+    // Persist to DB (best-effort, never blocks email)
+    try {
+      await supabaseAdmin.from("contact_messages").insert({
+        name,
+        email,
+        message,
+        language,
+        ip_address: ip,
+        user_agent: req.headers.get("user-agent")?.slice(0, 500) ?? null,
+      });
+    } catch (dbErr) {
+      console.error("Failed to persist contact message (non-fatal):", dbErr);
     }
 
     await resend.emails.send({
