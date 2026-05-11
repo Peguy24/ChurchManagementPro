@@ -54,7 +54,9 @@ export function ContactForm({ language }: ContactFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [loading, setLoading] = useState(false);
+  const [mountedAt] = useState(() => Date.now());
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,10 +67,22 @@ export function ContactForm({ language }: ContactFormProps) {
       toast({ title: t.invalid, variant: "destructive" });
       return;
     }
+    // Client-side throttle: 1 submission per 30s per browser
+    const lastSent = Number(localStorage.getItem("contact_last_sent") || 0);
+    if (Date.now() - lastSent < 30_000) {
+      toast({ title: t.error, variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-public-contact", {
-        body: { name: cleanName, email: cleanEmail, message: cleanMsg },
+        body: {
+          name: cleanName,
+          email: cleanEmail,
+          message: cleanMsg,
+          website, // honeypot — must be empty
+          elapsedMs: Date.now() - mountedAt,
+        },
       });
       if (error || (data as { error?: string } | null)?.error) {
         throw new Error((data as { error?: string } | null)?.error || error?.message || "Failed");
