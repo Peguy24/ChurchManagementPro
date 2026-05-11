@@ -1,111 +1,81 @@
-## Goal
+## Système d'avis clients (témoignages réels)
 
-When a Super Admin **approves** a church's tax-exempt certificate, the system should automatically:
-1. Mark the Stripe customer as `tax_exempt: 'exempt'` (already done today)
-2. **NEW:** Look back at the church's recent paid invoices, find the tax amount charged, and refund only the tax portion to the original payment method
-3. Email the church confirming the refund
-4. Log the refund in our DB so we have an audit trail
+### 1. Base de données — table `client_reviews`
 
-No tax is refunded on rejection or revocation.
+Champs :
+- `id`, `user_id` (FK auth.users), `tenant_id` (FK tenants)
+- `reviewer_name`, `reviewer_role` (Pasteur, Trésorier, Admin…), `church_name`
+- `city`, `country`
+- `rating` (smallint, 1–5, contrainte CHECK)
+- `text` (max 500 caractères, validé par trigger)
+- `language` ('fr' | 'en' | 'ht')
+- `consent_public_display` (bool, requis = true à la soumission)
+- `status` (`pending` | `approved` | `rejected`, défaut `pending`)
+- `moderated_by`, `moderated_at`, `moderation_notes`
+- `created_at`, `updated_at`
 
----
+Index : `status`, `(status, created_at DESC)`, `user_id`.
 
-## User-facing behavior
+Règle métier : un seul avis `pending` ou `approved` par `user_id` (contrainte partielle unique). L'utilisateur peut éditer son avis tant qu'il est `pending` ; après approbation, il devient verrouillé (modification = repasse en `pending`).
 
-**Church side:**
-- Subscribes during pending review → pays plan + NJ tax (e.g. $29.99 + $1.99 = $31.98)
-- A few days later, Super Admin approves their ST-5
-- Church automatically receives:
-  - $1.99 refund to their card (visible in their bank within 5-10 days)
-  - Email: *"Your tax exemption was approved. We've refunded $1.99 in sales tax from your last invoice."*
-- Future invoices = $0 tax
+### 2. Politiques RLS
 
-**Super Admin side:**
-- On the Tax Exemptions Reviews page, after clicking **Approve**, sees a toast: *"Approved. Refunded $1.99 in tax to {Church Name}."*
-- If no refundable invoice found: *"Approved. No tax to refund."*
-- New "Refund History" column on the reviews table showing total tax refunded per church
+- **INSERT** : utilisateur authentifié uniquement, `user_id = auth.uid()`, `status` forcé à `pending` (trigger `BEFORE INSERT`).
+- **SELECT public (anon + authenticated)** : uniquement les avis `status = 'approved'` (alimente la page commerciale).
+- **SELECT propriétaire** : l'utilisateur voit son propre avis (tous statuts).
+- **UPDATE propriétaire** : peut modifier son avis si `status != 'rejected'` ; toute modification du texte/note repasse en `pending` via trigger.
+- **SELECT/UPDATE/DELETE Super Admin** : accès complet via `is_super_admin(auth.uid())`.
 
----
+### 3. Notifications
 
-## What gets refunded — rules
+- Trigger `AFTER INSERT` → `platform_notifications` (`notification_type: 'client_review'`, severity `info`, titre + métadonnées).
+- Réutilise le canal Realtime + préférences existantes (`super_admin_notification_prefs`) — ajout d'un champ `client_review_channel` (toast/email/both/none).
+- Email aux Super Admins opt-in via la fonction `get_client_review_email_recipients()` (calquée sur celle des contact messages), envoyée depuis un trigger d'edge function ou directement depuis l'edge function de soumission.
 
-To stay safe and predictable:
-- Only invoices **paid in the last 90 days** are eligible
-- Only the **tax portion** is refunded, never the plan amount
-- Only invoices where `tax > 0` and not already refunded
-- Refund reason: `requested_by_customer`
-- If the church has multiple recent paid invoices with tax, **all of them** within the 90-day window are refunded (covers the case where they paid 2-3 monthly invoices before approval)
+### 4. Edge function `submit-client-review`
 
----
+- Vérifie le JWT (utilisateur connecté).
+- Valide payload via Zod (longueurs, rating 1–5, consentement = true).
+- Insère l'avis (RLS s'applique).
+- Best-effort : envoie email aux Super Admins opt-in via Resend.
 
-## Technical changes
+### 5. Frontend — soumission
 
-### 1. New DB table: `tax_exemption_refunds`
-Tracks every automatic refund issued. Fields:
-- `tenant_id`, `tax_exemption_id` (FK to `tenant_tax_exemptions`)
-- `stripe_invoice_id`, `stripe_payment_intent_id`, `stripe_refund_id`
-- `tax_amount_refunded` (numeric), `currency`
-- `status` (`succeeded` | `failed` | `skipped`)
-- `failure_reason` (nullable)
-- `created_at`
+**Composant `LeaveReviewDialog.tsx`** (utilisé depuis le Dashboard ou un bouton dans Settings) :
+- Formulaire : note (étoiles cliquables 1–5), nom (préfilled depuis profil), rôle (select), nom de l'église (préfilled tenant), ville, pays, texte (textarea max 500 + compteur), case "J'autorise l'affichage public de mon nom et de mon avis sur churchmanagementpro.com" (obligatoire).
+- Affiche le statut courant si l'utilisateur a déjà soumis : "En attente de modération" / "Approuvé" / "Rejeté" (avec raison).
+- i18n FR/EN/HT.
 
-RLS: Super Admins read all. Tenant admins read their own tenant's rows.
+Point d'entrée : bouton "Laisser un avis" dans le Dashboard (carte dédiée) + lien depuis Settings.
 
-### 2. Modify `supabase/functions/update-tax-exempt-status/index.ts`
-After updating Stripe customer to `tax_exempt: 'exempt'` on **approve**:
-1. Fetch the customer's invoices via `stripe.invoices.list({ customer, limit: 20, status: 'paid' })`
-2. Filter invoices where:
-   - `created` within last 90 days
-   - `tax > 0`
-   - `payment_intent` exists
-   - No existing row in `tax_exemption_refunds` for this `stripe_invoice_id`
-3. For each matching invoice → `stripe.refunds.create({ payment_intent, amount: invoice.tax, reason: 'requested_by_customer', metadata: { type: 'tax_exemption', tenant_id, invoice_id } })`
-4. Insert a row in `tax_exemption_refunds` (success or failure)
-5. Sum total refunded → return `{ success: true, status, refund_total, refund_count }` to caller
+### 6. Frontend — page commerciale (`src/pages/Commercial.tsx`)
 
-Errors per invoice are caught individually so one bad invoice doesn't abort the rest.
+Section Témoignages :
+- Récupère les avis approuvés via `supabase.from('client_reviews').select(...).eq('status','approved').order('created_at', desc).limit(24)` — accessible publiquement grâce à la policy SELECT.
+- Filtre selon la langue de l'UI (avec fallback sur tous si peu d'avis).
+- **Si 0 avis approuvés** : conserve les 3 témoignages cod\u00e9s en dur actuels (fallback).
+- **Si 1–6 avis** : grille statique (mêmes cartes que l'existant).
+- **Si > 6 avis** : carrousel auto-play (utilise `embla-carousel-react` déjà présent), 3 cartes visibles desktop / 1 mobile, avance toutes les 5s, pause au survol.
+- Affiche : note (étoiles), texte, nom, rôle, église, ville/pays, badge "Vérifié" (toujours, puisque tous les avis viennent d'utilisateurs connectés).
 
-### 3. New edge function: `send-tax-refund-email`
-Called by `update-tax-exempt-status` after refunds are created. Sends a trilingual (EN/FR/HT) Resend email to the church's contact email with:
-- Refund amount + currency
-- Last 4 of card
-- Stripe refund ID(s) for their records
-- "Future invoices will have no sales tax"
+### 7. Page de modération `/super-admin/reviews`
 
-Uses existing Resend setup (`noreply@churchmanagementpro.com`).
+Calquée sur `ContactMessages.tsx` :
+- Onglets : **En attente** (badge avec compteur), **Approuvés**, **Rejetés**, **Tous**.
+- Recherche (nom, église, texte).
+- Liste : carte avec note étoiles, extrait, nom + église, date, statut.
+- Dialog détail : tous les champs + actions **Approuver**, **Rejeter** (textarea raison obligatoire), **Supprimer** (confirmation).
+- Realtime : abonnement `INSERT/UPDATE` sur `client_reviews` → invalide queries + toast (gated par `client_review_channel`).
+- Lien dans la sidebar Super Admin et dans `SuperAdminNotifications` (ajout entrée `TYPE_CONFIG.client_review`).
 
-### 4. Frontend updates
-- `src/pages/TaxExemptionReviews.tsx`:
-  - Toast on approve shows refund total returned by edge function
-  - New "Refunds" column showing total tax refunded for each tenant (queried from `tax_exemption_refunds`)
-  - New expandable detail panel listing each individual refund (date, invoice, amount, Stripe refund ID)
-- `src/components/TaxExemptionSection.tsx` (church-side):
-  - When status = `approved`, show a small "Refunds Issued" section listing any auto-refunds (tenant-readable rows from new table)
+### 8. i18n
 
-### 5. i18n keys (EN/FR/HT)
-Neutral DB-style keys, e.g.:
-- `tax.exemption.approved_with_refund` → "Approved. Refunded {amount} in tax."
-- `tax.exemption.approved_no_refund` → "Approved. No tax to refund."
-- `tax.refund.email_subject` → "Your tax exemption was approved — refund issued"
-- `tax.refund.history_title` → "Refunds Issued"
+Nouvelles clés sous `commercial.reviews.*`, `superAdmin.reviews.*`, `dashboard.leaveReview.*` dans FR/EN/HT (clés en anglais, valeurs traduites).
 
----
+### Détails techniques
 
-## Files touched
-
-- New migration: `tax_exemption_refunds` table + RLS policies
-- `supabase/functions/update-tax-exempt-status/index.ts` (refund logic)
-- `supabase/functions/send-tax-refund-email/index.ts` (new)
-- `src/pages/TaxExemptionReviews.tsx` (refunds column + toast)
-- `src/components/TaxExemptionSection.tsx` (refund history for church)
-- `src/contexts/LanguageContext.tsx` (3 languages × ~6 keys)
-
----
-
-## Out of scope (kept simple on purpose)
-
-- No retroactive refunds beyond 90 days (older invoices are filed/remitted to NJ already)
-- No partial-month proration adjustments
-- If a refund fails (e.g. payment method removed), it's logged as `failed` and surfaced on the review page so you can manually handle it
-- Rejection / revocation of an exemption does **not** issue any refund or back-charge
-
+- Migration unique : enum `review_status`, table, contraintes, indexes, RLS, triggers (`BEFORE INSERT` force pending, `BEFORE UPDATE` re-pending si texte/rating changé, `AFTER INSERT` notification), fonction `get_client_review_email_recipients()`, ajout colonne `client_review_channel` à `super_admin_notification_prefs`, publication Realtime + REPLICA IDENTITY FULL.
+- Edge function : `supabase/functions/submit-client-review/index.ts` avec validation Zod, JWT check, Resend email best-effort.
+- Routing : ajout route lazy `/super-admin/reviews` dans `App.tsx` (ProtectedRoute requireSuperAdmin).
+- Composants nouveaux : `LeaveReviewDialog.tsx`, `ReviewsCarousel.tsx`, `pages/ClientReviews.tsx` (modération).
+- Pas de stockage d'avatar/photo (avatar = initiales générées côté front, comme l'existant).

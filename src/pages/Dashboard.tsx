@@ -17,6 +17,9 @@ import { PlanUsageCard } from "@/components/PlanUsageCard";
 import { TrialCountdownCard } from "@/components/TrialCountdownCard";
 import { OnboardingProgressCard } from "@/components/OnboardingProgressCard";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Button } from "@/components/ui/button";
+import { MessageSquareQuote, Star } from "lucide-react";
+import LeaveReviewDialog from "@/components/LeaveReviewDialog";
 
 
 export default function Dashboard() {
@@ -25,6 +28,7 @@ export default function Dashboard() {
   const { formatAmount } = useCurrency();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardTitle: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -693,7 +697,31 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Leave a review CTA */}
+        <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-primary/10 p-2 shrink-0">
+                <MessageSquareQuote className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold flex items-center gap-1">
+                  {t("dashboard.leaveReview.ctaTitle")}
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("dashboard.leaveReview.ctaSubtitle")}
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => setReviewOpen(true)} className="shrink-0">
+              {t("dashboard.leaveReview.ctaButton")}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+      <LeaveReviewDialog open={reviewOpen} onOpenChange={setReviewOpen} />
     </Layout>
   );
 }
