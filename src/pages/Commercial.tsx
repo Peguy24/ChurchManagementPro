@@ -575,6 +575,7 @@ const Commercial = () => {
           <ContactForm language={language} />
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="py-10 sm:py-12 border-t bg-muted/30">
