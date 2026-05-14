@@ -1,0 +1,23 @@
+# Church Management Pro
+
+> Multilingual (English, French, Haitian Creole) all-in-one church management platform for members, attendance, finances, events, inventory, reports, AI insights, and role-based access.
+
+Church Management Pro helps churches digitize their operations: track members and ministries, record attendance via QR codes, manage donations and expenses, organize events, run inventory, send communications, and generate fiscal receipts. Built for single congregations and multi-branch networks.
+
+## Pages
+
+- [Home](/): Overview of the platform with hero, features, pricing, testimonials, and contact.
+- [Commercial / Marketing](/commercial): Detailed feature breakdown, plans (Essentiel, Professionnel, Entreprise), and free 14-day trial signup.
+- [Client Reviews](/reviews): Real testimonials from churches using the platform.
+- [Sign in](/auth): Admin and member authentication.
+
+## Legal
+
+- [Terms of Use](/legal/terms_of_use): Platform terms and conditions.
+- [Privacy Policy](/legal/privacy_policy): How user and church data is handled.
+- [Payment Terms](/legal/payment_terms): Subscription billing terms.
+
+## Contact
+
+- Email: support@churchmanagementpro.com
+- Phone / WhatsApp: +1 (908) 494-4977
