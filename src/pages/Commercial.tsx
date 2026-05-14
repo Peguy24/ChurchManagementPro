@@ -209,8 +209,8 @@ const Commercial = () => {
   // and falls back to commercial.testimonial1/2/3 keys when none are approved yet.
 
   const stats = [
-    { value: "500+", label: t("commercial.stat_churches") },
-    { value: "50K+", label: t("commercial.stat_members") },
+    { value: "14", label: t("commercial.stat_churches") },
+    { value: "3", label: t("commercial.stat_members") },
     { value: "99.9%", label: t("commercial.stat_uptime") },
     { value: "100%", label: t("commercial.stat_support") }
   ];
