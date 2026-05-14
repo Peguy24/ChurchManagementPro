@@ -248,6 +248,7 @@ const Commercial = () => {
         </div>
       </nav>
 
+      <main>
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-40 md:pb-32">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
