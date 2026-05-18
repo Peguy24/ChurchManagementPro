@@ -162,6 +162,7 @@ export function usePlanLimits() {
   const DB_TO_FRONTEND_PLAN: Record<string, PlanKey> = {
     basic: "essentiel", standard: "professionnel", premium: "entreprise",
     free: "free", essentiel: "essentiel", professionnel: "professionnel", entreprise: "entreprise",
+    enterprise: "entreprise",
   };
   
   const resolvedDbPlan = isDbActivePlan && dbSubscription?.plan 
