@@ -28,7 +28,7 @@ import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logPlatformActivity } from "@/lib/activityLogger";
 
-type SubscriptionPlan = "free" | "basic" | "standard" | "premium" | "enterprise";
+type SubscriptionPlan = "free" | "basic" | "standard" | "premium";
 type TenantStatus = "active" | "suspended" | "trial" | "cancelled";
 
 interface Tenant {
@@ -102,7 +102,6 @@ export default function TenantManagement() {
     basic: { label: t("superAdmin.planBasic"), color: "bg-slate-500", price: 29.99, members: 200, branches: 1, users: 5, storage: 500 },
     standard: { label: t("superAdmin.planStandard"), color: "bg-blue-500", price: 59.99, members: 1000, branches: 3, users: 15, storage: 2000 },
     premium: { label: t("superAdmin.planPremium"), color: "bg-purple-500", price: 99.99, members: -1, branches: -1, users: -1, storage: -1 },
-    enterprise: { label: t("superAdmin.planEnterprise"), color: "bg-amber-500", price: 99.99, members: -1, branches: -1, users: -1, storage: -1 },
   };
 
   const STATUS_CONFIG: Record<TenantStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
