@@ -35,6 +35,7 @@ const DB_TO_PLAN: Record<string, string> = {
   "basic": "essentiel",
   "standard": "professionnel",
   "premium": "entreprise",
+  "enterprise": "entreprise",
   "free": "free",
 };
 
