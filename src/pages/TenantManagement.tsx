@@ -28,7 +28,7 @@ import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logPlatformActivity } from "@/lib/activityLogger";
 
-type SubscriptionPlan = "free" | "basic" | "standard" | "premium" | "enterprise";
+type SubscriptionPlan = "free" | "basic" | "standard" | "premium";
 type TenantStatus = "active" | "suspended" | "trial" | "cancelled";
 
 interface Tenant {
