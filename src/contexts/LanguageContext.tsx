@@ -5485,6 +5485,7 @@ const translations = {
       logoutError: "Logout error",
     },
     superAdmin: {
+      managedByAdminBadge: "Admin-managed",
       dashboardTitle: "Super Admin Dashboard",
       dashboardSubtitle: "Overview of all churches on the platform",
       exportCsv: "Export CSV",
