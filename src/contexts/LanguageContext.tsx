@@ -2047,6 +2047,7 @@ const translations = {
       logoutError: "Problème de déconnexion",
     },
     superAdmin: {
+      managedByAdminBadge: "Géré par admin",
       dashboardTitle: "Dashboard Super Admin",
       dashboardSubtitle: "Vue d'ensemble de toutes les églises sur la plateforme",
       exportCsv: "Exporter CSV",
