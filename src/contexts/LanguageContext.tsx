@@ -2047,6 +2047,7 @@ const translations = {
       logoutError: "Problème de déconnexion",
     },
     superAdmin: {
+      managedByAdminBadge: "Géré par admin",
       dashboardTitle: "Dashboard Super Admin",
       dashboardSubtitle: "Vue d'ensemble de toutes les églises sur la plateforme",
       exportCsv: "Exporter CSV",
@@ -5484,6 +5485,7 @@ const translations = {
       logoutError: "Logout error",
     },
     superAdmin: {
+      managedByAdminBadge: "Admin-managed",
       dashboardTitle: "Super Admin Dashboard",
       dashboardSubtitle: "Overview of all churches on the platform",
       exportCsv: "Export CSV",
@@ -8917,6 +8919,7 @@ const translations = {
       logoutError: "Pwoblèm dekoneksyon",
     },
     superAdmin: {
+      managedByAdminBadge: "Jere pa admin",
       dashboardTitle: "Tablo Debò Super Admin",
       dashboardSubtitle: "Apèsi tout legliz sou platfòm nan",
       exportCsv: "Ekspòte CSV",
