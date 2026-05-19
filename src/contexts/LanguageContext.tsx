@@ -8919,6 +8919,7 @@ const translations = {
       logoutError: "Pwoblèm dekoneksyon",
     },
     superAdmin: {
+      managedByAdminBadge: "Jere pa admin",
       dashboardTitle: "Tablo Debò Super Admin",
       dashboardSubtitle: "Apèsi tout legliz sou platfòm nan",
       exportCsv: "Ekspòte CSV",
