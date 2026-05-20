@@ -223,10 +223,10 @@ const Commercial = () => {
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="relative flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary blur-md opacity-40 rounded-full" />
-              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-9 sm:h-10 object-contain relative" width={40} height={40} />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Management Pro" className="h-9 sm:h-10 object-contain relative" width={40} height={40} />
             </div>
             <span className="hidden md:inline-block font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
-              Church Manager Pro
+              Church Management Pro
             </span>
           </div>
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
@@ -582,7 +582,7 @@ const Commercial = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-5 md:gap-6">
             <div className="flex items-center gap-3">
-              <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-9 sm:h-10 object-contain" width={40} height={40} />
+              <img src="/images/church-management-pro-logo.webp" alt="Church Management Pro" className="h-9 sm:h-10 object-contain" width={40} height={40} />
             </div>
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
               <a href="mailto:support@churchmanagementpro.com" className="text-muted-foreground hover:text-foreground transition-colors">

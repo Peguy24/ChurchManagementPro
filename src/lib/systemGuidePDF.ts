@@ -297,7 +297,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   const addFooter = (pageNum: number) => {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Church Manager Pro -- ${isFr ? "Guide du Systeme" : "System Guide"}`, margin, pageHeight - 10);
+    doc.text(`Church Management Pro -- ${isFr ? "Guide du Systeme" : "System Guide"}`, margin, pageHeight - 10);
     doc.text(`${pageNum}`, pageWidth - margin, pageHeight - 10, { align: "right" });
   };
 
@@ -312,7 +312,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(36);
   doc.setFont("helvetica", "bold");
-  doc.text("Church Manager Pro", pageWidth / 2, pageHeight * 0.3, { align: "center" });
+  doc.text("Church Management Pro", pageWidth / 2, pageHeight * 0.3, { align: "center" });
 
   doc.setFontSize(18);
   doc.setFont("helvetica", "normal");
@@ -390,8 +390,8 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setTextColor(100, 100, 100);
   doc.text(
     isFr
-      ? "Ce document presente l'ensemble des fonctionnalites de la plateforme Church Manager Pro."
-      : "This document presents all features of the Church Manager Pro platform.",
+      ? "Ce document presente l'ensemble des fonctionnalites de la plateforme Church Management Pro."
+      : "This document presents all features of the Church Management Pro platform.",
     margin,
     y
   );
@@ -495,7 +495,7 @@ export function generateSystemGuidePDF(lang: string = "fr") {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 58, 138);
   doc.text(
-    isFr ? "Church Manager Pro -- Votre eglise, simplifiee." : "Church Manager Pro -- Your church, simplified.",
+    isFr ? "Church Management Pro -- Votre eglise, simplifiee." : "Church Management Pro -- Your church, simplified.",
     pageWidth / 2,
     y + 12,
     { align: "center" }

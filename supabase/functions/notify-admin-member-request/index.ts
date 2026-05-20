@@ -106,7 +106,7 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const churchName = tenantName || "Church Manager Pro";
+    const churchName = tenantName || "Church Management Pro";
     const siteUrl = "https://churchmanagementpro.com";
     const now = new Date().toLocaleDateString(language === "en" ? "en-US" : "fr-FR", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",

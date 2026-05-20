@@ -551,7 +551,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Use cached tenant data first to avoid flash, fall back to whiteLabel query
   const brandingName = showAsSuperAdmin 
-    ? "Church Manager Pro" 
+    ? "Church Management Pro" 
     : (tenant?.name || whiteLabelSettings.app_name);
   const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
   const brandingLogo = showAsSuperAdmin 

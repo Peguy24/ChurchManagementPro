@@ -222,7 +222,7 @@ serve(async (req) => {
           </table>
 
           <div style="text-align: center; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-            <p style="font-size: 12px; color: #9ca3af; margin: 0;">Church Manager Pro — Automated Weekly Digest</p>
+            <p style="font-size: 12px; color: #9ca3af; margin: 0;">Church Management Pro — Automated Weekly Digest</p>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ serve(async (req) => {
     // Send to all super admins
     for (const email of superAdminEmails) {
       await resend.emails.send({
-        from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+        from: "Church Management Pro <noreply@churchmanagementpro.com>",
         to: [email],
         subject: `📊 Weekly Digest: ${newTenantsCount || 0} new signups, $${totalMRR.toFixed(2)} MRR — ${weekEnd}`,
         html: emailHtml,

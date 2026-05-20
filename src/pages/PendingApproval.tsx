@@ -73,7 +73,7 @@ export default function PendingApproval() {
       </Card>
 
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground">
-        <img src="/images/church-management-pro-logo.webp" alt="Church Manager Pro" className="h-8 object-contain" width={32} height={32} />
+        <img src="/images/church-management-pro-logo.webp" alt="Church Management Pro" className="h-8 object-contain" width={32} height={32} />
       </div>
     </div>
   );

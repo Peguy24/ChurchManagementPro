@@ -232,7 +232,7 @@ export default function BankReconciliation() {
             current_balance: Number(selectedAccountData.current_balance),
           },
           churchInfo: {
-            name: tenant?.name || "Church Manager Pro",
+            name: tenant?.name || "Church Management Pro",
             logoUrl,
           },
           period: {

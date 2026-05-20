@@ -224,7 +224,7 @@ serve(async (req) => {
 
     const resend = new Resend(resendApiKey);
     await resend.emails.send({
-      from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+      from: "Church Management Pro <noreply@churchmanagementpro.com>",
       to: superAdminEmails,
       subject: `${t.subject}: ${tenantName}`,
       html: `
@@ -251,7 +251,7 @@ serve(async (req) => {
                 </p>
               </div>
               <p style="color: #6b7280; font-size: 13px; margin-top: 20px; text-align: center;">
-                ${lang === "fr" ? "Notification automatique de Church Manager Pro." : lang === "ht" ? "Notifikasyon otomatik Church Manager Pro." : "Automated notification from Church Manager Pro."}
+                ${lang === "fr" ? "Notification automatique de Church Management Pro." : lang === "ht" ? "Notifikasyon otomatik Church Management Pro." : "Automated notification from Church Management Pro."}
               </p>
             </div>
           </div>

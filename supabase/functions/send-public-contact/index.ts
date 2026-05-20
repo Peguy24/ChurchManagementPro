@@ -199,7 +199,7 @@ serve(async (req) => {
         .filter((e: string | null): e is string => !!e);
       if (toList.length > 0) {
         await resend.emails.send({
-          from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+          from: "Church Management Pro <noreply@churchmanagementpro.com>",
           to: toList,
           reply_to: email,
           subject: `[Contact] New message from ${name}`,
@@ -219,7 +219,7 @@ serve(async (req) => {
     }
 
     await resend.emails.send({
-      from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+      from: "Church Management Pro <noreply@churchmanagementpro.com>",
       to: [SUPPORT_EMAIL],
       reply_to: email,
       subject: `[Contact] Message from ${name}`,
@@ -240,28 +240,28 @@ serve(async (req) => {
         greeting: `Bonjour ${escapeHtml(name)},`,
         body: "Merci de nous avoir contactés. Notre équipe a bien reçu votre message et vous répondra dans les plus brefs délais.",
         recap: "Récapitulatif de votre message :",
-        signature: "L'équipe Church Manager Pro",
+        signature: "L'équipe Church Management Pro",
       },
       ht: {
         subject: "Nou resevwa mesaj ou",
         greeting: `Bonjou ${escapeHtml(name)},`,
         body: "Mèsi paske ou kontakte nou. Ekip nou resevwa mesaj ou epi n ap reponn ou pi vit posib.",
         recap: "Rezime mesaj ou :",
-        signature: "Ekip Church Manager Pro",
+        signature: "Ekip Church Management Pro",
       },
       en: {
         subject: "We received your message",
         greeting: `Hello ${escapeHtml(name)},`,
         body: "Thank you for reaching out. Our team has received your message and will get back to you as soon as possible.",
         recap: "Your message:",
-        signature: "The Church Manager Pro team",
+        signature: "The Church Management Pro team",
       },
     } as const;
     const c = confirmations[language];
 
     try {
       await resend.emails.send({
-        from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+        from: "Church Management Pro <noreply@churchmanagementpro.com>",
         to: [email],
         reply_to: SUPPORT_EMAIL,
         subject: c.subject,

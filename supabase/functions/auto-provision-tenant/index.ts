@@ -236,9 +236,9 @@ serve(async (req) => {
       try {
         const resend = new Resend(resendApiKey);
         const emailResponse = await resend.emails.send({
-          from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+          from: "Church Management Pro <noreply@churchmanagementpro.com>",
           to: [contact_email],
-          subject: `Welcome to Church Manager Pro - ${church_name}`,
+          subject: `Welcome to Church Management Pro - ${church_name}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -250,7 +250,7 @@ serve(async (req) => {
               <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 <div style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); padding: 40px 20px; text-align: center;">
                   <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Welcome!</h1>
-                  <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">Your Church Manager Pro space is ready</p>
+                  <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">Your Church Management Pro space is ready</p>
                 </div>
                 
                 <div style="padding: 40px 30px;">
@@ -259,7 +259,7 @@ serve(async (req) => {
                   </p>
                   
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Your church <strong>${church_name}</strong> has been successfully registered on Church Manager Pro! 
+                    Your church <strong>${church_name}</strong> has been successfully registered on Church Management Pro! 
                     You have a <strong>14-day free trial</strong> with all features included.
                   </p>
 
@@ -297,7 +297,7 @@ serve(async (req) => {
                 
                 <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
                   <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
-                    © ${new Date().getFullYear()} Church Manager Pro. All rights reserved.
+                    © ${new Date().getFullYear()} Church Management Pro. All rights reserved.
                   </p>
                 </div>
               </div>
@@ -330,7 +330,7 @@ serve(async (req) => {
 
           if (superAdminEmails.length > 0) {
             await resend.emails.send({
-              from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+              from: "Church Management Pro <noreply@churchmanagementpro.com>",
               to: superAdminEmails,
               subject: `🆕 New Church Registered: ${church_name}`,
               html: `
@@ -360,7 +360,7 @@ serve(async (req) => {
                         </p>
                       </div>
                       <p style="color: #6b7280; font-size: 13px; margin-top: 20px; text-align: center;">
-                        This is an automated notification from Church Manager Pro.
+                        This is an automated notification from Church Management Pro.
                       </p>
                     </div>
                   </div>
