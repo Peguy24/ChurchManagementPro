@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
                 Authorization: `Bearer ${resendKey}`,
               },
               body: JSON.stringify({
-                from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+                from: "Church Management Pro <noreply@churchmanagementpro.com>",
                 to: adminEmails,
                 subject: `⚠️ ${criticalNotifs.length} Critical Platform Alert${criticalNotifs.length > 1 ? "s" : ""}`,
                 html: `

@@ -201,7 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
               
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Vous avez été sélectionné pour le rôle de <strong>${roleLabel}</strong> sur la plateforme Church Manager Pro.
+                Vous avez été sélectionné pour le rôle de <strong>${roleLabel}</strong> sur la plateforme Church Management Pro.
               </p>
 
               ${isSuperAdmin ? `
@@ -240,7 +240,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="background-color: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
               <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} Church Manager Pro. Tous droits réservés.<br>
+                © ${new Date().getFullYear()} Church Management Pro. Tous droits réservés.<br>
                 <span style="color: #D1D5DB;">Invitation ${roleLabel} - Lien sécurisé à usage unique.</span>
               </p>
             </div>

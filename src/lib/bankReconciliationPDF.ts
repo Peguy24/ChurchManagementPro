@@ -371,7 +371,7 @@ export async function generateBankReconciliationPDF(
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     const generatedAt = format(new Date(), "dd/MM/yyyy 'à' HH:mm", { locale: fr });
-    const footerText = `Page ${i}/${totalPages} | ${language === "fr" ? "Généré le" : "Generated on"} ${generatedAt} | Church Manager Pro`;
+    const footerText = `Page ${i}/${totalPages} | ${language === "fr" ? "Généré le" : "Generated on"} ${generatedAt} | Church Management Pro`;
     const footerWidth = doc.getTextWidth(footerText);
     doc.text(footerText, (pageWidth - footerWidth) / 2, footerY);
   }

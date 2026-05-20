@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending welcome email to ${safeFirstName} ${safeLastName} (${email})`);
 
     const emailResponse = await resend.emails.send({
-      from: "Church Manager Pro <noreply@churchmanagementpro.com>",
+      from: "Church Management Pro <noreply@churchmanagementpro.com>",
       to: [email],
       subject: `Byenveni ${safeFirstName} nan fanmi nou an! 🙏`,
       html: `

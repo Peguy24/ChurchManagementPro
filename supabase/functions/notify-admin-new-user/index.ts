@@ -109,7 +109,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Sending notification to ${adminEmails.length} admin(s)`);
 
     // Get church name for the tenant
-    let churchName = "Church Manager Pro";
+    let churchName = "Church Management Pro";
     if (tenantId) {
       const { data: tenant } = await supabaseAdmin
         .from("tenants")

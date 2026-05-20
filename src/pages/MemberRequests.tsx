@@ -123,7 +123,7 @@ export default function MemberRequests() {
       if (request.email) {
         try {
           // Get tenant name
-          let tenantName = "Church Manager Pro";
+          let tenantName = "Church Management Pro";
           if (request.tenant_id) {
             const { data: tenantData } = await supabase
               .from("tenants")
