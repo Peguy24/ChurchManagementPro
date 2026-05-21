@@ -351,6 +351,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/payments", icon: CreditCard, label: sl("payments") },
         { to: "/super-admin/subscriptions", icon: CreditCard, label: sl("subscriptions") },
         { to: "/super-admin/accounting", icon: PiggyBank, label: sl("accounting") },
+        { to: "/super-admin/owners", icon: Users, label: language === "fr" ? "Propriétaires" : language === "ht" ? "Pwopriyetè" : "Owners" },
         { to: "/super-admin/payroll", icon: Users, label: sl("payroll") },
         { to: "/super-admin/taxes", icon: FileText, label: sl("taxes") },
         { to: "/super-admin/tax-exemptions", icon: ShieldCheck, label: "Tax Exemptions" },

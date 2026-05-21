@@ -1,42 +1,68 @@
-## Problem
+# Owner Contribution Tracking on Platform Expenses
 
-When a Super Admin activates a plan from **Tenant Management → Activate Plan**, the chosen value (e.g. `"enterprise"`) is written verbatim into `tenant_subscriptions.plan`. But the rest of the system expects different keys:
+Add the ability, on the Super Admin Platform Accounting page, to record **who funded** each expense — either business sources (checking, credit card, other) or **personal contributions split per owner** (percent-based).
 
-- Edge function `check-subscription` maps `basic → essentiel`, `standard → professionnel`, `premium → entreprise`. It does **not** know `"enterprise"`.
-- Frontend `usePlanLimits` knows `essentiel / professionnel / entreprise` (French). It does **not** know `"enterprise"` (English).
+## 1. Owners management (new)
 
-So the activated plan exists in the DB with `status='active'`, `managed_by_admin=true`, but every consumer treats it as unknown → falls back to the `"none"` plan → dashboard shows no active subscription, feature gates lock everything.
+New page **Settings → Business Owners** (Super Admin only) to manage a flexible list of co-owners.
 
-Confirmed against the live row for tenant `b921daeb-72bb-4774-88f9-ff79aff6bd9b` (`plan='enterprise'`, `status='active'`).
+- Table `platform_owners`: `id`, `name`, `email` (optional), `default_share_percent` (numeric, default 50), `is_active` (bool), `display_order`.
+- Simple CRUD UI: add/edit/remove owners, set default ownership %.
+- Validation: sum of active owners' default % should equal 100 (warning, not blocker).
 
-## Fix
+## 2. Expense funding source
 
-Normalize plan keys end-to-end on the canonical DB set: **`free`, `basic`, `standard`, `premium`**.
+In the **Platform Expense dialog** (`PlatformAccounting.tsx`), add a new section **"Funding Source"** with a radio group:
 
-### 1. `src/pages/TenantManagement.tsx`
-- Change `SubscriptionPlan` to `"free" | "basic" | "standard" | "premium"` (drop `"enterprise"`).
-- Update `PLAN_CONFIG` accordingly so the Activate-Plan dropdown only offers the 4 canonical keys (label can still read "Enterprise" for `premium`).
-- This keeps writes aligned with what `check-subscription` and the frontend already expect.
+- Business checking
+- Business credit card
+- Owners (personal funds)
+- Other / custom (free-text label)
 
-### 2. `supabase/functions/check-subscription/index.ts`
-- Add defensive normalization in `DB_TO_PLAN`: also map `"enterprise" → "entreprise"` (and lowercased variants) so any legacy rows still resolve.
+Persist on `platform_expenses`:
+- `funding_source` text — one of `business_checking | business_credit_card | owners_personal | other`
+- `funding_source_label` text — free text when `other`
 
-### 3. `src/hooks/usePlanLimits.tsx`
-- In `DB_TO_FRONTEND_PLAN`, add `enterprise: "entreprise"` as a safety alias so any stray English value still resolves to the correct tier.
+## 3. Owner split (when "Owners personal funds" selected)
 
-### 4. Data backfill (migration)
-Update the existing broken row so the user sees the plan immediately:
+When the source is **Owners personal**, show a dynamic table of all active owners with:
+- Owner name (read-only)
+- Percent input (defaults to each owner's `default_share_percent`)
+- Auto-computed amount = `expense.amount × percent / 100`
+- Live total row — must equal 100% / full amount before save (blocks submit otherwise)
+
+Persist in new table `platform_expense_contributions`:
+- `id`, `expense_id` (FK → platform_expenses, cascade delete)
+- `owner_id` (FK → platform_owners)
+- `percent` numeric, `amount` numeric
+- `tenant_id` not needed (platform-level)
+
+## 4. Display & reporting
+
+- **Expense list:** add a "Funding" column showing a badge (Checking / Card / Owners / label) and, if owners-funded, a small tooltip "Owner A 50% • Owner B 50%".
+- **New summary widget** on PlatformAccounting: "Owner Contributions YTD" — total each owner has put in from personal funds (for settle-up).
+- CSV export includes funding source + per-owner amounts.
+
+## 5. Out of scope
+
+- Tenant (church) expenses are unchanged.
+- No reimbursement workflow yet — purely tracking; settle-up is manual based on the summary.
+
+## Technical Details
+
+**Migration:**
 ```sql
-UPDATE public.tenant_subscriptions
-SET plan = 'premium'
-WHERE plan = 'enterprise';
+create table public.platform_owners (...);  -- RLS: super admin only
+alter table public.platform_expenses
+  add column funding_source text not null default 'business_checking',
+  add column funding_source_label text;
+create table public.platform_expense_contributions (...);  -- RLS: super admin only
 ```
 
-### 5. Verification
-- Reload the affected tenant dashboard → plan badge shows "Enterprise / Entreprise" and `status='active'`.
-- `FeatureGate` should unlock all entreprise-tier features.
-- Activate a different plan from Tenant Management → verify it shows as active without further changes.
-
-## Out of scope
-- Renaming the French `entreprise` key to English across the frontend (larger refactor).
-- Stripe-managed subscriptions (already working — this only touched the admin-managed path).
+**Files to touch:**
+- `supabase/migrations/...` — new tables + columns + RLS
+- `src/pages/PlatformAccounting.tsx` — expense dialog + list column + summary widget
+- `src/pages/PlatformSettings.tsx` (or new `BusinessOwners.tsx` route) — owners CRUD
+- `src/contexts/LanguageContext.tsx` — EN/FR/HT strings
+- `src/App.tsx` — route for owners page if separate
+- `src/components/Layout.tsx` — sidebar link under Super Admin section

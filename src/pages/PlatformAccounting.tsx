@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator, Paperclip, FileText, Upload, X, FileSpreadsheet } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DollarSign, TrendingDown, TrendingUp, Plus, Download, Trash2, Edit, Calculator, Paperclip, FileText, Upload, X, FileSpreadsheet, Wallet } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,6 +37,22 @@ const CATEGORIES = [
 
 type ExpenseCategory = typeof CATEGORIES[number];
 
+type FundingSource = "business_checking" | "business_credit_card" | "owners_personal" | "other";
+
+interface PlatformOwner {
+  id: string;
+  name: string;
+  default_share_percent: number;
+  is_active: boolean;
+}
+
+interface Contribution {
+  id?: string;
+  owner_id: string;
+  percent: number;
+  amount: number;
+}
+
 interface PlatformExpense {
   id: string;
   amount: number;
@@ -53,6 +70,8 @@ interface PlatformExpense {
   receipt_filename: string | null;
   tax_deductible: boolean | null;
   tax_category: string | null;
+  funding_source: FundingSource | null;
+  funding_source_label: string | null;
 }
 
 const categoryLabels: Record<string, Record<ExpenseCategory, string>> = {
@@ -111,7 +130,10 @@ export default function PlatformAccounting() {
     tax_category: "",
     receipt_url: "" as string,
     receipt_filename: "" as string,
+    funding_source: "business_checking" as FundingSource,
+    funding_source_label: "",
   });
+  const [contributions, setContributions] = useState<Contribution[]>([]);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -130,7 +152,10 @@ export default function PlatformAccounting() {
       tax_category: "",
       receipt_url: "",
       receipt_filename: "",
+      funding_source: "business_checking",
+      funding_source_label: "",
     });
+    setContributions([]);
     setReceiptFile(null);
     setEditingExpense(null);
   };
@@ -144,9 +169,45 @@ export default function PlatformAccounting() {
         .select("*")
         .order("expense_date", { ascending: false });
       if (error) throw error;
-      return (data || []) as PlatformExpense[];
+      return (data || []) as unknown as PlatformExpense[];
     },
   });
+
+  const { data: owners } = useQuery({
+    queryKey: ["platform-owners-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_owners" as any)
+        .select("id, name, default_share_percent, is_active")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return (data || []) as unknown as PlatformOwner[];
+    },
+  });
+
+  const { data: allContributions } = useQuery({
+    queryKey: ["platform-expense-contributions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_expense_contributions" as any)
+        .select("id, expense_id, owner_id, percent, amount");
+      if (error) throw error;
+      return (data || []) as unknown as Array<{ id: string; expense_id: string; owner_id: string; percent: number; amount: number }>;
+    },
+  });
+
+  const ownerNameById = (id: string) => owners?.find((o) => o.id === id)?.name || "—";
+  const contributionsByExpense = (() => {
+    const map = new Map<string, Array<{ owner_id: string; percent: number; amount: number }>>();
+    (allContributions || []).forEach((c) => {
+      const arr = map.get(c.expense_id) || [];
+      arr.push(c);
+      map.set(c.expense_id, arr);
+    });
+    return map;
+  })();
 
   // Upload receipt to private bucket; returns storage path
   const uploadReceipt = async (file: File): Promise<{ path: string; filename: string }> => {
@@ -175,6 +236,25 @@ export default function PlatformAccounting() {
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
+  // Save contributions for an expense (replace strategy)
+  const saveContributions = async (expenseId: string, totalAmount: number) => {
+    // Remove existing
+    await supabase.from("platform_expense_contributions" as any).delete().eq("expense_id", expenseId);
+    if (formData.funding_source !== "owners_personal") return;
+    const rows = contributions
+      .filter((c) => c.owner_id && Number(c.percent) > 0)
+      .map((c) => ({
+        expense_id: expenseId,
+        owner_id: c.owner_id,
+        percent: Number(c.percent),
+        amount: Number(((Number(c.percent) / 100) * totalAmount).toFixed(2)),
+      }));
+    if (rows.length > 0) {
+      const { error } = await supabase.from("platform_expense_contributions" as any).insert(rows as any);
+      if (error) throw error;
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       let receipt_url: string | null = data.receipt_url || null;
@@ -186,7 +266,7 @@ export default function PlatformAccounting() {
         receipt_filename = up.filename;
         setUploading(false);
       }
-      const { error } = await supabase.from("platform_expenses").insert({
+      const { data: inserted, error } = await supabase.from("platform_expenses").insert({
         amount: parseFloat(data.amount),
         expense_date: data.expense_date,
         category: data.category,
@@ -200,11 +280,17 @@ export default function PlatformAccounting() {
         receipt_url,
         receipt_filename,
         created_by: user?.id,
-      });
+        funding_source: data.funding_source,
+        funding_source_label: data.funding_source === "other" ? (data.funding_source_label || null) : null,
+      } as any).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        await saveContributions(inserted.id, parseFloat(data.amount));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseAdded"));
       setDialogOpen(false);
       resetForm();
@@ -218,7 +304,6 @@ export default function PlatformAccounting() {
       let receipt_filename: string | null = data.receipt_filename || null;
       if (receiptFile) {
         setUploading(true);
-        // Remove old file if any
         if (editingExpense?.receipt_url) {
           await removeReceiptFromStorage(editingExpense.receipt_url);
         }
@@ -227,7 +312,6 @@ export default function PlatformAccounting() {
         receipt_filename = up.filename;
         setUploading(false);
       } else if (editingExpense?.receipt_url && !data.receipt_url) {
-        // User cleared the receipt
         await removeReceiptFromStorage(editingExpense.receipt_url);
         receipt_url = null;
         receipt_filename = null;
@@ -247,12 +331,16 @@ export default function PlatformAccounting() {
           tax_category: data.tax_category || null,
           receipt_url,
           receipt_filename,
-        })
+          funding_source: data.funding_source,
+          funding_source_label: data.funding_source === "other" ? (data.funding_source_label || null) : null,
+        } as any)
         .eq("id", id);
       if (error) throw error;
+      await saveContributions(id, parseFloat(data.amount));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseUpdated"));
       setDialogOpen(false);
       resetForm();
@@ -270,10 +358,17 @@ export default function PlatformAccounting() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseDeleted"));
     },
     onError: () => toast.error(t("platformAccounting.errorDeleting")),
   });
+
+  // When opening the dialog for new expense or when owners load, seed contributions defaults
+  const seedDefaultContributions = () => {
+    const active = (owners || []).filter((o) => o.is_active);
+    setContributions(active.map((o) => ({ owner_id: o.id, percent: Number(o.default_share_percent || 0), amount: 0 })));
+  };
 
   const handleSubmit = () => {
     if (!formData.amount || !formData.description) {
@@ -283,6 +378,13 @@ export default function PlatformAccounting() {
     if (receiptFile && receiptFile.size > 10 * 1024 * 1024) {
       toast.error(t("platformAccounting.receiptTooLarge"));
       return;
+    }
+    if (formData.funding_source === "owners_personal") {
+      const totalPct = contributions.reduce((s, c) => s + Number(c.percent || 0), 0);
+      if (Math.abs(totalPct - 100) > 0.01) {
+        toast.error(language === "fr" ? "La somme des parts doit être 100%." : language === "ht" ? "Total pati yo dwe 100%." : "Owner shares must total 100%.");
+        return;
+      }
     }
     if (editingExpense) {
       updateMutation.mutate({ id: editingExpense.id, data: formData });
@@ -306,7 +408,16 @@ export default function PlatformAccounting() {
       tax_category: expense.tax_category || "",
       receipt_url: expense.receipt_url || "",
       receipt_filename: expense.receipt_filename || "",
+      funding_source: (expense.funding_source as FundingSource) || "business_checking",
+      funding_source_label: expense.funding_source_label || "",
     });
+    const existing = contributionsByExpense.get(expense.id) || [];
+    if (existing.length > 0) {
+      setContributions(existing.map((c) => ({ owner_id: c.owner_id, percent: Number(c.percent), amount: Number(c.amount) })));
+    } else {
+      const active = (owners || []).filter((o) => o.is_active);
+      setContributions(active.map((o) => ({ owner_id: o.id, percent: Number(o.default_share_percent || 0), amount: 0 })));
+    }
     setReceiptFile(null);
     setDialogOpen(true);
   };
@@ -442,7 +553,11 @@ export default function PlatformAccounting() {
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               {t("platformAccounting.taxExport")}
             </Button>
-            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) { resetForm(); }
+              else if (!editingExpense && contributions.length === 0) seedDefaultContributions();
+            }}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -492,7 +607,99 @@ export default function PlatformAccounting() {
                     <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                   </div>
 
-                  {/* Receipt / Justificatif */}
+                  {/* Funding source */}
+                  <div className="space-y-3 rounded-md border p-3">
+                    <Label className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      {language === "fr" ? "Source de financement" : language === "ht" ? "Sous finansman" : "Funding source"}
+                    </Label>
+                    <RadioGroup
+                      value={formData.funding_source}
+                      onValueChange={(v) => setFormData({ ...formData, funding_source: v as FundingSource })}
+                      className="grid grid-cols-2 gap-2"
+                    >
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="business_checking" id="fs-check" />
+                        {language === "fr" ? "Compte courant" : language === "ht" ? "Kont biznis" : "Business checking"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="business_credit_card" id="fs-cc" />
+                        {language === "fr" ? "Carte de crédit pro" : language === "ht" ? "Kat kredi biznis" : "Business credit card"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="owners_personal" id="fs-own" />
+                        {language === "fr" ? "Fonds des propriétaires" : language === "ht" ? "Lajan pwopriyetè" : "Owners (personal funds)"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="other" id="fs-other" />
+                        {language === "fr" ? "Autre" : language === "ht" ? "Lòt" : "Other"}
+                      </label>
+                    </RadioGroup>
+
+                    {formData.funding_source === "other" && (
+                      <Input
+                        placeholder={language === "fr" ? "Préciser (espèces, remboursement…)" : language === "ht" ? "Presize (kach, ranbousman…)" : "Specify (cash, reimbursement…)"}
+                        value={formData.funding_source_label}
+                        maxLength={120}
+                        onChange={(e) => setFormData({ ...formData, funding_source_label: e.target.value })}
+                      />
+                    )}
+
+                    {formData.funding_source === "owners_personal" && (
+                      <div className="space-y-2 pt-2 border-t">
+                        {(!owners || owners.length === 0) ? (
+                          <p className="text-xs text-muted-foreground">
+                            {language === "fr" ? "Ajoutez d'abord des propriétaires dans Propriétaires." : language === "ht" ? "Ajoute pwopriyetè yo nan paj Pwopriyetè a." : "Add owners first in the Business Owners page."}
+                          </p>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
+                              <div className="col-span-6">{language === "fr" ? "Propriétaire" : language === "ht" ? "Pwopriyetè" : "Owner"}</div>
+                              <div className="col-span-3 text-right">%</div>
+                              <div className="col-span-3 text-right">{t("platformAccounting.amount")}</div>
+                            </div>
+                            {contributions.map((c, idx) => {
+                              const amt = (Number(c.percent || 0) / 100) * (parseFloat(formData.amount) || 0);
+                              return (
+                                <div key={c.owner_id} className="grid grid-cols-12 gap-2 items-center">
+                                  <div className="col-span-6 text-sm">{ownerNameById(c.owner_id)}</div>
+                                  <div className="col-span-3">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
+                                      value={String(c.percent)}
+                                      onChange={(e) => {
+                                        const next = [...contributions];
+                                        next[idx] = { ...next[idx], percent: parseFloat(e.target.value) || 0 };
+                                        setContributions(next);
+                                      }}
+                                      className="h-8 text-right"
+                                    />
+                                  </div>
+                                  <div className="col-span-3 text-right text-sm tabular-nums">
+                                    {formatCurrency(amt)}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            <div className="grid grid-cols-12 gap-2 pt-1 border-t text-sm font-medium">
+                              <div className="col-span-6">{language === "fr" ? "Total" : language === "ht" ? "Total" : "Total"}</div>
+                              <div className={`col-span-3 text-right ${Math.abs(contributions.reduce((s, c) => s + Number(c.percent || 0), 0) - 100) > 0.01 ? "text-destructive" : "text-green-600"}`}>
+                                {contributions.reduce((s, c) => s + Number(c.percent || 0), 0).toFixed(2)}%
+                              </div>
+                              <div className="col-span-3 text-right tabular-nums">
+                                {formatCurrency(parseFloat(formData.amount) || 0)}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+
                   <div className="space-y-2 rounded-md border p-3">
                     <Label className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4" />

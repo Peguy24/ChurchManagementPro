@@ -57,6 +57,7 @@ const TenantManagement = lazy(() => import("./pages/TenantManagement"));
 const TenantUserManagement = lazy(() => import("./pages/TenantUserManagement"));
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 const PlatformAccounting = lazy(() => import("./pages/PlatformAccounting"));
+const BusinessOwners = lazy(() => import("./pages/BusinessOwners"));
 const AdminInvitations = lazy(() => import("./pages/AdminInvitations"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const TenantDataViewer = lazy(() => import("./pages/TenantDataViewer"));
@@ -186,6 +187,7 @@ const App = () => (
               <Route path="/super-admin" element={<ProtectedRoute requireSuperAdmin><SuperAdminDashboard /></ProtectedRoute>} />
               <Route path="/super-admin/explore" element={<ProtectedRoute requireSuperAdmin><TenantDataViewer /></ProtectedRoute>} />
               <Route path="/super-admin/accounting" element={<ProtectedRoute requireSuperAdmin><PlatformAccounting /></ProtectedRoute>} />
+              <Route path="/super-admin/owners" element={<ProtectedRoute requireSuperAdmin><BusinessOwners /></ProtectedRoute>} />
               <Route path="/super-admin/activity" element={<ProtectedRoute requireSuperAdmin><PlatformActivityLog /></ProtectedRoute>} />
               <Route path="/super-admin/revenue" element={<ProtectedRoute requireSuperAdmin><RevenueAnalytics /></ProtectedRoute>} />
               <Route path="/super-admin/health" element={<ProtectedRoute requireSuperAdmin><ChurchHealthScores /></ProtectedRoute>} />
