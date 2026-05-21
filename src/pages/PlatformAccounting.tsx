@@ -131,7 +131,10 @@ export default function PlatformAccounting() {
     tax_category: "",
     receipt_url: "" as string,
     receipt_filename: "" as string,
+    funding_source: "business_checking" as FundingSource,
+    funding_source_label: "",
   });
+  const [contributions, setContributions] = useState<Contribution[]>([]);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -150,7 +153,10 @@ export default function PlatformAccounting() {
       tax_category: "",
       receipt_url: "",
       receipt_filename: "",
+      funding_source: "business_checking",
+      funding_source_label: "",
     });
+    setContributions([]);
     setReceiptFile(null);
     setEditingExpense(null);
   };
