@@ -606,9 +606,100 @@ export default function PlatformAccounting() {
                   <div>
                     <Label>{t("platformAccounting.notes")}</Label>
                     <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+
+                  {/* Funding source */}
+                  <div className="space-y-3 rounded-md border p-3">
+                    <Label className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      {language === "fr" ? "Source de financement" : language === "ht" ? "Sous finansman" : "Funding source"}
+                    </Label>
+                    <RadioGroup
+                      value={formData.funding_source}
+                      onValueChange={(v) => setFormData({ ...formData, funding_source: v as FundingSource })}
+                      className="grid grid-cols-2 gap-2"
+                    >
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="business_checking" id="fs-check" />
+                        {language === "fr" ? "Compte courant" : language === "ht" ? "Kont biznis" : "Business checking"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="business_credit_card" id="fs-cc" />
+                        {language === "fr" ? "Carte de crédit pro" : language === "ht" ? "Kat kredi biznis" : "Business credit card"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="owners_personal" id="fs-own" />
+                        {language === "fr" ? "Fonds des propriétaires" : language === "ht" ? "Lajan pwopriyetè" : "Owners (personal funds)"}
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <RadioGroupItem value="other" id="fs-other" />
+                        {language === "fr" ? "Autre" : language === "ht" ? "Lòt" : "Other"}
+                      </label>
+                    </RadioGroup>
+
+                    {formData.funding_source === "other" && (
+                      <Input
+                        placeholder={language === "fr" ? "Préciser (espèces, remboursement…)" : language === "ht" ? "Presize (kach, ranbousman…)" : "Specify (cash, reimbursement…)"}
+                        value={formData.funding_source_label}
+                        maxLength={120}
+                        onChange={(e) => setFormData({ ...formData, funding_source_label: e.target.value })}
+                      />
+                    )}
+
+                    {formData.funding_source === "owners_personal" && (
+                      <div className="space-y-2 pt-2 border-t">
+                        {(!owners || owners.length === 0) ? (
+                          <p className="text-xs text-muted-foreground">
+                            {language === "fr" ? "Ajoutez d'abord des propriétaires dans Propriétaires." : language === "ht" ? "Ajoute pwopriyetè yo nan paj Pwopriyetè a." : "Add owners first in the Business Owners page."}
+                          </p>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
+                              <div className="col-span-6">{language === "fr" ? "Propriétaire" : language === "ht" ? "Pwopriyetè" : "Owner"}</div>
+                              <div className="col-span-3 text-right">%</div>
+                              <div className="col-span-3 text-right">{t("platformAccounting.amount")}</div>
+                            </div>
+                            {contributions.map((c, idx) => {
+                              const amt = (Number(c.percent || 0) / 100) * (parseFloat(formData.amount) || 0);
+                              return (
+                                <div key={c.owner_id} className="grid grid-cols-12 gap-2 items-center">
+                                  <div className="col-span-6 text-sm">{ownerNameById(c.owner_id)}</div>
+                                  <div className="col-span-3">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
+                                      value={String(c.percent)}
+                                      onChange={(e) => {
+                                        const next = [...contributions];
+                                        next[idx] = { ...next[idx], percent: parseFloat(e.target.value) || 0 };
+                                        setContributions(next);
+                                      }}
+                                      className="h-8 text-right"
+                                    />
+                                  </div>
+                                  <div className="col-span-3 text-right text-sm tabular-nums">
+                                    {formatCurrency(amt)}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            <div className="grid grid-cols-12 gap-2 pt-1 border-t text-sm font-medium">
+                              <div className="col-span-6">{language === "fr" ? "Total" : language === "ht" ? "Total" : "Total"}</div>
+                              <div className={`col-span-3 text-right ${Math.abs(contributions.reduce((s, c) => s + Number(c.percent || 0), 0) - 100) > 0.01 ? "text-destructive" : "text-green-600"}`}>
+                                {contributions.reduce((s, c) => s + Number(c.percent || 0), 0).toFixed(2)}%
+                              </div>
+                              <div className="col-span-3 text-right tabular-nums">
+                                {formatCurrency(parseFloat(formData.amount) || 0)}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Receipt / Justificatif */}
+
                   <div className="space-y-2 rounded-md border p-3">
                     <Label className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4" />
