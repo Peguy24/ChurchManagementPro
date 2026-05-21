@@ -57,6 +57,7 @@ const TenantManagement = lazy(() => import("./pages/TenantManagement"));
 const TenantUserManagement = lazy(() => import("./pages/TenantUserManagement"));
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 const PlatformAccounting = lazy(() => import("./pages/PlatformAccounting"));
+const BusinessOwners = lazy(() => import("./pages/BusinessOwners"));
 const AdminInvitations = lazy(() => import("./pages/AdminInvitations"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const TenantDataViewer = lazy(() => import("./pages/TenantDataViewer"));
