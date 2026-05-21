@@ -36,6 +36,22 @@ const CATEGORIES = [
 
 type ExpenseCategory = typeof CATEGORIES[number];
 
+type FundingSource = "business_checking" | "business_credit_card" | "owners_personal" | "other";
+
+interface PlatformOwner {
+  id: string;
+  name: string;
+  default_share_percent: number;
+  is_active: boolean;
+}
+
+interface Contribution {
+  id?: string;
+  owner_id: string;
+  percent: number;
+  amount: number;
+}
+
 interface PlatformExpense {
   id: string;
   amount: number;
@@ -53,6 +69,8 @@ interface PlatformExpense {
   receipt_filename: string | null;
   tax_deductible: boolean | null;
   tax_category: string | null;
+  funding_source: FundingSource | null;
+  funding_source_label: string | null;
 }
 
 const categoryLabels: Record<string, Record<ExpenseCategory, string>> = {
