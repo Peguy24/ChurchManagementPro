@@ -2915,6 +2915,48 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_expense_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          expense_id: string
+          id: string
+          owner_id: string
+          percent: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expense_id: string
+          id?: string
+          owner_id: string
+          percent: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expense_id?: string
+          id?: string
+          owner_id?: string
+          percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_expense_contributions_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "platform_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_expense_contributions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "platform_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_expenses: {
         Row: {
           amount: number
@@ -2923,6 +2965,8 @@ export type Database = {
           created_by: string | null
           description: string
           expense_date: string
+          funding_source: string
+          funding_source_label: string | null
           id: string
           is_recurring: boolean | null
           notes: string | null
@@ -2941,6 +2985,8 @@ export type Database = {
           created_by?: string | null
           description: string
           expense_date?: string
+          funding_source?: string
+          funding_source_label?: string | null
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
@@ -2959,6 +3005,8 @@ export type Database = {
           created_by?: string | null
           description?: string
           expense_date?: string
+          funding_source?: string
+          funding_source_label?: string | null
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
@@ -3021,6 +3069,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_owners: {
+        Row: {
+          created_at: string
+          default_share_percent: number
+          display_order: number
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_share_percent?: number
+          display_order?: number
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_share_percent?: number
+          display_order?: number
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       platform_payroll: {
         Row: {
