@@ -606,6 +606,7 @@ export default function PlatformAccounting() {
                   <div>
                     <Label>{t("platformAccounting.notes")}</Label>
                     <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+                  </div>
 
                   {/* Funding source */}
                   <div className="space-y-3 rounded-md border p-3">
