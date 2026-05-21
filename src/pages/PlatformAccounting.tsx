@@ -554,7 +554,11 @@ export default function PlatformAccounting() {
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               {t("platformAccounting.taxExport")}
             </Button>
-            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) { resetForm(); }
+              else if (!editingExpense && contributions.length === 0) seedDefaultContributions();
+            }}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
