@@ -237,6 +237,25 @@ export default function PlatformAccounting() {
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
+  // Save contributions for an expense (replace strategy)
+  const saveContributions = async (expenseId: string, totalAmount: number) => {
+    // Remove existing
+    await supabase.from("platform_expense_contributions" as any).delete().eq("expense_id", expenseId);
+    if (formData.funding_source !== "owners_personal") return;
+    const rows = contributions
+      .filter((c) => c.owner_id && Number(c.percent) > 0)
+      .map((c) => ({
+        expense_id: expenseId,
+        owner_id: c.owner_id,
+        percent: Number(c.percent),
+        amount: Number(((Number(c.percent) / 100) * totalAmount).toFixed(2)),
+      }));
+    if (rows.length > 0) {
+      const { error } = await supabase.from("platform_expense_contributions" as any).insert(rows as any);
+      if (error) throw error;
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       let receipt_url: string | null = data.receipt_url || null;
@@ -248,7 +267,7 @@ export default function PlatformAccounting() {
         receipt_filename = up.filename;
         setUploading(false);
       }
-      const { error } = await supabase.from("platform_expenses").insert({
+      const { data: inserted, error } = await supabase.from("platform_expenses").insert({
         amount: parseFloat(data.amount),
         expense_date: data.expense_date,
         category: data.category,
@@ -262,11 +281,17 @@ export default function PlatformAccounting() {
         receipt_url,
         receipt_filename,
         created_by: user?.id,
-      });
+        funding_source: data.funding_source,
+        funding_source_label: data.funding_source === "other" ? (data.funding_source_label || null) : null,
+      } as any).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        await saveContributions(inserted.id, parseFloat(data.amount));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseAdded"));
       setDialogOpen(false);
       resetForm();
@@ -280,7 +305,6 @@ export default function PlatformAccounting() {
       let receipt_filename: string | null = data.receipt_filename || null;
       if (receiptFile) {
         setUploading(true);
-        // Remove old file if any
         if (editingExpense?.receipt_url) {
           await removeReceiptFromStorage(editingExpense.receipt_url);
         }
@@ -289,7 +313,6 @@ export default function PlatformAccounting() {
         receipt_filename = up.filename;
         setUploading(false);
       } else if (editingExpense?.receipt_url && !data.receipt_url) {
-        // User cleared the receipt
         await removeReceiptFromStorage(editingExpense.receipt_url);
         receipt_url = null;
         receipt_filename = null;
@@ -309,12 +332,16 @@ export default function PlatformAccounting() {
           tax_category: data.tax_category || null,
           receipt_url,
           receipt_filename,
-        })
+          funding_source: data.funding_source,
+          funding_source_label: data.funding_source === "other" ? (data.funding_source_label || null) : null,
+        } as any)
         .eq("id", id);
       if (error) throw error;
+      await saveContributions(id, parseFloat(data.amount));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseUpdated"));
       setDialogOpen(false);
       resetForm();
@@ -332,10 +359,17 @@ export default function PlatformAccounting() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["platform-expense-contributions"] });
       toast.success(t("platformAccounting.expenseDeleted"));
     },
     onError: () => toast.error(t("platformAccounting.errorDeleting")),
   });
+
+  // When opening the dialog for new expense or when owners load, seed contributions defaults
+  const seedDefaultContributions = () => {
+    const active = (owners || []).filter((o) => o.is_active);
+    setContributions(active.map((o) => ({ owner_id: o.id, percent: Number(o.default_share_percent || 0), amount: 0 })));
+  };
 
   const handleSubmit = () => {
     if (!formData.amount || !formData.description) {
@@ -345,6 +379,13 @@ export default function PlatformAccounting() {
     if (receiptFile && receiptFile.size > 10 * 1024 * 1024) {
       toast.error(t("platformAccounting.receiptTooLarge"));
       return;
+    }
+    if (formData.funding_source === "owners_personal") {
+      const totalPct = contributions.reduce((s, c) => s + Number(c.percent || 0), 0);
+      if (Math.abs(totalPct - 100) > 0.01) {
+        toast.error(language === "fr" ? "La somme des parts doit être 100%." : language === "ht" ? "Total pati yo dwe 100%." : "Owner shares must total 100%.");
+        return;
+      }
     }
     if (editingExpense) {
       updateMutation.mutate({ id: editingExpense.id, data: formData });
@@ -368,7 +409,16 @@ export default function PlatformAccounting() {
       tax_category: expense.tax_category || "",
       receipt_url: expense.receipt_url || "",
       receipt_filename: expense.receipt_filename || "",
+      funding_source: (expense.funding_source as FundingSource) || "business_checking",
+      funding_source_label: expense.funding_source_label || "",
     });
+    const existing = contributionsByExpense.get(expense.id) || [];
+    if (existing.length > 0) {
+      setContributions(existing.map((c) => ({ owner_id: c.owner_id, percent: Number(c.percent), amount: Number(c.amount) })));
+    } else {
+      const active = (owners || []).filter((o) => o.is_active);
+      setContributions(active.map((o) => ({ owner_id: o.id, percent: Number(o.default_share_percent || 0), amount: 0 })));
+    }
     setReceiptFile(null);
     setDialogOpen(true);
   };
