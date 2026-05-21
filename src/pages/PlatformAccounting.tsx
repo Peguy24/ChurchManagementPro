@@ -170,9 +170,45 @@ export default function PlatformAccounting() {
         .select("*")
         .order("expense_date", { ascending: false });
       if (error) throw error;
-      return (data || []) as PlatformExpense[];
+      return (data || []) as unknown as PlatformExpense[];
     },
   });
+
+  const { data: owners } = useQuery({
+    queryKey: ["platform-owners-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_owners" as any)
+        .select("id, name, default_share_percent, is_active")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return (data || []) as unknown as PlatformOwner[];
+    },
+  });
+
+  const { data: allContributions } = useQuery({
+    queryKey: ["platform-expense-contributions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_expense_contributions" as any)
+        .select("id, expense_id, owner_id, percent, amount");
+      if (error) throw error;
+      return (data || []) as unknown as Array<{ id: string; expense_id: string; owner_id: string; percent: number; amount: number }>;
+    },
+  });
+
+  const ownerNameById = (id: string) => owners?.find((o) => o.id === id)?.name || "—";
+  const contributionsByExpense = (() => {
+    const map = new Map<string, Array<{ owner_id: string; percent: number; amount: number }>>();
+    (allContributions || []).forEach((c) => {
+      const arr = map.get(c.expense_id) || [];
+      arr.push(c);
+      map.set(c.expense_id, arr);
+    });
+    return map;
+  })();
 
   // Upload receipt to private bucket; returns storage path
   const uploadReceipt = async (file: File): Promise<{ path: string; filename: string }> => {
