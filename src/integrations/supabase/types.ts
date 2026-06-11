@@ -2009,6 +2009,7 @@ export type Database = {
           quantity_used: number | null
           returned: boolean | null
           start_date: string
+          tenant_id: string | null
           used_by: string | null
         }
         Insert: {
@@ -2022,6 +2023,7 @@ export type Database = {
           quantity_used?: number | null
           returned?: boolean | null
           start_date: string
+          tenant_id?: string | null
           used_by?: string | null
         }
         Update: {
@@ -2035,6 +2037,7 @@ export type Database = {
           quantity_used?: number | null
           returned?: boolean | null
           start_date?: string
+          tenant_id?: string | null
           used_by?: string | null
         }
         Relationships: [
@@ -2142,6 +2145,7 @@ export type Database = {
           id: string
           member_id: string
           notes: string | null
+          tenant_id: string | null
           updated_at: string
           uploaded_by: string | null
         }
@@ -2154,6 +2158,7 @@ export type Database = {
           id?: string
           member_id: string
           notes?: string | null
+          tenant_id?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
@@ -2166,6 +2171,7 @@ export type Database = {
           id?: string
           member_id?: string
           notes?: string | null
+          tenant_id?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
