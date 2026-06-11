@@ -237,8 +237,8 @@ const Commercial = () => {
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <LanguageSelector />
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden lg:flex">
-              <Shield className="w-4 h-4 mr-2" />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="hidden sm:flex">
+              <Shield className="w-4 h-4 mr-1 sm:mr-2" />
               {t("commercial.admin")}
             </Button>
             <Button size="sm" onClick={() => setRequestFormOpen(true)} className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-opacity text-xs sm:text-sm px-3 sm:px-4">
