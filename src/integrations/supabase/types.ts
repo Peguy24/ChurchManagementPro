@@ -567,6 +567,42 @@ export type Database = {
           },
         ]
       }
+      changelog_entries: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_published: boolean
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       church_settings: {
         Row: {
           created_at: string
@@ -1695,6 +1731,71 @@ export type Database = {
           vendor?: string | null
         }
         Relationships: []
+      }
+      failed_payments: {
+        Row: {
+          amount: number | null
+          attempt_count: number
+          created_at: string
+          currency: string | null
+          failure_code: string | null
+          failure_reason: string | null
+          id: string
+          next_retry_at: string | null
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_invoice_id: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          attempt_count?: number
+          created_at?: string
+          currency?: string | null
+          failure_code?: string | null
+          failure_reason?: string | null
+          id?: string
+          next_retry_at?: string | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          attempt_count?: number
+          created_at?: string
+          currency?: string | null
+          failure_code?: string | null
+          failure_reason?: string | null
+          id?: string
+          next_retry_at?: string | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "failed_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_audit_logs: {
         Row: {
@@ -3717,6 +3818,81 @@ export type Database = {
           },
         ]
       }
+      status_components: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          position: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          position?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          position?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      status_incidents: {
+        Row: {
+          affected_component_ids: string[]
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          resolved_at: string | null
+          severity: string
+          started_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_component_ids?: string[]
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          started_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_component_ids?: string[]
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          started_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_audit_logs: {
         Row: {
           action_type: string
@@ -4881,6 +5057,19 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      v_onboarding_funnel: {
+        Row: {
+          step_branch: number | null
+          step_donation: number | null
+          step_event: number | null
+          step_invite: number | null
+          step_logo: number | null
+          step_member: number | null
+          step_profile: number | null
+          total_tenants: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
