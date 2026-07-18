@@ -1,110 +1,51 @@
-## Overview
+## NPS Enhancements — 5 Features
 
-Four new Super Admin growth features. Each is independent — can build all at once or pick subset.
+### 1. Email survey (catch inactive users)
+- New edge function `send-nps-survey` (server-side): finds tenant admins eligible per the same 90-day cadence as the in-app prompt, sends a branded email with a one-click score link (0–10) that deep-links to `/nps?score=N&token=…`.
+- Register React Email template `nps-survey` in `_shared/transactional-email-templates/` (trilingual per user locale from `profiles.language`).
+- Add "Send email survey now" button + last-sent timestamp in `NpsAdmin.tsx` (manual trigger). Also schedule via `pg_cron` weekly to catch users who haven't logged in recently (checks last sign-in).
+- Add `nps_email_sends` table (user_id, sent_at, cycle) so we don't double-email in the same cycle.
 
----
+### 2. Detractor auto-ticket + super-admin alert
+- DB trigger `on_nps_detractor_submitted` on `nps_surveys AFTER INSERT`:
+  - If `score ≤ 6` **and** `comment` present → insert `support_tickets` row (category `nps_detractor`, priority `high`, subject "Detractor feedback from <tenant>", message = comment + score context).
+  - Insert `platform_notifications` row (`nps_detractor` type) so bell + realtime already work.
+- New edge function `notify-detractor` invoked by trigger via `pg_net`: emails all super admins who opted in (reuse `get_contact_message_email_recipients` pattern → add new prefs column `nps_detractor_channel` to `super_admin_notification_prefs`).
 
-### 1. In-App Broadcasts with Targeting
+### 3. Admin dashboard segmentation
+- Update `NpsAdmin.tsx`:
+  - Add filter bar: **Plan tier** (Essentiel / Professionnel / Entreprise / Trial / All), **Country** (dropdown from distinct tenant countries), **Tenant size** (member count buckets: <50, 50–200, 200–500, 500+).
+  - Fetch enriched view via new SQL function `get_nps_responses_filtered(_plan, _country, _min_members, _max_members)` that joins `nps_surveys`, `tenants`, `tenant_subscriptions`, and `members` count.
+  - Recompute NPS score, promoters/passives/detractors, and trend from the filtered result set client-side.
+  - CSV export respects active filters.
 
-Extends the existing `platform_announcement_banners` system with **audience targeting rules** and **in-app inbox messages** (not just banners).
+### 4. Response webhook (detractor alert)
+- Covered by #2: emails Super Admins per their notification prefs on every detractor submission. No external Slack — reuses existing Resend/`send-transactional-email` infra.
+- Optional `SLACK_WEBHOOK_URL` secret support: if present, `notify-detractor` also POSTs to Slack. Skipped silently if not configured.
 
-**Schema (new tables)**
-- `broadcasts`: title, body_html, cta_label, cta_url, delivery (banner|inbox|both), severity, starts_at, ends_at, audience_rules (jsonb), created_by
-- `broadcast_reads`: broadcast_id, user_id, read_at, dismissed_at
+### 5. Public NPS badge on Commercial page
+- New SQL function `get_public_nps_stats()` (SECURITY DEFINER, public read via `anon`): returns `{ score, total_responses, promoters_pct }` for **last 12 months only if `total_responses ≥ 20`**, otherwise `null`.
+- New component `<PublicNpsBadge />` rendered in `Commercial.tsx` above/near testimonials: shows score, "Based on N verified church responses", subtle green/yellow/red accent.
+- Hidden entirely below the 20-response threshold (no "0 reviews" state).
 
-**Audience rules (jsonb)** — composable filters:
-- `subscription_tier`: essentiel | professionnel | entreprise
-- `subscription_status`: trial | active | past_due | canceled
-- `trial_day_range`: {min, max} (e.g. day 10-14)
-- `country` / `language`
-- `member_count_range`: {min, max}
-- `has_feature`: e.g. any specific enabled feature
+### Technical Details
+- Migrations (single file):
+  - `CREATE TABLE nps_email_sends` + GRANTs + RLS.
+  - `ALTER TABLE super_admin_notification_prefs ADD COLUMN nps_detractor_channel text DEFAULT 'both'`.
+  - `CREATE FUNCTION get_nps_responses_filtered(...)`.
+  - `CREATE FUNCTION get_public_nps_stats()` (grant `SELECT`/`EXECUTE` to `anon, authenticated`).
+  - `CREATE FUNCTION on_nps_detractor_submitted()` + trigger.
+  - `pg_cron` weekly job for `send-nps-survey`.
+- Edge functions:
+  - `send-nps-survey` — batch enqueue nps-survey template.
+  - `notify-detractor` — email + optional Slack webhook.
+- React Email template: `nps-survey.tsx`.
+- Frontend edits:
+  - `src/pages/NpsAdmin.tsx` — filters, manual send-email button.
+  - `src/pages/Commercial.tsx` — mount `<PublicNpsBadge />`.
+  - `src/components/PublicNpsBadge.tsx` — new.
+  - `src/pages/Dashboard.tsx` (or wherever `/nps` handles landing) — accept `?score=N&token=…` from email link and auto-open NpsPrompt pre-filled.
 
-**Admin UI** — `/super-admin/broadcasts`
-- List, create, edit, archive
-- Live "audience preview" showing matched tenant count before send
-- Duplicate broadcast
-
-**Client**
-- Bell icon inbox in Layout showing unread inbox broadcasts
-- Existing banner component reads from `broadcasts` where delivery in (banner, both) and audience matches current tenant
-
----
-
-### 2. Referral Leaderboard + Rewards Catalog
-
-Builds on existing `referrals` / `referral_codes` / `referral_rewards` tables.
-
-**Schema**
-- `reward_catalog`: name, description, cost_in_referrals (or cost_in_free_days), reward_type (free_month | discount | swag | feature_unlock), image_url, is_active
-- `reward_redemptions`: tenant_id, reward_id, status (pending|fulfilled|denied), notes, fulfilled_at
-
-**Tenant UI** — enhance existing `/referrals` page
-- Public leaderboard (top 10 tenants by qualified referrals, opt-in only via profile flag)
-- Rewards catalog grid with "Redeem" button
-- Progress bar to next reward
-
-**Super Admin UI** — `/super-admin/rewards`
-- Manage catalog
-- Redemption queue (approve/fulfill)
-
----
-
-### 3. Annual Billing Prompt (Save 15%)
-
-Nudge monthly subscribers to switch to yearly.
-
-**Schema**
-- `annual_upgrade_prompts`: tenant_id, shown_at, action (dismissed | upgraded | remind_later), remind_after
-- (No new pricing needed — 15% yearly discount already exists per memory.)
-
-**Logic**
-- Show prompt to tenants where `subscription_interval = 'month'`, `status = 'active'`, >= 30 days on plan
-- Frequency cap: max once per 14 days, snoozable
-- Trigger points: after successful monthly payment, dashboard header banner, billing page CTA
-
-**UI**
-- `AnnualUpgradePrompt.tsx` modal — shows current monthly cost × 12 vs yearly with 15% off, savings amount
-- One-click switch calling existing Stripe portal / subscription change flow
-- Super Admin analytics tile: conversion rate
-
----
-
-### 4. NPS Survey Every 90 Days
-
-**Schema**
-- `nps_surveys`: tenant_id, user_id, score (0-10), comment, category (auto: promoter|passive|detractor), submitted_at, survey_cycle (quarter identifier)
-- `nps_dismissals`: user_id, dismissed_until
-
-**Trigger**
-- After login, if user is tenant admin AND last survey > 90 days ago (or never) AND not dismissed
-- Non-blocking bottom-right card
-
-**Super Admin UI** — `/super-admin/nps`
-- Current NPS score (promoters% − detractors%)
-- Trend chart (per quarter)
-- Recent comments list with tenant context
-- Filter by tier / country
-- CSV export
-
----
-
-## Technical Details
-
-- All tables get `tenant_id` where relevant, RLS with `is_super_admin()` for admin ops, `authenticated` grants for user reads scoped to their tenant
-- Trial-day targeting uses `subscription_trial_start` + `now()` computed in a `matches_broadcast_audience(_tenant_id, _rules jsonb)` SECURITY DEFINER function so client can preview matches
-- Reward redemptions decrement an available balance (qualified referrals not yet spent); track via view rather than materialized column
-- Annual upgrade uses Stripe subscription update with proration
-- NPS trigger card localized (EN/FR/HT)
-
-## Build Order Suggestion
-
-Recommend build in this order (largest value first):
-1. **Broadcasts** (biggest lift, most powerful)
-2. **Annual billing prompt** (direct revenue impact)
-3. **NPS survey** (fast, high signal)
-4. **Referral leaderboard + rewards** (largest scope, gamification polish)
-
----
-
-Confirm and I'll build all four, or tell me which subset to ship first.
+### Out of scope
+- No standalone Slack connector setup unless user later provides a webhook URL.
+- No changes to existing in-app NpsPrompt cadence.
