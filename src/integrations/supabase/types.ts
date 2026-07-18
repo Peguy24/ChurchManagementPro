@@ -5058,19 +5058,6 @@ export type Database = {
           },
         ]
       }
-      v_onboarding_funnel: {
-        Row: {
-          step_branch: number | null
-          step_donation: number | null
-          step_event: number | null
-          step_invite: number | null
-          step_logo: number | null
-          step_member: number | null
-          step_profile: number | null
-          total_tenants: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       archive_tenant_attendance: {
@@ -5118,6 +5105,19 @@ export type Database = {
         }[]
       }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
+      get_onboarding_funnel: {
+        Args: never
+        Returns: {
+          step_branch: number
+          step_donation: number
+          step_event: number
+          step_invite: number
+          step_logo: number
+          step_member: number
+          step_profile: number
+          total_tenants: number
+        }[]
+      }
       get_referral_code_info: {
         Args: { _code: string }
         Returns: {
