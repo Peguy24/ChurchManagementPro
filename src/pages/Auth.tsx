@@ -283,7 +283,7 @@ export default function Auth() {
   // Redirect if already logged in (skip during OTP check flow)
   useEffect(() => {
     if (!loading && user && !otpPending && !isCheckingOtp) {
-      navigate('/');
+      goAfterAuth('/');
     }
   }, [user, loading, navigate, otpPending, isCheckingOtp]);
 
@@ -394,19 +394,19 @@ export default function Auth() {
 
         if (approvedRoles && approvedRoles.length > 1) {
           toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
-          navigate('/select-church');
+          goAfterAuth('/select-church');
           setIsLoading(false);
           return;
         }
 
         toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
-        navigate('/');
+        goAfterAuth('/');
       }
     } catch (err) {
       console.error('Error in login flow:', err);
       setIsCheckingOtp(false);
       toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
-      navigate('/');
+      goAfterAuth('/');
     }
 
     setIsLoading(false);
@@ -434,7 +434,7 @@ export default function Auth() {
 
         if (approvedRoles && approvedRoles.length > 1) {
           toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
-          navigate('/select-church');
+          goAfterAuth('/select-church');
           return;
         }
       }
@@ -444,7 +444,7 @@ export default function Auth() {
 
     toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
     setOtpPending(null);
-    navigate('/');
+    goAfterAuth('/');
   };
 
   const handleOtpResend = async () => {
@@ -589,7 +589,7 @@ export default function Auth() {
             title: lt('signupSuccess'),
             description: `${lt('youAreNow')} ${roleLabel} ${lt('ofThePlatform')}`,
           });
-          navigate('/');
+          goAfterAuth('/');
           setIsLoading(false);
           return;
         } catch (assignError) {
@@ -621,7 +621,7 @@ export default function Auth() {
             title: lt('signupSuccess'),
             description: `${lt('youAreNow')} ${lt('adminOf')} ${tenantInfo?.name || lt('theChurch')}.`,
           });
-          navigate('/');
+          goAfterAuth('/');
           setIsLoading(false);
           return;
         } catch (assignError) {
@@ -647,7 +647,7 @@ export default function Auth() {
         title: lt('signupSuccess'),
         description: lt('accountCreated'),
       });
-      navigate('/');
+      goAfterAuth('/');
     }
 
     setIsLoading(false);
