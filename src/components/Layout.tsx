@@ -355,6 +355,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
       items: [
         { to: "/super-admin/revenue", icon: BarChart3, label: sl("revenue") },
         { to: "/super-admin/payments", icon: CreditCard, label: sl("payments") },
+        { to: "/super-admin/failed-payments", icon: CreditCard, label: "Failed Payments" },
         { to: "/super-admin/subscriptions", icon: CreditCard, label: sl("subscriptions") },
         { to: "/super-admin/accounting", icon: PiggyBank, label: sl("accounting") },
         { to: "/super-admin/owners", icon: Users, label: language === "fr" ? "Propriétaires" : language === "ht" ? "Pwopriyetè" : "Owners" },
@@ -382,6 +383,9 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
       icon: Settings,
       items: [
         { to: "/super-admin/audit-log", icon: ShieldCheck, label: "Audit Log" },
+        { to: "/super-admin/status", icon: Activity, label: "Status Page" },
+        { to: "/super-admin/changelog", icon: Sparkles, label: "Changelog" },
+        { to: "/super-admin/onboarding-funnel", icon: BarChart3, label: "Onboarding Funnel" },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],

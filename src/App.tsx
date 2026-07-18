@@ -103,6 +103,12 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Impersonation = lazy(() => import("./pages/Impersonation"));
 const EmailDelivery = lazy(() => import("./pages/EmailDelivery"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
+const PublicStatus = lazy(() => import("./pages/PublicStatus"));
+const PublicChangelog = lazy(() => import("./pages/PublicChangelog"));
+const StatusAdmin = lazy(() => import("./pages/StatusAdmin"));
+const ChangelogAdmin = lazy(() => import("./pages/ChangelogAdmin"));
+const FailedPayments = lazy(() => import("./pages/FailedPayments"));
+const OnboardingFunnel = lazy(() => import("./pages/OnboardingFunnel"));
 
 
 const queryClient = new QueryClient();
@@ -214,6 +220,12 @@ const App = () => (
               <Route path="/super-admin/impersonation" element={<ProtectedRoute requireSuperAdmin><Impersonation /></ProtectedRoute>} />
               <Route path="/super-admin/emails" element={<ProtectedRoute requireSuperAdmin><EmailDelivery /></ProtectedRoute>} />
               <Route path="/super-admin/audit-log" element={<ProtectedRoute requireSuperAdmin><AuditLog /></ProtectedRoute>} />
+              <Route path="/status" element={<PublicStatus />} />
+              <Route path="/changelog" element={<PublicChangelog />} />
+              <Route path="/super-admin/status" element={<ProtectedRoute requireSuperAdmin><StatusAdmin /></ProtectedRoute>} />
+              <Route path="/super-admin/changelog" element={<ProtectedRoute requireSuperAdmin><ChangelogAdmin /></ProtectedRoute>} />
+              <Route path="/super-admin/failed-payments" element={<ProtectedRoute requireSuperAdmin><FailedPayments /></ProtectedRoute>} />
+              <Route path="/super-admin/onboarding-funnel" element={<ProtectedRoute requireSuperAdmin><OnboardingFunnel /></ProtectedRoute>} />
 
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
