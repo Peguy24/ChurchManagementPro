@@ -22,6 +22,8 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
 }
 import { Link, useLocation } from "react-router-dom";
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
+
 import { cn } from "@/lib/utils";
 import {
   Users,
