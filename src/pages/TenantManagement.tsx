@@ -518,6 +518,8 @@ export default function TenantManagement() {
   const openPlanActivationDialog = (tenant: TenantWithSubscription) => {
     setSelectedTenantForPlan(tenant);
     setSelectedPlanForActivation(tenant.subscription?.plan || "standard");
+    setActivationDuration("30");
+    setActivationCustomDate("");
     setPlanActivationDialogOpen(true);
   };
 
