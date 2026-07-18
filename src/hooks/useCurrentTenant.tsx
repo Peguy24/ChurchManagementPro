@@ -172,7 +172,14 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
 
   useEffect(() => {
     fetchTenantInfo();
+    const handler = () => {
+      lastUserIdRef.current = null;
+      fetchTenantInfo();
+    };
+    window.addEventListener('impersonation-changed', handler);
+    return () => window.removeEventListener('impersonation-changed', handler);
   }, [fetchTenantInfo]);
+
 
   const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
     return { ...data, tenant_id: tenantId };
