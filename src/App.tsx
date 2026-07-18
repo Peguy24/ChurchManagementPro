@@ -109,6 +109,9 @@ const StatusAdmin = lazy(() => import("./pages/StatusAdmin"));
 const ChangelogAdmin = lazy(() => import("./pages/ChangelogAdmin"));
 const FailedPayments = lazy(() => import("./pages/FailedPayments"));
 const OnboardingFunnel = lazy(() => import("./pages/OnboardingFunnel"));
+const BroadcastsAdmin = lazy(() => import("./pages/BroadcastsAdmin"));
+const RewardsAdmin = lazy(() => import("./pages/RewardsAdmin"));
+const NpsAdmin = lazy(() => import("./pages/NpsAdmin"));
 
 
 const queryClient = new QueryClient();
