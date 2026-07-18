@@ -522,16 +522,28 @@ export default function TenantManagement() {
   };
 
   const handleActivatePlan = (activate: boolean) => {
-    if (selectedTenantForPlan) {
-      activatePlanMutation.mutate({
-        tenantId: selectedTenantForPlan.id,
-        tenantName: selectedTenantForPlan.name,
-        plan: selectedPlanForActivation,
-        activate,
-        oldStatus: selectedTenantForPlan.subscription?.status,
-        oldPlan: selectedTenantForPlan.subscription?.plan,
-      });
+    if (!selectedTenantForPlan) return;
+    let periodEnd: string | null = null;
+    if (activate) {
+      if (activationDuration === "unlimited") {
+        periodEnd = null;
+      } else if (activationDuration === "custom") {
+        if (!activationCustomDate) { toast.error(t("superAdmin.pickExpiryDate") || "Pick an expiry date"); return; }
+        periodEnd = new Date(activationCustomDate).toISOString();
+      } else {
+        const days = parseInt(activationDuration, 10);
+        periodEnd = new Date(Date.now() + days * 86400 * 1000).toISOString();
+      }
     }
+    activatePlanMutation.mutate({
+      tenantId: selectedTenantForPlan.id,
+      tenantName: selectedTenantForPlan.name,
+      plan: selectedPlanForActivation,
+      activate,
+      oldStatus: selectedTenantForPlan.subscription?.status,
+      oldPlan: selectedTenantForPlan.subscription?.plan,
+      periodEnd,
+    });
   };
 
   const resetForm = () => {
