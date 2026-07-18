@@ -213,7 +213,84 @@ export default function Referrals() {
             )}
           </CardContent>
         </Card>
+
+        <RewardsCatalogSection qualifiedAvailable={stats.qualified - stats.rewarded} tt={tt} />
+        <LeaderboardSection tt={tt} />
       </div>
     </Layout>
   );
 }
+
+function RewardsCatalogSection({ qualifiedAvailable, tt }: { qualifiedAvailable: number; tt: (en: string, fr: string, ht: string) => string }) {
+  const [rewards, setRewards] = useState<any[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any).from("reward_catalog").select("*").eq("is_active", true).order("sort_order");
+      setRewards(data || []);
+    })();
+  }, []);
+
+  const redeem = async (reward: any) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).maybeSingle();
+    if (!profile?.tenant_id) return;
+    const { error } = await (supabase as any).from("reward_redemptions").insert({
+      tenant_id: profile.tenant_id, reward_id: reward.id, cost_paid: reward.cost_in_referrals, requested_by: user.id,
+    });
+    if (error) toast.error(error.message); else toast.success(tt("Redemption requested", "Demande envoyée", "Demann voye"));
+  };
+
+  if (rewards.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Gift className="w-5 h-5" /> {tt("Rewards Catalog", "Catalogue de récompenses", "Katalòg rekonpans")}</CardTitle>
+        <CardDescription>{tt(`You have ${qualifiedAvailable} referrals available to spend.`, `Vous avez ${qualifiedAvailable} parrainages à échanger.`, `Ou gen ${qualifiedAvailable} referans pou depanse.`)}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {rewards.map((r) => (
+          <Card key={r.id}>
+            <CardContent className="p-4 space-y-2">
+              <h4 className="font-semibold">{r.name}</h4>
+              <p className="text-sm text-muted-foreground">{r.description}</p>
+              <div className="flex items-center justify-between">
+                <Badge>{r.cost_in_referrals} {tt("referrals", "parrainages", "referans")}</Badge>
+                <Button size="sm" disabled={qualifiedAvailable < r.cost_in_referrals} onClick={() => redeem(r)}>
+                  {tt("Redeem", "Échanger", "Echanje")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function LeaderboardSection({ tt }: { tt: (en: string, fr: string, ht: string) => string }) {
+  const [rows, setRows] = useState<any[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any).rpc("get_referral_leaderboard", { _limit: 10 });
+      setRows(data || []);
+    })();
+  }, []);
+  if (rows.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> {tt("Top Referrers", "Top Parrains", "Top Referan")}</CardTitle></CardHeader>
+      <CardContent>
+        <div className="space-y-1">
+          {rows.map((r) => (
+            <div key={r.tenant_id} className="flex items-center justify-between p-2 rounded hover:bg-muted">
+              <div className="flex items-center gap-3"><span className="font-bold w-8 text-center">{r.rank}</span><span>{r.tenant_name}</span></div>
+              <Badge variant="outline">{r.qualified_count}</Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
