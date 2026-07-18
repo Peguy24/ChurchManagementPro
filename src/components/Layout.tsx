@@ -387,17 +387,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
   ];
 };
 
-    {
-      key: "sa-platform",
-      label: sl("grpPlatform"),
-      icon: Settings,
-      items: [
-        { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
-        { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
-      ],
-    },
-  ];
-};
+
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
