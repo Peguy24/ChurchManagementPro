@@ -614,6 +614,12 @@ const Commercial = () => {
               <Link to="/legal/payment_terms" className="text-muted-foreground hover:text-foreground transition-colors">
                 {language === "fr" ? "Conditions de paiement" : language === "ht" ? "Kondisyon peman" : "Payment Terms"}
               </Link>
+              <Link to="/status" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Statut" : language === "ht" ? "Estati" : "Status"}
+              </Link>
+              <Link to="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Nouveautés" : language === "ht" ? "Sa ki nouvo" : "What's New"}
+              </Link>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground text-center">
               {t("commercial.footer")}
