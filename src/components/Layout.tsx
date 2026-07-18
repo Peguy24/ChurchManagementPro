@@ -68,7 +68,7 @@ import {
   ShieldCheck,
   Star,
   Eye,
-
+  Activity,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
