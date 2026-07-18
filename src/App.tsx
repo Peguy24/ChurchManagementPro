@@ -229,6 +229,9 @@ const App = () => (
               <Route path="/super-admin/changelog" element={<ProtectedRoute requireSuperAdmin><ChangelogAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/failed-payments" element={<ProtectedRoute requireSuperAdmin><FailedPayments /></ProtectedRoute>} />
               <Route path="/super-admin/onboarding-funnel" element={<ProtectedRoute requireSuperAdmin><OnboardingFunnel /></ProtectedRoute>} />
+              <Route path="/super-admin/broadcasts" element={<ProtectedRoute requireSuperAdmin><BroadcastsAdmin /></ProtectedRoute>} />
+              <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
+              <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
 
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
