@@ -69,6 +69,8 @@ import {
   Star,
   Eye,
   Activity,
+  Gift,
+  Smile,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
