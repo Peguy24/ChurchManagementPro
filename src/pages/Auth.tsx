@@ -211,6 +211,10 @@ export default function Auth() {
   const invitedRole = searchParams.get('role');
   const superAdminInviteToken = searchParams.get('superadmin_invite');
   const platformRole = searchParams.get('role');
+  const rawNext = searchParams.get('next');
+  // Only accept same-origin relative paths as post-auth redirects.
+  const nextPath = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
+  const goAfterAuth = (fallback: string) => navigate(nextPath ?? fallback);
   
   const [tenantInfo, setTenantInfo] = useState<{ name: string; slug: string } | null>(null);
   const [superAdminInvite, setSuperAdminInvite] = useState<{ email: string; valid: boolean } | null>(null);
