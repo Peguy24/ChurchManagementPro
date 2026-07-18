@@ -2939,6 +2939,30 @@ export type Database = {
         }
         Relationships: []
       }
+      nps_email_sends: {
+        Row: {
+          id: string
+          sent_at: string
+          survey_cycle: string
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          sent_at?: string
+          survey_cycle: string
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          sent_at?: string
+          survey_cycle?: string
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       nps_surveys: {
         Row: {
           category: string | null
@@ -4319,6 +4343,7 @@ export type Database = {
           client_review_channel: string
           contact_message_channel: Database["public"]["Enums"]["contact_notif_channel"]
           created_at: string
+          nps_detractor_channel: string
           updated_at: string
           user_id: string
         }
@@ -4326,6 +4351,7 @@ export type Database = {
           client_review_channel?: string
           contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
           created_at?: string
+          nps_detractor_channel?: string
           updated_at?: string
           user_id: string
         }
@@ -4333,6 +4359,7 @@ export type Database = {
           client_review_channel?: string
           contact_message_channel?: Database["public"]["Enums"]["contact_notif_channel"]
           created_at?: string
+          nps_detractor_channel?: string
           updated_at?: string
           user_id?: string
         }
@@ -5390,6 +5417,28 @@ export type Database = {
         }[]
       }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
+      get_nps_detractor_email_recipients: {
+        Args: never
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
+      get_nps_responses_filtered: {
+        Args: { _max_members?: number; _min_members?: number; _plan?: string }
+        Returns: {
+          category: string
+          comment: string
+          id: string
+          member_count: number
+          plan: string
+          score: number
+          submitted_at: string
+          survey_cycle: string
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_nps_summary: {
         Args: never
         Returns: {
@@ -5412,6 +5461,14 @@ export type Database = {
           step_member: number
           step_profile: number
           total_tenants: number
+        }[]
+      }
+      get_public_nps_stats: {
+        Args: never
+        Returns: {
+          promoters_pct: number
+          score: number
+          total_responses: number
         }[]
       }
       get_referral_code_info: {

@@ -28,9 +28,18 @@ export function NpsPrompt() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
       setUserId(u.user.id);
+      // Deep link from email: ?nps=N
+      const params = new URLSearchParams(window.location.search);
+      const npsParam = params.get("nps");
+      const presetScore = npsParam !== null && /^\d+$/.test(npsParam) ? Math.min(10, parseInt(npsParam, 10)) : null;
       // Check tenant admin
       const { data: isAdmin } = await supabase.rpc("is_tenant_admin", { _user_id: u.user.id });
       if (!isAdmin) return;
+      if (presetScore !== null) {
+        setScore(presetScore);
+        setVisible(true);
+        return;
+      }
       // Check dismissal
       const { data: dis } = await supabase.from("nps_dismissals").select("dismissed_until").eq("user_id", u.user.id).maybeSingle();
       if (dis && new Date(dis.dismissed_until) > new Date()) return;
@@ -43,10 +52,13 @@ export function NpsPrompt() {
 
   const submit = async () => {
     if (score === null || !userId) return;
-    const { error } = await supabase.from("nps_surveys").insert({
+    const { data: inserted, error } = await supabase.from("nps_surveys").insert({
       user_id: userId, tenant_id: tenantId, score, comment: comment || null, survey_cycle: cycle(),
-    });
+    }).select("id").maybeSingle();
     if (error) { toast.error(error.message); return; }
+    if (score <= 6 && comment.trim() && inserted?.id) {
+      supabase.functions.invoke("notify-detractor", { body: { survey_id: inserted.id } }).catch(() => {});
+    }
     toast.success(tt("Thanks for your feedback!", "Merci pour votre retour !", "Mèsi pou fidbak ou!"));
     setVisible(false);
   };
