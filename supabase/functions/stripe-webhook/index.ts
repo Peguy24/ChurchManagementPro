@@ -320,6 +320,22 @@ serve(async (req) => {
         const tenantId = await getTenantByEmail(supabase, email);
         if (!tenantId) break;
 
+        // Handle website add-on cancellation
+        const cancelledPriceId = subscription.items.data[0]?.price?.id as string;
+        if (cancelledPriceId === WEBSITE_ADDON_PRICE_ID) {
+          await supabase
+            .from("website_addon_subscriptions")
+            .update({ status: "cancelled" })
+            .eq("tenant_id", tenantId);
+          await supabase
+            .from("tenant_websites")
+            .update({ is_published: false })
+            .eq("tenant_id", tenantId);
+          logStep("Website add-on cancelled", { tenantId });
+          break;
+        }
+
+
         // Mark subscription as cancelled
         await supabase
           .from("tenant_subscriptions")
