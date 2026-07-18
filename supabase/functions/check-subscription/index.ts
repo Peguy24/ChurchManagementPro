@@ -131,15 +131,34 @@ serve(async (req) => {
     // Short-circuit: admin-managed subscriptions never query Stripe
     if (tenantSub && (tenantSub as any).managed_by_admin === true) {
       const mappedPlan = DB_TO_PLAN[tenantSub.plan] || tenantSub.plan;
+      let effectiveStatus = tenantSub.status;
       const subscriptionEnd = getDbSubscriptionEnd(tenantSub);
+
+      // Auto-expire admin-managed subs whose granted period has ended
+      if (
+        isDbSubscribedStatus(effectiveStatus) &&
+        subscriptionEnd &&
+        new Date(subscriptionEnd) < new Date()
+      ) {
+        logStep("Admin-managed grant expired, marking as expired", {
+          subscriptionEnd,
+          tenantId: userTenantId,
+        });
+        await supabaseClient
+          .from("tenant_subscriptions")
+          .update({ status: "expired" })
+          .eq("tenant_id", userTenantId);
+        effectiveStatus = "expired";
+      }
+
       logStep("Admin-managed subscription, returning DB state", {
         plan: mappedPlan,
-        status: tenantSub.status,
+        status: effectiveStatus,
       });
       return new Response(JSON.stringify({
-        subscribed: isDbSubscribedStatus(tenantSub.status),
+        subscribed: isDbSubscribedStatus(effectiveStatus),
         plan: mappedPlan,
-        status: tenantSub.status,
+        status: effectiveStatus,
         subscription_end: subscriptionEnd,
         managed_by_admin: true,
         has_stripe_customer: false,
