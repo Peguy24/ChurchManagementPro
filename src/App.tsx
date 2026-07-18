@@ -112,6 +112,9 @@ const OnboardingFunnel = lazy(() => import("./pages/OnboardingFunnel"));
 const BroadcastsAdmin = lazy(() => import("./pages/BroadcastsAdmin"));
 const RewardsAdmin = lazy(() => import("./pages/RewardsAdmin"));
 const NpsAdmin = lazy(() => import("./pages/NpsAdmin"));
+const ChurchWebsite = lazy(() => import("./pages/ChurchWebsite"));
+const PublicChurchSite = lazy(() => import("./pages/PublicChurchSite"));
+const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
 
 
 const queryClient = new QueryClient();
