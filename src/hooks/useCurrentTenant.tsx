@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { readImpersonation } from '@/hooks/useImpersonation';
+
 
 interface TenantInfo {
   id: string;
