@@ -67,6 +67,8 @@ import {
   Archive,
   ShieldCheck,
   Star,
+  Eye,
+
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
