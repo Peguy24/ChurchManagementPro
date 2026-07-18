@@ -1,41 +1,110 @@
-# Top 3 Super Admin additions
+## Overview
 
-## 1. Tenant Impersonation
-Let a Super Admin browse the app "as" a specific tenant to reproduce issues without asking for credentials.
+Four new Super Admin growth features. Each is independent — can build all at once or pick subset.
 
-- New table `impersonation_sessions` (super_admin_id, tenant_id, started_at, ended_at, reason) with RLS restricted to Super Admins for full audit trail.
-- New page `/super-admin/impersonation` with a tenant picker + "Reason" field. Starting a session:
-  - Records a row in `impersonation_sessions`
-  - Writes a `platform_activity_logs` entry (`admin_action` / `impersonation_started`)
-  - Stores an `impersonation` object in `sessionStorage` with `tenant_id`, `session_id`, `super_admin_id`
-- Update `useCurrentTenant` to prefer the impersonated `tenant_id` when the flag is present (only if the user is a Super Admin — guarded server-side by existing RLS).
-- Persistent top banner (red) on every page when impersonating: "Viewing as {ChurchName} — Exit impersonation". Ending the session clears sessionStorage, logs `impersonation_ended`, and updates `ended_at`.
-- Read-only by default: block destructive writes by short-circuiting sensitive mutations in the client while impersonating (soft guard — Super Admin still has DB rights, but the UI prevents accidental changes).
+---
 
-## 2. Email Delivery Dashboard
-Follows the platform's built-in `email_send_log` guide: dedupe by `message_id`, six required features.
+### 1. In-App Broadcasts with Targeting
 
-- New page `/super-admin/emails` (Super Admin only).
-- Filters: time range (24h / 7d / 30d / custom), template (`template_name` distinct list), status (All / Sent / Failed (dlq) / Suppressed).
-- Summary cards: total unique emails, sent, failed, suppressed — deduped on `message_id`.
-- Table (paginated, 50/page): Template, Recipient, Status badge, Timestamp, Error message on failures. Sorted by newest first.
-- Uses `supabase.from('email_send_log')` with a client-side dedupe (latest row per `message_id`).
-- Sidebar link under Super Admin → Communications: "Email delivery".
+Extends the existing `platform_announcement_banners` system with **audience targeting rules** and **in-app inbox messages** (not just banners).
 
-## 3. Super Admin Audit Log Viewer
-A dedicated viewer over `platform_activity_logs` + `financial_audit_logs` for accountability across multiple admins.
+**Schema (new tables)**
+- `broadcasts`: title, body_html, cta_label, cta_url, delivery (banner|inbox|both), severity, starts_at, ends_at, audience_rules (jsonb), created_by
+- `broadcast_reads`: broadcast_id, user_id, read_at, dismissed_at
 
-- New page `/super-admin/audit-log`.
-- Two tabs:
-  - **Platform activity**: filter by category (auth/subscription/tenant/user/support/general), event type, actor email, tenant, date range. Table with expandable row showing `metadata` JSON.
-  - **Financial audit**: filter by entity type, action (create/update/delete), actor, tenant, date range. Expandable row shows `old_values` vs `new_values` diff.
-- Both tabs include CSV export (respects current filters, localized headers, excludes internal IDs per the export standard).
-- Sidebar link under Super Admin → Security: "Audit log".
+**Audience rules (jsonb)** — composable filters:
+- `subscription_tier`: essentiel | professionnel | entreprise
+- `subscription_status`: trial | active | past_due | canceled
+- `trial_day_range`: {min, max} (e.g. day 10-14)
+- `country` / `language`
+- `member_count_range`: {min, max}
+- `has_feature`: e.g. any specific enabled feature
 
-## Technical details
-- Migration: create `impersonation_sessions` table with `GRANT`s + RLS (Super Admin only), plus indexes on `platform_activity_logs(created_at, event_category)` and `email_send_log(created_at, message_id)` if not already present.
-- New components: `ImpersonationBanner.tsx`, `EmailDeliveryTable.tsx`, `AuditLogFilters.tsx`.
-- New hook: `useImpersonation()` — reads `sessionStorage`, exposes `{ isImpersonating, tenantId, exit() }`.
-- Route registration + sidebar entries in `Layout.tsx` (Super Admin section).
-- All strings added to `LanguageContext.tsx` in EN / FR / HT.
-- No changes to auth, billing, or tenant data models.
+**Admin UI** — `/super-admin/broadcasts`
+- List, create, edit, archive
+- Live "audience preview" showing matched tenant count before send
+- Duplicate broadcast
+
+**Client**
+- Bell icon inbox in Layout showing unread inbox broadcasts
+- Existing banner component reads from `broadcasts` where delivery in (banner, both) and audience matches current tenant
+
+---
+
+### 2. Referral Leaderboard + Rewards Catalog
+
+Builds on existing `referrals` / `referral_codes` / `referral_rewards` tables.
+
+**Schema**
+- `reward_catalog`: name, description, cost_in_referrals (or cost_in_free_days), reward_type (free_month | discount | swag | feature_unlock), image_url, is_active
+- `reward_redemptions`: tenant_id, reward_id, status (pending|fulfilled|denied), notes, fulfilled_at
+
+**Tenant UI** — enhance existing `/referrals` page
+- Public leaderboard (top 10 tenants by qualified referrals, opt-in only via profile flag)
+- Rewards catalog grid with "Redeem" button
+- Progress bar to next reward
+
+**Super Admin UI** — `/super-admin/rewards`
+- Manage catalog
+- Redemption queue (approve/fulfill)
+
+---
+
+### 3. Annual Billing Prompt (Save 15%)
+
+Nudge monthly subscribers to switch to yearly.
+
+**Schema**
+- `annual_upgrade_prompts`: tenant_id, shown_at, action (dismissed | upgraded | remind_later), remind_after
+- (No new pricing needed — 15% yearly discount already exists per memory.)
+
+**Logic**
+- Show prompt to tenants where `subscription_interval = 'month'`, `status = 'active'`, >= 30 days on plan
+- Frequency cap: max once per 14 days, snoozable
+- Trigger points: after successful monthly payment, dashboard header banner, billing page CTA
+
+**UI**
+- `AnnualUpgradePrompt.tsx` modal — shows current monthly cost × 12 vs yearly with 15% off, savings amount
+- One-click switch calling existing Stripe portal / subscription change flow
+- Super Admin analytics tile: conversion rate
+
+---
+
+### 4. NPS Survey Every 90 Days
+
+**Schema**
+- `nps_surveys`: tenant_id, user_id, score (0-10), comment, category (auto: promoter|passive|detractor), submitted_at, survey_cycle (quarter identifier)
+- `nps_dismissals`: user_id, dismissed_until
+
+**Trigger**
+- After login, if user is tenant admin AND last survey > 90 days ago (or never) AND not dismissed
+- Non-blocking bottom-right card
+
+**Super Admin UI** — `/super-admin/nps`
+- Current NPS score (promoters% − detractors%)
+- Trend chart (per quarter)
+- Recent comments list with tenant context
+- Filter by tier / country
+- CSV export
+
+---
+
+## Technical Details
+
+- All tables get `tenant_id` where relevant, RLS with `is_super_admin()` for admin ops, `authenticated` grants for user reads scoped to their tenant
+- Trial-day targeting uses `subscription_trial_start` + `now()` computed in a `matches_broadcast_audience(_tenant_id, _rules jsonb)` SECURITY DEFINER function so client can preview matches
+- Reward redemptions decrement an available balance (qualified referrals not yet spent); track via view rather than materialized column
+- Annual upgrade uses Stripe subscription update with proration
+- NPS trigger card localized (EN/FR/HT)
+
+## Build Order Suggestion
+
+Recommend build in this order (largest value first):
+1. **Broadcasts** (biggest lift, most powerful)
+2. **Annual billing prompt** (direct revenue impact)
+3. **NPS survey** (fast, high signal)
+4. **Referral leaderboard + rewards** (largest scope, gamification polish)
+
+---
+
+Confirm and I'll build all four, or tell me which subset to ship first.

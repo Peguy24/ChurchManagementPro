@@ -69,6 +69,8 @@ import {
   Star,
   Eye,
   Activity,
+  Gift,
+  Smile,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -86,6 +88,9 @@ import {
 } from "./ui/collapsible";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import SuperAdminNotifications from "./SuperAdminNotifications";
+import { BroadcastInbox } from "./BroadcastInbox";
+import { AnnualUpgradePrompt } from "./AnnualUpgradePrompt";
+import { NpsPrompt } from "./NpsPrompt";
 import TenantNotifications from "./TenantNotifications";
 
 interface LayoutProps {
@@ -386,6 +391,9 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/status", icon: Activity, label: "Status Page" },
         { to: "/super-admin/changelog", icon: Sparkles, label: "Changelog" },
         { to: "/super-admin/onboarding-funnel", icon: BarChart3, label: "Onboarding Funnel" },
+        { to: "/super-admin/broadcasts", icon: Megaphone, label: "Broadcasts" },
+        { to: "/super-admin/rewards", icon: Gift, label: "Rewards" },
+        { to: "/super-admin/nps", icon: Smile, label: "NPS Feedback" },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
@@ -637,6 +645,7 @@ export default function Layout({ children }: LayoutProps) {
             <LanguageSelector />
             {showAsSuperAdmin && <SuperAdminNotifications />}
             {!showAsSuperAdmin && <TenantNotifications />}
+            {!showAsSuperAdmin && <BroadcastInbox />}
             <div className="hidden sm:flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground hidden lg:block max-w-[150px] truncate">
@@ -660,6 +669,8 @@ export default function Layout({ children }: LayoutProps) {
         <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">
           {!showAsSuperAdmin && <PlatformAnnouncementBanner />}
           {children}
+          {!showAsSuperAdmin && <AnnualUpgradePrompt />}
+          {!showAsSuperAdmin && <NpsPrompt />}
         </main>
       </div>
     </div>
