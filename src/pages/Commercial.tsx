@@ -464,6 +464,7 @@ const Commercial = () => {
         </div>
       </section>
 
+      <PublicNpsBadge />
       <TestimonialsSection />
 
       {/* FAQ Section */}
