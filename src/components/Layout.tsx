@@ -71,6 +71,7 @@ import {
   Activity,
   Gift,
   Smile,
+  Globe,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
