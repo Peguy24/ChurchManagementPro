@@ -99,6 +99,7 @@ const SuperAdminReferrals = lazy(() => import("./pages/SuperAdminReferrals"));
 const TaxExemptionReviews = lazy(() => import("./pages/TaxExemptionReviews"));
 const ContactMessages = lazy(() => import("./pages/ContactMessages"));
 const ClientReviews = lazy(() => import("./pages/ClientReviews"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => (
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
               <Route path="/legal/:docType" element={<LegalPage />} />
