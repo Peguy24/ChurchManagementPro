@@ -24,6 +24,9 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "prod_UA28jB4cFz2aZ7": "entreprise",
 };
 
+// Website add-on price ID
+const WEBSITE_ADDON_PRICE_ID = "price_1Tuf3iFTm4C7ouBeX3jzrt32";
+
 // Map plan names to DB plan names
 const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number; branches: number; users: number; storage: number }> = {
   "essentiel": { plan: "basic", price: 29.99, members: 200, branches: 1, users: 5, storage: 500 },
