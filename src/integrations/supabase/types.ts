@@ -5064,6 +5064,47 @@ export type Database = {
           },
         ]
       }
+      tenant_websites: {
+        Row: {
+          content: Json
+          created_at: string
+          custom_domain: string | null
+          id: string
+          is_published: boolean
+          template: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          is_published?: boolean
+          template?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          is_published?: boolean
+          template?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_websites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           address: string | null
@@ -5315,6 +5356,50 @@ export type Database = {
           },
         ]
       }
+      website_addon_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          managed_by_admin: boolean
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          managed_by_admin?: boolean
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          managed_by_admin?: boolean
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_addon_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       mv_tenant_monthly_attendance: {
@@ -5471,6 +5556,18 @@ export type Database = {
           total_responses: number
         }[]
       }
+      get_public_website: {
+        Args: { _slug: string }
+        Returns: {
+          content: Json
+          logo_url: string
+          primary_color: string
+          slug: string
+          template: string
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_referral_code_info: {
         Args: { _code: string }
         Returns: {
@@ -5572,6 +5669,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_website_addon: { Args: { _tenant_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
       mark_admin_invitation_used: {
