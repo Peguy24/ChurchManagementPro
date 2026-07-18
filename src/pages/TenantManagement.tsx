@@ -143,6 +143,8 @@ export default function TenantManagement() {
   const [planActivationDialogOpen, setPlanActivationDialogOpen] = useState(false);
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
+  const [activationDuration, setActivationDuration] = useState<string>("30");
+  const [activationCustomDate, setActivationCustomDate] = useState<string>("");
   const [adminManagerOpen, setAdminManagerOpen] = useState(false);
   const [selectedTenantForAdmin, setSelectedTenantForAdmin] = useState<TenantWithSubscription | null>(null);
 
@@ -440,10 +442,11 @@ export default function TenantManagement() {
 
   const activatePlanMutation = useMutation({
     mutationFn: async ({ 
-      tenantId, tenantName, plan, activate, oldStatus, oldPlan,
+      tenantId, tenantName, plan, activate, oldStatus, oldPlan, periodEnd,
     }: { 
       tenantId: string; tenantName: string; plan: SubscriptionPlan; activate: boolean;
       oldStatus: TenantStatus | undefined; oldPlan: SubscriptionPlan | undefined;
+      periodEnd: string | null;
     }) => {
       const planConfig = PLAN_CONFIG[plan];
       const { data: { user } } = await supabase.auth.getUser();
@@ -461,6 +464,7 @@ export default function TenantManagement() {
           max_storage_mb: planConfig.storage,
           trial_ends_at: null,
           managed_by_admin: activate,
+          current_period_end: activate ? periodEnd : null,
         } as any)
         .eq("tenant_id", tenantId);
 
@@ -514,20 +518,34 @@ export default function TenantManagement() {
   const openPlanActivationDialog = (tenant: TenantWithSubscription) => {
     setSelectedTenantForPlan(tenant);
     setSelectedPlanForActivation(tenant.subscription?.plan || "standard");
+    setActivationDuration("30");
+    setActivationCustomDate("");
     setPlanActivationDialogOpen(true);
   };
 
   const handleActivatePlan = (activate: boolean) => {
-    if (selectedTenantForPlan) {
-      activatePlanMutation.mutate({
-        tenantId: selectedTenantForPlan.id,
-        tenantName: selectedTenantForPlan.name,
-        plan: selectedPlanForActivation,
-        activate,
-        oldStatus: selectedTenantForPlan.subscription?.status,
-        oldPlan: selectedTenantForPlan.subscription?.plan,
-      });
+    if (!selectedTenantForPlan) return;
+    let periodEnd: string | null = null;
+    if (activate) {
+      if (activationDuration === "unlimited") {
+        periodEnd = null;
+      } else if (activationDuration === "custom") {
+        if (!activationCustomDate) { toast.error(t("superAdmin.pickExpiryDate") || "Pick an expiry date"); return; }
+        periodEnd = new Date(activationCustomDate).toISOString();
+      } else {
+        const days = parseInt(activationDuration, 10);
+        periodEnd = new Date(Date.now() + days * 86400 * 1000).toISOString();
+      }
     }
+    activatePlanMutation.mutate({
+      tenantId: selectedTenantForPlan.id,
+      tenantName: selectedTenantForPlan.name,
+      plan: selectedPlanForActivation,
+      activate,
+      oldStatus: selectedTenantForPlan.subscription?.status,
+      oldPlan: selectedTenantForPlan.subscription?.plan,
+      periodEnd,
+    });
   };
 
   const resetForm = () => {
@@ -1262,6 +1280,34 @@ export default function TenantManagement() {
                   </div>
                 </CardContent>
               </Card>
+
+              {selectedTenantForPlan?.subscription?.status !== "active" && (
+                <div className="space-y-2">
+                  <Label>{t("superAdmin.accessDuration") || "Access duration"}</Label>
+                  <Select value={activationDuration} onValueChange={setActivationDuration}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7">7 {t("superAdmin.days") || "days"}</SelectItem>
+                      <SelectItem value="14">14 {t("superAdmin.days") || "days"}</SelectItem>
+                      <SelectItem value="30">1 {t("superAdmin.month") || "month"}</SelectItem>
+                      <SelectItem value="60">2 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="90">3 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="180">6 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="365">1 {t("superAdmin.year") || "year"}</SelectItem>
+                      <SelectItem value="unlimited">{t("superAdmin.unlimited") || "Unlimited (no expiry)"}</SelectItem>
+                      <SelectItem value="custom">{t("superAdmin.customDate") || "Custom date…"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {activationDuration === "custom" && (
+                    <Input type="date" value={activationCustomDate} onChange={(e) => setActivationCustomDate(e.target.value)} />
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {activationDuration === "unlimited"
+                      ? (t("superAdmin.unlimitedHint") || "Access will not expire automatically.")
+                      : (t("superAdmin.expiryHint") || "When the period ends, the tenant must pay to keep access.")}
+                  </p>
+                </div>
+              )}
 
               <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 [&>svg]:text-amber-500">
                 <AlertTriangle className="h-4 w-4" />
