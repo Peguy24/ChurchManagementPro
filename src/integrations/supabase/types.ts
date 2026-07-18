@@ -55,6 +55,44 @@ export type Database = {
           },
         ]
       }
+      annual_upgrade_prompts: {
+        Row: {
+          action: string | null
+          created_at: string
+          id: string
+          remind_after: string | null
+          shown_at: string
+          tenant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          id?: string
+          remind_after?: string | null
+          shown_at?: string
+          tenant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          id?: string
+          remind_after?: string | null
+          shown_at?: string
+          tenant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_upgrade_prompts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_records: {
         Row: {
           branch_id: string | null
@@ -367,6 +405,92 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      broadcast_reads: {
+        Row: {
+          broadcast_id: string
+          created_at: string
+          dismissed_at: string | null
+          id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          broadcast_id: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          broadcast_id?: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_reads_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          audience_rules: Json
+          body_html: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          delivery: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          severity: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience_rules?: Json
+          body_html: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          delivery?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          severity?: string
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience_rules?: Json
+          body_html?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          delivery?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          severity?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       budgets: {
         Row: {
@@ -2797,6 +2921,68 @@ export type Database = {
           },
         ]
       }
+      nps_dismissals: {
+        Row: {
+          dismissed_until: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          dismissed_until: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          dismissed_until?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nps_surveys: {
+        Row: {
+          category: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          score: number
+          submitted_at: string
+          survey_cycle: string
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          submitted_at?: string
+          survey_cycle: string
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          submitted_at?: string
+          survey_cycle?: string
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_surveys_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pastoral_alerts: {
         Row: {
           action_suggested: string | null
@@ -3595,6 +3781,105 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reward_catalog: {
+        Row: {
+          cost_in_referrals: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          reward_type: string
+          reward_value: Json | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          cost_in_referrals?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          reward_type?: string
+          reward_value?: Json | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          cost_in_referrals?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          reward_type?: string
+          reward_value?: Json | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          cost_paid: number
+          created_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          notes: string | null
+          requested_by: string | null
+          reward_id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          cost_paid: number
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          reward_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          cost_paid?: number
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          reward_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {
@@ -5105,6 +5390,17 @@ export type Database = {
         }[]
       }
       get_member_archived_stats: { Args: { _member_id: string }; Returns: Json }
+      get_nps_summary: {
+        Args: never
+        Returns: {
+          cycle: string
+          detractors: number
+          passives: number
+          promoters: number
+          score: number
+          total: number
+        }[]
+      }
       get_onboarding_funnel: {
         Args: never
         Returns: {
@@ -5125,6 +5421,15 @@ export type Database = {
           is_active: boolean
           referrer_name: string
           referrer_tenant_id: string
+        }[]
+      }
+      get_referral_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          qualified_count: number
+          rank: number
+          tenant_id: string
+          tenant_name: string
         }[]
       }
       get_tenant_by_slug: {
@@ -5216,6 +5521,10 @@ export type Database = {
         Args: { _invitation_id: string }
         Returns: undefined
       }
+      matches_broadcast_audience: {
+        Args: { _rules: Json; _tenant_id: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -5225,6 +5534,7 @@ export type Database = {
         }
         Returns: number
       }
+      preview_broadcast_audience: { Args: { _rules: Json }; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
