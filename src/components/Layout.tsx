@@ -645,6 +645,7 @@ export default function Layout({ children }: LayoutProps) {
             <LanguageSelector />
             {showAsSuperAdmin && <SuperAdminNotifications />}
             {!showAsSuperAdmin && <TenantNotifications />}
+            {!showAsSuperAdmin && <BroadcastInbox />}
             <div className="hidden sm:flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground hidden lg:block max-w-[150px] truncate">
