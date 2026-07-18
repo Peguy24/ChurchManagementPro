@@ -1281,6 +1281,34 @@ export default function TenantManagement() {
                 </CardContent>
               </Card>
 
+              {selectedTenantForPlan?.subscription?.status !== "active" && (
+                <div className="space-y-2">
+                  <Label>{t("superAdmin.accessDuration") || "Access duration"}</Label>
+                  <Select value={activationDuration} onValueChange={setActivationDuration}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7">7 {t("superAdmin.days") || "days"}</SelectItem>
+                      <SelectItem value="14">14 {t("superAdmin.days") || "days"}</SelectItem>
+                      <SelectItem value="30">1 {t("superAdmin.month") || "month"}</SelectItem>
+                      <SelectItem value="60">2 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="90">3 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="180">6 {t("superAdmin.months") || "months"}</SelectItem>
+                      <SelectItem value="365">1 {t("superAdmin.year") || "year"}</SelectItem>
+                      <SelectItem value="unlimited">{t("superAdmin.unlimited") || "Unlimited (no expiry)"}</SelectItem>
+                      <SelectItem value="custom">{t("superAdmin.customDate") || "Custom date…"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {activationDuration === "custom" && (
+                    <Input type="date" value={activationCustomDate} onChange={(e) => setActivationCustomDate(e.target.value)} />
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {activationDuration === "unlimited"
+                      ? (t("superAdmin.unlimitedHint") || "Access will not expire automatically.")
+                      : (t("superAdmin.expiryHint") || "When the period ends, the tenant must pay to keep access.")}
+                  </p>
+                </div>
+              )}
+
               <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 [&>svg]:text-amber-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{t("superAdmin.adminAction")}</AlertTitle>
