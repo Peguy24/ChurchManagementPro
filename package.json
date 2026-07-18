@@ -74,6 +74,12 @@
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "protobufjs": "^7.5.4"
+  },
+  "resolutions": {
+    "protobufjs": "^7.5.4"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
