@@ -143,6 +143,8 @@ export default function TenantManagement() {
   const [planActivationDialogOpen, setPlanActivationDialogOpen] = useState(false);
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
+  const [activationDuration, setActivationDuration] = useState<string>("30");
+  const [activationCustomDate, setActivationCustomDate] = useState<string>("");
   const [adminManagerOpen, setAdminManagerOpen] = useState(false);
   const [selectedTenantForAdmin, setSelectedTenantForAdmin] = useState<TenantWithSubscription | null>(null);
 
