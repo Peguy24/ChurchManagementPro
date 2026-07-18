@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Treasurers and admins can insert special funds" ON public.special_funds;
