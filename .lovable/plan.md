@@ -1,51 +1,80 @@
-## NPS Enhancements — 5 Features
 
-### 1. Email survey (catch inactive users)
-- New edge function `send-nps-survey` (server-side): finds tenant admins eligible per the same 90-day cadence as the in-app prompt, sends a branded email with a one-click score link (0–10) that deep-links to `/nps?score=N&token=…`.
-- Register React Email template `nps-survey` in `_shared/transactional-email-templates/` (trilingual per user locale from `profiles.language`).
-- Add "Send email survey now" button + last-sent timestamp in `NpsAdmin.tsx` (manual trigger). Also schedule via `pg_cron` weekly to catch users who haven't logged in recently (checks last sign-in).
-- Add `nps_email_sends` table (user_id, sent_at, cycle) so we don't double-email in the same cycle.
+# Church Mini-Site — Paid Add-On
 
-### 2. Detractor auto-ticket + super-admin alert
-- DB trigger `on_nps_detractor_submitted` on `nps_surveys AFTER INSERT`:
-  - If `score ≤ 6` **and** `comment` present → insert `support_tickets` row (category `nps_detractor`, priority `high`, subject "Detractor feedback from <tenant>", message = comment + score context).
-  - Insert `platform_notifications` row (`nps_detractor` type) so bell + realtime already work.
-- New edge function `notify-detractor` invoked by trigger via `pg_net`: emails all super admins who opted in (reuse `get_contact_message_email_recipients` pattern → add new prefs column `nps_detractor_channel` to `super_admin_notification_prefs`).
+Add a template-based public website for each church tenant. Instead of gating by plan tier, it's a paid **add-on** any plan can subscribe to. Tenants without the add-on see a live demo preview + upgrade CTA.
 
-### 3. Admin dashboard segmentation
-- Update `NpsAdmin.tsx`:
-  - Add filter bar: **Plan tier** (Essentiel / Professionnel / Entreprise / Trial / All), **Country** (dropdown from distinct tenant countries), **Tenant size** (member count buckets: <50, 50–200, 200–500, 500+).
-  - Fetch enriched view via new SQL function `get_nps_responses_filtered(_plan, _country, _min_members, _max_members)` that joins `nps_surveys`, `tenants`, `tenant_subscriptions`, and `members` count.
-  - Recompute NPS score, promoters/passives/detractors, and trend from the filtered result set client-side.
-  - CSV export respects active filters.
+## What tenants get
 
-### 4. Response webhook (detractor alert)
-- Covered by #2: emails Super Admins per their notification prefs on every detractor submission. No external Slack — reuses existing Resend/`send-transactional-email` infra.
-- Optional `SLACK_WEBHOOK_URL` secret support: if present, `notify-detractor` also POSTs to Slack. Skipped silently if not configured.
+A single-page public site at `churchmanagementpro.com/site/:slug` (and the existing `/t/:slug` route can link to it), built from a template with editable fields — no drag-and-drop.
 
-### 5. Public NPS badge on Commercial page
-- New SQL function `get_public_nps_stats()` (SECURITY DEFINER, public read via `anon`): returns `{ score, total_responses, promoters_pct }` for **last 12 months only if `total_responses ≥ 20`**, otherwise `null`.
-- New component `<PublicNpsBadge />` rendered in `Commercial.tsx` above/near testimonials: shows score, "Based on N verified church responses", subtle green/yellow/red accent.
-- Hidden entirely below the 20-response threshold (no "0 reviews" state).
+Editable fields (stored in a new `tenant_websites` row):
+- Church name, tagline, logo, hero image
+- About / mission (rich text, short)
+- Service schedule (list: day, time, description)
+- Contact: address, phone, email, WhatsApp
+- Social links (Facebook, Instagram, YouTube)
+- Optional "Donate" button (links to existing donation flow)
+- Primary color (defaults to tenant `primary_color`)
+- Template choice: pick 1 of 3 preset layouts (Classic / Modern / Warm)
+- Custom domain field (display-only note for now — DNS setup is manual)
+- `is_published` toggle
 
-### Technical Details
-- Migrations (single file):
-  - `CREATE TABLE nps_email_sends` + GRANTs + RLS.
-  - `ALTER TABLE super_admin_notification_prefs ADD COLUMN nps_detractor_channel text DEFAULT 'both'`.
-  - `CREATE FUNCTION get_nps_responses_filtered(...)`.
-  - `CREATE FUNCTION get_public_nps_stats()` (grant `SELECT`/`EXECUTE` to `anon, authenticated`).
-  - `CREATE FUNCTION on_nps_detractor_submitted()` + trigger.
-  - `pg_cron` weekly job for `send-nps-survey`.
-- Edge functions:
-  - `send-nps-survey` — batch enqueue nps-survey template.
-  - `notify-detractor` — email + optional Slack webhook.
-- React Email template: `nps-survey.tsx`.
-- Frontend edits:
-  - `src/pages/NpsAdmin.tsx` — filters, manual send-email button.
-  - `src/pages/Commercial.tsx` — mount `<PublicNpsBadge />`.
-  - `src/components/PublicNpsBadge.tsx` — new.
-  - `src/pages/Dashboard.tsx` (or wherever `/nps` handles landing) — accept `?score=N&token=…` from email link and auto-open NpsPrompt pre-filled.
+## Pages / UI
 
-### Out of scope
-- No standalone Slack connector setup unless user later provides a webhook URL.
-- No changes to existing in-app NpsPrompt cadence.
+**Tenant admin — `/website`** (sidebar entry "Church Website"):
+- If add-on inactive: full-page **demo preview** of a sample church rendered with template #1, overlay CTA "Activate Church Website — $X/month" → opens Stripe checkout.
+- If active: editor form with live preview pane, template picker, publish toggle.
+
+**Public — `/site/:slug`**: renders the template using the tenant's data. SEO tags (title, description, og). Only reachable when `is_published = true` AND add-on active.
+
+**Super Admin — `/super-admin/website-addons`**: list of tenants with add-on status (active / cancelled / trialing), manual override toggle (same pattern as `managed_by_admin` on subscriptions), MRR from add-ons.
+
+## Commercial page
+
+Add a new marketing section on `Commercial.tsx` — "Give your church a professional website" — with 3 template thumbnails and pricing, linking signed-in tenants to `/website`.
+
+## Data model
+
+New table `tenant_websites`:
+- `tenant_id` (unique), `template` (enum: classic/modern/warm), `is_published`, all editable fields as JSONB `content`, `custom_domain` (nullable text), timestamps.
+
+New table `website_addon_subscriptions`:
+- `tenant_id` (unique), `status` (active/cancelled/trialing/past_due), `stripe_subscription_id`, `managed_by_admin` (bool for super-admin comp), `current_period_end`, timestamps.
+
+RLS:
+- `tenant_websites`: tenant admins read/write own row; anon read only when joined tenant has active add-on and `is_published = true` (via SECURITY DEFINER function `get_public_website(slug)`).
+- `website_addon_subscriptions`: tenant admins read own; super admins full access.
+
+Helper function `has_website_addon(_tenant_id)` → bool (checks status active OR managed_by_admin).
+
+## Payments
+
+Reuse existing Stripe integration. Add one new Stripe price (monthly recurring) for the add-on. New edge function `create-website-addon-checkout` and webhook branch in the existing Stripe webhook to upsert `website_addon_subscriptions`.
+
+Pricing decision needed from you before implementation: **monthly price for the add-on** (suggested: $9/mo or $15/mo — say the word).
+
+## Files to create/edit
+
+Create:
+- Migration: `tenant_websites`, `website_addon_subscriptions`, `has_website_addon()`, `get_public_website()`, RLS + grants.
+- `src/pages/ChurchWebsite.tsx` — editor + demo/upsell states.
+- `src/pages/PublicChurchSite.tsx` — public render, 3 template components.
+- `src/components/website/TemplateClassic.tsx`, `TemplateModern.tsx`, `TemplateWarm.tsx`.
+- `src/pages/WebsiteAddonsAdmin.tsx` — super admin management.
+- `supabase/functions/create-website-addon-checkout/index.ts`.
+
+Edit:
+- `src/App.tsx` — 3 new routes (`/website`, `/site/:slug`, `/super-admin/website-addons`).
+- `src/components/Layout.tsx` — sidebar entry "Church Website" (Globe icon).
+- `src/pages/Commercial.tsx` + `LanguageContext.tsx` — marketing section, translations EN/FR/HT.
+- Stripe webhook handler — handle add-on subscription events.
+
+## Out of scope (explicit)
+
+- No drag-and-drop, no multi-page sites, no blog.
+- Custom domain field is captured but DNS/SSL setup is manual (documented in a follow-up).
+- No image gallery beyond the hero image in v1.
+
+## Open question before I build
+
+**What monthly price should the add-on be?** ($9 / $15 / other)
