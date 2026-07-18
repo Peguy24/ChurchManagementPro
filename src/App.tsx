@@ -148,6 +148,7 @@ const App = () => (
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
+              <Route path="/site/:slug" element={<PublicChurchSite />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
