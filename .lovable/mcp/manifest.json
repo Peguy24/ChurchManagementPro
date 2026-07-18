@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ihwhbtmnyhhceiwdcfsc.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "church-management-pro-mcp",
+      "version": "0.1.0",
+      "title": "Church Management Pro"
+    },
+    "tools": [
+      {
+        "name": "list_members",
+        "title": "List church members",
+        "description": "List members of the signed-in user's church. Row-level security limits results to what the user is allowed to see. Supports an optional search term (matches first/last name or email) and a limit.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Optional search term matched against first name, last name, or email.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return. Default 50.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_events",
+        "title": "List church events",
+        "description": "List events for the signed-in user's church. Row-level security limits results. Optionally filter to upcoming events only.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "upcoming_only": {
+              "description": "If true, only return events with a start date in the future.",
+              "type": "boolean"
+            },
+            "limit": {
+              "description": "Max rows to return. Default 50.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_donations",
+        "title": "List donations",
+        "description": "List donations recorded for the signed-in user's church. Row-level security limits results to what the user is allowed to see. Only accessible to roles with finance access (admin, pastor, treasurer).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from_date": {
+              "description": "Optional ISO date (YYYY-MM-DD). Only donations on or after this date.",
+              "type": "string"
+            },
+            "to_date": {
+              "description": "Optional ISO date (YYYY-MM-DD). Only donations on or before this date.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return. Default 50.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
