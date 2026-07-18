@@ -43,10 +43,13 @@ export function NpsPrompt() {
 
   const submit = async () => {
     if (score === null || !userId) return;
-    const { error } = await supabase.from("nps_surveys").insert({
+    const { data: inserted, error } = await supabase.from("nps_surveys").insert({
       user_id: userId, tenant_id: tenantId, score, comment: comment || null, survey_cycle: cycle(),
-    });
+    }).select("id").maybeSingle();
     if (error) { toast.error(error.message); return; }
+    if (score <= 6 && comment.trim() && inserted?.id) {
+      supabase.functions.invoke("notify-detractor", { body: { survey_id: inserted.id } }).catch(() => {});
+    }
     toast.success(tt("Thanks for your feedback!", "Merci pour votre retour !", "Mèsi pou fidbak ou!"));
     setVisible(false);
   };
