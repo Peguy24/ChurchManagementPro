@@ -22,6 +22,8 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
 }
 import { Link, useLocation } from "react-router-dom";
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
+
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -65,6 +67,8 @@ import {
   Archive,
   ShieldCheck,
   Star,
+  Eye,
+
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -338,10 +342,12 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/settings/tenants", icon: Building2, label: sl("churches") },
         { to: "/settings/users", icon: Users, label: sl("users") },
         { to: "/settings/invitations", icon: Mail, label: sl("invitations") },
+        { to: "/super-admin/impersonation", icon: Eye, label: "Impersonation" },
         { to: "/support-management", icon: MessageSquare, label: sl("support") },
         { to: "/super-admin/churn", icon: ShieldAlertIcon, label: sl("churn") },
       ],
     },
+
     {
       key: "sa-finance",
       label: sl("grpFinance"),
@@ -363,6 +369,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
       icon: Megaphone,
       items: [
         { to: "/super-admin/communication", icon: Mail, label: sl("communication") },
+        { to: "/super-admin/emails", icon: Mail, label: "Email Delivery" },
         { to: "/super-admin/banners", icon: Megaphone, label: sl("banners") },
         { to: "/super-admin/referrals", icon: Sparkles, label: sl("referrals") },
         { to: "/super-admin/contact-messages", icon: Mail, label: "Contact Messages" },
@@ -374,12 +381,15 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
       label: sl("grpPlatform"),
       icon: Settings,
       items: [
+        { to: "/super-admin/audit-log", icon: ShieldCheck, label: "Audit Log" },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
     },
   ];
 };
+
+
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
@@ -561,8 +571,10 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <ImpersonationBanner />
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+
         <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
           {/* Mobile Menu Button */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

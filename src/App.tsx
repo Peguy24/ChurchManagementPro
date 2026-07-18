@@ -100,6 +100,10 @@ const TaxExemptionReviews = lazy(() => import("./pages/TaxExemptionReviews"));
 const ContactMessages = lazy(() => import("./pages/ContactMessages"));
 const ClientReviews = lazy(() => import("./pages/ClientReviews"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Impersonation = lazy(() => import("./pages/Impersonation"));
+const EmailDelivery = lazy(() => import("./pages/EmailDelivery"));
+const AuditLog = lazy(() => import("./pages/AuditLog"));
+
 
 const queryClient = new QueryClient();
 
@@ -207,6 +211,10 @@ const App = () => (
               <Route path="/super-admin/tax-exemptions" element={<ProtectedRoute requireSuperAdmin><TaxExemptionReviews /></ProtectedRoute>} />
               <Route path="/super-admin/contact-messages" element={<ProtectedRoute requireSuperAdmin><ContactMessages /></ProtectedRoute>} />
               <Route path="/super-admin/reviews" element={<ProtectedRoute requireSuperAdmin><ClientReviews /></ProtectedRoute>} />
+              <Route path="/super-admin/impersonation" element={<ProtectedRoute requireSuperAdmin><Impersonation /></ProtectedRoute>} />
+              <Route path="/super-admin/emails" element={<ProtectedRoute requireSuperAdmin><EmailDelivery /></ProtectedRoute>} />
+              <Route path="/super-admin/audit-log" element={<ProtectedRoute requireSuperAdmin><AuditLog /></ProtectedRoute>} />
+
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />

@@ -1,68 +1,41 @@
-# Owner Contribution Tracking on Platform Expenses
+# Top 3 Super Admin additions
 
-Add the ability, on the Super Admin Platform Accounting page, to record **who funded** each expense — either business sources (checking, credit card, other) or **personal contributions split per owner** (percent-based).
+## 1. Tenant Impersonation
+Let a Super Admin browse the app "as" a specific tenant to reproduce issues without asking for credentials.
 
-## 1. Owners management (new)
+- New table `impersonation_sessions` (super_admin_id, tenant_id, started_at, ended_at, reason) with RLS restricted to Super Admins for full audit trail.
+- New page `/super-admin/impersonation` with a tenant picker + "Reason" field. Starting a session:
+  - Records a row in `impersonation_sessions`
+  - Writes a `platform_activity_logs` entry (`admin_action` / `impersonation_started`)
+  - Stores an `impersonation` object in `sessionStorage` with `tenant_id`, `session_id`, `super_admin_id`
+- Update `useCurrentTenant` to prefer the impersonated `tenant_id` when the flag is present (only if the user is a Super Admin — guarded server-side by existing RLS).
+- Persistent top banner (red) on every page when impersonating: "Viewing as {ChurchName} — Exit impersonation". Ending the session clears sessionStorage, logs `impersonation_ended`, and updates `ended_at`.
+- Read-only by default: block destructive writes by short-circuiting sensitive mutations in the client while impersonating (soft guard — Super Admin still has DB rights, but the UI prevents accidental changes).
 
-New page **Settings → Business Owners** (Super Admin only) to manage a flexible list of co-owners.
+## 2. Email Delivery Dashboard
+Follows the platform's built-in `email_send_log` guide: dedupe by `message_id`, six required features.
 
-- Table `platform_owners`: `id`, `name`, `email` (optional), `default_share_percent` (numeric, default 50), `is_active` (bool), `display_order`.
-- Simple CRUD UI: add/edit/remove owners, set default ownership %.
-- Validation: sum of active owners' default % should equal 100 (warning, not blocker).
+- New page `/super-admin/emails` (Super Admin only).
+- Filters: time range (24h / 7d / 30d / custom), template (`template_name` distinct list), status (All / Sent / Failed (dlq) / Suppressed).
+- Summary cards: total unique emails, sent, failed, suppressed — deduped on `message_id`.
+- Table (paginated, 50/page): Template, Recipient, Status badge, Timestamp, Error message on failures. Sorted by newest first.
+- Uses `supabase.from('email_send_log')` with a client-side dedupe (latest row per `message_id`).
+- Sidebar link under Super Admin → Communications: "Email delivery".
 
-## 2. Expense funding source
+## 3. Super Admin Audit Log Viewer
+A dedicated viewer over `platform_activity_logs` + `financial_audit_logs` for accountability across multiple admins.
 
-In the **Platform Expense dialog** (`PlatformAccounting.tsx`), add a new section **"Funding Source"** with a radio group:
+- New page `/super-admin/audit-log`.
+- Two tabs:
+  - **Platform activity**: filter by category (auth/subscription/tenant/user/support/general), event type, actor email, tenant, date range. Table with expandable row showing `metadata` JSON.
+  - **Financial audit**: filter by entity type, action (create/update/delete), actor, tenant, date range. Expandable row shows `old_values` vs `new_values` diff.
+- Both tabs include CSV export (respects current filters, localized headers, excludes internal IDs per the export standard).
+- Sidebar link under Super Admin → Security: "Audit log".
 
-- Business checking
-- Business credit card
-- Owners (personal funds)
-- Other / custom (free-text label)
-
-Persist on `platform_expenses`:
-- `funding_source` text — one of `business_checking | business_credit_card | owners_personal | other`
-- `funding_source_label` text — free text when `other`
-
-## 3. Owner split (when "Owners personal funds" selected)
-
-When the source is **Owners personal**, show a dynamic table of all active owners with:
-- Owner name (read-only)
-- Percent input (defaults to each owner's `default_share_percent`)
-- Auto-computed amount = `expense.amount × percent / 100`
-- Live total row — must equal 100% / full amount before save (blocks submit otherwise)
-
-Persist in new table `platform_expense_contributions`:
-- `id`, `expense_id` (FK → platform_expenses, cascade delete)
-- `owner_id` (FK → platform_owners)
-- `percent` numeric, `amount` numeric
-- `tenant_id` not needed (platform-level)
-
-## 4. Display & reporting
-
-- **Expense list:** add a "Funding" column showing a badge (Checking / Card / Owners / label) and, if owners-funded, a small tooltip "Owner A 50% • Owner B 50%".
-- **New summary widget** on PlatformAccounting: "Owner Contributions YTD" — total each owner has put in from personal funds (for settle-up).
-- CSV export includes funding source + per-owner amounts.
-
-## 5. Out of scope
-
-- Tenant (church) expenses are unchanged.
-- No reimbursement workflow yet — purely tracking; settle-up is manual based on the summary.
-
-## Technical Details
-
-**Migration:**
-```sql
-create table public.platform_owners (...);  -- RLS: super admin only
-alter table public.platform_expenses
-  add column funding_source text not null default 'business_checking',
-  add column funding_source_label text;
-create table public.platform_expense_contributions (...);  -- RLS: super admin only
-```
-
-**Files to touch:**
-- `supabase/migrations/...` — new tables + columns + RLS
-- `src/pages/PlatformAccounting.tsx` — expense dialog + list column + summary widget
-- `src/pages/PlatformSettings.tsx` (or new `BusinessOwners.tsx` route) — owners CRUD
-- `src/contexts/LanguageContext.tsx` — EN/FR/HT strings
-- `src/App.tsx` — route for owners page if separate
-- `src/components/Layout.tsx` — sidebar link under Super Admin section
+## Technical details
+- Migration: create `impersonation_sessions` table with `GRANT`s + RLS (Super Admin only), plus indexes on `platform_activity_logs(created_at, event_category)` and `email_send_log(created_at, message_id)` if not already present.
+- New components: `ImpersonationBanner.tsx`, `EmailDeliveryTable.tsx`, `AuditLogFilters.tsx`.
+- New hook: `useImpersonation()` — reads `sessionStorage`, exposes `{ isImpersonating, tenantId, exit() }`.
+- Route registration + sidebar entries in `Layout.tsx` (Super Admin section).
+- All strings added to `LanguageContext.tsx` in EN / FR / HT.
+- No changes to auth, billing, or tenant data models.

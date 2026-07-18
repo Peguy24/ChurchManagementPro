@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { readImpersonation } from '@/hooks/useImpersonation';
+
 
 interface TenantInfo {
   id: string;
@@ -71,9 +73,32 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
       return;
     }
 
+    // Impersonation override: if a super admin has an active session, load that tenant
+    const imp = readImpersonation();
+    if (imp && imp.superAdminId === user.id) {
+      if (lastUserIdRef.current === `imp:${imp.tenantId}`) return;
+      try {
+        const { data: tenantData, error: tErr } = await supabase
+          .from('tenants')
+          .select('id, name, slug, logo_url, primary_color')
+          .eq('id', imp.tenantId)
+          .single();
+        if (tErr) throw tErr;
+        setTenantId(imp.tenantId);
+        setTenant(tenantData);
+        lastUserIdRef.current = `imp:${imp.tenantId}`;
+        setLoading(false);
+        setError(null);
+      } catch (err) {
+        console.error('Impersonation tenant fetch failed:', err);
+      }
+      return;
+    }
+
     if (lastUserIdRef.current === user.id) {
       return;
     }
+
 
     // Check if cache matches current user
     const cached = loadCachedTenant();
@@ -147,7 +172,14 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
 
   useEffect(() => {
     fetchTenantInfo();
+    const handler = () => {
+      lastUserIdRef.current = null;
+      fetchTenantInfo();
+    };
+    window.addEventListener('impersonation-changed', handler);
+    return () => window.removeEventListener('impersonation-changed', handler);
   }, [fetchTenantInfo]);
+
 
   const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
     return { ...data, tenant_id: tenantId };
