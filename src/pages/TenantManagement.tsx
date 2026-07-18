@@ -442,10 +442,11 @@ export default function TenantManagement() {
 
   const activatePlanMutation = useMutation({
     mutationFn: async ({ 
-      tenantId, tenantName, plan, activate, oldStatus, oldPlan,
+      tenantId, tenantName, plan, activate, oldStatus, oldPlan, periodEnd,
     }: { 
       tenantId: string; tenantName: string; plan: SubscriptionPlan; activate: boolean;
       oldStatus: TenantStatus | undefined; oldPlan: SubscriptionPlan | undefined;
+      periodEnd: string | null;
     }) => {
       const planConfig = PLAN_CONFIG[plan];
       const { data: { user } } = await supabase.auth.getUser();
@@ -463,6 +464,7 @@ export default function TenantManagement() {
           max_storage_mb: planConfig.storage,
           trial_ends_at: null,
           managed_by_admin: activate,
+          current_period_end: activate ? periodEnd : null,
         } as any)
         .eq("tenant_id", tenantId);
 
