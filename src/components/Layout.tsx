@@ -396,6 +396,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/broadcasts", icon: Megaphone, label: "Broadcasts" },
         { to: "/super-admin/rewards", icon: Gift, label: "Rewards" },
         { to: "/super-admin/nps", icon: Smile, label: "NPS Feedback" },
+        { to: "/super-admin/website-addons", icon: Globe, label: "Website Add-Ons" },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
