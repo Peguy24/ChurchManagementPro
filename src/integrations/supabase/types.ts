@@ -1800,6 +1800,44 @@ export type Database = {
           },
         ]
       }
+      impersonation_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          reason: string | null
+          started_at: string
+          super_admin_email: string | null
+          super_admin_id: string
+          tenant_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          reason?: string | null
+          started_at?: string
+          super_admin_email?: string | null
+          super_admin_id: string
+          tenant_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          reason?: string | null
+          started_at?: string
+          super_admin_email?: string | null
+          super_admin_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impersonation_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_categories: {
         Row: {
           code: string
