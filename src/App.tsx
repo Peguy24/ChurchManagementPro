@@ -112,6 +112,9 @@ const OnboardingFunnel = lazy(() => import("./pages/OnboardingFunnel"));
 const BroadcastsAdmin = lazy(() => import("./pages/BroadcastsAdmin"));
 const RewardsAdmin = lazy(() => import("./pages/RewardsAdmin"));
 const NpsAdmin = lazy(() => import("./pages/NpsAdmin"));
+const ChurchWebsite = lazy(() => import("./pages/ChurchWebsite"));
+const PublicChurchSite = lazy(() => import("./pages/PublicChurchSite"));
+const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
 
 
 const queryClient = new QueryClient();
@@ -145,6 +148,7 @@ const App = () => (
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
+              <Route path="/site/:slug" element={<PublicChurchSite />} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
@@ -232,6 +236,8 @@ const App = () => (
               <Route path="/super-admin/broadcasts" element={<ProtectedRoute requireSuperAdmin><BroadcastsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
+              <Route path="/website" element={<ProtectedRoute><ChurchWebsite /></ProtectedRoute>} />
+              <Route path="/super-admin/website-addons" element={<ProtectedRoute requireSuperAdmin><WebsiteAddonsAdmin /></ProtectedRoute>} />
 
               
               <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />

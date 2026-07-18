@@ -24,6 +24,9 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "prod_UA28jB4cFz2aZ7": "entreprise",
 };
 
+// Website add-on price ID
+const WEBSITE_ADDON_PRICE_ID = "price_1Tuf3iFTm4C7ouBeX3jzrt32";
+
 // Map plan names to DB plan names
 const PLAN_TO_DB: Record<string, { plan: string; price: number; members: number; branches: number; users: number; storage: number }> = {
   "essentiel": { plan: "basic", price: 29.99, members: 200, branches: 1, users: 5, storage: 500 },
@@ -210,10 +213,29 @@ serve(async (req) => {
           break;
         }
 
+        const priceId = subscription.items.data[0]?.price?.id as string;
         const productId = subscription.items.data[0]?.price?.product as string;
-        const planKey = PRODUCT_TO_PLAN[productId] || null;
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const status = subscription.status === "trialing" ? "trialing" : subscription.status === "active" ? "active" : subscription.status;
+
+        // Handle website add-on subscription
+        if (priceId === WEBSITE_ADDON_PRICE_ID) {
+          await supabase.from("website_addon_subscriptions").upsert(
+            {
+              tenant_id: tenantId,
+              status: status === "trialing" ? "active" : status,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscription.id,
+              current_period_end: periodEnd,
+              managed_by_admin: false,
+            },
+            { onConflict: "tenant_id" },
+          );
+          logStep("Website add-on synced", { tenantId, status });
+          break;
+        }
+
+        const planKey = PRODUCT_TO_PLAN[productId] || null;
 
         // Detect plan change: previous_attributes contains items if plan changed
         const previousAttrs = (event.data as any).previous_attributes || {};
@@ -297,6 +319,22 @@ serve(async (req) => {
 
         const tenantId = await getTenantByEmail(supabase, email);
         if (!tenantId) break;
+
+        // Handle website add-on cancellation
+        const cancelledPriceId = subscription.items.data[0]?.price?.id as string;
+        if (cancelledPriceId === WEBSITE_ADDON_PRICE_ID) {
+          await supabase
+            .from("website_addon_subscriptions")
+            .update({ status: "cancelled" })
+            .eq("tenant_id", tenantId);
+          await supabase
+            .from("tenant_websites")
+            .update({ is_published: false })
+            .eq("tenant_id", tenantId);
+          logStep("Website add-on cancelled", { tenantId });
+          break;
+        }
+
 
         // Mark subscription as cancelled
         await supabase

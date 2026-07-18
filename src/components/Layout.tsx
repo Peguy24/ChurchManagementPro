@@ -71,6 +71,7 @@ import {
   Activity,
   Gift,
   Smile,
+  Globe,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -190,6 +191,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/settings/backup", icon: FileText, label: t("layout.dataBackup") },
         { to: "/settings/data-management", icon: Archive, label: t("layout.dataManagement") },
         { to: "/system-guide", icon: FileText, label: t("layout.systemGuide") },
+        { to: "/website", icon: Globe, label: "Church Website" },
       ],
     },
     {
@@ -394,6 +396,7 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
         { to: "/super-admin/broadcasts", icon: Megaphone, label: "Broadcasts" },
         { to: "/super-admin/rewards", icon: Gift, label: "Rewards" },
         { to: "/super-admin/nps", icon: Smile, label: "NPS Feedback" },
+        { to: "/super-admin/website-addons", icon: Globe, label: "Website Add-Ons" },
         { to: "/super-admin/legal", icon: FileText, label: sl("legal") },
         { to: "/super-admin/settings", icon: Settings, label: sl("settings") },
       ],
