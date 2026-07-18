@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@huggingface/transformers": "^4.2.0",
     "@lovable.dev/mcp-js": "^0.23.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -73,6 +72,12 @@
     "vaul": "^0.9.9",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
+  },
+  "overrides": {
+    "protobufjs": "^7.5.4"
+  },
+  "resolutions": {
+    "protobufjs": "^7.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
