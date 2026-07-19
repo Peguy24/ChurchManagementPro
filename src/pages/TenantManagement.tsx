@@ -857,8 +857,35 @@ export default function TenantManagement() {
             {expiringTrials.length > 0 && (
               <Alert className="border-orange-500/50 bg-orange-50 dark:bg-orange-950/20 text-orange-800 dark:text-orange-200 [&>svg]:text-orange-500">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("superAdmin.expiringSoon")} ({expiringTrials.length})</AlertTitle>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <AlertTitle className="mb-0">{t("superAdmin.expiringSoon")} ({expiringTrials.length})</AlertTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 border-orange-500 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40"
+                    onClick={async () => {
+                      const ids = expiringTrials.map((x) => x.id);
+                      const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
+                      try {
+                        const { data, error } = await supabase.functions.invoke("send-trial-ending-reminders", {
+                          body: { tenantIds: ids, daysThreshold: 7 },
+                        });
+                        if (error) throw error;
+                        toast.success(
+                          `${t("superAdmin.trialRemindersSent") || "Reminders sent"}: ${data?.sent ?? 0}`,
+                          { id: loadingId }
+                        );
+                      } catch (e: any) {
+                        toast.error(e?.message || "Failed to send reminders", { id: loadingId });
+                      }
+                    }}
+                  >
+                    <Mail className="h-3 w-3 mr-1" />
+                    {t("superAdmin.emailAllTrialAdmins") || "Email all"}
+                  </Button>
+                </div>
                 <AlertDescription>
+
                   <div className="mt-2 space-y-1">
                     {expiringTrials.map((tenant) => {
                       const daysLeft = differenceInDays(new Date(tenant.subscription!.trial_ends_at!), new Date());
