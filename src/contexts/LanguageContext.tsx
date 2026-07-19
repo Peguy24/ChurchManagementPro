@@ -5338,6 +5338,12 @@ const translations = {
       groupTenants: "Multi-Tenant Management",
       groupVolunteers: "Volunteer Planning",
       groupVisitors: "Visitor Management",
+      groupWebsite: "Church Website",
+      groupGiving: "Online Giving",
+      groupPrayerRequests: "Prayer Requests",
+      groupInsights: "Smart Insights",
+      groupAutomations: "Automations",
+      groupSubscription: "Subscription & Billing",
     },
     customRoles: {
       title: "Custom Roles",
