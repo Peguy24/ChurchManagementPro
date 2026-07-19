@@ -15,6 +15,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { renderTemplate, SiteContent, TEMPLATE_LIST } from "@/components/website/SiteTemplates";
 import MediaLibrary, { TenantMediaItem } from "@/components/website/MediaLibrary";
+import DomainManager from "@/components/website/DomainManager";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TEMPLATES = TEMPLATE_LIST;
