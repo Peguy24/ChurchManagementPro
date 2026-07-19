@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
-import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
+import MediaLibrary, { TenantMediaItem } from "@/components/website/MediaLibrary";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TEMPLATES = [
   { id: "classic", name: "Classic", desc: "Elegant serif layout" },
@@ -42,6 +44,8 @@ export default function ChurchWebsite() {
   const [template, setTemplate] = useState("classic");
   const [isPublished, setIsPublished] = useState(false);
   const [content, setContent] = useState<SiteContent>(emptyContent);
+  const [galleryImages, setGalleryImages] = useState<Array<{ url: string; caption?: string }>>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const publicUrl = tenant?.slug ? `${window.location.origin}/site/${tenant.slug}` : "";
 
@@ -58,6 +62,23 @@ export default function ChurchWebsite() {
     }
   }, [searchParams, setSearchParams]);
 
+  const loadGallery = async () => {
+    if (!tenantId) return;
+    const { data } = await supabase
+      .from("tenant_media")
+      .select("public_url,caption")
+      .eq("tenant_id", tenantId)
+      .eq("category", "gallery")
+      .not("public_url", "is", null)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    setGalleryImages(
+      (data || [])
+        .filter((r: any) => r.public_url)
+        .map((r: any) => ({ url: r.public_url as string, caption: r.caption || undefined })),
+    );
+  };
+
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
@@ -72,8 +93,10 @@ export default function ChurchWebsite() {
         setIsPublished(!!site.is_published);
         setContent({ ...emptyContent, ...(site.content as SiteContent) });
       }
+      await loadGallery();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
 
   const previewProps = useMemo(
@@ -81,9 +104,9 @@ export default function ChurchWebsite() {
       name: tenant?.name || "Your Church",
       logoUrl: tenant?.logo_url,
       primaryColor: tenant?.primary_color,
-      content,
+      content: { ...content, gallery: galleryImages },
     }),
-    [tenant, content],
+    [tenant, content, galleryImages],
   );
 
   const handleSubscribe = async () => {
@@ -241,17 +264,31 @@ export default function ChurchWebsite() {
               <CardHeader><CardTitle>Content</CardTitle></CardHeader>
               <CardContent>
                 <Tabs defaultValue="basic">
-                  <TabsList className="grid grid-cols-4">
+                  <TabsList className="grid grid-cols-5">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
                     <TabsTrigger value="services">Services</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                     <TabsTrigger value="social">Social</TabsTrigger>
+                    <TabsTrigger value="media">Media</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="basic" className="space-y-3">
                     <div><Label>Tagline</Label><Input value={content.tagline || ""} onChange={(e) => updateContent({ tagline: e.target.value })} placeholder="A place to belong" /></div>
                     <div><Label>About / Welcome</Label><Textarea rows={6} value={content.about || ""} onChange={(e) => updateContent({ about: e.target.value })} /></div>
-                    <div><Label>Hero image URL (Modern template)</Label><Input value={content.hero_image_url || ""} onChange={(e) => updateContent({ hero_image_url: e.target.value })} placeholder="https://..." /></div>
+                    <div>
+                      <Label>Hero image URL (Modern template)</Label>
+                      <div className="flex gap-2">
+                        <Input value={content.hero_image_url || ""} onChange={(e) => updateContent({ hero_image_url: e.target.value })} placeholder="https://..." />
+                        <Button type="button" variant="outline" onClick={() => setPickerOpen(true)} className="shrink-0 gap-1">
+                          <ImageIcon className="w-4 h-4" /> Pick
+                        </Button>
+                      </div>
+                      {content.hero_image_url && (
+                        <div className="mt-2 aspect-video w-full rounded border overflow-hidden bg-muted">
+                          <img src={content.hero_image_url} alt="Hero preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="services" className="space-y-3">
@@ -278,6 +315,23 @@ export default function ChurchWebsite() {
                     <div><Label>YouTube URL</Label><Input value={content.social?.youtube || ""} onChange={(e) => updateSocial("youtube", e.target.value)} /></div>
                     <div><Label>WhatsApp link (https://wa.me/…)</Label><Input value={content.social?.whatsapp || ""} onChange={(e) => updateSocial("whatsapp", e.target.value)} /></div>
                   </TabsContent>
+
+                  <TabsContent value="media" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Upload hero images, service photos, contact media, and gallery pictures. Images tagged <strong>gallery</strong> appear on your public site automatically.
+                    </p>
+                    {tenantId && (
+                      <MediaLibrary
+                        tenantId={tenantId}
+                        onPick={(item) => {
+                          if (item.public_url) {
+                            updateContent({ hero_image_url: item.public_url });
+                            toast.success("Hero image updated");
+                          }
+                        }}
+                      />
+                    )}
+                  </TabsContent>
                 </Tabs>
               </CardContent>
             </Card>
@@ -294,6 +348,27 @@ export default function ChurchWebsite() {
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Pick a hero image</DialogTitle>
+            </DialogHeader>
+            {tenantId && (
+              <MediaLibrary
+                tenantId={tenantId}
+                categories={["hero", "gallery", "other"]}
+                onPick={(item) => {
+                  if (item.public_url) {
+                    updateContent({ hero_image_url: item.public_url });
+                    setPickerOpen(false);
+                    toast.success("Hero image set");
+                  }
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

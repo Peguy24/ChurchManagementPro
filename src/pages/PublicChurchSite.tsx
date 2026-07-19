@@ -25,12 +25,28 @@ export default function PublicChurchSite() {
       ]);
       if (!error && rows && rows.length > 0) {
         const r = rows[0];
+        const baseContent = (r.content as SiteContent) || {};
+
+        // Fetch gallery images uploaded via the media library
+        const { data: media } = await supabase
+          .from("tenant_media")
+          .select("public_url,caption,sort_order,created_at")
+          .eq("tenant_id", r.tenant_id)
+          .eq("category", "gallery")
+          .not("public_url", "is", null)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: false });
+
+        const gallery = (media || [])
+          .filter((m: any) => m.public_url)
+          .map((m: any) => ({ url: m.public_url as string, caption: m.caption || undefined }));
+
         setData({
           name: r.tenant_name,
           logo_url: r.logo_url,
           primary_color: r.primary_color,
           template: r.template,
-          content: (r.content as SiteContent) || {},
+          content: { ...baseContent, gallery: gallery.length ? gallery : baseContent.gallery },
         });
         document.title = r.tenant_name;
       }
