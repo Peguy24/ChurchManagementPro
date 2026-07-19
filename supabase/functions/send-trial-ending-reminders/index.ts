@@ -61,6 +61,9 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const tenantIds: string[] | undefined = body.tenantIds;
     const daysThreshold: number = Number.isFinite(body.daysThreshold) ? body.daysThreshold : 7;
+    const customSubject: string | undefined = typeof body.customSubject === "string" && body.customSubject.trim() ? body.customSubject.trim() : undefined;
+    const customMessage: string | undefined = typeof body.customMessage === "string" && body.customMessage.trim() ? body.customMessage.trim() : undefined;
+
 
     // Load target trial subscriptions
     let query = supabase
