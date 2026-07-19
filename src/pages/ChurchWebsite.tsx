@@ -271,7 +271,10 @@ export default function ChurchWebsite() {
                 <Tabs defaultValue="basic">
                   <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
+                    <TabsTrigger value="hero">Hero</TabsTrigger>
+                    <TabsTrigger value="announcement">Announcement</TabsTrigger>
                     <TabsTrigger value="pages">Pages</TabsTrigger>
+                    <TabsTrigger value="prayer">Prayer & Newsletter</TabsTrigger>
                     <TabsTrigger value="theme">Theme</TabsTrigger>
                     <TabsTrigger value="services">Services</TabsTrigger>
                     <TabsTrigger value="visit">Visit</TabsTrigger>
@@ -280,6 +283,7 @@ export default function ChurchWebsite() {
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                     <TabsTrigger value="social">Social</TabsTrigger>
                     <TabsTrigger value="media">Media</TabsTrigger>
+                    <TabsTrigger value="seo">SEO</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="basic" className="space-y-3">
