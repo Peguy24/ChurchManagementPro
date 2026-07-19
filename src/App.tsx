@@ -115,6 +115,9 @@ const NpsAdmin = lazy(() => import("./pages/NpsAdmin"));
 const ChurchWebsite = lazy(() => import("./pages/ChurchWebsite"));
 const PublicChurchSite = lazy(() => import("./pages/PublicChurchSite"));
 const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
+const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
+const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
+const GivingResult = lazy(() => import("./pages/GivingResult"));
 
 
 const queryClient = new QueryClient();
