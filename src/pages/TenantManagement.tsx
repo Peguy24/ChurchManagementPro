@@ -146,6 +146,7 @@ export default function TenantManagement() {
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
   const [trialEmailDialogOpen, setTrialEmailDialogOpen] = useState(false);
+  const [trialEmailMode, setTrialEmailMode] = useState<"expiring" | "expired">("expiring");
   const [trialEmailSubject, setTrialEmailSubject] = useState("");
   const [trialEmailMessage, setTrialEmailMessage] = useState("");
   const [trialEmailSending, setTrialEmailSending] = useState(false);
@@ -839,7 +840,23 @@ export default function TenantManagement() {
             {expiredTrials.length > 0 && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("superAdmin.expiredTrials")} ({expiredTrials.length})</AlertTitle>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <AlertTitle className="mb-0">{t("superAdmin.expiredTrials")} ({expiredTrials.length})</AlertTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7"
+                    onClick={() => {
+                      setTrialEmailMode("expired");
+                      setTrialEmailSubject("");
+                      setTrialEmailMessage("");
+                      setTrialEmailDialogOpen(true);
+                    }}
+                  >
+                    <Mail className="h-3 w-3 mr-1" />
+                    {t("superAdmin.emailAllTrialAdmins") || "Email all"}
+                  </Button>
+                </div>
                 <AlertDescription>
                   <div className="mt-2 space-y-1">
                     {expiredTrials.map((tenant) => (
@@ -871,6 +888,7 @@ export default function TenantManagement() {
                     variant="outline"
                     className="h-7 border-orange-500 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40"
                     onClick={() => {
+                      setTrialEmailMode("expiring");
                       setTrialEmailSubject("");
                       setTrialEmailMessage("");
                       setTrialEmailDialogOpen(true);
@@ -1367,7 +1385,9 @@ export default function TenantManagement() {
             <DialogHeader>
               <DialogTitle>{t("superAdmin.emailAllTrialAdmins") || "Email all trial admins"}</DialogTitle>
               <DialogDescription>
-                {t("superAdmin.trialEmailDialogDesc") || `Send a message to admins of ${expiringTrials.length} tenant(s) whose trial expires within 7 days. Leave fields blank to send the default reminder.`}
+                {trialEmailMode === "expired"
+                  ? `Send a message to admins of ${expiredTrials.length} tenant(s) whose trial has already expired. Use the message field to offer an extension or a free month.`
+                  : (t("superAdmin.trialEmailDialogDesc") || `Send a message to admins of ${expiringTrials.length} tenant(s) whose trial expires within 7 days. Leave fields blank to send the default reminder.`)}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
@@ -1399,7 +1419,8 @@ export default function TenantManagement() {
               <Button
                 disabled={trialEmailSending}
                 onClick={async () => {
-                  const ids = expiringTrials.map((x) => x.id);
+                  const source = trialEmailMode === "expired" ? expiredTrials : expiringTrials;
+                  const ids = source.map((x) => x.id);
                   setTrialEmailSending(true);
                   const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
                   try {
@@ -1407,6 +1428,7 @@ export default function TenantManagement() {
                       body: {
                         tenantIds: ids,
                         daysThreshold: 7,
+                        onlyExpired: trialEmailMode === "expired",
                         customSubject: trialEmailSubject || undefined,
                         customMessage: trialEmailMessage || undefined,
                       },
