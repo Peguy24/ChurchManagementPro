@@ -216,7 +216,31 @@ export function usePlanLimits() {
     return usage.usersCount < limits.maxUsers;
   };
 
+  // Map camelCase feature keys to snake_case global flag keys used by Super Admin
+  const CAMEL_TO_SNAKE_FLAG: Partial<Record<FeatureKey, string>> = {
+    advancedReports: "advanced_reports",
+    emailNotifications: "email_notifications",
+    prioritySupport: "priority_support",
+    whiteLabel: "white_label",
+    advancedFinance: "advanced_finance",
+    smartInsights: "smart_insights",
+    bulkCommunication: "bulk_communication",
+    volunteerScheduling: "volunteer_scheduling",
+    memberCards: "member_cards",
+    attendanceAlerts: "attendance_alerts",
+    churchHealth: "church_health",
+    customFields: "custom_fields",
+    dataBackup: "data_backup",
+    churnPrevention: "churn_prevention",
+    bankReconciliation: "bank_reconciliation",
+    cashRegister: "cash_register",
+    inventory: "inventory_management",
+  };
+
   const hasFeature = (feature: FeatureKey) => {
+    // Respect global kill switch from Super Admin platform settings
+    const flagKey = CAMEL_TO_SNAKE_FLAG[feature] ?? feature;
+    if (globalFlags && globalFlags[flagKey] === false) return false;
     return limits.features[feature];
   };
 
