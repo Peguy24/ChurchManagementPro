@@ -67,3 +67,9 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.apply-referral-reward]
     verify_jwt = false
+  [functions.create-donation-checkout]
+    verify_jwt = false
+  [functions.stripe-giving-webhook]
+    verify_jwt = false
+  [functions.moncash-giving-verify]
+    verify_jwt = false

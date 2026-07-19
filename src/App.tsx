@@ -115,6 +115,9 @@ const NpsAdmin = lazy(() => import("./pages/NpsAdmin"));
 const ChurchWebsite = lazy(() => import("./pages/ChurchWebsite"));
 const PublicChurchSite = lazy(() => import("./pages/PublicChurchSite"));
 const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
+const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
+const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
+const GivingResult = lazy(() => import("./pages/GivingResult"));
 
 
 const queryClient = new QueryClient();
@@ -149,6 +152,10 @@ const App = () => (
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/give" element={<PublicGivingPage />} />
+              <Route path="/site/:slug/give/success" element={<GivingResult status="success" />} />
+              <Route path="/site/:slug/give/cancel" element={<GivingResult status="cancel" />} />
+              <Route path="/settings/online-giving" element={<ProtectedRoute><OnlineGivingSettings /></ProtectedRoute>} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />

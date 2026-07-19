@@ -1,80 +1,87 @@
 
-# Church Mini-Site — Paid Add-On
+# Online Giving for Tenants
 
-Add a template-based public website for each church tenant. Instead of gating by plan tier, it's a paid **add-on** any plan can subscribe to. Tenants without the add-on see a live demo preview + upgrade CTA.
+Adds a public "Give" page inside the existing $15/mo Church Mini-Site add-on. Donors can give a one-time gift via Stripe (card / Apple Pay / Google Pay) or MonCash (Haiti mobile wallet). No fund picker, no recurring — kept simple for v1.
 
-## What tenants get
+## Scope
 
-A single-page public site at `churchmanagementpro.com/site/:slug` (and the existing `/t/:slug` route can link to it), built from a template with editable fields — no drag-and-drop.
+- Only tenants with an active `website_addon_subscriptions` row get a live Give page.
+- Public URL: `/site/:slug/give` (also linked as a "Donate" button on the mini-site).
+- Tenant admin configures payout accounts in Church Settings → Online Giving.
+- Every successful donation is auto-inserted into the existing `donations` table so it appears in the tenant's finance module.
 
-Editable fields (stored in a new `tenant_websites` row):
-- Church name, tagline, logo, hero image
-- About / mission (rich text, short)
-- Service schedule (list: day, time, description)
-- Contact: address, phone, email, WhatsApp
-- Social links (Facebook, Instagram, YouTube)
-- Optional "Donate" button (links to existing donation flow)
-- Primary color (defaults to tenant `primary_color`)
-- Template choice: pick 1 of 3 preset layouts (Classic / Modern / Warm)
-- Custom domain field (display-only note for now — DNS setup is manual)
-- `is_published` toggle
+## Payout model
 
-## Pages / UI
+Each church receives funds directly — the platform is not a merchant of record.
 
-**Tenant admin — `/website`** (sidebar entry "Church Website"):
-- If add-on inactive: full-page **demo preview** of a sample church rendered with template #1, overlay CTA "Activate Church Website — $X/month" → opens Stripe checkout.
-- If active: editor form with live preview pane, template picker, publish toggle.
+- **Stripe:** Stripe Connect (Standard accounts). Each tenant onboards their own Stripe account; funds settle to their bank. Platform can optionally take an application fee (default 0%).
+- **MonCash:** Each tenant enters their MonCash business `client_id` / `client_secret` (encrypted in DB). Payments hit their MonCash merchant account directly.
 
-**Public — `/site/:slug`**: renders the template using the tenant's data. SEO tags (title, description, og). Only reachable when `is_published = true` AND add-on active.
+## Tenant configuration UI
 
-**Super Admin — `/super-admin/website-addons`**: list of tenants with add-on status (active / cancelled / trialing), manual override toggle (same pattern as `managed_by_admin` on subscriptions), MRR from add-ons.
+New tab in `ChurchSettings.tsx` → "Online Giving":
+- Toggle: Enable online giving (requires website add-on).
+- Stripe: "Connect Stripe account" button → OAuth flow → stores `stripe_account_id`. Shows connected status + "Disconnect".
+- MonCash: form for `moncash_client_id` + `moncash_client_secret` + Sandbox/Live toggle.
+- Minimum amount, suggested amounts (e.g. 10 / 25 / 50 / 100), currency (uses tenant currency), thank-you message (localized), optional cover image.
 
-## Commercial page
+## Public Give page (`/site/:slug/give`)
 
-Add a new marketing section on `Commercial.tsx` — "Give your church a professional website" — with 3 template thumbnails and pricing, linking signed-in tenants to `/website`.
+- Tenant branding (logo, primary color) from `get_public_website`.
+- Amount input + suggested chips, donor name (optional), email (required for receipt), optional message.
+- Payment method radio: Card (Stripe) / MonCash — only shows methods the tenant enabled.
+- Submit → calls `create-donation-checkout` edge function → redirects to Stripe Checkout or MonCash payment URL.
+- Success page `/site/:slug/give/success` and cancel page.
 
-## Data model
+## Recording donations
 
-New table `tenant_websites`:
-- `tenant_id` (unique), `template` (enum: classic/modern/warm), `is_published`, all editable fields as JSONB `content`, `custom_domain` (nullable text), timestamps.
+Both providers post back to webhooks. On success:
+- Insert into `donations` (tenant_id, amount, donation_type='online', payment_method='card'|'moncash', donor name in `notes`, `description`='Online giving').
+- If the tenant has a default cash register / bank account for online giving (set in config), credit its balance; otherwise leave unlinked for the treasurer to reconcile.
+- Send confirmation email to donor via existing Resend setup (trilingual FR/EN/HT based on browser lang).
+- Fire `platform_notifications` insert `new_online_donation` for tenant admins (uses existing realtime infra).
 
-New table `website_addon_subscriptions`:
-- `tenant_id` (unique), `status` (active/cancelled/trialing/past_due), `stripe_subscription_id`, `managed_by_admin` (bool for super-admin comp), `current_period_end`, timestamps.
+## Super Admin
 
-RLS:
-- `tenant_websites`: tenant admins read/write own row; anon read only when joined tenant has active add-on and `is_published = true` (via SECURITY DEFINER function `get_public_website(slug)`).
-- `website_addon_subscriptions`: tenant admins read own; super admins full access.
+Nothing new required — existing `WebsiteAddonsAdmin` already gates access. Add a small "Online giving totals" widget on the tenant detail view later (out of scope for v1).
 
-Helper function `has_website_addon(_tenant_id)` → bool (checks status active OR managed_by_admin).
+## Technical Details
 
-## Payments
+**Migration**
+- New table `tenant_giving_settings` (tenant_id PK, enabled, stripe_account_id, moncash_client_id, moncash_client_secret_encrypted, moncash_env, min_amount, suggested_amounts jsonb, thank_you_message jsonb, cover_image_url, default_cash_register_id, default_bank_account_id).
+- Standard 4-step: CREATE → GRANT (authenticated + service_role, no anon) → RLS → policies (tenant admins manage own row; `service_role` full).
+- Add SECURITY DEFINER function `get_public_giving_config(_slug text)` returning only public-safe fields (enabled providers, amounts, message, cover, branding) — no secrets.
+- Add columns to `donations`: none needed; reuse `payment_method` values `card` / `moncash` and add `donation_type='online'` via existing free-text.
+- Encrypt MonCash secret using pgsodium or store in Supabase Vault; edge function reads via service role.
 
-Reuse existing Stripe integration. Add one new Stripe price (monthly recurring) for the add-on. New edge function `create-website-addon-checkout` and webhook branch in the existing Stripe webhook to upsert `website_addon_subscriptions`.
+**Edge functions** (all with `verify_jwt = false` where public)
+- `stripe-connect-oauth` — starts Stripe Connect Standard OAuth, stores `stripe_account_id` on callback. Requires tenant admin JWT.
+- `create-donation-checkout` (public) — input: `{ slug, amount, method, donor_name?, donor_email, message? }`. Loads config via `get_public_giving_config`, validates amount ≥ min, creates Stripe Checkout Session with `payment_intent_data.transfer_data.destination = tenant.stripe_account_id` OR calls MonCash `CreatePayment` API and returns redirect URL. Rate-limited + honeypot like the contact form.
+- `stripe-giving-webhook` (public, signature-verified) — on `checkout.session.completed`, insert donation row, update balances, send confirmation email, insert notification.
+- `moncash-giving-webhook` (public) — polls/receives MonCash `transactionId`, verifies via MonCash API, then same insert flow.
 
-Pricing decision needed from you before implementation: **monthly price for the add-on** (suggested: $9/mo or $15/mo — say the word).
+**Frontend**
+- `src/pages/PublicGivingPage.tsx` — the donor-facing page.
+- `src/pages/GivingSuccess.tsx` / `GivingCancel.tsx`.
+- `src/components/ChurchSettings/OnlineGivingSettings.tsx` — admin config UI.
+- Add "Donate" button/section to `SiteTemplates.tsx` when giving is enabled.
+- Routes in `App.tsx`: `/site/:slug/give`, `/site/:slug/give/success`, `/site/:slug/give/cancel`.
 
-## Files to create/edit
+**Secrets needed**
+- `STRIPE_SECRET_KEY` (platform key, likely already present) + `STRIPE_CONNECT_CLIENT_ID` (new — user must add from Stripe Dashboard → Connect settings).
+- `STRIPE_WEBHOOK_SECRET_GIVING` (new — from webhook endpoint we register).
+- `MONCASH_ENCRYPTION_KEY` (generated) for encrypting per-tenant MonCash secrets at rest.
 
-Create:
-- Migration: `tenant_websites`, `website_addon_subscriptions`, `has_website_addon()`, `get_public_website()`, RLS + grants.
-- `src/pages/ChurchWebsite.tsx` — editor + demo/upsell states.
-- `src/pages/PublicChurchSite.tsx` — public render, 3 template components.
-- `src/components/website/TemplateClassic.tsx`, `TemplateModern.tsx`, `TemplateWarm.tsx`.
-- `src/pages/WebsiteAddonsAdmin.tsx` — super admin management.
-- `supabase/functions/create-website-addon-checkout/index.ts`.
+**Fees**
+- v1: no platform fee. Comment in code shows where to add `application_fee_amount` later.
 
-Edit:
-- `src/App.tsx` — 3 new routes (`/website`, `/site/:slug`, `/super-admin/website-addons`).
-- `src/components/Layout.tsx` — sidebar entry "Church Website" (Globe icon).
-- `src/pages/Commercial.tsx` + `LanguageContext.tsx` — marketing section, translations EN/FR/HT.
-- Stripe webhook handler — handle add-on subscription events.
+**Out of scope (call out to user)**
+- Recurring donations, fund/category picker, donor accounts, tax receipt PDFs from online gifts (existing fiscal receipt flow already covers year-end), refunds UI.
 
-## Out of scope (explicit)
+## Rollout order
 
-- No drag-and-drop, no multi-page sites, no blog.
-- Custom domain field is captured but DNS/SSL setup is manual (documented in a follow-up).
-- No image gallery beyond the hero image in v1.
-
-## Open question before I build
-
-**What monthly price should the add-on be?** ($9 / $15 / other)
+1. Migration + settings UI (admin can save config, no live payments yet).
+2. Stripe Connect OAuth + Stripe checkout + webhook end-to-end.
+3. MonCash integration.
+4. Public Give page + mini-site "Donate" button.
+5. Confirmation emails + realtime notifications.
