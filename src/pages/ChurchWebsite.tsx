@@ -30,6 +30,13 @@ const emptyContent: SiteContent = {
   footer_text: "",
   service_times: [],
   social: { facebook: "", instagram: "", youtube: "", whatsapp: "" },
+  sermons: [],
+  staff: [],
+  visit: {},
+  theme: { font: "sans" },
+  subpages: { enabled: false, pages: ["about", "sermons", "visit", "contact"] },
+  prayer_enabled: true,
+  newsletter_enabled: true,
 };
 
 export default function ChurchWebsite() {
@@ -262,9 +269,14 @@ export default function ChurchWebsite() {
               <CardHeader><CardTitle>Content</CardTitle></CardHeader>
               <CardContent>
                 <Tabs defaultValue="basic">
-                  <TabsList className="grid grid-cols-5">
+                  <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
+                    <TabsTrigger value="pages">Pages</TabsTrigger>
+                    <TabsTrigger value="theme">Theme</TabsTrigger>
                     <TabsTrigger value="services">Services</TabsTrigger>
+                    <TabsTrigger value="visit">Visit</TabsTrigger>
+                    <TabsTrigger value="sermons">Sermons</TabsTrigger>
+                    <TabsTrigger value="staff">Staff</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                     <TabsTrigger value="social">Social</TabsTrigger>
                     <TabsTrigger value="media">Media</TabsTrigger>
@@ -300,6 +312,189 @@ export default function ChurchWebsite() {
                       </p>
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="pages" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Enable extra pages so visitors get a full site (About, Sermons, Plan Your Visit, Contact) with a sticky top nav.
+                    </p>
+                    <div className="flex items-center justify-between border rounded p-3">
+                      <div>
+                        <Label>Enable multi-page website</Label>
+                        <p className="text-xs text-muted-foreground">Adds a sticky nav with the pages you turn on below.</p>
+                      </div>
+                      <Switch
+                        checked={!!content.subpages?.enabled}
+                        onCheckedChange={(v) =>
+                          updateContent({ subpages: { ...(content.subpages || {}), enabled: v, pages: content.subpages?.pages || ["about", "sermons", "visit", "contact"] } })
+                        }
+                      />
+                    </div>
+                    {(["about", "sermons", "visit", "contact"] as const).map((p) => {
+                      const enabled = (content.subpages?.pages || []).includes(p);
+                      return (
+                        <div key={p} className="flex items-center justify-between border rounded p-2">
+                          <Label className="capitalize">{p === "visit" ? "Plan Your Visit" : p}</Label>
+                          <Switch
+                            checked={enabled}
+                            onCheckedChange={(v) => {
+                              const cur = new Set(content.subpages?.pages || []);
+                              if (v) cur.add(p); else cur.delete(p);
+                              updateContent({ subpages: { ...(content.subpages || {}), pages: Array.from(cur) as any } });
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                    <div className="flex items-center justify-between border rounded p-2 mt-4">
+                      <div>
+                        <Label>Show prayer request form</Label>
+                        <p className="text-xs text-muted-foreground">Visitors can privately share requests with your team.</p>
+                      </div>
+                      <Switch checked={content.prayer_enabled !== false} onCheckedChange={(v) => updateContent({ prayer_enabled: v })} />
+                    </div>
+                    <div className="flex items-center justify-between border rounded p-2">
+                      <div>
+                        <Label>Show newsletter signup</Label>
+                        <p className="text-xs text-muted-foreground">Collect emails to keep your community updated.</p>
+                      </div>
+                      <Switch checked={content.newsletter_enabled !== false} onCheckedChange={(v) => updateContent({ newsletter_enabled: v })} />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="theme" className="space-y-3">
+                    <div>
+                      <Label>Typography</Label>
+                      <Select
+                        value={content.theme?.font || "sans"}
+                        onValueChange={(v) => updateContent({ theme: { ...(content.theme || {}), font: v as any } })}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sans">Modern Sans (Inter)</SelectItem>
+                          <SelectItem value="serif">Classic Serif (Cormorant)</SelectItem>
+                          <SelectItem value="display">Editorial Display (Playfair)</SelectItem>
+                          <SelectItem value="modern">Tech Modern (Space Grotesk)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">Applied to the site chrome and sub-pages.</p>
+                    </div>
+                    <div className="p-4 rounded border bg-muted/30">
+                      <p className="text-xs text-muted-foreground mb-2">Primary color is inherited from your Church Info settings.</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded border" style={{ background: tenant?.primary_color || "#0F2A44" }} />
+                        <code className="text-xs">{tenant?.primary_color || "#0F2A44"}</code>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="visit" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Powers the "Plan Your Visit" page.</p>
+                    <div><Label>Message for first-time visitors</Label>
+                      <Textarea rows={3} value={content.visit?.first_time_message || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), first_time_message: e.target.value } })} />
+                    </div>
+                    <div><Label>What to expect</Label>
+                      <Textarea rows={3} value={content.visit?.what_to_expect || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), what_to_expect: e.target.value } })} />
+                    </div>
+                    <div><Label>Parking</Label>
+                      <Textarea rows={2} value={content.visit?.parking || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), parking: e.target.value } })} />
+                    </div>
+                    <div><Label>Kids & family</Label>
+                      <Textarea rows={2} value={content.visit?.kids || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), kids: e.target.value } })} />
+                    </div>
+                    <div><Label>Dress code</Label>
+                      <Textarea rows={2} value={content.visit?.dress_code || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), dress_code: e.target.value } })} />
+                    </div>
+                    <div>
+                      <Label>Google Maps embed URL (optional)</Label>
+                      <Input value={content.visit?.map_embed || ""} onChange={(e) => updateContent({ visit: { ...(content.visit || {}), map_embed: e.target.value } })} placeholder="https://www.google.com/maps/embed?pb=..." />
+                      <p className="text-xs text-muted-foreground mt-1">On Google Maps → Share → Embed a map → copy the src URL.</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="sermons" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Add YouTube, Vimeo, Spotify, or MP3 links. Videos and audio auto-embed.
+                    </p>
+                    {(content.sermons || []).map((s, i) => (
+                      <div key={i} className="border rounded p-3 space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><Label className="text-xs">Title</Label><Input value={s.title} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], title: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} /></div>
+                          <div><Label className="text-xs">Speaker</Label><Input value={s.speaker || ""} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], speaker: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} /></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><Label className="text-xs">Date</Label><Input type="date" value={s.date || ""} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], date: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} /></div>
+                          <div><Label className="text-xs">Series</Label><Input value={s.series || ""} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], series: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} /></div>
+                        </div>
+                        <div><Label className="text-xs">Media URL (YouTube / Vimeo / Spotify / MP3)</Label>
+                          <Input value={s.media_url || ""} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], media_url: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} placeholder="https://youtube.com/watch?v=..." /></div>
+                        <div><Label className="text-xs">Description</Label>
+                          <Textarea rows={2} value={s.description || ""} onChange={(e) => {
+                            const arr = [...(content.sermons || [])]; arr[i] = { ...arr[i], description: e.target.value };
+                            updateContent({ sermons: arr });
+                          }} /></div>
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          const arr = [...(content.sermons || [])]; arr.splice(i, 1);
+                          updateContent({ sermons: arr });
+                        }}><Trash2 className="w-4 h-4 mr-1" /> Remove</Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={() => updateContent({ sermons: [...(content.sermons || []), { title: "" }] })}>
+                      <Plus className="w-4 h-4 mr-1" /> Add sermon
+                    </Button>
+                  </TabsContent>
+
+                  <TabsContent value="staff" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Pastors, elders, and leadership shown on the About page.</p>
+                    {(content.staff || []).map((s, i) => (
+                      <div key={i} className="border rounded p-3 space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><Label className="text-xs">Name</Label><Input value={s.name} onChange={(e) => {
+                            const arr = [...(content.staff || [])]; arr[i] = { ...arr[i], name: e.target.value };
+                            updateContent({ staff: arr });
+                          }} /></div>
+                          <div><Label className="text-xs">Role</Label><Input value={s.role || ""} onChange={(e) => {
+                            const arr = [...(content.staff || [])]; arr[i] = { ...arr[i], role: e.target.value };
+                            updateContent({ staff: arr });
+                          }} placeholder="Lead Pastor" /></div>
+                        </div>
+                        <div><Label className="text-xs">Photo URL</Label><Input value={s.photo_url || ""} onChange={(e) => {
+                          const arr = [...(content.staff || [])]; arr[i] = { ...arr[i], photo_url: e.target.value };
+                          updateContent({ staff: arr });
+                        }} placeholder="https://..." /></div>
+                        <div><Label className="text-xs">Email</Label><Input value={s.email || ""} onChange={(e) => {
+                          const arr = [...(content.staff || [])]; arr[i] = { ...arr[i], email: e.target.value };
+                          updateContent({ staff: arr });
+                        }} /></div>
+                        <div><Label className="text-xs">Bio</Label><Textarea rows={2} value={s.bio || ""} onChange={(e) => {
+                          const arr = [...(content.staff || [])]; arr[i] = { ...arr[i], bio: e.target.value };
+                          updateContent({ staff: arr });
+                        }} /></div>
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          const arr = [...(content.staff || [])]; arr.splice(i, 1);
+                          updateContent({ staff: arr });
+                        }}><Trash2 className="w-4 h-4 mr-1" /> Remove</Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={() => updateContent({ staff: [...(content.staff || []), { name: "" }] })}>
+                      <Plus className="w-4 h-4 mr-1" /> Add staff member
+                    </Button>
+                  </TabsContent>
+
 
                   <TabsContent value="services" className="space-y-3">
                     {(content.service_times || []).map((s, i) => (

@@ -2921,6 +2921,53 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          name: string | null
+          source: string | null
+          status: string
+          tenant_id: string
+          unsubscribe_token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          language?: string | null
+          name?: string | null
+          source?: string | null
+          status?: string
+          tenant_id: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          language?: string | null
+          name?: string | null
+          source?: string | null
+          status?: string
+          tenant_id?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_subscribers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nps_dismissals: {
         Row: {
           dismissed_until: string
@@ -3642,6 +3689,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      prayer_requests: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_private: boolean
+          language: string | null
+          message: string
+          name: string
+          phone: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_private?: boolean
+          language?: string | null
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_private?: boolean
+          language?: string | null
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -5924,6 +6021,7 @@ export type Database = {
         }
         Returns: number
       }
+      newsletter_unsubscribe: { Args: { _token: string }; Returns: boolean }
       preview_broadcast_audience: { Args: { _rules: Json }; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }

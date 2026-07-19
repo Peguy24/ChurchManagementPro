@@ -122,6 +122,7 @@ const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
 const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
 const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
 const GivingResult = lazy(() => import("./pages/GivingResult"));
+const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
 
 
 const queryClient = new QueryClient();
@@ -147,6 +148,10 @@ function TenantHostGate({ children }: { children: React.ReactNode }) {
         <Route path="/give" element={<PublicGivingPage />} />
         <Route path="/give/success" element={<GivingResult status="success" />} />
         <Route path="/give/cancel" element={<GivingResult status="cancel" />} />
+        <Route path="/about" element={<PublicChurchSite />} />
+        <Route path="/sermons" element={<PublicChurchSite />} />
+        <Route path="/visit" element={<PublicChurchSite />} />
+        <Route path="/contact" element={<PublicChurchSite />} />
         <Route path="*" element={<PublicChurchSite />} />
       </Routes>
     );
@@ -174,6 +179,10 @@ const App = () => (
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/about" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/sermons" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/visit" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/contact" element={<PublicChurchSite />} />
               <Route path="/site/:slug/give" element={<PublicGivingPage />} />
               <Route path="/site/:slug/give/success" element={<GivingResult status="success" />} />
               <Route path="/site/:slug/give/cancel" element={<GivingResult status="cancel" />} />
@@ -266,6 +275,7 @@ const App = () => (
               <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
               <Route path="/website" element={<ProtectedRoute><ChurchWebsite /></ProtectedRoute>} />
+              <Route path="/prayer-requests" element={<ProtectedRoute><PrayerRequests /></ProtectedRoute>} />
               <Route path="/super-admin/website-addons" element={<ProtectedRoute requireSuperAdmin><WebsiteAddonsAdmin /></ProtectedRoute>} />
 
               
