@@ -8817,6 +8817,12 @@ const translations = {
       groupTenants: "Jesyon Multi-Tenant",
       groupVolunteers: "Planifikasyon Volontè",
       groupVisitors: "Jesyon Vizitè",
+      groupWebsite: "Sit Wèb Legliz la",
+      groupGiving: "Don an Liy",
+      groupPrayerRequests: "Demand Lapriyè",
+      groupInsights: "Konesans Entèlijan",
+      groupAutomations: "Otomatizasyon",
+      groupSubscription: "Abònman & Fakti",
     },
     customRoles: {
       title: "Wòl Pèsonalize",
