@@ -157,9 +157,10 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
       <CardContent className="space-y-6">
         {/* Claim subdomain */}
         <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-          <Label className="font-semibold">Free subdomain</Label>
+          <Label className="font-semibold">Free web address</Label>
           <p className="text-xs text-muted-foreground">
-            Example: <code>mychurch.{PLATFORM_DOMAIN}</code>
+            Reserves your site at <code>{PLATFORM_DOMAIN}/site/&lt;name&gt;</code> — works instantly, no DNS setup.
+            For a true <code>&lt;name&gt;.{PLATFORM_DOMAIN}</code> URL, use the custom domain option below.
           </p>
           <div className="flex flex-wrap gap-2">
             <Input
