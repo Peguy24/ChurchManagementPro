@@ -117,9 +117,18 @@ export default function PublicChurchSite() {
           const primaryHost = (primary as any)?.hostname as string | undefined;
           if (primaryHost && typeof window !== "undefined") {
             const currentHost = window.location.hostname.toLowerCase();
-            const arrivedViaPath = !useHost; // came in on /site/<slug>
+            const arrivedViaPath = !useHost; // came in on /site/<slug>[/...]
             if (primaryHost.toLowerCase() !== currentHost || arrivedViaPath) {
-              const target = `https://${primaryHost}${arrivedViaPath ? "/" : window.location.pathname}${window.location.search}`;
+              // Preserve subpath, query, and hash so visitors never lose their destination.
+              // For /site/<slug>/rest strip the "/site/<slug>" prefix and keep "/rest".
+              let path = window.location.pathname;
+              if (arrivedViaPath && r.slug) {
+                const prefix = `/site/${r.slug}`;
+                if (path === prefix || path === `${prefix}/`) path = "/";
+                else if (path.startsWith(`${prefix}/`)) path = path.slice(prefix.length);
+                else path = "/";
+              }
+              const target = `https://${primaryHost}${path}${window.location.search}${window.location.hash}`;
               window.location.replace(target);
               return;
             }
