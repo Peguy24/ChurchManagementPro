@@ -358,6 +358,8 @@ export default function ChurchWebsite() {
             </CardContent>
           </Card>
         </div>
+        {tenantId && <DomainManager tenantId={tenantId} />}
+
 
         <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
           <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
