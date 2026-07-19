@@ -13,7 +13,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { Loader2, HeartHandshake, ExternalLink, Copy } from "lucide-react";
+import { Loader2, HeartHandshake, ExternalLink, Copy, CheckCircle2, AlertTriangle, Link as LinkIcon, Unlink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface GivingSettings {
   tenant_id: string;
