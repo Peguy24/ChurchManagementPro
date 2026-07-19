@@ -187,7 +187,7 @@ const App = () => (
               <Route path="/site/:slug/give" element={<PublicGivingPage />} />
               <Route path="/site/:slug/give/success" element={<GivingResult status="success" />} />
               <Route path="/site/:slug/give/cancel" element={<GivingResult status="cancel" />} />
-              <Route path="/settings/online-giving" element={<ProtectedRoute><OnlineGivingSettings /></ProtectedRoute>} />
+              <Route path="/settings/online-giving" element={<ProtectedRoute><GlobalFeatureGate flagKey="online_giving"><OnlineGivingSettings /></GlobalFeatureGate></ProtectedRoute>} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
