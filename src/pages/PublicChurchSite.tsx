@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
 import { JsonLd } from "@/components/JsonLd";
-import { currentHostname, isTenantHost } from "@/lib/tenantHost";
+import { currentHostname, isProjectPreviewHost, isTenantHost } from "@/lib/tenantHost";
 import {
   SiteTopNav,
   anySubpageEnabled,
@@ -125,7 +125,7 @@ export default function PublicChurchSite() {
             .eq("status", "active")
             .maybeSingle();
           const primaryHost = (primary as any)?.hostname as string | undefined;
-          if (primaryHost && typeof window !== "undefined") {
+          if (primaryHost && typeof window !== "undefined" && !isProjectPreviewHost(hostname)) {
             const currentHost = window.location.hostname.toLowerCase();
             const arrivedViaPath = !useHost; // came in on /site/<slug>[/...]
             if (primaryHost.toLowerCase() !== currentHost || arrivedViaPath) {
@@ -178,6 +178,21 @@ export default function PublicChurchSite() {
     })();
   }, [slug]);
 
+  // Keep hooks before any conditional return so preview/public rendering does not crash
+  // when the site data loads asynchronously.
+  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
+  const siteUrl = data
+    ? (typeof window !== "undefined"
+        ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
+        : `/site/${data.slug}`)
+    : "";
+  const giveHref = data ? (isHostBased ? `/give` : `/site/${data.slug}/give`) : "";
+  const openingHours = useMemo(() => data ? toOpeningHours(data.content.service_times) : undefined, [data?.content.service_times]);
+  const serviceEvents = useMemo(
+    () => data ? toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address) : [],
+    [data?.content.service_times, data?.name, siteUrl, data?.content.address],
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,19 +208,6 @@ export default function PublicChurchSite() {
       </div>
     );
   }
-  // If we resolved via a tenant custom domain / subdomain, keep the URL clean
-  // (origin only). Otherwise fall back to the /site/<slug> canonical path.
-  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
-  const siteUrl = typeof window !== "undefined"
-    ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
-    : `/site/${data.slug}`;
-  const giveHref = isHostBased ? `/give` : `/site/${data.slug}/give`;
-  const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
-  const serviceEvents = useMemo(
-    () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
-    [data.content.service_times, data.name, siteUrl, data.content.address],
-  );
-
   const orgJsonLd: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Church",
