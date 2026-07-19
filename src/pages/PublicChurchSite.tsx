@@ -112,7 +112,7 @@ export default function PublicChurchSite() {
             .select("hostname")
             .eq("tenant_id", r.tenant_id)
             .eq("is_primary", true)
-            .eq("verification_status", "verified")
+            .eq("status", "active")
             .maybeSingle();
           const primaryHost = (primary as any)?.hostname as string | undefined;
           if (primaryHost && typeof window !== "undefined") {
