@@ -4559,6 +4559,59 @@ export type Database = {
           },
         ]
       }
+      tenant_domains: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          hostname: string
+          id: string
+          is_primary: boolean
+          kind: string
+          last_verified_at: string | null
+          ssl_provisioned_at: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          verification_token: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          hostname: string
+          id?: string
+          is_primary?: boolean
+          kind: string
+          last_verified_at?: string | null
+          ssl_provisioned_at?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          verification_token?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          hostname?: string
+          id?: string
+          is_primary?: boolean
+          kind?: string
+          last_verified_at?: string | null
+          ssl_provisioned_at?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          verification_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_domains_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_giving_settings: {
         Row: {
           cover_image_url: string | null
@@ -5592,6 +5645,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_tenant_custom_domain: {
+        Args: { _hostname: string; _tenant_id: string }
+        Returns: Json
+      }
       archive_tenant_attendance: {
         Args: { _before_date: string; _tenant_id: string; _user_id: string }
         Returns: number
@@ -5605,6 +5662,10 @@ export type Database = {
         Returns: number
       }
       claim_tenant_admin: { Args: { _tenant_id: string }; Returns: boolean }
+      claim_tenant_subdomain: {
+        Args: { _slug: string; _tenant_id: string }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -5729,6 +5790,18 @@ export type Database = {
           tenant_name: string
         }[]
       }
+      get_public_website_by_hostname: {
+        Args: { _hostname: string }
+        Returns: {
+          content: Json
+          logo_url: string
+          primary_color: string
+          slug: string
+          template: string
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_referral_code_info: {
         Args: { _code: string }
         Returns: {
@@ -5831,6 +5904,7 @@ export type Database = {
         Returns: boolean
       }
       has_website_addon: { Args: { _tenant_id: string }; Returns: boolean }
+      is_reserved_subdomain: { Args: { _slug: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
       mark_admin_invitation_used: {
@@ -5860,6 +5934,10 @@ export type Database = {
         }[]
       }
       refresh_tenant_stats: { Args: never; Returns: undefined }
+      set_primary_tenant_domain: {
+        Args: { _domain_id: string }
+        Returns: undefined
+      }
       tenant_has_admin: { Args: { _tenant_id: string }; Returns: boolean }
       validate_admin_invitation: {
         Args: { _token: string }
