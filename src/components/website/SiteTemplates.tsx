@@ -605,13 +605,21 @@ export function TemplateWarm({ name, logoUrl, primaryColor, content }: TemplateP
 /* ------------------------------ registry ------------------------------ */
 
 export function renderTemplate(template: string, props: TemplateProps) {
-  switch (template) {
-    case "modern":
-      return <TemplateModern {...props} />;
-    case "warm":
-      return <TemplateWarm {...props} />;
-    case "classic":
-    default:
-      return <TemplateClassic {...props} />;
-  }
+  const inner = (() => {
+    switch (template) {
+      case "modern":
+        return <TemplateModern {...props} />;
+      case "warm":
+        return <TemplateWarm {...props} />;
+      case "classic":
+      default:
+        return <TemplateClassic {...props} />;
+    }
+  })();
+  return (
+    <>
+      {inner}
+      <GallerySection gallery={props.content.gallery} primaryColor={props.primaryColor} />
+    </>
+  );
 }
