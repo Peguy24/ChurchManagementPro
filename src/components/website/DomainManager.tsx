@@ -30,15 +30,20 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
   const [adding, setAdding] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [checkingAll, setCheckingAll] = useState(false);
+  const [tenantSlug, setTenantSlug] = useState<string>("");
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tenant_domains" as any)
-      .select("*")
-      .eq("tenant_id", tenantId)
-      .neq("status", "removed")
-      .order("created_at", { ascending: true });
+    const [{ data: t }, { data, error }] = await Promise.all([
+      supabase.from("tenants").select("slug").eq("id", tenantId).maybeSingle(),
+      supabase
+        .from("tenant_domains" as any)
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .neq("status", "removed")
+        .order("created_at", { ascending: true }),
+    ]);
+    if (t?.slug) setTenantSlug(t.slug);
     if (!error) {
       // Normalize DB columns (kind/status/last_verified_at) to UI shape.
       const rows = ((data as any[]) || []).map((r) => ({
