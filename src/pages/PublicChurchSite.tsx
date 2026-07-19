@@ -149,7 +149,13 @@ export default function PublicChurchSite() {
       </div>
     );
   }
-  const siteUrl = typeof window !== "undefined" ? `${window.location.origin}/site/${slug}` : `/site/${slug}`;
+  // If we resolved via a tenant custom domain / subdomain, keep the URL clean
+  // (origin only). Otherwise fall back to the /site/<slug> canonical path.
+  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
+  const siteUrl = typeof window !== "undefined"
+    ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
+    : `/site/${data.slug}`;
+  const giveHref = isHostBased ? `/give` : `/site/${data.slug}/give`;
   const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
   const serviceEvents = useMemo(
     () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
