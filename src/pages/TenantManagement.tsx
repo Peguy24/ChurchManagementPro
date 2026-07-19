@@ -146,6 +146,7 @@ export default function TenantManagement() {
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
   const [trialEmailDialogOpen, setTrialEmailDialogOpen] = useState(false);
+  const [trialEmailMode, setTrialEmailMode] = useState<"expiring" | "expired">("expiring");
   const [trialEmailSubject, setTrialEmailSubject] = useState("");
   const [trialEmailMessage, setTrialEmailMessage] = useState("");
   const [trialEmailSending, setTrialEmailSending] = useState(false);
