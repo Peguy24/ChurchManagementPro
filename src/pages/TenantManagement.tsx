@@ -870,26 +870,16 @@ export default function TenantManagement() {
                     size="sm"
                     variant="outline"
                     className="h-7 border-orange-500 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40"
-                    onClick={async () => {
-                      const ids = expiringTrials.map((x) => x.id);
-                      const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
-                      try {
-                        const { data, error } = await supabase.functions.invoke("send-trial-ending-reminders", {
-                          body: { tenantIds: ids, daysThreshold: 7 },
-                        });
-                        if (error) throw error;
-                        toast.success(
-                          `${t("superAdmin.trialRemindersSent") || "Reminders sent"}: ${data?.sent ?? 0}`,
-                          { id: loadingId }
-                        );
-                      } catch (e: any) {
-                        toast.error(e?.message || "Failed to send reminders", { id: loadingId });
-                      }
+                    onClick={() => {
+                      setTrialEmailSubject("");
+                      setTrialEmailMessage("");
+                      setTrialEmailDialogOpen(true);
                     }}
                   >
                     <Mail className="h-3 w-3 mr-1" />
                     {t("superAdmin.emailAllTrialAdmins") || "Email all"}
                   </Button>
+
                 </div>
                 <AlertDescription>
 
