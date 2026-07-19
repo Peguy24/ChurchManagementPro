@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Globe, Trash2, CheckCircle2, Copy, Star, StarOff } from "lucide-react";
+import { Loader2, Globe, Trash2, CheckCircle2, Copy, Star, RefreshCw } from "lucide-react";
 import { PLATFORM_DOMAIN } from "@/lib/tenantHost";
 
 type Domain = {
