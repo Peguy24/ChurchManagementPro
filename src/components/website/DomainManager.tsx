@@ -221,11 +221,18 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
           ) : domains.length === 0 ? (
             <div className="text-sm text-muted-foreground">No domains yet.</div>
           ) : (
-            domains.map((d) => (
+            domains.map((d) => {
+              // For subdomain rows, the true <sub>.churchmanagementpro.com URL requires a
+              // wildcard DNS setup that isn't in place — link to the reliable path URL instead.
+              const effectiveUrl =
+                d.domain_type === "subdomain" && tenantSlug
+                  ? `https://${PLATFORM_DOMAIN}/site/${tenantSlug}`
+                  : `https://${d.hostname}`;
+              return (
               <div key={d.id} className="border rounded-lg p-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <a
-                    href={`https://${d.hostname}`}
+                    href={effectiveUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="font-mono text-sm hover:underline"
