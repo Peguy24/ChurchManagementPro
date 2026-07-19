@@ -283,29 +283,18 @@ export default function OnlineGivingSettings() {
               )}
             </Card>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>{T.stripe}</CardTitle>
-                    <CardDescription>{T.stripeDesc}</CardDescription>
-                  </div>
-                  <Switch checked={form.stripe_enabled} onCheckedChange={(v) => setForm({ ...form, stripe_enabled: v })} />
-                </div>
-              </CardHeader>
-              {form.stripe_enabled && (
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label>{T.stripeId}</Label>
-                    <Input
-                      placeholder="acct_1AbCdEfGhIjKlMnO"
-                      value={form.stripe_account_id || ""}
-                      onChange={(e) => setForm({ ...form, stripe_account_id: e.target.value })}
-                    />
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+            <StripeConnectCard
+              accountId={form.stripe_account_id || null}
+              enabled={form.stripe_enabled}
+              onEnabledChange={(v) => setForm({ ...form, stripe_enabled: v })}
+              onDisconnected={() => {
+                setForm({ ...form, stripe_account_id: "", stripe_enabled: false });
+                queryClient.invalidateQueries({ queryKey: ["giving-settings", tenantId] });
+              }}
+              t={T}
+              language={language}
+            />
+
 
             <Card>
               <CardHeader>
