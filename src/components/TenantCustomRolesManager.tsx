@@ -19,6 +19,7 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "dashboard", "members", "attendance", "attendance_admin", "ministries", "branches",
   "finances", "events", "reports", "communication", "settings",
   "inventory", "volunteers", "visitors",
+  "website", "giving", "prayer_requests", "insights", "automations", "subscription",
 ];
 
 interface CustomRole {
