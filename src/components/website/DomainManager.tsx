@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Globe, Trash2, CheckCircle2, Copy, Star, StarOff } from "lucide-react";
+import { Loader2, Globe, Trash2, CheckCircle2, Copy, Star, RefreshCw } from "lucide-react";
 import { PLATFORM_DOMAIN } from "@/lib/tenantHost";
 
 type Domain = {
@@ -29,6 +29,7 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
   const [claiming, setClaiming] = useState(false);
   const [adding, setAdding] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [checkingAll, setCheckingAll] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -78,6 +79,32 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
     if (error) { toast.error(error.message); return; }
     if ((data as any)?.verified) toast.success("Domain verified — SSL provisioning may take a few minutes");
     else toast.info("Not verified yet. Check your DNS records.");
+    load();
+  };
+
+  const checkAll = async () => {
+    const targets = domains.filter(
+      (d) => d.domain_type === "custom" && d.verification_status !== "verified",
+    );
+    if (targets.length === 0) {
+      toast.info("No custom domains pending verification");
+      return;
+    }
+    setCheckingAll(true);
+    const results = await Promise.all(
+      targets.map((d) =>
+        supabase.functions
+          .invoke("verify-tenant-domain", { body: { domain_id: d.id } })
+          .then((r) => ({ id: d.id, host: d.hostname, ok: (r.data as any)?.verified === true, err: r.error }))
+          .catch((err) => ({ id: d.id, host: d.hostname, ok: false, err })),
+      ),
+    );
+    setCheckingAll(false);
+    const verified = results.filter((r) => r.ok).length;
+    const stillPending = results.length - verified;
+    if (verified > 0 && stillPending === 0) toast.success(`${verified} domain(s) verified`);
+    else if (verified > 0) toast.success(`${verified} verified, ${stillPending} still pending DNS`);
+    else toast.info(`No new verifications. ${stillPending} still pending DNS.`);
     load();
   };
 
@@ -150,7 +177,23 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
 
         {/* Existing domains */}
         <div className="space-y-3">
-          <Label className="font-semibold">Your domains</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label className="font-semibold">Your domains</Label>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={checkAll}
+              disabled={checkingAll || loading || domains.every((d) => d.domain_type !== "custom" || d.verification_status === "verified")}
+              title="Re-check DNS TXT records for all pending custom domains"
+            >
+              {checkingAll ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3 mr-1" />
+              )}
+              Check all
+            </Button>
+          </div>
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading…</div>
           ) : domains.length === 0 ? (
