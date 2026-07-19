@@ -349,19 +349,137 @@ export default function ChurchWebsite() {
                         </div>
                       );
                     })}
-                    <div className="flex items-center justify-between border rounded p-2 mt-4">
+                  </TabsContent>
+
+                  <TabsContent value="hero" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Optional overrides for the hero section at the top of your homepage. Leave blank to keep the template default.
+                    </p>
+                    <div><Label>Hero heading</Label>
+                      <Input value={content.hero_heading || ""} onChange={(e) => updateContent({ hero_heading: e.target.value })} placeholder="Welcome home" />
+                    </div>
+                    <div><Label>Hero subheading</Label>
+                      <Textarea rows={2} value={content.hero_subheading || ""} onChange={(e) => updateContent({ hero_subheading: e.target.value })} placeholder="A community of faith, hope, and love." />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Call-to-action label</Label>
+                        <Input value={content.hero_cta_label || ""} onChange={(e) => updateContent({ hero_cta_label: e.target.value })} placeholder="Plan Your Visit" />
+                      </div>
+                      <div><Label>Call-to-action link</Label>
+                        <Input value={content.hero_cta_url || ""} onChange={(e) => updateContent({ hero_cta_url: e.target.value })} placeholder="/visit or https://…" />
+                      </div>
+                    </div>
+                    <div><Label>Donate button label (when giving is active)</Label>
+                      <Input value={content.give_button_label || ""} onChange={(e) => updateContent({ give_button_label: e.target.value })} placeholder="❤ Donate" />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="announcement" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Show a colored bar at the very top of your public site. Perfect for special events, closures, or urgent notices.
+                    </p>
+                    <div className="flex items-center justify-between border rounded p-3">
                       <div>
-                        <Label>Show prayer request form</Label>
+                        <Label>Show announcement bar</Label>
+                        <p className="text-xs text-muted-foreground">Appears above every page of your church site.</p>
+                      </div>
+                      <Switch
+                        checked={!!content.announcement?.enabled}
+                        onCheckedChange={(v) => updateContent({ announcement: { ...(content.announcement || {}), enabled: v } })}
+                      />
+                    </div>
+                    <div><Label>Message</Label>
+                      <Input
+                        value={content.announcement?.text || ""}
+                        onChange={(e) => updateContent({ announcement: { ...(content.announcement || {}), text: e.target.value } })}
+                        placeholder="Join us Christmas Eve at 6pm"
+                        maxLength={140}
+                      />
+                    </div>
+                    <div><Label>Link (optional)</Label>
+                      <Input
+                        value={content.announcement?.url || ""}
+                        onChange={(e) => updateContent({ announcement: { ...(content.announcement || {}), url: e.target.value } })}
+                        placeholder="https://…"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Background color</Label>
+                        <Input
+                          type="color"
+                          value={content.announcement?.bg_color || "#0F2A44"}
+                          onChange={(e) => updateContent({ announcement: { ...(content.announcement || {}), bg_color: e.target.value } })}
+                        />
+                      </div>
+                      <div><Label>Text color</Label>
+                        <Input
+                          type="color"
+                          value={content.announcement?.text_color || "#FFFFFF"}
+                          onChange={(e) => updateContent({ announcement: { ...(content.announcement || {}), text_color: e.target.value } })}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="prayer" className="space-y-3">
+                    <div className="border rounded p-3 bg-muted/30">
+                      <p className="text-sm">
+                        <strong>Where do submitted prayer requests go?</strong>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Visitors submit prayer requests from your public site's <em>Contact</em> page. You'll see and respond to them from the{" "}
+                        <a href="/prayer-requests" className="text-primary hover:underline">Prayer Requests inbox</a> inside your dashboard.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between border rounded p-3">
+                      <div>
+                        <Label>Show prayer request form on public site</Label>
                         <p className="text-xs text-muted-foreground">Visitors can privately share requests with your team.</p>
                       </div>
                       <Switch checked={content.prayer_enabled !== false} onCheckedChange={(v) => updateContent({ prayer_enabled: v })} />
                     </div>
-                    <div className="flex items-center justify-between border rounded p-2">
+                    <div className="flex items-center justify-between border rounded p-3">
                       <div>
-                        <Label>Show newsletter signup</Label>
+                        <Label>Show newsletter signup on public site</Label>
                         <p className="text-xs text-muted-foreground">Collect emails to keep your community updated.</p>
                       </div>
                       <Switch checked={content.newsletter_enabled !== false} onCheckedChange={(v) => updateContent({ newsletter_enabled: v })} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Tip: enable the <strong>Contact</strong> sub-page under the Pages tab so visitors can reach the prayer form.
+                    </p>
+                  </TabsContent>
+
+                  <TabsContent value="seo" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Control how your site appears on Google and social shares. Leave blank to use your church name and tagline.
+                    </p>
+                    <div><Label>SEO title</Label>
+                      <Input
+                        value={content.seo?.title || ""}
+                        onChange={(e) => updateContent({ seo: { ...(content.seo || {}), title: e.target.value } })}
+                        placeholder="Your Church — A place to belong"
+                        maxLength={60}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Recommended: under 60 characters.</p>
+                    </div>
+                    <div><Label>SEO description</Label>
+                      <Textarea
+                        rows={3}
+                        value={content.seo?.description || ""}
+                        onChange={(e) => updateContent({ seo: { ...(content.seo || {}), description: e.target.value } })}
+                        placeholder="A short summary shown under your title in search results."
+                        maxLength={160}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Recommended: under 160 characters.</p>
+                    </div>
+                    <div><Label>Social share image URL</Label>
+                      <Input
+                        value={content.seo?.og_image || ""}
+                        onChange={(e) => updateContent({ seo: { ...(content.seo || {}), og_image: e.target.value } })}
+                        placeholder="https://…/preview.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">1200×630 works best.</p>
                     </div>
                   </TabsContent>
 
