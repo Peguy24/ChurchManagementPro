@@ -61,6 +61,8 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const tenantIds: string[] | undefined = body.tenantIds;
     const daysThreshold: number = Number.isFinite(body.daysThreshold) ? body.daysThreshold : 7;
+    const includeExpired: boolean = body.includeExpired === true;
+    const onlyExpired: boolean = body.onlyExpired === true;
     const customSubject: string | undefined = typeof body.customSubject === "string" && body.customSubject.trim() ? body.customSubject.trim() : undefined;
     const customMessage: string | undefined = typeof body.customMessage === "string" && body.customMessage.trim() ? body.customMessage.trim() : undefined;
 
@@ -85,7 +87,12 @@ serve(async (req) => {
       if (!sub.trial_ends_at) continue;
       const endDate = new Date(sub.trial_ends_at);
       const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / 86400000);
-      if (daysLeft < 0 || daysLeft > daysThreshold) {
+      const isExpired = daysLeft < 0;
+      if (onlyExpired) {
+        if (!isExpired) { skipped.push(sub.tenant_id); continue; }
+      } else if (isExpired) {
+        if (!includeExpired) { skipped.push(sub.tenant_id); continue; }
+      } else if (daysLeft > daysThreshold) {
         skipped.push(sub.tenant_id);
         continue;
       }
