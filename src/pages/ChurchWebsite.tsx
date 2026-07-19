@@ -264,17 +264,31 @@ export default function ChurchWebsite() {
               <CardHeader><CardTitle>Content</CardTitle></CardHeader>
               <CardContent>
                 <Tabs defaultValue="basic">
-                  <TabsList className="grid grid-cols-4">
+                  <TabsList className="grid grid-cols-5">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
                     <TabsTrigger value="services">Services</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                     <TabsTrigger value="social">Social</TabsTrigger>
+                    <TabsTrigger value="media">Media</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="basic" className="space-y-3">
                     <div><Label>Tagline</Label><Input value={content.tagline || ""} onChange={(e) => updateContent({ tagline: e.target.value })} placeholder="A place to belong" /></div>
                     <div><Label>About / Welcome</Label><Textarea rows={6} value={content.about || ""} onChange={(e) => updateContent({ about: e.target.value })} /></div>
-                    <div><Label>Hero image URL (Modern template)</Label><Input value={content.hero_image_url || ""} onChange={(e) => updateContent({ hero_image_url: e.target.value })} placeholder="https://..." /></div>
+                    <div>
+                      <Label>Hero image URL (Modern template)</Label>
+                      <div className="flex gap-2">
+                        <Input value={content.hero_image_url || ""} onChange={(e) => updateContent({ hero_image_url: e.target.value })} placeholder="https://..." />
+                        <Button type="button" variant="outline" onClick={() => setPickerOpen(true)} className="shrink-0 gap-1">
+                          <ImageIcon className="w-4 h-4" /> Pick
+                        </Button>
+                      </div>
+                      {content.hero_image_url && (
+                        <div className="mt-2 aspect-video w-full rounded border overflow-hidden bg-muted">
+                          <img src={content.hero_image_url} alt="Hero preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="services" className="space-y-3">
@@ -301,6 +315,23 @@ export default function ChurchWebsite() {
                     <div><Label>YouTube URL</Label><Input value={content.social?.youtube || ""} onChange={(e) => updateSocial("youtube", e.target.value)} /></div>
                     <div><Label>WhatsApp link (https://wa.me/…)</Label><Input value={content.social?.whatsapp || ""} onChange={(e) => updateSocial("whatsapp", e.target.value)} /></div>
                   </TabsContent>
+
+                  <TabsContent value="media" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Upload hero images, service photos, contact media, and gallery pictures. Images tagged <strong>gallery</strong> appear on your public site automatically.
+                    </p>
+                    {tenantId && (
+                      <MediaLibrary
+                        tenantId={tenantId}
+                        onPick={(item) => {
+                          if (item.public_url) {
+                            updateContent({ hero_image_url: item.public_url });
+                            toast.success("Hero image updated");
+                          }
+                        }}
+                      />
+                    )}
+                  </TabsContent>
                 </Tabs>
               </CardContent>
             </Card>
@@ -317,6 +348,27 @@ export default function ChurchWebsite() {
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Pick a hero image</DialogTitle>
+            </DialogHeader>
+            {tenantId && (
+              <MediaLibrary
+                tenantId={tenantId}
+                categories={["hero", "gallery", "other"]}
+                onPick={(item) => {
+                  if (item.public_url) {
+                    updateContent({ hero_image_url: item.public_url });
+                    setPickerOpen(false);
+                    toast.success("Hero image set");
+                  }
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
