@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
 import { JsonLd } from "@/components/JsonLd";
+import { currentHostname, isTenantHost } from "@/lib/tenantHost";
 
 const DAY_MAP: Record<string, string> = {
   sunday: "Su", sun: "Su", dimanche: "Su", dimanch: "Su",
