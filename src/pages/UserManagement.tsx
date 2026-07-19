@@ -55,50 +55,53 @@ export default function UserManagement() {
     user: "bg-gray-500/10 text-gray-500 border-gray-500/20",
   };
 
-  // Fetch only platform-level users (those WITHOUT a tenant_id)
+  // Fetch platform-level users: approved super admins + invited pending candidates only
   const { data: users, isLoading } = useQuery({
     queryKey: ["platform-users-with-roles"],
     queryFn: async () => {
-      // Get profiles without tenant_id (platform-level users)
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, created_at, tenant_id")
-        .is("tenant_id", null);
+      // 1. Approved platform admins (global user_roles.role = 'admin')
+      const { data: adminRoles, error: adminErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      if (adminErr) throw adminErr;
 
-      if (profilesError) throw profilesError;
+      const adminIds = [...new Set((adminRoles || []).map(r => r.user_id))];
 
-      // Get all tenant_user_roles to exclude users who belong to a tenant
-      const { data: tenantRoles } = await supabase
-        .from("tenant_user_roles")
-        .select("user_id");
+      const approvedProfiles = adminIds.length
+        ? (await supabase
+            .from("profiles")
+            .select("id, first_name, last_name, created_at")
+            .in("id", adminIds)).data || []
+        : [];
 
-      const tenantUserIds = new Set((tenantRoles || []).map(r => r.user_id));
+      // 2. Pending candidates: only users who accepted a super_admin_invitation
+      const { data: pendingCandidates, error: pendErr } = await supabase
+        .rpc("get_pending_super_admin_candidates");
+      if (pendErr) console.error("pending candidates error:", pendErr);
 
-      // Filter out users who have tenant roles (they belong to a church, not the platform)
-      const platformProfiles = (profiles || []).filter(p => !tenantUserIds.has(p.id));
-
-      const { data: allRoles, error: rolesError } = await supabase
+      const { data: allRoles } = await supabase
         .from("user_roles")
         .select("user_id, role");
 
-      if (rolesError) throw rolesError;
+      const buildRoles = (uid: string): AppRole[] => {
+        const r = (allRoles || []).filter(x => x.user_id === uid).map(x => x.role as AppRole);
+        return r.length ? r : ["user" as AppRole];
+      };
 
-      const usersWithRoles: UserWithRoles[] = platformProfiles.map((profile) => {
-        const userRoles = allRoles
-          .filter((r) => r.user_id === profile.id)
-          .map((r) => r.role);
+      const approved: UserWithRoles[] = approvedProfiles.map(p => ({
+        id: p.id, email: "", first_name: p.first_name, last_name: p.last_name,
+        created_at: p.created_at || "", roles: buildRoles(p.id),
+      }));
 
-        return {
-          id: profile.id,
-          email: "",
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          created_at: profile.created_at || "",
-          roles: userRoles.length > 0 ? userRoles : ["user" as AppRole],
-        };
-      });
+      const pending: UserWithRoles[] = (pendingCandidates || [])
+        .filter((c: any) => !adminIds.includes(c.id))
+        .map((c: any) => ({
+          id: c.id, email: c.email || "", first_name: c.first_name, last_name: c.last_name,
+          created_at: c.created_at || "", roles: ["user" as AppRole],
+        }));
 
-      return usersWithRoles;
+      return [...approved, ...pending];
     },
   });
 
