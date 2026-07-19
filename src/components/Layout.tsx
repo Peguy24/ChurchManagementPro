@@ -192,9 +192,9 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/settings/backup", icon: FileText, label: t("layout.dataBackup") },
         { to: "/settings/data-management", icon: Archive, label: t("layout.dataManagement") },
         { to: "/system-guide", icon: FileText, label: t("layout.systemGuide") },
-        ...(isGlobalFeatureEnabled("church_website") ? [{ to: "/website", icon: Globe, label: "Church Website" }] : []),
-        ...(isGlobalFeatureEnabled("prayer_requests") ? [{ to: "/prayer-requests", icon: Globe, label: "Prayer Requests" }] : []),
-        ...(isGlobalFeatureEnabled("online_giving") ? [{ to: "/settings/online-giving", icon: Globe, label: "Online Giving" }] : []),
+        { to: "/website", icon: Globe, label: "Church Website" },
+        { to: "/prayer-requests", icon: Globe, label: "Prayer Requests" },
+        { to: "/settings/online-giving", icon: Globe, label: "Online Giving" },
       ],
     },
     {
