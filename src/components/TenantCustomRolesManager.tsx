@@ -65,6 +65,12 @@ export default function TenantCustomRolesManager() {
     tenants: t("rolePermissions.groupTenants"),
     volunteers: t("rolePermissions.groupVolunteers"),
     visitors: t("rolePermissions.groupVisitors"),
+    website: t("rolePermissions.groupWebsite"),
+    giving: t("rolePermissions.groupGiving"),
+    prayer_requests: t("rolePermissions.groupPrayerRequests"),
+    insights: t("rolePermissions.groupInsights"),
+    automations: t("rolePermissions.groupAutomations"),
+    subscription: t("rolePermissions.groupSubscription"),
   };
 
   const { data: customRoles = [], isLoading } = useQuery({
