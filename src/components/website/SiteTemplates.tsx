@@ -9,6 +9,44 @@ export interface SiteContent {
   hero_image_url?: string;
   service_times?: Array<{ day: string; time: string; title?: string }>;
   social?: { facebook?: string; instagram?: string; youtube?: string; whatsapp?: string };
+  gallery?: Array<{ url: string; caption?: string }>;
+}
+
+function GallerySection({ gallery, primaryColor }: { gallery?: SiteContent["gallery"]; primaryColor?: string | null }) {
+  if (!gallery || gallery.length === 0) return null;
+  return (
+    <section className="py-16 bg-background">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mb-8 text-center">
+          <div
+            className="inline-block w-12 h-0.5 mb-3"
+            style={{ background: primaryColor || "hsl(var(--primary))" }}
+          />
+          <h2 className="text-3xl md:text-4xl font-semibold">Gallery</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {gallery.map((img, i) => (
+            <figure
+              key={i}
+              className="relative aspect-square overflow-hidden rounded-lg group bg-muted"
+            >
+              <img
+                src={img.url}
+                alt={img.caption || `Gallery image ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+              {img.caption && (
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs md:text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  {img.caption}
+                </figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export interface TemplateProps {
