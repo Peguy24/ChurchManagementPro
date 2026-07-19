@@ -37,8 +37,24 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
       .from("tenant_domains" as any)
       .select("*")
       .eq("tenant_id", tenantId)
+      .neq("status", "removed")
       .order("created_at", { ascending: true });
-    if (!error) setDomains((data as any) || []);
+    if (!error) {
+      // Normalize DB columns (kind/status/last_verified_at) to UI shape.
+      const rows = ((data as any[]) || []).map((r) => ({
+        id: r.id,
+        hostname: r.hostname,
+        domain_type: r.kind === "subdomain" ? "subdomain" : "custom",
+        is_primary: !!r.is_primary,
+        verification_status:
+          r.status === "active" ? "verified" : r.status === "failed" ? "failed" : "pending",
+        verification_token: r.verification_token,
+        cname_target: `sites.${PLATFORM_DOMAIN}`,
+        created_at: r.created_at,
+        verified_at: r.last_verified_at,
+      })) as Domain[];
+      setDomains(rows);
+    }
     setLoading(false);
   };
 

@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       .eq("id", domain_id)
       .maybeSingle();
     if (error || !dom) return json({ error: "domain not found" }, 404);
-    if (dom.domain_type !== "custom") return json({ error: "subdomains are auto-verified" }, 400);
+    if (dom.kind !== "custom") return json({ error: "subdomains are auto-verified" }, 400);
     if (!dom.verification_token) return json({ error: "no verification token" }, 400);
 
     const record = `_cmp-verify.${dom.hostname}`;
@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
     }
 
     const patch = verified
-      ? { verification_status: "verified", verified_at: new Date().toISOString() }
-      : { verification_status: "pending" };
+      ? { status: "active", last_verified_at: new Date().toISOString(), error_message: null }
+      : { status: "pending", error_message: "TXT record not found or mismatched" };
 
     await supabase.from("tenant_domains").update(patch).eq("id", domain_id);
 
