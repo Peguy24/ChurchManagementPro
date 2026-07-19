@@ -122,6 +122,7 @@ const WebsiteAddonsAdmin = lazy(() => import("./pages/WebsiteAddonsAdmin"));
 const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
 const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
 const GivingResult = lazy(() => import("./pages/GivingResult"));
+const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
 
 
 const queryClient = new QueryClient();
