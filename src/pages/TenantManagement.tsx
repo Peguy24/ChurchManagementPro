@@ -1385,7 +1385,9 @@ export default function TenantManagement() {
             <DialogHeader>
               <DialogTitle>{t("superAdmin.emailAllTrialAdmins") || "Email all trial admins"}</DialogTitle>
               <DialogDescription>
-                {t("superAdmin.trialEmailDialogDesc") || `Send a message to admins of ${expiringTrials.length} tenant(s) whose trial expires within 7 days. Leave fields blank to send the default reminder.`}
+                {trialEmailMode === "expired"
+                  ? `Send a message to admins of ${expiredTrials.length} tenant(s) whose trial has already expired. Use the message field to offer an extension or a free month.`
+                  : (t("superAdmin.trialEmailDialogDesc") || `Send a message to admins of ${expiringTrials.length} tenant(s) whose trial expires within 7 days. Leave fields blank to send the default reminder.`)}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
