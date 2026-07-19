@@ -10,7 +10,10 @@ import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
-import { isTenantHost } from "@/lib/tenantHost";
+import { isTenantHost, enforceHttps } from "@/lib/tenantHost";
+
+// Run once at module load — before React mounts — so we redirect before any UI paints.
+if (typeof window !== "undefined") enforceHttps();
 
 // Eagerly load landing pages for fast LCP
 import Commercial from "./pages/Commercial";

@@ -32,4 +32,19 @@ export function currentHostname(): string {
   return window.location.hostname;
 }
 
+/** Force https on any hostname that is not localhost / private / preview.
+ *  Returns true if a redirect was issued (caller should stop rendering). */
+export function enforceHttps(): boolean {
+  if (typeof window === "undefined") return false;
+  const { protocol, hostname, href } = window.location;
+  if (protocol === "https:") return false;
+  // Skip http on local dev + Lovable preview (preview served on https already,
+  // but this is defensive).
+  if (hostname === "localhost" || hostname.startsWith("127.") || hostname.startsWith("192.168.")) {
+    return false;
+  }
+  window.location.replace(href.replace(/^http:/, "https:"));
+  return true;
+}
+
 export const PLATFORM_DOMAIN = PLATFORM_APEX;
