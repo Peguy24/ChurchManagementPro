@@ -409,11 +409,12 @@ function computeAnalytics(subscriptions: any[], auditLogs: any[]): AnalyticsResu
 
   // Revenue by plan
   const revByPlan: Record<string, { revenue: number; count: number }> = {};
-  activeSubs.forEach((s) => {
+  payingActiveSubs.forEach((s) => {
     if (!revByPlan[s.plan]) revByPlan[s.plan] = { revenue: 0, count: 0 };
     revByPlan[s.plan].revenue += s.price_monthly || 0;
     revByPlan[s.plan].count += 1;
   });
+
   const revenueByPlan = Object.entries(revByPlan)
     .map(([plan, d]) => ({ plan, name: planLabels[plan] || plan, ...d }))
     .sort((a, b) => b.revenue - a.revenue);
