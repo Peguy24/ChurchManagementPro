@@ -143,6 +143,7 @@ const App = () => (
           <InactivityGuard>
           <TenantProvider>
             <Suspense fallback={<LazyFallback />}>
+            <TenantHostGate>
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
