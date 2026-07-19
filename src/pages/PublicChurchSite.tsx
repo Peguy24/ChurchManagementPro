@@ -163,6 +163,7 @@ export default function PublicChurchSite() {
           .map((m: any) => ({ url: m.public_url as string, caption: m.caption || undefined }));
 
         setData({
+          tenant_id: r.tenant_id,
           name: r.tenant_name,
           logo_url: r.logo_url,
           primary_color: r.primary_color,
