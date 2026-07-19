@@ -3,7 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 // Define all route groups
-export type RouteGroup = 
+export type RouteGroup =
   | "dashboard"
   | "members"
   | "attendance"
@@ -19,7 +19,13 @@ export type RouteGroup =
   | "inventory"
   | "tenants"
   | "volunteers"
-  | "visitors";
+  | "visitors"
+  | "website"
+  | "giving"
+  | "prayer_requests"
+  | "insights"
+  | "automations"
+  | "subscription";
 
 // Default permissions (fallback when DB is not available)
 export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
@@ -40,6 +46,12 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "tenants",
     "volunteers",
     "visitors",
+    "website",
+    "giving",
+    "prayer_requests",
+    "insights",
+    "automations",
+    "subscription",
   ],
   pastor: [
     "dashboard",
@@ -55,12 +67,18 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "inventory",
     "volunteers",
     "visitors",
+    "website",
+    "prayer_requests",
+    "insights",
+    "automations",
   ],
   treasurer: [
     "dashboard",
     "finances",
     "reports",
     "inventory",
+    "giving",
+    "subscription",
   ],
   secretary: [
     "dashboard",
@@ -71,12 +89,15 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "communication",
     "inventory",
     "visitors",
+    "website",
+    "prayer_requests",
+    "automations",
   ],
   volunteer: [
     "dashboard",
     "attendance",
   ],
-  user: [], // Pending users have no access
+  user: [],
 };
 
 // Map routes to their groups
