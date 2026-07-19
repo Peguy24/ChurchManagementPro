@@ -244,6 +244,12 @@ export function usePlanLimits() {
     return limits.features[feature];
   };
 
+  // Check any global platform feature flag by its snake_case key (e.g. "church_website")
+  const isGlobalFeatureEnabled = (flagKey: string) => {
+    if (globalFlags && globalFlags[flagKey] === false) return false;
+    return true;
+  };
+
   const canUploadFile = (fileSizeMB: number = 0) => {
     if (!usage || limits.maxStorageMB === Infinity) return true;
     return (usage.storageMB + fileSizeMB) <= limits.maxStorageMB;
@@ -293,6 +299,7 @@ export function usePlanLimits() {
     usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 },
     canAddMember, canAddBranch, canAddUser, canUploadFile,
     hasFeature,
+    isGlobalFeatureEnabled,
     getRemainingMembers, getRemainingBranches, getRemainingUsers, getRemainingStorageMB,
     getMemberUsagePercent, getBranchUsagePercent, getStorageUsagePercent,
   };

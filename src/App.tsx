@@ -123,6 +123,7 @@ const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
 const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
 const GivingResult = lazy(() => import("./pages/GivingResult"));
 const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
+import GlobalFeatureGate from "@/components/GlobalFeatureGate";
 
 
 const queryClient = new QueryClient();
@@ -186,7 +187,7 @@ const App = () => (
               <Route path="/site/:slug/give" element={<PublicGivingPage />} />
               <Route path="/site/:slug/give/success" element={<GivingResult status="success" />} />
               <Route path="/site/:slug/give/cancel" element={<GivingResult status="cancel" />} />
-              <Route path="/settings/online-giving" element={<ProtectedRoute><OnlineGivingSettings /></ProtectedRoute>} />
+              <Route path="/settings/online-giving" element={<ProtectedRoute><GlobalFeatureGate flagKey="online_giving"><OnlineGivingSettings /></GlobalFeatureGate></ProtectedRoute>} />
               <Route path="/select-tenant" element={<SelectTenant />} />
               <Route path="/t/:slug/auth" element={<TenantAuth />} />
               <Route path="/pending-approval" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
@@ -274,8 +275,8 @@ const App = () => (
               <Route path="/super-admin/broadcasts" element={<ProtectedRoute requireSuperAdmin><BroadcastsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
-              <Route path="/website" element={<ProtectedRoute><ChurchWebsite /></ProtectedRoute>} />
-              <Route path="/prayer-requests" element={<ProtectedRoute><PrayerRequests /></ProtectedRoute>} />
+              <Route path="/website" element={<ProtectedRoute><GlobalFeatureGate flagKey="church_website"><ChurchWebsite /></GlobalFeatureGate></ProtectedRoute>} />
+              <Route path="/prayer-requests" element={<ProtectedRoute><GlobalFeatureGate flagKey="prayer_requests"><PrayerRequests /></GlobalFeatureGate></ProtectedRoute>} />
               <Route path="/super-admin/website-addons" element={<ProtectedRoute requireSuperAdmin><WebsiteAddonsAdmin /></ProtectedRoute>} />
 
               
