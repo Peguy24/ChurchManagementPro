@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
-import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
+import MediaLibrary, { TenantMediaItem } from "@/components/website/MediaLibrary";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TEMPLATES = [
   { id: "classic", name: "Classic", desc: "Elegant serif layout" },
