@@ -18,12 +18,13 @@ export function MiniRevenueChart() {
     queryFn: async () => {
       const { data: subscriptions, error } = await supabase
         .from("tenant_subscriptions")
-        .select("plan, status, price_monthly, created_at");
+        .select("plan, status, price_monthly, created_at, managed_by_admin");
 
       if (error) throw error;
 
-      const active = subscriptions?.filter((s) => s.status === "active") || [];
+      const active = subscriptions?.filter((s) => s.status === "active" && !s.managed_by_admin) || [];
       const mrr = active.reduce((sum, s) => sum + (s.price_monthly || 0), 0);
+
       const arr = mrr * 12;
 
       // Build monthly data from subscription audit logs
