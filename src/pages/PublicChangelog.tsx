@@ -25,7 +25,7 @@ export default function PublicChangelog() {
         .select('*')
         .eq('is_published', true)
         .order('published_at', { ascending: false })
-        .limit(100);
+        .limit(5);
       setEntries(data || []);
       setLoading(false);
     })();
