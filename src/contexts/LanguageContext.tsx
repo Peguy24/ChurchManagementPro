@@ -9137,6 +9137,7 @@ const translations = {
       unlimitedHint: "Aksè a p ap ekspire otomatikman.",
       emailAllTrialAdmins: "Voye imèl",
       trialEmailDialogDesc: "Voye yon mesaj bay admin {count} legliz ki gen esè ki ap ekspire nan 7 jou. Kite jaden yo vid pou voye rapèl la jan li ye a.",
+      trialEmailExpiredDialogDesc: "Voye yon mesaj bay admin {count} legliz ki gen esè ki deja ekspire. Itilize jaden mesaj la pou pwopoze yon pwolongasyon oswa yon mwa gratis.",
       trialEmailSubject: "Sijè (opsyonal)",
       trialEmailSubjectPh: "Egz: Bon nouvèl — n ap pwolonje esè gratis ou a",
       trialEmailMessage: "Mesaj pèsonèl (opsyonal)",
