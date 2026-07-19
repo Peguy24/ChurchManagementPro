@@ -73,3 +73,5 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.moncash-giving-verify]
     verify_jwt = false
+  [functions.stripe-connect-onboard]
+    verify_jwt = true
