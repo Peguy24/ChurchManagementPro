@@ -5627,6 +5627,16 @@ export type Database = {
           total_tenants: number
         }[]
       }
+      get_pending_super_admin_candidates: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+        }[]
+      }
       get_public_giving_config: {
         Args: { _slug: string }
         Returns: {
