@@ -4723,6 +4723,7 @@ export type Database = {
           file_name: string | null
           id: string
           mime_type: string | null
+          public_url: string | null
           size_bytes: number | null
           sort_order: number
           storage_path: string
@@ -4737,6 +4738,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           mime_type?: string | null
+          public_url?: string | null
           size_bytes?: number | null
           sort_order?: number
           storage_path: string
@@ -4751,6 +4753,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           mime_type?: string | null
+          public_url?: string | null
           size_bytes?: number | null
           sort_order?: number
           storage_path?: string
