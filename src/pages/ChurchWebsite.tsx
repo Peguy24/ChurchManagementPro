@@ -13,15 +13,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
-import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
+import { renderTemplate, SiteContent, TEMPLATE_LIST } from "@/components/website/SiteTemplates";
 import MediaLibrary, { TenantMediaItem } from "@/components/website/MediaLibrary";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const TEMPLATES = [
-  { id: "classic", name: "Classic", desc: "Elegant serif layout" },
-  { id: "modern", name: "Modern", desc: "Bold hero with image" },
-  { id: "warm", name: "Warm", desc: "Soft amber palette" },
-];
+const TEMPLATES = TEMPLATE_LIST;
 
 const emptyContent: SiteContent = {
   tagline: "",
@@ -30,6 +26,7 @@ const emptyContent: SiteContent = {
   phone: "",
   email: "",
   hero_image_url: "",
+  footer_text: "",
   service_times: [],
   social: { facebook: "", instagram: "", youtube: "", whatsapp: "" },
 };
@@ -288,6 +285,18 @@ export default function ChurchWebsite() {
                           <img src={content.hero_image_url} alt="Hero preview" className="w-full h-full object-cover" />
                         </div>
                       )}
+                    </div>
+                    <div>
+                      <Label>Footer text</Label>
+                      <Input
+                        value={content.footer_text || ""}
+                        onChange={(e) => updateContent({ footer_text: e.target.value })}
+                        placeholder="e.g. All are welcome — or your own tagline"
+                        maxLength={120}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Replaces the default footer message ("Made with love"). Leave blank to keep the template default.
+                      </p>
                     </div>
                   </TabsContent>
 
