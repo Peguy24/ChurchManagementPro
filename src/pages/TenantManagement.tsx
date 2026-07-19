@@ -500,6 +500,12 @@ export default function TenantManagement() {
         console.error("Failed to log audit:", auditError);
       }
 
+      if (activate) {
+        supabase.functions.invoke("notify-tenant-comp-action", {
+          body: { tenantId, action: "plan_activated", planLabel: PLAN_CONFIG[plan].label, expiresAt: periodEnd },
+        }).catch((e) => console.error("notify plan_activated failed", e));
+      }
+
       return { activate, plan };
     },
     onSuccess: ({ activate, plan }, variables) => {
