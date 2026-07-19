@@ -594,7 +594,9 @@ export default function TenantManagement() {
   };
 
   const totalRevenue = tenants?.reduce((sum, t) => {
-    if (t.subscription?.status === "active") return sum + (t.subscription.price_monthly || 0);
+    if (t.subscription?.status === "active" && !t.subscription?.managed_by_admin) {
+      return sum + (t.subscription.price_monthly || 0);
+    }
     return sum;
   }, 0) || 0;
 
