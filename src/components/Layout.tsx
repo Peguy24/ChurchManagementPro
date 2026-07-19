@@ -82,6 +82,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 import { useWhiteLabel } from "@/hooks/useWhiteLabel";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import {
   Collapsible,
   CollapsibleContent,
