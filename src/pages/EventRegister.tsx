@@ -16,6 +16,50 @@ import {
 import { eventRegistrationSchema, validateForm, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
 import { toast } from "sonner";
+import { JsonLd } from "@/components/JsonLd";
+
+function buildEventJsonLd(event: any, churchName: string, logoUrl: string | null, eventId: string) {
+  if (!event) return null;
+  const startDate = event.event_time
+    ? `${event.event_date}T${event.event_time}`
+    : event.event_date;
+  const endDate = event.end_date
+    ? (event.end_time ? `${event.end_date}T${event.end_time}` : event.end_date)
+    : (event.end_time ? `${event.event_date}T${event.end_time}` : undefined);
+  const status =
+    event.status === "cancelled"
+      ? "https://schema.org/EventCancelled"
+      : "https://schema.org/EventScheduled";
+  const url = typeof window !== "undefined"
+    ? `${window.location.origin}/event/${eventId}/register`
+    : undefined;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: event.name,
+    description: event.description || undefined,
+    startDate,
+    endDate,
+    eventStatus: status,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: event.location
+      ? { "@type": "Place", name: event.location, address: event.location }
+      : { "@type": "VirtualLocation", url },
+    image: logoUrl || undefined,
+    url,
+    organizer: churchName
+      ? { "@type": "Organization", name: churchName, logo: logoUrl || undefined }
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url,
+    },
+  };
+}
+
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
@@ -205,6 +249,9 @@ export default function EventRegister() {
 
   return (
     <div className="min-h-screen bg-muted/30 p-4 overflow-y-auto">
+      {event && (
+        <JsonLd id="event" data={buildEventJsonLd(event, churchName, logoUrl, eventId!)!} />
+      )}
       <div className="max-w-lg mx-auto space-y-6 py-8">
         {/* Language selector */}
         <div className="flex justify-end">

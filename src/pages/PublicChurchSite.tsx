@@ -1,7 +1,74 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
+import { JsonLd } from "@/components/JsonLd";
+
+const DAY_MAP: Record<string, string> = {
+  sunday: "Su", sun: "Su", dimanche: "Su", dimanch: "Su",
+  monday: "Mo", mon: "Mo", lundi: "Mo", lendi: "Mo",
+  tuesday: "Tu", tue: "Tu", mardi: "Tu", madi: "Tu",
+  wednesday: "We", wed: "We", mercredi: "We", mekredi: "We",
+  thursday: "Th", thu: "Th", jeudi: "Th", jedi: "Th",
+  friday: "Fr", fri: "Fr", vendredi: "Fr", vandredi: "Fr",
+  saturday: "Sa", sat: "Sa", samedi: "Sa", samdi: "Sa",
+};
+const DAY_FULL: Record<string, string> = {
+  Su: "Sunday", Mo: "Monday", Tu: "Tuesday", We: "Wednesday",
+  Th: "Thursday", Fr: "Friday", Sa: "Saturday",
+};
+
+function normalizeTime(t?: string): string | undefined {
+  if (!t) return undefined;
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return undefined;
+  return `${m[1].padStart(2, "0")}:${m[2]}`;
+}
+
+function toOpeningHours(services?: SiteContent["service_times"]) {
+  if (!services?.length) return undefined;
+  const specs: any[] = [];
+  for (const s of services) {
+    const day = DAY_MAP[(s.day || "").trim().toLowerCase()];
+    const opens = normalizeTime(s.time);
+    if (!day || !opens) continue;
+    specs.push({ "@type": "OpeningHoursSpecification", dayOfWeek: day, opens });
+  }
+  return specs.length ? specs : undefined;
+}
+
+function toServiceEvents(services: SiteContent["service_times"] | undefined, churchName: string, url: string, address?: string) {
+  if (!services?.length) return [];
+  const dayIdx: Record<string, number> = { Su: 0, Mo: 1, Tu: 2, We: 3, Th: 4, Fr: 5, Sa: 6 };
+  const today = new Date();
+  return services.slice(0, 7).map((s) => {
+    const dayKey = DAY_MAP[(s.day || "").trim().toLowerCase()];
+    const opens = normalizeTime(s.time);
+    if (!dayKey || !opens) return null;
+    const diff = (dayIdx[dayKey] - today.getDay() + 7) % 7 || 7;
+    const d = new Date(today);
+    d.setDate(today.getDate() + diff);
+    const startDate = `${d.toISOString().slice(0, 10)}T${opens}`;
+    return {
+      "@type": "Event",
+      name: s.title || `${DAY_FULL[dayKey]} Service`,
+      startDate,
+      eventSchedule: {
+        "@type": "Schedule",
+        repeatFrequency: "P1W",
+        byDay: `https://schema.org/${DAY_FULL[dayKey]}`,
+        startTime: opens,
+      },
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      eventStatus: "https://schema.org/EventScheduled",
+      location: address
+        ? { "@type": "Place", name: churchName, address }
+        : { "@type": "Place", name: churchName },
+      organizer: { "@type": "Church", name: churchName, url },
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD", availability: "https://schema.org/InStock", url },
+    };
+  }).filter(Boolean) as any[];
+}
 
 export default function PublicChurchSite() {
   const { slug } = useParams<{ slug: string }>();
@@ -70,8 +137,38 @@ export default function PublicChurchSite() {
       </div>
     );
   }
+  const siteUrl = typeof window !== "undefined" ? `${window.location.origin}/site/${slug}` : `/site/${slug}`;
+  const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
+  const serviceEvents = useMemo(
+    () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
+    [data.content.service_times, data.name, siteUrl, data.content.address],
+  );
+
+  const orgJsonLd: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Church",
+    name: data.name,
+    url: siteUrl,
+    logo: data.logo_url || undefined,
+    image: data.content.hero_image_url || data.logo_url || undefined,
+    description: data.content.about || data.content.tagline || undefined,
+    email: data.content.email || undefined,
+    telephone: data.content.phone || undefined,
+    address: data.content.address
+      ? { "@type": "PostalAddress", streetAddress: data.content.address }
+      : undefined,
+    openingHoursSpecification: openingHours,
+    sameAs: [
+      data.content.social?.facebook,
+      data.content.social?.instagram,
+      data.content.social?.youtube,
+    ].filter(Boolean),
+  };
+
   return (
     <div className="relative">
+      <JsonLd id="church-org" data={orgJsonLd} />
+      {serviceEvents.length > 0 && <JsonLd id="church-services" data={serviceEvents} />}
       {renderTemplate(data.template, {
         name: data.name,
         logoUrl: data.logo_url,
