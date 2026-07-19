@@ -5689,6 +5689,7 @@ const translations = {
       unlimitedHint: "Access will not expire automatically.",
       emailAllTrialAdmins: "Email all",
       trialEmailDialogDesc: "Send a message to admins of {count} church(es) whose trial expires within 7 days. Leave fields blank to send the default reminder.",
+      trialEmailExpiredDialogDesc: "Send a message to admins of {count} church(es) whose trial has already expired. Use the message field to offer an extension or a free month.",
       trialEmailSubject: "Subject (optional)",
       trialEmailSubjectPh: "e.g. Good news — we're extending your free trial",
       trialEmailMessage: "Personal message (optional)",
