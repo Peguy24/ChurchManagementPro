@@ -116,6 +116,11 @@ serve(async (req) => {
       const locale = lang === "fr" ? "fr-FR" : lang === "ht" ? "fr-HT" : "en-US";
       const dateStr = endDate.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
 
+      const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+      const customBlock = customMessage
+        ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 18px;border-radius:8px;margin:0 0 20px;color:#78350f;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(customMessage)}</div>`
+        : "";
+
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#f4f4f5;margin:0;padding:20px;">
   <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,.1);">
@@ -123,6 +128,7 @@ serve(async (req) => {
       <h1 style="color:#fff;margin:0;font-size:22px;">${t.title}</h1>
     </div>
     <div style="padding:30px;">
+      ${customBlock}
       <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 20px;">${t.body.replace("{date}", dateStr)}</p>
       <div style="text-align:center;margin:25px 0;">
         <a href="https://churchmanagementpro.com/settings/subscription" style="display:inline-block;background:${colors.bg};color:#fff;padding:12px 30px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${t.cta}</a>
@@ -138,11 +144,12 @@ serve(async (req) => {
       await resend.emails.send({
         from: `${tenantName} <noreply@churchmanagementpro.com>`,
         to: emails,
-        subject: `${t.subject} — ${tenantName}`,
+        subject: customSubject ? `${customSubject} — ${tenantName}` : `${t.subject} — ${tenantName}`,
         html,
       });
       sent++;
     }
+
 
     return json({ success: true, sent, skipped: skipped.length });
   } catch (e) {
