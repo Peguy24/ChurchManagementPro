@@ -414,3 +414,142 @@ export default function OnlineGivingSettings() {
     </Layout>
   );
 }
+
+function StripeConnectCard({
+  accountId,
+  enabled,
+  onEnabledChange,
+  onDisconnected,
+  t,
+  language,
+}: {
+  accountId: string | null;
+  enabled: boolean;
+  onEnabledChange: (v: boolean) => void;
+  onDisconnected: () => void;
+  t: any;
+  language: string;
+}) {
+  const [status, setStatus] = useState<{
+    connected: boolean;
+    account_id?: string;
+    charges_enabled?: boolean;
+    payouts_enabled?: boolean;
+    details_submitted?: boolean;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const labels = {
+    en: { connect: "Connect with Stripe", resume: "Resume Stripe onboarding", connected: "Connected", incomplete: "Onboarding incomplete", refresh: "Refresh status", disconnect: "Disconnect", ready: "Ready to accept payments", pending: "Complete onboarding to accept payments", explain: "Onboard your church with Stripe — no need to paste an account ID. You'll be redirected to Stripe to enter your business details and bank info." },
+    fr: { connect: "Connecter Stripe", resume: "Reprendre la configuration Stripe", connected: "Connecté", incomplete: "Configuration incomplète", refresh: "Actualiser", disconnect: "Déconnecter", ready: "Prêt à recevoir des paiements", pending: "Terminez la configuration pour recevoir des paiements", explain: "Inscrivez votre église avec Stripe — pas besoin de coller un identifiant. Vous serez redirigé vers Stripe pour saisir vos infos." },
+    ht: { connect: "Konekte ak Stripe", resume: "Kontinye enskripsyon Stripe", connected: "Konekte", incomplete: "Enskripsyon pa fini", refresh: "Aktyalize", disconnect: "Dekonekte", ready: "Pare pou aksepte peman", pending: "Fini enskripsyon pou aksepte peman", explain: "Enskri legliz ou ak Stripe — pa bezwen kole ID. W ap ale sou Stripe pou antre enfòmasyon w yo." },
+  }[language] || {} as any;
+
+  const loadStatus = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-onboard", { body: { action: "status" } });
+      if (error) throw error;
+      setStatus(data);
+    } catch (e: any) {
+      toast.error(e?.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (accountId) loadStatus();
+    else setStatus({ connected: false });
+    // Auto-refresh on Stripe return
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("stripe_connect") === "return") {
+      loadStatus();
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]);
+
+  const startOnboarding = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-onboard", { body: { action: "onboard" } });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (e: any) {
+      toast.error(e?.message || "Error");
+      setLoading(false);
+    }
+  };
+
+  const disconnect = async () => {
+    if (!confirm("Disconnect Stripe? Online card giving will stop.")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("stripe-connect-onboard", { body: { action: "disconnect" } });
+      if (error) throw error;
+      toast.success("Disconnected");
+      onDisconnected();
+      setStatus({ connected: false });
+    } catch (e: any) {
+      toast.error(e?.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isReady = status?.connected && status?.charges_enabled && status?.details_submitted;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>{t.stripe}</CardTitle>
+            <CardDescription>{labels.explain}</CardDescription>
+          </div>
+          <Switch checked={enabled} onCheckedChange={onEnabledChange} />
+        </div>
+      </CardHeader>
+      {enabled && (
+        <CardContent className="space-y-3">
+          {loading && !status ? (
+            <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
+          ) : !status?.connected ? (
+            <Button onClick={startOnboarding} disabled={loading} className="bg-[#635bff] hover:bg-[#524cd8] text-white">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LinkIcon className="h-4 w-4 mr-2" />}
+              {labels.connect}
+            </Button>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 flex-wrap">
+                {isReady ? (
+                  <Badge className="bg-green-600 hover:bg-green-600"><CheckCircle2 className="h-3 w-3 mr-1" />{labels.connected}</Badge>
+                ) : (
+                  <Badge variant="secondary"><AlertTriangle className="h-3 w-3 mr-1" />{labels.incomplete}</Badge>
+                )}
+                <code className="text-xs text-muted-foreground">{status.account_id}</code>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {isReady ? labels.ready : labels.pending}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {!isReady && (
+                  <Button size="sm" onClick={startOnboarding} disabled={loading} className="bg-[#635bff] hover:bg-[#524cd8] text-white">
+                    <ExternalLink className="h-4 w-4 mr-2" />{labels.resume}
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={loadStatus} disabled={loading}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : labels.refresh}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={disconnect} disabled={loading} className="text-destructive hover:text-destructive">
+                  <Unlink className="h-4 w-4 mr-2" />{labels.disconnect}
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      )}
+    </Card>
+  );
+}
