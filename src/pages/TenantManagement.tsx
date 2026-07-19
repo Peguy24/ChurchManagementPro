@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -143,6 +145,11 @@ export default function TenantManagement() {
   const [planActivationDialogOpen, setPlanActivationDialogOpen] = useState(false);
   const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantWithSubscription | null>(null);
   const [selectedPlanForActivation, setSelectedPlanForActivation] = useState<SubscriptionPlan>("standard");
+  const [trialEmailDialogOpen, setTrialEmailDialogOpen] = useState(false);
+  const [trialEmailSubject, setTrialEmailSubject] = useState("");
+  const [trialEmailMessage, setTrialEmailMessage] = useState("");
+  const [trialEmailSending, setTrialEmailSending] = useState(false);
+
   const [activationDuration, setActivationDuration] = useState<string>("30");
   const [activationCustomDate, setActivationCustomDate] = useState<string>("");
   const [adminManagerOpen, setAdminManagerOpen] = useState(false);
@@ -863,26 +870,16 @@ export default function TenantManagement() {
                     size="sm"
                     variant="outline"
                     className="h-7 border-orange-500 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40"
-                    onClick={async () => {
-                      const ids = expiringTrials.map((x) => x.id);
-                      const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
-                      try {
-                        const { data, error } = await supabase.functions.invoke("send-trial-ending-reminders", {
-                          body: { tenantIds: ids, daysThreshold: 7 },
-                        });
-                        if (error) throw error;
-                        toast.success(
-                          `${t("superAdmin.trialRemindersSent") || "Reminders sent"}: ${data?.sent ?? 0}`,
-                          { id: loadingId }
-                        );
-                      } catch (e: any) {
-                        toast.error(e?.message || "Failed to send reminders", { id: loadingId });
-                      }
+                    onClick={() => {
+                      setTrialEmailSubject("");
+                      setTrialEmailMessage("");
+                      setTrialEmailDialogOpen(true);
                     }}
                   >
                     <Mail className="h-3 w-3 mr-1" />
                     {t("superAdmin.emailAllTrialAdmins") || "Email all"}
                   </Button>
+
                 </div>
                 <AlertDescription>
 
@@ -1364,7 +1361,77 @@ export default function TenantManagement() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={trialEmailDialogOpen} onOpenChange={setTrialEmailDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{t("superAdmin.emailAllTrialAdmins") || "Email all trial admins"}</DialogTitle>
+              <DialogDescription>
+                {t("superAdmin.trialEmailDialogDesc") || `Send a message to admins of ${expiringTrials.length} tenant(s) whose trial expires within 7 days. Leave fields blank to send the default reminder.`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>{t("superAdmin.trialEmailSubject") || "Subject (optional)"}</Label>
+                <Input
+                  value={trialEmailSubject}
+                  onChange={(e) => setTrialEmailSubject(e.target.value)}
+                  placeholder={t("superAdmin.trialEmailSubjectPh") || "e.g. Good news — we're extending your free trial"}
+                  maxLength={150}
+                />
+              </div>
+              <div>
+                <Label>{t("superAdmin.trialEmailMessage") || "Personal message (optional)"}</Label>
+                <Textarea
+                  value={trialEmailMessage}
+                  onChange={(e) => setTrialEmailMessage(e.target.value)}
+                  placeholder={t("superAdmin.trialEmailMessagePh") || "e.g. As a thank-you, we're giving you 1 extra month free. No action needed."}
+                  rows={6}
+                  maxLength={2000}
+                />
+                <p className="text-xs text-muted-foreground mt-1">{trialEmailMessage.length}/2000</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setTrialEmailDialogOpen(false)} disabled={trialEmailSending}>
+                {t("common.cancel") || "Cancel"}
+              </Button>
+              <Button
+                disabled={trialEmailSending}
+                onClick={async () => {
+                  const ids = expiringTrials.map((x) => x.id);
+                  setTrialEmailSending(true);
+                  const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
+                  try {
+                    const { data, error } = await supabase.functions.invoke("send-trial-ending-reminders", {
+                      body: {
+                        tenantIds: ids,
+                        daysThreshold: 7,
+                        customSubject: trialEmailSubject || undefined,
+                        customMessage: trialEmailMessage || undefined,
+                      },
+                    });
+                    if (error) throw error;
+                    toast.success(
+                      `${t("superAdmin.trialRemindersSent") || "Reminders sent"}: ${data?.sent ?? 0}`,
+                      { id: loadingId }
+                    );
+                    setTrialEmailDialogOpen(false);
+                  } catch (e: any) {
+                    toast.error(e?.message || "Failed to send reminders", { id: loadingId });
+                  } finally {
+                    setTrialEmailSending(false);
+                  }
+                }}
+              >
+                <Send className="h-4 w-4 mr-1" />
+                {t("superAdmin.sendEmails") || "Send"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
+
     </Layout>
   );
 }
