@@ -2237,6 +2237,7 @@ const translations = {
       unlimitedHint: "L'accès n'expirera pas automatiquement.",
       emailAllTrialAdmins: "Envoyer un email",
       trialEmailDialogDesc: "Envoyez un message aux administrateurs de {count} église(s) dont l'essai expire dans 7 jours. Laissez les champs vides pour envoyer le rappel par défaut.",
+      trialEmailExpiredDialogDesc: "Envoyez un message aux administrateurs de {count} église(s) dont l'essai a déjà expiré. Utilisez le champ message pour proposer une prolongation ou un mois gratuit.",
       trialEmailSubject: "Sujet (optionnel)",
       trialEmailSubjectPh: "Ex: Bonne nouvelle — nous prolongeons votre essai gratuit",
       trialEmailMessage: "Message personnel (optionnel)",
