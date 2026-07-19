@@ -1,0 +1,1 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.tenant_websites TO authenticated; GRANT ALL ON public.tenant_websites TO service_role; GRANT SELECT ON public.tenant_websites TO anon;
