@@ -174,6 +174,10 @@ const App = () => (
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/about" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/sermons" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/visit" element={<PublicChurchSite />} />
+              <Route path="/site/:slug/contact" element={<PublicChurchSite />} />
               <Route path="/site/:slug/give" element={<PublicGivingPage />} />
               <Route path="/site/:slug/give/success" element={<GivingResult status="success" />} />
               <Route path="/site/:slug/give/cancel" element={<GivingResult status="cancel" />} />
