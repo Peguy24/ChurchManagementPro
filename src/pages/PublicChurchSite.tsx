@@ -81,8 +81,10 @@ function toServiceEvents(services: SiteContent["service_times"] | undefined, chu
 
 export default function PublicChurchSite() {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
+    tenant_id: string;
     name: string;
     logo_url: string | null;
     primary_color: string | null;
