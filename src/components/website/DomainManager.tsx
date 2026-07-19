@@ -222,10 +222,13 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
             <div className="text-sm text-muted-foreground">No domains yet.</div>
           ) : (
             domains.map((d) => {
-              // For subdomain rows, the true <sub>.churchmanagementpro.com URL requires a
-              // wildcard DNS setup that isn't in place — link to the reliable path URL instead.
+              // Subdomains + unverified custom domains aren't actually reachable via their
+              // hostname (no wildcard DNS / DNS not configured yet). Fall back to the reliable
+              // path URL so the "View" link always opens the live site.
+              const useFallback =
+                d.domain_type === "subdomain" || d.verification_status !== "verified";
               const effectiveUrl =
-                d.domain_type === "subdomain" && tenantSlug
+                useFallback && tenantSlug
                   ? `https://${PLATFORM_DOMAIN}/site/${tenantSlug}`
                   : `https://${d.hostname}`;
               return (
