@@ -80,6 +80,7 @@ export default function PublicChurchSite() {
     primary_color: string | null;
     template: string;
     content: SiteContent;
+    slug: string;
   } | null>(null);
 
   const [givingEnabled, setGivingEnabled] = useState(false);
