@@ -460,10 +460,11 @@ function computeAnalytics(subscriptions: any[], auditLogs: any[]): AnalyticsResu
     let monthMRR = 0;
     subscriptions.forEach((s) => {
       const tenantCreated = new Date(s.tenants?.created_at || s.created_at);
-      if (tenantCreated <= monthEnd && s.status === "active") {
+      if (tenantCreated <= monthEnd && s.status === "active" && !s.managed_by_admin) {
         monthMRR += s.price_monthly || 0;
       }
     });
+
 
     mrrHistory.push({ month: monthLabel, mrr: monthMRR });
   }
