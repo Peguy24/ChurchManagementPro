@@ -1419,7 +1419,8 @@ export default function TenantManagement() {
               <Button
                 disabled={trialEmailSending}
                 onClick={async () => {
-                  const ids = expiringTrials.map((x) => x.id);
+                  const source = trialEmailMode === "expired" ? expiredTrials : expiringTrials;
+                  const ids = source.map((x) => x.id);
                   setTrialEmailSending(true);
                   const loadingId = toast.loading(t("superAdmin.sendingTrialReminders") || "Sending reminders…");
                   try {
@@ -1427,6 +1428,7 @@ export default function TenantManagement() {
                       body: {
                         tenantIds: ids,
                         daysThreshold: 7,
+                        onlyExpired: trialEmailMode === "expired",
                         customSubject: trialEmailSubject || undefined,
                         customMessage: trialEmailMessage || undefined,
                       },
