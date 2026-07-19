@@ -4559,6 +4559,85 @@ export type Database = {
           },
         ]
       }
+      tenant_giving_settings: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          default_bank_account_id: string | null
+          default_cash_register_id: string | null
+          enabled: boolean
+          min_amount: number
+          moncash_client_id: string | null
+          moncash_client_secret: string | null
+          moncash_enabled: boolean
+          moncash_env: string
+          stripe_account_id: string | null
+          stripe_enabled: boolean
+          suggested_amounts: Json
+          tenant_id: string
+          thank_you_message: Json
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          default_bank_account_id?: string | null
+          default_cash_register_id?: string | null
+          enabled?: boolean
+          min_amount?: number
+          moncash_client_id?: string | null
+          moncash_client_secret?: string | null
+          moncash_enabled?: boolean
+          moncash_env?: string
+          stripe_account_id?: string | null
+          stripe_enabled?: boolean
+          suggested_amounts?: Json
+          tenant_id: string
+          thank_you_message?: Json
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          default_bank_account_id?: string | null
+          default_cash_register_id?: string | null
+          enabled?: boolean
+          min_amount?: number
+          moncash_client_id?: string | null
+          moncash_client_secret?: string | null
+          moncash_enabled?: boolean
+          moncash_env?: string
+          stripe_account_id?: string | null
+          stripe_enabled?: boolean
+          suggested_amounts?: Json
+          tenant_id?: string
+          thank_you_message?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_giving_settings_default_bank_account_id_fkey"
+            columns: ["default_bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_giving_settings_default_cash_register_id_fkey"
+            columns: ["default_cash_register_id"]
+            isOneToOne: false
+            referencedRelation: "cash_registers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_giving_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_health_scores: {
         Row: {
           active_members_30d: number
@@ -5546,6 +5625,22 @@ export type Database = {
           step_member: number
           step_profile: number
           total_tenants: number
+        }[]
+      }
+      get_public_giving_config: {
+        Args: { _slug: string }
+        Returns: {
+          cover_image_url: string
+          currency: string
+          logo_url: string
+          min_amount: number
+          moncash_enabled: boolean
+          primary_color: string
+          stripe_enabled: boolean
+          suggested_amounts: Json
+          tenant_id: string
+          tenant_name: string
+          thank_you_message: Json
         }[]
       }
       get_public_nps_stats: {
