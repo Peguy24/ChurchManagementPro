@@ -13,15 +13,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
-import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
+import { renderTemplate, SiteContent, TEMPLATE_LIST } from "@/components/website/SiteTemplates";
 import MediaLibrary, { TenantMediaItem } from "@/components/website/MediaLibrary";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const TEMPLATES = [
-  { id: "classic", name: "Classic", desc: "Elegant serif layout" },
-  { id: "modern", name: "Modern", desc: "Bold hero with image" },
-  { id: "warm", name: "Warm", desc: "Soft amber palette" },
-];
+const TEMPLATES = TEMPLATE_LIST;
 
 const emptyContent: SiteContent = {
   tagline: "",
