@@ -840,7 +840,23 @@ export default function TenantManagement() {
             {expiredTrials.length > 0 && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("superAdmin.expiredTrials")} ({expiredTrials.length})</AlertTitle>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <AlertTitle className="mb-0">{t("superAdmin.expiredTrials")} ({expiredTrials.length})</AlertTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7"
+                    onClick={() => {
+                      setTrialEmailMode("expired");
+                      setTrialEmailSubject("");
+                      setTrialEmailMessage("");
+                      setTrialEmailDialogOpen(true);
+                    }}
+                  >
+                    <Mail className="h-3 w-3 mr-1" />
+                    {t("superAdmin.emailAllTrialAdmins") || "Email all"}
+                  </Button>
+                </div>
                 <AlertDescription>
                   <div className="mt-2 space-y-1">
                     {expiredTrials.map((tenant) => (
