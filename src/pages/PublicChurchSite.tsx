@@ -102,6 +102,30 @@ export default function PublicChurchSite() {
         const r = rows[0];
         const baseContent = (r.content as SiteContent) || {};
 
+        // Canonicalize to the tenant's primary verified domain.
+        // If the visitor arrived on a non-primary host (e.g. bare apex vs www,
+        // an old subdomain, or the /site/<slug> path), 301-style redirect them
+        // to the primary domain so search engines index a single URL.
+        try {
+          const { data: primary } = await supabase
+            .from("tenant_domains" as any)
+            .select("hostname")
+            .eq("tenant_id", r.tenant_id)
+            .eq("is_primary", true)
+            .eq("verification_status", "verified")
+            .maybeSingle();
+          const primaryHost = (primary as any)?.hostname as string | undefined;
+          if (primaryHost && typeof window !== "undefined") {
+            const currentHost = window.location.hostname.toLowerCase();
+            const arrivedViaPath = !useHost; // came in on /site/<slug>
+            if (primaryHost.toLowerCase() !== currentHost || arrivedViaPath) {
+              const target = `https://${primaryHost}${arrivedViaPath ? "/" : window.location.pathname}${window.location.search}`;
+              window.location.replace(target);
+              return;
+            }
+          }
+        } catch (_e) { /* non-fatal — keep rendering current host */ }
+
         // Now that we have the tenant, fetch giving config + gallery in parallel
         const [{ data: giving }, { data: media }] = await Promise.all([
           supabase.rpc("get_public_giving_config", { _slug: r.slug }),
