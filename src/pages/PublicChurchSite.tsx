@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
 import { JsonLd } from "@/components/JsonLd";
+import { currentHostname, isTenantHost } from "@/lib/tenantHost";
 
 const DAY_MAP: Record<string, string> = {
   sunday: "Su", sun: "Su", dimanche: "Su", dimanch: "Su",
@@ -79,30 +80,40 @@ export default function PublicChurchSite() {
     primary_color: string | null;
     template: string;
     content: SiteContent;
+    slug: string;
   } | null>(null);
 
   const [givingEnabled, setGivingEnabled] = useState(false);
 
   useEffect(() => {
     (async () => {
-      if (!slug) { setLoading(false); return; }
-      const [{ data: rows, error }, { data: giving }] = await Promise.all([
-        supabase.rpc("get_public_website", { _slug: slug }),
-        supabase.rpc("get_public_giving_config", { _slug: slug }),
-      ]);
+      const hostname = currentHostname();
+      const useHost = isTenantHost(hostname);
+      if (!useHost && !slug) { setLoading(false); return; }
+
+      // Fetch site by hostname (custom domain / subdomain) or by /site/:slug path
+      const sitePromise = useHost
+        ? supabase.rpc("get_public_website_by_hostname", { _hostname: hostname })
+        : supabase.rpc("get_public_website", { _slug: slug! });
+
+      const { data: rows, error } = await sitePromise;
+
       if (!error && rows && rows.length > 0) {
         const r = rows[0];
         const baseContent = (r.content as SiteContent) || {};
 
-        // Fetch gallery images uploaded via the media library
-        const { data: media } = await supabase
-          .from("tenant_media")
-          .select("public_url,caption,sort_order,created_at")
-          .eq("tenant_id", r.tenant_id)
-          .eq("category", "gallery")
-          .not("public_url", "is", null)
-          .order("sort_order", { ascending: true })
-          .order("created_at", { ascending: false });
+        // Now that we have the tenant, fetch giving config + gallery in parallel
+        const [{ data: giving }, { data: media }] = await Promise.all([
+          supabase.rpc("get_public_giving_config", { _slug: r.slug }),
+          supabase
+            .from("tenant_media")
+            .select("public_url,caption,sort_order,created_at")
+            .eq("tenant_id", r.tenant_id)
+            .eq("category", "gallery")
+            .not("public_url", "is", null)
+            .order("sort_order", { ascending: true })
+            .order("created_at", { ascending: false }),
+        ]);
 
         const gallery = (media || [])
           .filter((m: any) => m.public_url)
@@ -114,10 +125,11 @@ export default function PublicChurchSite() {
           primary_color: r.primary_color,
           template: r.template,
           content: { ...baseContent, gallery: gallery.length ? gallery : baseContent.gallery },
+          slug: r.slug,
         });
+        setGivingEnabled(!!(giving && giving.length > 0));
         document.title = r.tenant_name;
       }
-      setGivingEnabled(!!(giving && giving.length > 0));
       setLoading(false);
     })();
   }, [slug]);
@@ -137,7 +149,13 @@ export default function PublicChurchSite() {
       </div>
     );
   }
-  const siteUrl = typeof window !== "undefined" ? `${window.location.origin}/site/${slug}` : `/site/${slug}`;
+  // If we resolved via a tenant custom domain / subdomain, keep the URL clean
+  // (origin only). Otherwise fall back to the /site/<slug> canonical path.
+  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
+  const siteUrl = typeof window !== "undefined"
+    ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
+    : `/site/${data.slug}`;
+  const giveHref = isHostBased ? `/give` : `/site/${data.slug}/give`;
   const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
   const serviceEvents = useMemo(
     () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
@@ -177,7 +195,7 @@ export default function PublicChurchSite() {
       })}
       {givingEnabled && (
         <a
-          href={`/site/${slug}/give`}
+          href={giveHref}
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white font-semibold hover:scale-105 transition-transform"
           style={{ backgroundColor: data.primary_color || "hsl(var(--primary))" }}
         >

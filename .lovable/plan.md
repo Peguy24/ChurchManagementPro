@@ -1,87 +1,132 @@
 
-# Online Giving for Tenants
+# Church Custom Domains for the Mini-Site
 
-Adds a public "Give" page inside the existing $15/mo Church Mini-Site add-on. Donors can give a one-time gift via Stripe (card / Apple Pay / Google Pay) or MonCash (Haiti mobile wallet). No fund picker, no recurring — kept simple for v1.
+Give every church two options for their public website:
 
-## Scope
+1. **Free subdomain** — `mychurch.churchmanagementpro.com`, included with the $15/mo Website add-on. Set up in one click.
+2. **Bring your own domain** — `www.mychurch.org`. Church buys it from any registrar (or through Lovable), points DNS at our platform, we auto-issue SSL. Also included in the add-on — no extra fee.
 
-- Only tenants with an active `website_addon_subscriptions` row get a live Give page.
-- Public URL: `/site/:slug/give` (also linked as a "Donate" button on the mini-site).
-- Tenant admin configures payout accounts in Church Settings → Online Giving.
-- Every successful donation is auto-inserted into the existing `donations` table so it appears in the tenant's finance module.
+Both options resolve to the same beautiful template the church already edits at `/church-website`.
 
-## Payout model
+---
 
-Each church receives funds directly — the platform is not a merchant of record.
+## What the church sees
 
-- **Stripe:** Stripe Connect (Standard accounts). Each tenant onboards their own Stripe account; funds settle to their bank. Platform can optionally take an application fee (default 0%).
-- **MonCash:** Each tenant enters their MonCash business `client_id` / `client_secret` (encrypted in DB). Payments hit their MonCash merchant account directly.
+New **Domain** tab inside Church Website (right next to Basic / Services / Contact / Social / Media):
 
-## Tenant configuration UI
+```text
+┌─ Your website URL ────────────────────────────────────┐
+│                                                        │
+│  ◉ Free subdomain                                      │
+│    [ mychurch          ] .churchmanagementpro.com     │
+│    ✓ Available          [ Claim subdomain ]           │
+│                                                        │
+│  ○ Use my own domain (e.g. www.mychurch.org)          │
+│    [ www.mychurch.org                        ] [Add]  │
+│                                                        │
+│    Status: Pending DNS · SSL not issued yet           │
+│    Add these two DNS records at your registrar:       │
+│      Type: CNAME  Host: www  Value: sites.churchmanagementpro.com │
+│      Type: TXT    Host: _cmp-verify  Value: cmp-verify=abc123…    │
+│    [ Copy records ]  [ Check DNS ]  [ Remove domain ] │
+│                                                        │
+└────────────────────────────────────────────────────────┘
 
-New tab in `ChurchSettings.tsx` → "Online Giving":
-- Toggle: Enable online giving (requires website add-on).
-- Stripe: "Connect Stripe account" button → OAuth flow → stores `stripe_account_id`. Shows connected status + "Disconnect".
-- MonCash: form for `moncash_client_id` + `moncash_client_secret` + Sandbox/Live toggle.
-- Minimum amount, suggested amounts (e.g. 10 / 25 / 50 / 100), currency (uses tenant currency), thank-you message (localized), optional cover image.
+Primary domain: www.mychurch.org  (used in emails & shares)
+Also live at: mychurch.churchmanagementpro.com  (auto-redirects to primary)
+```
 
-## Public Give page (`/site/:slug/give`)
+Statuses shown to the church:
+- **Pending DNS** — records not detected yet
+- **Verifying** — records found, waiting for SSL
+- **Active** — live and secure (green padlock)
+- **Failed** — DNS moved away or SSL couldn't issue (with retry button)
 
-- Tenant branding (logo, primary color) from `get_public_website`.
-- Amount input + suggested chips, donor name (optional), email (required for receipt), optional message.
-- Payment method radio: Card (Stripe) / MonCash — only shows methods the tenant enabled.
-- Submit → calls `create-donation-checkout` edge function → redirects to Stripe Checkout or MonCash payment URL.
-- Success page `/site/:slug/give/success` and cancel page.
+---
 
-## Recording donations
+## What the super admin sees
 
-Both providers post back to webhooks. On success:
-- Insert into `donations` (tenant_id, amount, donation_type='online', payment_method='card'|'moncash', donor name in `notes`, `description`='Online giving').
-- If the tenant has a default cash register / bank account for online giving (set in config), credit its balance; otherwise leave unlinked for the treasurer to reconcile.
-- Send confirmation email to donor via existing Resend setup (trilingual FR/EN/HT based on browser lang).
-- Fire `platform_notifications` insert `new_online_donation` for tenant admins (uses existing realtime infra).
+New "Custom Domains" section in `/super-admin/website-addons`:
+- Table of every custom domain: church name, hostname, status, added date
+- Force re-verify, revoke, view DNS records
+- Alerts widget: X domains failed verification, Y offline
 
-## Super Admin
+---
 
-Nothing new required — existing `WebsiteAddonsAdmin` already gates access. Add a small "Online giving totals" widget on the tenant detail view later (out of scope for v1).
+## How routing works
 
-## Technical Details
+Two new public entry points, both served by React Router:
 
-**Migration**
-- New table `tenant_giving_settings` (tenant_id PK, enabled, stripe_account_id, moncash_client_id, moncash_client_secret_encrypted, moncash_env, min_amount, suggested_amounts jsonb, thank_you_message jsonb, cover_image_url, default_cash_register_id, default_bank_account_id).
-- Standard 4-step: CREATE → GRANT (authenticated + service_role, no anon) → RLS → policies (tenant admins manage own row; `service_role` full).
-- Add SECURITY DEFINER function `get_public_giving_config(_slug text)` returning only public-safe fields (enabled providers, amounts, message, cover, branding) — no secrets.
-- Add columns to `donations`: none needed; reuse `payment_method` values `card` / `moncash` and add `donation_type='online'` via existing free-text.
-- Encrypt MonCash secret using pgsodium or store in Supabase Vault; edge function reads via service role.
+- `mychurch.churchmanagementpro.com` → resolve subdomain → render existing `PublicChurchSite`
+- `www.mychurch.org` → resolve custom hostname → same `PublicChurchSite`
 
-**Edge functions** (all with `verify_jwt = false` where public)
-- `stripe-connect-oauth` — starts Stripe Connect Standard OAuth, stores `stripe_account_id` on callback. Requires tenant admin JWT.
-- `create-donation-checkout` (public) — input: `{ slug, amount, method, donor_name?, donor_email, message? }`. Loads config via `get_public_giving_config`, validates amount ≥ min, creates Stripe Checkout Session with `payment_intent_data.transfer_data.destination = tenant.stripe_account_id` OR calls MonCash `CreatePayment` API and returns redirect URL. Rate-limited + honeypot like the contact form.
-- `stripe-giving-webhook` (public, signature-verified) — on `checkout.session.completed`, insert donation row, update balances, send confirmation email, insert notification.
-- `moncash-giving-webhook` (public) — polls/receives MonCash `transactionId`, verifies via MonCash API, then same insert flow.
+The existing `/site/:slug` route keeps working forever as a fallback.
 
-**Frontend**
-- `src/pages/PublicGivingPage.tsx` — the donor-facing page.
-- `src/pages/GivingSuccess.tsx` / `GivingCancel.tsx`.
-- `src/components/ChurchSettings/OnlineGivingSettings.tsx` — admin config UI.
-- Add "Donate" button/section to `SiteTemplates.tsx` when giving is enabled.
-- Routes in `App.tsx`: `/site/:slug/give`, `/site/:slug/give/success`, `/site/:slug/give/cancel`.
+---
 
-**Secrets needed**
-- `STRIPE_SECRET_KEY` (platform key, likely already present) + `STRIPE_CONNECT_CLIENT_ID` (new — user must add from Stripe Dashboard → Connect settings).
-- `STRIPE_WEBHOOK_SECRET_GIVING` (new — from webhook endpoint we register).
-- `MONCASH_ENCRYPTION_KEY` (generated) for encrypting per-tenant MonCash secrets at rest.
+## Cost & billing
 
-**Fees**
-- v1: no platform fee. Comment in code shows where to add `application_fee_amount` later.
+- Free subdomain: **no extra charge**, part of the $15/mo add-on.
+- BYO custom domain: **no extra charge from us**. Church pays their registrar (~$12/year). We eat the SSL cost (Cloudflare SaaS free tier or Let's Encrypt).
+- Optional future: sell domains directly through the app with a $5–10/yr markup.
 
-**Out of scope (call out to user)**
-- Recurring donations, fund/category picker, donor accounts, tax receipt PDFs from online gifts (existing fiscal receipt flow already covers year-end), refunds UI.
+---
 
-## Rollout order
+## Technical details
 
-1. Migration + settings UI (admin can save config, no live payments yet).
-2. Stripe Connect OAuth + Stripe checkout + webhook end-to-end.
-3. MonCash integration.
-4. Public Give page + mini-site "Donate" button.
-5. Confirmation emails + realtime notifications.
+**Database — new table `tenant_domains`:**
+
+```
+tenant_domains
+  id, tenant_id, hostname (unique), kind ('subdomain' | 'custom'),
+  is_primary, verification_token, status
+  ('pending' | 'verifying' | 'active' | 'failed' | 'removed'),
+  ssl_provisioned_at, last_verified_at, created_at
+```
+
+Enforce: one primary per tenant, subdomain slug reserved from `tenants.slug` if desired, RLS so tenants only see their own rows.
+
+**DNS + SSL provider — Cloudflare for SaaS (recommended):**
+- Wildcard `*.churchmanagementpro.com` CNAME → our origin (one-time DNS)
+- For custom domains: call Cloudflare API from an edge function to add a "custom hostname" — Cloudflare handles verification + SSL automatically
+- Requires two secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`
+- Free plan supports 100 custom hostnames; SaaS plan is ~$7/mo for more
+
+If Cloudflare SaaS is off the table, alternative is Caddy on our origin with on-demand TLS (Let's Encrypt) — cheaper but more ops work.
+
+**Edge functions (new):**
+- `provision-tenant-domain` — church adds hostname → generate verify token → call Cloudflare API → return DNS instructions
+- `verify-tenant-domain` — polled/manual "Check DNS" → resolves TXT + CNAME, updates status
+- `remove-tenant-domain` — deletes from Cloudflare + our DB
+- Cron every 15 min: re-check "verifying" and "active" domains, mark offline if DNS drifted
+
+**Frontend routing (`PublicChurchSite`):**
+- On mount, read `window.location.hostname`
+- If it matches `*.churchmanagementpro.com` and isn't the apex → look up by subdomain
+- If it's neither our apex nor a Lovable subdomain → look up by custom hostname
+- Otherwise fall back to `/site/:slug`
+
+Extend the existing `get_public_website` RPC to accept a `hostname` parameter.
+
+**Public URL used everywhere else:**
+- `useCurrentTenant`, share buttons, QR codes, emails all read the tenant's `primary_domain` (falls back to Lovable URL if none set).
+
+**Rollout order:**
+1. Migration + `tenant_domains` table + RLS + grants
+2. Update `get_public_website` RPC to support hostname lookup
+3. Update `PublicChurchSite` + router to handle host-based resolution
+4. Free subdomain flow (no external API — just DB + wildcard DNS one-time setup)
+5. Cloudflare secrets + provisioning edge functions
+6. Church-facing Domain tab in editor
+7. Super-admin management page
+8. Verification cron + status monitoring
+
+---
+
+## Out of scope for this plan
+
+- Selling domains inside the app (registrar API integration — separate plan later)
+- Per-church email at their custom domain (e.g. `pastor@mychurch.org`) — that's a separate email-hosting problem
+- Wildcard subdomains under the church's custom domain (e.g. `giving.mychurch.org`)
+
+Confirm and I'll start with step 1 (schema + subdomain-only flow), so churches immediately get `mychurch.churchmanagementpro.com`, and layer the Cloudflare BYO-domain flow on top once you've added the two Cloudflare secrets.

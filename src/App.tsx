@@ -10,6 +10,7 @@ import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
+import { isTenantHost } from "@/lib/tenantHost";
 
 // Eagerly load landing pages for fast LCP
 import Commercial from "./pages/Commercial";
@@ -133,6 +134,23 @@ const LazyFallback = () => (
   </div>
 );
 
+// When the app is loaded on a tenant custom domain or subdomain,
+// short-circuit the whole route tree to the public church site.
+function TenantHostGate({ children }: { children: React.ReactNode }) {
+  const isTenant = typeof window !== "undefined" && isTenantHost(window.location.hostname);
+  if (isTenant) {
+    return (
+      <Routes>
+        <Route path="/give" element={<PublicGivingPage />} />
+        <Route path="/give/success" element={<GivingResult status="success" />} />
+        <Route path="/give/cancel" element={<GivingResult status="cancel" />} />
+        <Route path="*" element={<PublicChurchSite />} />
+      </Routes>
+    );
+  }
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -143,6 +161,7 @@ const App = () => (
           <InactivityGuard>
           <TenantProvider>
             <Suspense fallback={<LazyFallback />}>
+            <TenantHostGate>
             <Routes>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
@@ -253,6 +272,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </TenantHostGate>
             </Suspense>
           </TenantProvider>
           </InactivityGuard>
