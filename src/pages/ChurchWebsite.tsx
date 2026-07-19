@@ -30,6 +30,13 @@ const emptyContent: SiteContent = {
   footer_text: "",
   service_times: [],
   social: { facebook: "", instagram: "", youtube: "", whatsapp: "" },
+  sermons: [],
+  staff: [],
+  visit: {},
+  theme: { font: "sans" },
+  subpages: { enabled: false, pages: ["about", "sermons", "visit", "contact"] },
+  prayer_enabled: true,
+  newsletter_enabled: true,
 };
 
 export default function ChurchWebsite() {
