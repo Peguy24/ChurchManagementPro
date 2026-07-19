@@ -75,3 +75,5 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = false
   [functions.stripe-connect-onboard]
     verify_jwt = true
+  [functions.verify-tenant-domain]
+    verify_jwt = true
