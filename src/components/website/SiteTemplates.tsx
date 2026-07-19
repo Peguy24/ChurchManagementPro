@@ -244,7 +244,7 @@ export function TemplateClassic({ name, logoUrl, primaryColor, content }: Templa
       <footer className="border-t mt-8" style={{ borderColor: tint(color, 0.15), background: soft }}>
         <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
           <div style={{ color }}>© {new Date().getFullYear()} {name}</div>
-          <div className="opacity-60">Built with care ✦</div>
+          <div className="opacity-60">{footerLine(content, "Built with care ✦")}</div>
         </div>
       </footer>
     </div>
