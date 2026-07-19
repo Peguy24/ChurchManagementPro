@@ -29,6 +29,12 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "inventory",
   "volunteers",
   "visitors",
+  "website",
+  "giving",
+  "prayer_requests",
+  "insights",
+  "automations",
+  "subscription",
 ];
 
 interface RolePermission {
@@ -71,6 +77,12 @@ export default function TenantRolePermissionsManager() {
     tenants: t("rolePermissions.groupTenants"),
     volunteers: t("rolePermissions.groupVolunteers"),
     visitors: t("rolePermissions.groupVisitors"),
+    website: t("rolePermissions.groupWebsite"),
+    giving: t("rolePermissions.groupGiving"),
+    prayer_requests: t("rolePermissions.groupPrayerRequests"),
+    insights: t("rolePermissions.groupInsights"),
+    automations: t("rolePermissions.groupAutomations"),
+    subscription: t("rolePermissions.groupSubscription"),
   };
 
   // Fetch current permissions from database for this tenant
