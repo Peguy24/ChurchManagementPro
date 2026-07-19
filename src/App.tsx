@@ -147,6 +147,10 @@ function TenantHostGate({ children }: { children: React.ReactNode }) {
         <Route path="/give" element={<PublicGivingPage />} />
         <Route path="/give/success" element={<GivingResult status="success" />} />
         <Route path="/give/cancel" element={<GivingResult status="cancel" />} />
+        <Route path="/about" element={<PublicChurchSite />} />
+        <Route path="/sermons" element={<PublicChurchSite />} />
+        <Route path="/visit" element={<PublicChurchSite />} />
+        <Route path="/contact" element={<PublicChurchSite />} />
         <Route path="*" element={<PublicChurchSite />} />
       </Routes>
     );
