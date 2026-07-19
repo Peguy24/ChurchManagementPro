@@ -10,6 +10,12 @@ export interface SiteContent {
   service_times?: Array<{ day: string; time: string; title?: string }>;
   social?: { facebook?: string; instagram?: string; youtube?: string; whatsapp?: string };
   gallery?: Array<{ url: string; caption?: string }>;
+  footer_text?: string;
+}
+
+function footerLine(content: SiteContent, fallback: string) {
+  const t = (content.footer_text || "").trim();
+  return t.length > 0 ? t : fallback;
 }
 
 function GallerySection({ gallery, primaryColor }: { gallery?: SiteContent["gallery"]; primaryColor?: string | null }) {
