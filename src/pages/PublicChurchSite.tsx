@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
 import { JsonLd } from "@/components/JsonLd";
-import { currentHostname, isTenantHost } from "@/lib/tenantHost";
+import { currentHostname, isProjectPreviewHost, isTenantHost } from "@/lib/tenantHost";
 import {
   SiteTopNav,
   anySubpageEnabled,
@@ -125,7 +125,7 @@ export default function PublicChurchSite() {
             .eq("status", "active")
             .maybeSingle();
           const primaryHost = (primary as any)?.hostname as string | undefined;
-          if (primaryHost && typeof window !== "undefined") {
+          if (primaryHost && typeof window !== "undefined" && !isProjectPreviewHost(hostname)) {
             const currentHost = window.location.hostname.toLowerCase();
             const arrivedViaPath = !useHost; // came in on /site/<slug>[/...]
             if (primaryHost.toLowerCase() !== currentHost || arrivedViaPath) {
