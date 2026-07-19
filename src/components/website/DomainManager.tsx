@@ -184,8 +184,14 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
                       </Button>
                     )}
                     {d.verification_status === "verified" && !d.is_primary && (
-                      <Button size="sm" variant="outline" onClick={() => setPrimary(d.id)} title="Set as primary">
-                        <StarOff className="w-3 h-3" />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setPrimary(d.id)}
+                        title="Use this domain as the canonical URL for links and redirects"
+                      >
+                        <Star className="w-3 h-3 mr-1" />
+                        Set as primary
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => remove(d.id)}>
