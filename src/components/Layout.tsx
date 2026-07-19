@@ -418,6 +418,7 @@ export default function Layout({ children }: LayoutProps) {
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { settings: whiteLabelSettings } = useWhiteLabel();
+  const { isGlobalFeatureEnabled } = usePlanLimits();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Apply tenant primary color to CSS custom properties
