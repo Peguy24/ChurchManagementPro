@@ -102,6 +102,9 @@ export default function WebsiteAddonsAdmin() {
     );
     if (error) toast.error(error.message);
     else {
+      supabase.functions.invoke("notify-tenant-comp-action", {
+        body: { tenantId: grantTarget.id, action: "addon_granted", expiresAt: end },
+      }).catch((e) => console.error("notify addon_granted failed", e));
       toast.success(end ? `Access granted until ${new Date(end).toLocaleDateString()}` : "Unlimited access granted");
       setGrantOpen(false);
       load();
