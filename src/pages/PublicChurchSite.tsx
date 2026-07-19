@@ -227,17 +227,45 @@ export default function PublicChurchSite() {
     ].filter(Boolean),
   };
 
+  // Determine subpage from URL path
+  const basePath = isHostBased ? "" : `/site/${data.slug}`;
+  const rel = location.pathname
+    .replace(new RegExp(`^${basePath}`), "")
+    .replace(/\/+$/, "")
+    .toLowerCase() || "/";
+  let subpage: "home" | "about" | "sermons" | "visit" | "contact" = "home";
+  if (rel === "/about" && subpageEnabled(data.content, "about")) subpage = "about";
+  else if (rel === "/sermons" && subpageEnabled(data.content, "sermons")) subpage = "sermons";
+  else if (rel === "/visit" && subpageEnabled(data.content, "visit")) subpage = "visit";
+  else if (rel === "/contact" && subpageEnabled(data.content, "contact")) subpage = "contact";
+
+  const meta: SiteMeta = {
+    name: data.name,
+    logoUrl: data.logo_url,
+    primaryColor: data.primary_color,
+    content: data.content,
+    basePath,
+    giveHref: givingEnabled ? giveHref : null,
+  };
+  const showNav = anySubpageEnabled(data.content);
+  const themedFont = fontFor(data.content.theme);
+
   return (
-    <div className="relative">
+    <div className="relative" style={data.content.theme?.font ? { fontFamily: themedFont } : undefined}>
       <JsonLd id="church-org" data={orgJsonLd} />
       {serviceEvents.length > 0 && <JsonLd id="church-services" data={serviceEvents} />}
-      {renderTemplate(data.template, {
+      {showNav && <SiteTopNav meta={meta} />}
+      {subpage === "home" && renderTemplate(data.template, {
         name: data.name,
         logoUrl: data.logo_url,
         primaryColor: data.primary_color,
         content: data.content,
       })}
-      {givingEnabled && (
+      {subpage === "about" && <AboutStaffPage meta={meta} />}
+      {subpage === "sermons" && <SermonsPage meta={meta} />}
+      {subpage === "visit" && <VisitPage meta={meta} />}
+      {subpage === "contact" && <ContactPage meta={meta} tenantId={data.tenant_id} />}
+      {givingEnabled && subpage === "home" && (
         <a
           href={giveHref}
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white font-semibold hover:scale-105 transition-transform"
