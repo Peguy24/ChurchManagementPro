@@ -1855,6 +1855,12 @@ const translations = {
       groupTenants: "Gestion Multi-Tenant",
       groupVolunteers: "Planification Bénévoles",
       groupVisitors: "Gestion Visiteurs",
+      groupWebsite: "Site Web de l'Église",
+      groupGiving: "Dons en Ligne",
+      groupPrayerRequests: "Demandes de Prière",
+      groupInsights: "Insights Intelligents",
+      groupAutomations: "Automatisations",
+      groupSubscription: "Abonnement & Facturation",
     },
     customRoles: {
       title: "Rôles Personnalisés",
