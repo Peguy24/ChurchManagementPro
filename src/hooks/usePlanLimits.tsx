@@ -95,6 +95,23 @@ export function usePlanLimits() {
     staleTime: 1000 * 60 * 5, // Cache 5 min
   });
 
+  // Fetch global feature flags (Super Admin can disable features platform-wide)
+  const { data: globalFlags } = useQuery({
+    queryKey: ["platform-feature-flags"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("platform_settings")
+        .select("setting_value")
+        .eq("setting_key", "feature_flags")
+        .maybeSingle();
+      return (data?.setting_value && typeof data.setting_value === "object")
+        ? (data.setting_value as Record<string, boolean>)
+        : {};
+    },
+    staleTime: 1000 * 60 * 2,
+    refetchInterval: 1000 * 60 * 2,
+  });
+
   // Check DB subscription for plans not managed by Stripe (e.g., "free")
   const { data: dbSubscription } = useQuery({
     queryKey: ["db-subscription", tenantId],
