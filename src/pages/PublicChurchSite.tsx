@@ -172,7 +172,20 @@ export default function PublicChurchSite() {
           slug: r.slug,
         });
         setGivingEnabled(!!(giving && giving.length > 0));
-        document.title = r.tenant_name;
+        const seoTitle = (baseContent.seo?.title || "").trim();
+        const seoDesc = (baseContent.seo?.description || "").trim();
+        const ogImage = (baseContent.seo?.og_image || baseContent.hero_image_url || r.logo_url || "").trim();
+        document.title = seoTitle || r.tenant_name;
+        const setMeta = (name: string, content: string, attr: "name" | "property" = "name") => {
+          if (!content) return;
+          let el = document.head.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+          if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+          el.setAttribute("content", content);
+        };
+        if (seoDesc) setMeta("description", seoDesc);
+        setMeta("og:title", seoTitle || r.tenant_name, "property");
+        if (seoDesc) setMeta("og:description", seoDesc, "property");
+        if (ogImage) setMeta("og:image", ogImage, "property");
       }
       setLoading(false);
     })();
