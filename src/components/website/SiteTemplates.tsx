@@ -597,10 +597,10 @@ export function TemplateWarm({ name, logoUrl, primaryColor, content }: TemplateP
 
       <footer className="py-10 border-t border-[#3B2A1A]/10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#3B2A1A]/60">
-          <div>© {new Date().getFullYear()} {name} · Made with care</div>
+          <div>© {new Date().getFullYear()} {name}</div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-            All are welcome
+            {footerLine(content, "All are welcome")}
           </div>
         </div>
       </footer>
@@ -608,17 +608,352 @@ export function TemplateWarm({ name, logoUrl, primaryColor, content }: TemplateP
   );
 }
 
+/* ============================ Variant renderer (used by templates 4–10) ============================ */
+
+type Variant = {
+  bg: string;
+  surface: string;
+  text: string;
+  muted: string;
+  border: string;
+  font: string;
+  headingFont?: string;
+  hero: "image-right" | "image-left" | "full-bleed" | "banner" | "split-color" | "framed" | "stacked";
+  radius: "sharp" | "soft" | "pill" | "asym";
+  accentShape?: "line" | "dot" | "square" | "wave";
+  navStyle: "light" | "dark" | "solid";
+  serviceCard: "outlined" | "filled" | "gradient" | "numbered";
+  defaultColor: string;
+  eyebrow?: string;
+  ctaLabel?: string;
+  ctaSecondary?: string;
+};
+
+function radiusClass(r: Variant["radius"]) {
+  return r === "sharp" ? "rounded-none"
+    : r === "soft" ? "rounded-2xl"
+    : r === "pill" ? "rounded-full"
+    : "rounded-[28px_8px_28px_8px]";
+}
+
+function VariantTemplate({ name, logoUrl, primaryColor, content, v }: TemplateProps & { v: Variant }) {
+  const color = primaryColor || v.defaultColor;
+  const soft = tint(color, 0.08);
+  const rc = radiusClass(v.radius);
+  const btn = `inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold transition-all hover:-translate-y-0.5 ${rc}`;
+
+  return (
+    <div className="min-h-screen" style={{ background: v.bg, color: v.text, fontFamily: v.font }}>
+      {/* Nav */}
+      <nav
+        className="sticky top-0 z-40 backdrop-blur-md border-b"
+        style={{
+          background: v.navStyle === "dark" ? "rgba(0,0,0,0.55)" : v.navStyle === "solid" ? color : `${v.surface}dd`,
+          borderColor: v.border,
+          color: v.navStyle === "dark" || v.navStyle === "solid" ? "#fff" : v.text,
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              <img src={logoUrl} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-white/20" />
+            ) : (
+              <div className={`w-9 h-9 grid place-items-center ${rc === "rounded-none" ? "" : "rounded-full"}`} style={{ background: v.navStyle === "solid" ? "rgba(255,255,255,0.2)" : color }}>
+                <Church className="w-5 h-5 text-white" />
+              </div>
+            )}
+            <span className="font-semibold tracking-tight" style={{ fontFamily: v.headingFont || v.font }}>{name}</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6 text-sm opacity-90">
+            <a href="#about" className="hover:opacity-100">About</a>
+            <a href="#services" className="hover:opacity-100">Services</a>
+            <a href="#visit" className="hover:opacity-100">Visit</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <header className="relative overflow-hidden">
+        {v.hero === "full-bleed" ? (
+          <div className="relative min-h-[85vh] flex items-end">
+            <div className="absolute inset-0">
+              {content.hero_image_url ? (
+                <img src={content.hero_image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full" style={{ background: `linear-gradient(160deg, ${color}, ${tint(color, 0.6)})` }} />
+              )}
+              <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.75), rgba(0,0,0,0.15) 60%, transparent)" }} />
+            </div>
+            <div className="relative max-w-6xl mx-auto px-6 py-20 text-white w-full">
+              {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] opacity-80 mb-6">{v.eyebrow}</div>}
+              <h1 className="text-5xl md:text-7xl font-bold leading-[1.02]" style={{ fontFamily: v.headingFont || v.font }}>{name}</h1>
+              {content.tagline && <p className="mt-6 text-xl md:text-2xl max-w-2xl opacity-90">{content.tagline}</p>}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href="#visit" className={btn} style={{ background: color, color: "#fff" }}>{v.ctaLabel || "Plan a Visit"} <ArrowRight className="w-4 h-4" /></a>
+                <a href="#services" className={btn} style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff" }}>{v.ctaSecondary || "Service Times"}</a>
+              </div>
+            </div>
+          </div>
+        ) : v.hero === "banner" ? (
+          <div className="relative py-24 md:py-32" style={{ background: `linear-gradient(120deg, ${color}, ${tint(color, 0.7)})`, color: "#fff" }}>
+            <div className="max-w-4xl mx-auto px-6 text-center">
+              {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] opacity-80 mb-6">{v.eyebrow}</div>}
+              <h1 className="text-5xl md:text-7xl font-bold" style={{ fontFamily: v.headingFont || v.font }}>{name}</h1>
+              {content.tagline && <p className="mt-6 text-xl md:text-2xl opacity-90">{content.tagline}</p>}
+              <div className="mt-10 flex flex-wrap gap-3 justify-center">
+                <a href="#visit" className={btn} style={{ background: "#fff", color }}>{v.ctaLabel || "Visit Us"} <ArrowRight className="w-4 h-4" /></a>
+                <a href="#services" className={btn} style={{ border: "1px solid rgba(255,255,255,0.5)", color: "#fff" }}>{v.ctaSecondary || "Services"}</a>
+              </div>
+            </div>
+          </div>
+        ) : v.hero === "split-color" ? (
+          <div className="grid md:grid-cols-2 min-h-[85vh]">
+            <div className="p-10 md:p-16 flex flex-col justify-center" style={{ background: color, color: "#fff" }}>
+              {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] opacity-80 mb-6">{v.eyebrow}</div>}
+              <h1 className="text-5xl md:text-7xl font-bold leading-[1.02]" style={{ fontFamily: v.headingFont || v.font }}>{name}</h1>
+              {content.tagline && <p className="mt-6 text-xl opacity-90 max-w-md">{content.tagline}</p>}
+              <div className="mt-10 flex flex-wrap gap-3">
+                <a href="#visit" className={btn} style={{ background: "#fff", color }}>{v.ctaLabel || "Visit"} <ArrowRight className="w-4 h-4" /></a>
+              </div>
+            </div>
+            <div className="relative min-h-[300px]">
+              {content.hero_image_url ? (
+                <img src={content.hero_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 grid place-items-center" style={{ background: soft }}>
+                  <Church className="w-32 h-32" style={{ color: tint(color, 0.4) }} strokeWidth={1} />
+                </div>
+              )}
+            </div>
+          </div>
+        ) : v.hero === "framed" ? (
+          <div className="max-w-6xl mx-auto px-6 py-16">
+            <div className={`relative overflow-hidden ${rc}`} style={{ border: `1px solid ${v.border}`, background: v.surface }}>
+              <div className="grid md:grid-cols-2 gap-8 items-center p-8 md:p-14">
+                <div>
+                  {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] mb-5" style={{ color }}>{v.eyebrow}</div>}
+                  <h1 className="text-5xl md:text-6xl font-bold leading-[1.05]" style={{ fontFamily: v.headingFont || v.font, color }}>{name}</h1>
+                  {content.tagline && <p className="mt-5 text-lg md:text-xl" style={{ color: v.muted }}>{content.tagline}</p>}
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <a href="#visit" className={btn} style={{ background: color, color: "#fff" }}>{v.ctaLabel || "Visit Us"} <ArrowRight className="w-4 h-4" /></a>
+                    <a href="#services" className={btn} style={{ border: `1px solid ${color}`, color }}>{v.ctaSecondary || "Services"}</a>
+                  </div>
+                </div>
+                <div className={`aspect-[4/5] overflow-hidden ${rc}`} style={{ background: soft }}>
+                  {content.hero_image_url ? (
+                    <img src={content.hero_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full grid place-items-center"><Church className="w-24 h-24" style={{ color: tint(color, 0.5) }} strokeWidth={1} /></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : v.hero === "stacked" ? (
+          <div className="max-w-4xl mx-auto px-6 py-24 text-center">
+            {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] mb-6" style={{ color }}>{v.eyebrow}</div>}
+            <h1 className="text-6xl md:text-8xl font-bold leading-[0.95]" style={{ fontFamily: v.headingFont || v.font, color }}>{name}</h1>
+            {content.tagline && <p className="mt-8 text-xl md:text-2xl max-w-2xl mx-auto" style={{ color: v.muted }}>{content.tagline}</p>}
+            <div className="mt-10 flex flex-wrap gap-3 justify-center">
+              <a href="#visit" className={btn} style={{ background: color, color: "#fff" }}>{v.ctaLabel || "Plan a Visit"} <ArrowRight className="w-4 h-4" /></a>
+              <a href="#services" className={btn} style={{ border: `1px solid ${color}`, color }}>{v.ctaSecondary || "Service Times"}</a>
+            </div>
+            {content.hero_image_url && (
+              <div className={`mt-14 overflow-hidden ${rc} aspect-[16/8]`}>
+                <img src={content.hero_image_url} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+          </div>
+        ) : (
+          // image-right / image-left
+          <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-10 items-center">
+            <div className={v.hero === "image-left" ? "md:order-2" : ""}>
+              {v.eyebrow && <div className="text-xs uppercase tracking-[0.4em] mb-5" style={{ color }}>{v.eyebrow}</div>}
+              <h1 className="text-5xl md:text-7xl font-bold leading-[1.02]" style={{ fontFamily: v.headingFont || v.font, color }}>{name}</h1>
+              {content.tagline && <p className="mt-6 text-xl md:text-2xl max-w-xl" style={{ color: v.muted }}>{content.tagline}</p>}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href="#visit" className={btn} style={{ background: color, color: "#fff" }}>{v.ctaLabel || "Plan a Visit"} <ArrowRight className="w-4 h-4" /></a>
+                <a href="#services" className={btn} style={{ border: `1px solid ${color}`, color }}>{v.ctaSecondary || "Services"}</a>
+              </div>
+            </div>
+            <div className={`aspect-square overflow-hidden ${rc}`} style={{ background: soft }}>
+              {content.hero_image_url ? (
+                <img src={content.hero_image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full grid place-items-center"><Church className="w-28 h-28" style={{ color: tint(color, 0.5) }} strokeWidth={1} /></div>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6">
+        {content.about && (
+          <section id="about" className="py-20 grid md:grid-cols-12 gap-10">
+            <div className="md:col-span-4">
+              <div className="text-xs uppercase tracking-[0.4em] mb-3" style={{ color }}>Welcome</div>
+              <h2 className="text-4xl md:text-5xl font-bold" style={{ fontFamily: v.headingFont || v.font, color }}>Our Story</h2>
+            </div>
+            <div className="md:col-span-8">
+              <p className="text-lg md:text-xl leading-relaxed whitespace-pre-line" style={{ color: v.muted }}>{content.about}</p>
+            </div>
+          </section>
+        )}
+
+        {content.service_times?.length ? (
+          <section id="services" className="py-20 border-t" style={{ borderColor: v.border }}>
+            <div className="text-center mb-12">
+              <div className="text-xs uppercase tracking-[0.4em] mb-3" style={{ color }}>Weekly</div>
+              <h2 className="text-4xl md:text-5xl font-bold" style={{ fontFamily: v.headingFont || v.font, color }}>Gather With Us</h2>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5">
+              {content.service_times.map((s, i) => {
+                if (v.serviceCard === "gradient") {
+                  return (
+                    <div key={i} className={`p-8 ${rc} text-white`} style={{ background: `linear-gradient(135deg, ${color}, ${tint(color, 0.65)})` }}>
+                      <Clock className="w-6 h-6 mb-4 opacity-90" />
+                      <div className="text-2xl font-bold">{s.day}</div>
+                      <div className="text-lg opacity-90 mt-1">{s.time}</div>
+                      {s.title && <div className="mt-4 pt-4 border-t border-white/20 text-sm opacity-90">{s.title}</div>}
+                    </div>
+                  );
+                }
+                if (v.serviceCard === "numbered") {
+                  return (
+                    <div key={i} className={`p-8 ${rc} relative`} style={{ background: v.surface, border: `1px solid ${v.border}` }}>
+                      <div className="absolute top-6 right-6 text-4xl font-bold opacity-15" style={{ color }}>0{i + 1}</div>
+                      <div className="text-2xl font-bold" style={{ color }}>{s.day}</div>
+                      <div className="text-lg mt-1" style={{ color: v.muted }}>{s.time}</div>
+                      {s.title && <div className="mt-4 pt-4 border-t text-sm" style={{ borderColor: v.border, color: v.muted }}>{s.title}</div>}
+                    </div>
+                  );
+                }
+                if (v.serviceCard === "filled") {
+                  return (
+                    <div key={i} className={`p-8 ${rc}`} style={{ background: soft }}>
+                      <Clock className="w-6 h-6 mb-4" style={{ color }} />
+                      <div className="text-2xl font-bold" style={{ color }}>{s.day}</div>
+                      <div className="text-lg mt-1" style={{ color: v.muted }}>{s.time}</div>
+                      {s.title && <div className="mt-4 pt-4 border-t text-sm" style={{ borderColor: v.border, color: v.muted }}>{s.title}</div>}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} className={`p-8 ${rc} hover:-translate-y-1 transition-transform`} style={{ background: v.surface, border: `1px solid ${v.border}` }}>
+                    <Clock className="w-6 h-6 mb-4" style={{ color }} />
+                    <div className="text-2xl font-bold" style={{ color }}>{s.day}</div>
+                    <div className="text-lg mt-1" style={{ color: v.muted }}>{s.time}</div>
+                    {s.title && <div className="mt-4 pt-4 border-t text-sm" style={{ borderColor: v.border, color: v.muted }}>{s.title}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        <section id="visit" className="py-20 border-t grid md:grid-cols-2 gap-12" style={{ borderColor: v.border }}>
+          <div>
+            <div className="text-xs uppercase tracking-[0.4em] mb-3" style={{ color }}>Come as you are</div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ fontFamily: v.headingFont || v.font, color }}>Visit Us</h2>
+            <div className="space-y-4 text-lg">
+              {content.address && <div className="flex gap-4"><MapPin className="w-5 h-5 mt-1.5 shrink-0" style={{ color }} /><span style={{ color: v.muted }}>{content.address}</span></div>}
+              {content.phone && <div className="flex gap-4"><Phone className="w-5 h-5 mt-1.5 shrink-0" style={{ color }} /><a href={`tel:${content.phone}`} className="hover:underline" style={{ color: v.muted }}>{content.phone}</a></div>}
+              {content.email && <div className="flex gap-4"><Mail className="w-5 h-5 mt-1.5 shrink-0" style={{ color }} /><a href={`mailto:${content.email}`} className="hover:underline" style={{ color: v.muted }}>{content.email}</a></div>}
+            </div>
+            <div className="mt-8"><Socials social={content.social} /></div>
+          </div>
+          <div className={`${rc} relative overflow-hidden p-10 grid place-items-center text-center`} style={{ background: `linear-gradient(135deg, ${color}, ${tint(color, 0.65)})`, color: "#fff" }}>
+            <div>
+              <div className="text-5xl mb-4">✦</div>
+              <p className="text-2xl italic max-w-xs mx-auto">"There's a seat with your name on it."</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t mt-8" style={{ borderColor: v.border, background: v.surface }}>
+        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+          <div style={{ color: v.muted }}>© {new Date().getFullYear()} {name}</div>
+          <div className="flex items-center gap-2" style={{ color: v.muted }}>
+            <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+            {footerLine(content, "Made with love")}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ---- Variant presets (templates 4–10) ---- */
+
+const VARIANTS: Record<string, Variant> = {
+  minimal: {
+    bg: "#ffffff", surface: "#fafafa", text: "#0a0a0a", muted: "#525252", border: "#e5e5e5",
+    font: "'Inter', system-ui, sans-serif", headingFont: "'Inter', system-ui, sans-serif",
+    hero: "stacked", radius: "sharp", navStyle: "light", serviceCard: "outlined",
+    defaultColor: "#0a0a0a", eyebrow: "— Church", ctaLabel: "Plan a Visit", ctaSecondary: "Services",
+  },
+  bold: {
+    bg: "#0a0a0a", surface: "#161616", text: "#fafafa", muted: "#a3a3a3", border: "#262626",
+    font: "'Space Grotesk', 'Inter', sans-serif", headingFont: "'Space Grotesk', 'Inter', sans-serif",
+    hero: "split-color", radius: "sharp", navStyle: "dark", serviceCard: "numbered",
+    defaultColor: "#F97316", eyebrow: "// FAITH THAT MOVES", ctaLabel: "Join Sunday", ctaSecondary: "Learn More",
+  },
+  elegant: {
+    bg: "#0B0B0F", surface: "#15151C", text: "#F5F1E4", muted: "#B8B0A0", border: "#2A2A35",
+    font: "'Cormorant Garamond', Georgia, serif", headingFont: "'Cormorant Garamond', Georgia, serif",
+    hero: "framed", radius: "soft", navStyle: "dark", serviceCard: "outlined",
+    defaultColor: "#C9A44C", eyebrow: "— Est. Community —", ctaLabel: "Reserve Your Seat", ctaSecondary: "Service Times",
+  },
+  nature: {
+    bg: "#F4F7F0", surface: "#FFFFFF", text: "#1E2A20", muted: "#4A5A4C", border: "#DDE5D6",
+    font: "'DM Sans', system-ui, sans-serif", headingFont: "'Lora', Georgia, serif",
+    hero: "image-right", radius: "asym", navStyle: "light", serviceCard: "filled",
+    defaultColor: "#3F6A3A", eyebrow: "Rooted in grace", ctaLabel: "Join Us", ctaSecondary: "Service Times",
+  },
+  coastal: {
+    bg: "#F0F7FB", surface: "#FFFFFF", text: "#0C2340", muted: "#456179", border: "#D6E4EE",
+    font: "'DM Sans', system-ui, sans-serif", headingFont: "'DM Sans', system-ui, sans-serif",
+    hero: "full-bleed", radius: "soft", navStyle: "light", serviceCard: "filled",
+    defaultColor: "#1E6091", eyebrow: "Anchored in faith", ctaLabel: "Plan a Visit", ctaSecondary: "Service Times",
+  },
+  vintage: {
+    bg: "#F5EFE0", surface: "#FBF7EC", text: "#2A1F14", muted: "#5A4632", border: "#D8CBB0",
+    font: "'Nunito', system-ui, sans-serif", headingFont: "'Abril Fatface', Georgia, serif",
+    hero: "image-left", radius: "soft", navStyle: "light", serviceCard: "outlined",
+    defaultColor: "#8B3A1F", eyebrow: "Since generations", ctaLabel: "Come Worship", ctaSecondary: "Our Story",
+  },
+  youth: {
+    bg: "#0F0A1F", surface: "#1A1233", text: "#F8F5FF", muted: "#B8B0D0", border: "#2A1F4A",
+    font: "'Manrope', 'Inter', sans-serif", headingFont: "'Sora', 'Inter', sans-serif",
+    hero: "banner", radius: "pill", navStyle: "dark", serviceCard: "gradient",
+    defaultColor: "#8B5CF6", eyebrow: "✨ A movement, not a meeting", ctaLabel: "Pull Up Sunday", ctaSecondary: "See What's Up",
+  },
+};
+
 /* ------------------------------ registry ------------------------------ */
+
+export const TEMPLATE_LIST = [
+  { id: "classic", name: "Sanctuary", desc: "Editorial serif with warm cream" },
+  { id: "modern", name: "Cinematic", desc: "Dark hero with bold gradient" },
+  { id: "warm", name: "Community", desc: "Soft amber, welcoming feel" },
+  { id: "minimal", name: "Minimal", desc: "Swiss-style monochrome" },
+  { id: "bold", name: "Bold", desc: "High-contrast neo-brutalist" },
+  { id: "elegant", name: "Elegant", desc: "Luxury dark with gold accents" },
+  { id: "nature", name: "Nature", desc: "Organic greens, calm & grounded" },
+  { id: "coastal", name: "Coastal", desc: "Ocean blues, full-bleed hero" },
+  { id: "vintage", name: "Vintage", desc: "Classic cream with retro type" },
+  { id: "youth", name: "Youth", desc: "Vibrant purple, gen-z energy" },
+];
 
 export function renderTemplate(template: string, props: TemplateProps) {
   const inner = (() => {
     switch (template) {
-      case "modern":
-        return <TemplateModern {...props} />;
-      case "warm":
-        return <TemplateWarm {...props} />;
-      case "classic":
+      case "modern": return <TemplateModern {...props} />;
+      case "warm": return <TemplateWarm {...props} />;
+      case "classic": return <TemplateClassic {...props} />;
       default:
+        if (VARIANTS[template]) return <VariantTemplate {...props} v={VARIANTS[template]} />;
         return <TemplateClassic {...props} />;
     }
   })();
@@ -629,3 +964,4 @@ export function renderTemplate(template: string, props: TemplateProps) {
     </>
   );
 }
+
