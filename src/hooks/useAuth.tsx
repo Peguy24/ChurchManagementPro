@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { isTenantHost } from '@/lib/tenantHost';
 import { useNavigate } from 'react-router-dom';
+
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,9 +24,6 @@ export function useAuth() {
     const host = typeof window !== 'undefined' ? window.location.hostname : '';
     let isPublicPage = false;
     try {
-      // Lazy import to avoid pulling tenant host logic into unrelated bundles.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { isTenantHost } = require('@/lib/tenantHost');
       isPublicPage =
         isTenantHost(host) ||
         path.startsWith('/site/') ||
@@ -35,6 +34,7 @@ export function useAuth() {
         path.startsWith('/status') ||
         path.startsWith('/changelog');
     } catch { /* noop */ }
+
 
     // Force sign-out if browser was closed and reopened (sessionStorage is empty)
     const isNewBrowserSession = !sessionStorage.getItem(SESSION_MARKER);
