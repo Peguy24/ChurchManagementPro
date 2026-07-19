@@ -30,15 +30,20 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
   const [adding, setAdding] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [checkingAll, setCheckingAll] = useState(false);
+  const [tenantSlug, setTenantSlug] = useState<string>("");
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tenant_domains" as any)
-      .select("*")
-      .eq("tenant_id", tenantId)
-      .neq("status", "removed")
-      .order("created_at", { ascending: true });
+    const [{ data: t }, { data, error }] = await Promise.all([
+      supabase.from("tenants").select("slug").eq("id", tenantId).maybeSingle(),
+      supabase
+        .from("tenant_domains" as any)
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .neq("status", "removed")
+        .order("created_at", { ascending: true }),
+    ]);
+    if (t?.slug) setTenantSlug(t.slug);
     if (!error) {
       // Normalize DB columns (kind/status/last_verified_at) to UI shape.
       const rows = ((data as any[]) || []).map((r) => ({
@@ -152,9 +157,10 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
       <CardContent className="space-y-6">
         {/* Claim subdomain */}
         <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-          <Label className="font-semibold">Free subdomain</Label>
+          <Label className="font-semibold">Free web address</Label>
           <p className="text-xs text-muted-foreground">
-            Example: <code>mychurch.{PLATFORM_DOMAIN}</code>
+            Reserves your site at <code>{PLATFORM_DOMAIN}/site/&lt;name&gt;</code> — works instantly, no DNS setup.
+            For a true <code>&lt;name&gt;.{PLATFORM_DOMAIN}</code> URL, use the custom domain option below.
           </p>
           <div className="flex flex-wrap gap-2">
             <Input
@@ -215,11 +221,18 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
           ) : domains.length === 0 ? (
             <div className="text-sm text-muted-foreground">No domains yet.</div>
           ) : (
-            domains.map((d) => (
+            domains.map((d) => {
+              // For subdomain rows, the true <sub>.churchmanagementpro.com URL requires a
+              // wildcard DNS setup that isn't in place — link to the reliable path URL instead.
+              const effectiveUrl =
+                d.domain_type === "subdomain" && tenantSlug
+                  ? `https://${PLATFORM_DOMAIN}/site/${tenantSlug}`
+                  : `https://${d.hostname}`;
+              return (
               <div key={d.id} className="border rounded-lg p-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <a
-                    href={`https://${d.hostname}`}
+                    href={effectiveUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="font-mono text-sm hover:underline"
@@ -287,8 +300,28 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
                     </div>
                   </div>
                 )}
+
+                {d.domain_type === "subdomain" && (
+                  <div className="text-xs bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded p-3 space-y-1">
+                    <div className="font-sans">
+                      Your site is live at{" "}
+                      <a
+                        href={effectiveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-mono underline break-all"
+                      >
+                        {effectiveUrl.replace(/^https?:\/\//, "")}
+                      </a>
+                    </div>
+                    <div className="text-muted-foreground font-sans">
+                      To use <code>{d.hostname}</code> directly, add it as a custom domain below and configure the DNS at your registrar.
+                    </div>
+                  </div>
+                )}
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>
