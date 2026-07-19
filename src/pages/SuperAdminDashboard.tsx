@@ -45,11 +45,12 @@ export default function SuperAdminDashboard() {
       // Fetch subscriptions with revenue
       const { data: subscriptions, error: subsError } = await supabase
         .from("tenant_subscriptions")
-        .select("price_monthly, status");
+        .select("price_monthly, status, managed_by_admin");
 
       if (subsError) throw subsError;
 
-      const totalRevenue = subscriptions?.filter(sub => sub.status === "active").reduce((sum, sub) => sum + (sub.price_monthly || 0), 0) || 0;
+      const totalRevenue = subscriptions?.filter(sub => sub.status === "active" && !sub.managed_by_admin).reduce((sum, sub) => sum + (sub.price_monthly || 0), 0) || 0;
+
       const activeSubscriptions = subscriptions?.filter(sub => sub.status === "active").length || 0;
       const trialSubscriptions = subscriptions?.filter(sub => sub.status === "trial").length || 0;
 

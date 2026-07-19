@@ -88,9 +88,10 @@ serve(async (req) => {
     // 2. Active subscriptions & revenue
     const { data: activeSubs } = await supabase
       .from("tenant_subscriptions")
-      .select("price_monthly, status");
+      .select("price_monthly, status, managed_by_admin");
 
-    const totalMRR = activeSubs?.filter(s => s.status === "active").reduce((sum, s) => sum + (s.price_monthly || 0), 0) || 0;
+    const totalMRR = activeSubs?.filter(s => s.status === "active" && !s.managed_by_admin).reduce((sum, s) => sum + (s.price_monthly || 0), 0) || 0;
+
     const activeCount = activeSubs?.filter(s => s.status === "active").length || 0;
     const trialCount = activeSubs?.filter(s => s.status === "trial").length || 0;
 
