@@ -380,9 +380,11 @@ function computeAnalytics(subscriptions: any[], auditLogs: any[]): AnalyticsResu
     premium: "Premium", enterprise: "Enterprise", none: "None",
   };
 
-  // Current MRR
+  // Current MRR (exclude admin-managed comp accounts — they don't pay)
   const activeSubs = subscriptions.filter((s) => s.status === "active");
-  const currentMRR = activeSubs.reduce((sum, s) => sum + (s.price_monthly || 0), 0);
+  const payingActiveSubs = activeSubs.filter((s) => !s.managed_by_admin);
+  const currentMRR = payingActiveSubs.reduce((sum, s) => sum + (s.price_monthly || 0), 0);
+
 
   // Plan distribution
   const planCounts: Record<string, number> = {};
