@@ -286,6 +286,18 @@ export default function ChurchWebsite() {
                         </div>
                       )}
                     </div>
+                    <div>
+                      <Label>Footer text</Label>
+                      <Input
+                        value={content.footer_text || ""}
+                        onChange={(e) => updateContent({ footer_text: e.target.value })}
+                        placeholder="e.g. All are welcome — or your own tagline"
+                        maxLength={120}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Replaces the default footer message ("Made with love"). Leave blank to keep the template default.
+                      </p>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="services" className="space-y-3">
