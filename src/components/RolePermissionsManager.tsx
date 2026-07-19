@@ -25,6 +25,17 @@ const ALL_PERMISSION_GROUPS: RouteGroup[] = [
   "reports",
   "communication",
   "settings",
+  "inventory",
+  "users",
+  "tenants",
+  "volunteers",
+  "visitors",
+  "website",
+  "giving",
+  "prayer_requests",
+  "insights",
+  "automations",
+  "subscription",
 ];
 
 interface RolePermission {
