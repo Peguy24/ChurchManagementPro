@@ -5663,7 +5663,7 @@ export type Database = {
       }
       claim_tenant_admin: { Args: { _tenant_id: string }; Returns: boolean }
       claim_tenant_subdomain: {
-        Args: { _slug: string; _tenant_id: string }
+        Args: { _subdomain: string; _tenant_id: string }
         Returns: Json
       }
       delete_email: {
