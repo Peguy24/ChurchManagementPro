@@ -1,5 +1,36 @@
 import { Facebook, Instagram, Youtube, MessageCircle, MapPin, Phone, Mail, Clock, ArrowRight, Church } from "lucide-react";
 
+export interface SermonItem {
+  title: string;
+  speaker?: string;
+  date?: string; // ISO date
+  series?: string;
+  description?: string;
+  media_url?: string; // youtube / vimeo / spotify / mp3
+  thumbnail?: string;
+}
+export interface StaffMember {
+  name: string;
+  role?: string;
+  bio?: string;
+  photo_url?: string;
+  email?: string;
+}
+export interface VisitInfo {
+  what_to_expect?: string;
+  parking?: string;
+  kids?: string;
+  dress_code?: string;
+  first_time_message?: string;
+  map_embed?: string; // Google Maps embed URL
+}
+export interface SiteTheme {
+  font?: "serif" | "sans" | "display" | "modern"; // typography style
+}
+export interface SubpagesConfig {
+  enabled?: boolean;
+  pages?: Array<"about" | "sermons" | "visit" | "contact">;
+}
 export interface SiteContent {
   tagline?: string;
   about?: string;
@@ -11,6 +42,14 @@ export interface SiteContent {
   social?: { facebook?: string; instagram?: string; youtube?: string; whatsapp?: string };
   gallery?: Array<{ url: string; caption?: string }>;
   footer_text?: string;
+  // Pro upgrades
+  sermons?: SermonItem[];
+  staff?: StaffMember[];
+  visit?: VisitInfo;
+  theme?: SiteTheme;
+  subpages?: SubpagesConfig;
+  prayer_enabled?: boolean;
+  newsletter_enabled?: boolean;
 }
 
 function footerLine(content: SiteContent, fallback: string) {
