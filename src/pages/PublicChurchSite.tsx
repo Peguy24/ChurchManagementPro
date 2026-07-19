@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { renderTemplate, SiteContent } from "@/components/website/SiteTemplates";
 import { JsonLd } from "@/components/JsonLd";
 import { currentHostname, isTenantHost } from "@/lib/tenantHost";
+import {
+  SiteTopNav,
+  anySubpageEnabled,
+  subpageEnabled,
+  fontFor,
+  type SiteMeta,
+} from "@/components/website/PublicSiteChrome";
+import { AboutStaffPage, SermonsPage, VisitPage, ContactPage } from "@/components/website/SubPages";
 
 const DAY_MAP: Record<string, string> = {
   sunday: "Su", sun: "Su", dimanche: "Su", dimanch: "Su",
