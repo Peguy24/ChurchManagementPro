@@ -44,6 +44,8 @@ export default function ChurchWebsite() {
   const [template, setTemplate] = useState("classic");
   const [isPublished, setIsPublished] = useState(false);
   const [content, setContent] = useState<SiteContent>(emptyContent);
+  const [galleryImages, setGalleryImages] = useState<Array<{ url: string; caption?: string }>>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const publicUrl = tenant?.slug ? `${window.location.origin}/site/${tenant.slug}` : "";
 
