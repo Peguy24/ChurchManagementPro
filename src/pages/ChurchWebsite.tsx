@@ -269,9 +269,14 @@ export default function ChurchWebsite() {
               <CardHeader><CardTitle>Content</CardTitle></CardHeader>
               <CardContent>
                 <Tabs defaultValue="basic">
-                  <TabsList className="grid grid-cols-5">
+                  <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
+                    <TabsTrigger value="pages">Pages</TabsTrigger>
+                    <TabsTrigger value="theme">Theme</TabsTrigger>
                     <TabsTrigger value="services">Services</TabsTrigger>
+                    <TabsTrigger value="visit">Visit</TabsTrigger>
+                    <TabsTrigger value="sermons">Sermons</TabsTrigger>
+                    <TabsTrigger value="staff">Staff</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                     <TabsTrigger value="social">Social</TabsTrigger>
                     <TabsTrigger value="media">Media</TabsTrigger>
