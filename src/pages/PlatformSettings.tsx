@@ -431,6 +431,28 @@ function FeatureFlagsSettings({
     churn_prevention: t("platformSettings.featureChurnPrevention"),
     branding: t("platformSettings.featureBranding"),
     cash_register: t("platformSettings.featureCashRegister"),
+    // New features
+    church_website: t("platformSettings.featureChurchWebsite"),
+    custom_domains: t("platformSettings.featureCustomDomains"),
+    online_giving: t("platformSettings.featureOnlineGiving"),
+    prayer_requests: t("platformSettings.featurePrayerRequests"),
+    newsletter_signup: t("platformSettings.featureNewsletterSignup"),
+    sermon_library: t("platformSettings.featureSermonLibrary"),
+    media_library: t("platformSettings.featureMediaLibrary"),
+    broadcasts: t("platformSettings.featureBroadcasts"),
+    referral_program: t("platformSettings.featureReferralProgram"),
+    nps_surveys: t("platformSettings.featureNpsSurveys"),
+    changelog: t("platformSettings.featureChangelog"),
+    status_page: t("platformSettings.featureStatusPage"),
+    tenant_impersonation: t("platformSettings.featureTenantImpersonation"),
+    email_dashboard: t("platformSettings.featureEmailDashboard"),
+    audit_log_viewer: t("platformSettings.featureAuditLogViewer"),
+    annual_upgrade_prompt: t("platformSettings.featureAnnualUpgradePrompt"),
+    failed_payment_dunning: t("platformSettings.featureFailedPaymentDunning"),
+    onboarding_analytics: t("platformSettings.featureOnboardingAnalytics"),
+    client_reviews: t("platformSettings.featureClientReviews"),
+    public_contact_form: t("platformSettings.featurePublicContactForm"),
+    mcp_integration: t("platformSettings.featureMcpIntegration"),
   };
 
   return (
