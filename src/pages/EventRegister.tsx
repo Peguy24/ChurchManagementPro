@@ -249,6 +249,9 @@ export default function EventRegister() {
 
   return (
     <div className="min-h-screen bg-muted/30 p-4 overflow-y-auto">
+      {event && (
+        <JsonLd id="event" data={buildEventJsonLd(event, churchName, logoUrl, eventId!)!} />
+      )}
       <div className="max-w-lg mx-auto space-y-6 py-8">
         {/* Language selector */}
         <div className="flex justify-end">
