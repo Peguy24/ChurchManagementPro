@@ -62,6 +62,23 @@ export default function ChurchWebsite() {
     }
   }, [searchParams, setSearchParams]);
 
+  const loadGallery = async () => {
+    if (!tenantId) return;
+    const { data } = await supabase
+      .from("tenant_media")
+      .select("public_url,caption")
+      .eq("tenant_id", tenantId)
+      .eq("category", "gallery")
+      .not("public_url", "is", null)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    setGalleryImages(
+      (data || [])
+        .filter((r: any) => r.public_url)
+        .map((r: any) => ({ url: r.public_url as string, caption: r.caption || undefined })),
+    );
+  };
+
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
@@ -76,8 +93,10 @@ export default function ChurchWebsite() {
         setIsPublished(!!site.is_published);
         setContent({ ...emptyContent, ...(site.content as SiteContent) });
       }
+      await loadGallery();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
 
   const previewProps = useMemo(
@@ -85,9 +104,9 @@ export default function ChurchWebsite() {
       name: tenant?.name || "Your Church",
       logoUrl: tenant?.logo_url,
       primaryColor: tenant?.primary_color,
-      content,
+      content: { ...content, gallery: galleryImages },
     }),
-    [tenant, content],
+    [tenant, content, galleryImages],
   );
 
   const handleSubscribe = async () => {
