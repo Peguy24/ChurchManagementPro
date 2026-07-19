@@ -19,16 +19,25 @@ export default function GivingResult({ status }: { status: "success" | "cancel" 
   const { language } = useLanguage();
   const t = (texts as any)[language] || texts.en;
   const [thankYou, setThankYou] = useState<string>("");
+  const transactionId = params.get("transactionId");
 
   useEffect(() => {
     if (!slug) return;
     (async () => {
+      // If MonCash redirected here with transactionId, verify + finalize the donation
+      if (status === "success" && transactionId) {
+        try {
+          await supabase.functions.invoke("moncash-giving-verify", { body: { slug, transactionId } });
+        } catch (e) {
+          console.error("MonCash verify failed", e);
+        }
+      }
       const { data } = await supabase.rpc("get_public_giving_config", { _slug: slug });
       if (data && data[0]?.thank_you_message?.[language]) {
         setThankYou(data[0].thank_you_message[language]);
       }
     })();
-  }, [slug, language]);
+  }, [slug, language, status, transactionId]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-muted/30">
