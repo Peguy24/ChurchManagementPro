@@ -31,6 +31,18 @@ export interface SubpagesConfig {
   enabled?: boolean;
   pages?: Array<"about" | "sermons" | "visit" | "contact">;
 }
+export interface AnnouncementBar {
+  enabled?: boolean;
+  text?: string;
+  url?: string;
+  bg_color?: string;
+  text_color?: string;
+}
+export interface SeoOverrides {
+  title?: string;
+  description?: string;
+  og_image?: string;
+}
 export interface SiteContent {
   tagline?: string;
   about?: string;
@@ -38,6 +50,10 @@ export interface SiteContent {
   phone?: string;
   email?: string;
   hero_image_url?: string;
+  hero_heading?: string;
+  hero_subheading?: string;
+  hero_cta_label?: string;
+  hero_cta_url?: string;
   service_times?: Array<{ day: string; time: string; title?: string }>;
   social?: { facebook?: string; instagram?: string; youtube?: string; whatsapp?: string };
   gallery?: Array<{ url: string; caption?: string }>;
@@ -50,6 +66,9 @@ export interface SiteContent {
   subpages?: SubpagesConfig;
   prayer_enabled?: boolean;
   newsletter_enabled?: boolean;
+  announcement?: AnnouncementBar;
+  seo?: SeoOverrides;
+  give_button_label?: string;
 }
 
 function footerLine(content: SiteContent, fallback: string) {

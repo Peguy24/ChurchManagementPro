@@ -172,7 +172,20 @@ export default function PublicChurchSite() {
           slug: r.slug,
         });
         setGivingEnabled(!!(giving && giving.length > 0));
-        document.title = r.tenant_name;
+        const seoTitle = (baseContent.seo?.title || "").trim();
+        const seoDesc = (baseContent.seo?.description || "").trim();
+        const ogImage = (baseContent.seo?.og_image || baseContent.hero_image_url || r.logo_url || "").trim();
+        document.title = seoTitle || r.tenant_name;
+        const setMeta = (name: string, content: string, attr: "name" | "property" = "name") => {
+          if (!content) return;
+          let el = document.head.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+          if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+          el.setAttribute("content", content);
+        };
+        if (seoDesc) setMeta("description", seoDesc);
+        setMeta("og:title", seoTitle || r.tenant_name, "property");
+        if (seoDesc) setMeta("og:description", seoDesc, "property");
+        if (ogImage) setMeta("og:image", ogImage, "property");
       }
       setLoading(false);
     })();
@@ -252,10 +265,28 @@ export default function PublicChurchSite() {
   const showNav = anySubpageEnabled(data.content);
   const themedFont = fontFor(data.content.theme);
 
+  const ann = data.content.announcement;
+  const showAnn = !!(ann?.enabled && (ann?.text || "").trim());
+  const giveLabel = (data.content.give_button_label || "").trim() || "❤ Donate";
+
   return (
     <div className="relative" style={data.content.theme?.font ? { fontFamily: themedFont } : undefined}>
       <JsonLd id="church-org" data={orgJsonLd} />
       {serviceEvents.length > 0 && <JsonLd id="church-services" data={serviceEvents} />}
+      {showAnn && (
+        <div
+          className="w-full text-center text-sm py-2 px-4"
+          style={{ background: ann?.bg_color || "#0F2A44", color: ann?.text_color || "#FFFFFF" }}
+          role="region"
+          aria-label="Site announcement"
+        >
+          {ann?.url ? (
+            <a href={ann.url} className="underline underline-offset-2 hover:opacity-90">{ann.text}</a>
+          ) : (
+            <span>{ann?.text}</span>
+          )}
+        </div>
+      )}
       {showNav && <SiteTopNav meta={meta} />}
       {subpage === "home" && renderTemplate(data.template, {
         name: data.name,
@@ -273,7 +304,7 @@ export default function PublicChurchSite() {
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white font-semibold hover:scale-105 transition-transform"
           style={{ backgroundColor: data.primary_color || "hsl(var(--primary))" }}
         >
-          ❤ Donate
+          {giveLabel}
         </a>
       )}
     </div>
