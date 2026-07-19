@@ -137,8 +137,38 @@ export default function PublicChurchSite() {
       </div>
     );
   }
+  const siteUrl = typeof window !== "undefined" ? `${window.location.origin}/site/${slug}` : `/site/${slug}`;
+  const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
+  const serviceEvents = useMemo(
+    () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
+    [data.content.service_times, data.name, siteUrl, data.content.address],
+  );
+
+  const orgJsonLd: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Church",
+    name: data.name,
+    url: siteUrl,
+    logo: data.logo_url || undefined,
+    image: data.content.hero_image_url || data.logo_url || undefined,
+    description: data.content.about || data.content.tagline || undefined,
+    email: data.content.email || undefined,
+    telephone: data.content.phone || undefined,
+    address: data.content.address
+      ? { "@type": "PostalAddress", streetAddress: data.content.address }
+      : undefined,
+    openingHoursSpecification: openingHours,
+    sameAs: [
+      data.content.social?.facebook,
+      data.content.social?.instagram,
+      data.content.social?.youtube,
+    ].filter(Boolean),
+  };
+
   return (
     <div className="relative">
+      <JsonLd id="church-org" data={orgJsonLd} />
+      {serviceEvents.length > 0 && <JsonLd id="church-services" data={serviceEvents} />}
       {renderTemplate(data.template, {
         name: data.name,
         logoUrl: data.logo_url,
