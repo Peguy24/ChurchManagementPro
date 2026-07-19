@@ -29,6 +29,7 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
   const [claiming, setClaiming] = useState(false);
   const [adding, setAdding] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [checkingAll, setCheckingAll] = useState(false);
 
   const load = async () => {
     setLoading(true);
