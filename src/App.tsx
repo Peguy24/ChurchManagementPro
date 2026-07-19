@@ -275,6 +275,7 @@ const App = () => (
               <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
               <Route path="/website" element={<ProtectedRoute><ChurchWebsite /></ProtectedRoute>} />
+              <Route path="/prayer-requests" element={<ProtectedRoute><PrayerRequests /></ProtectedRoute>} />
               <Route path="/super-admin/website-addons" element={<ProtectedRoute requireSuperAdmin><WebsiteAddonsAdmin /></ProtectedRoute>} />
 
               
