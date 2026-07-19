@@ -8,29 +8,53 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const translations = {
+type EmailLang = 'en' | 'fr' | 'ht';
+
+const translations: Record<EmailLang, {
+  subject: string;
+  title: string;
+  greeting: (name: string) => string;
+  body: string;
+  cta: string;
+  footer: string;
+  fallbackName: string;
+}> = {
   en: {
     subject: "🎁 Your free trial expires soon",
     title: "Your Free Trial Expires Soon",
+    greeting: (name) => `Hello ${name},`,
     body: "Your free trial ends on <strong>{date}</strong>. Upgrade now to keep access to all your church management features without interruption.",
     cta: "Upgrade Now",
     footer: "Don't lose your data — upgrade before your trial expires.",
+    fallbackName: "there",
   },
   fr: {
     subject: "🎁 Votre essai gratuit expire bientôt",
     title: "Votre Essai Gratuit Expire Bientôt",
+    greeting: (name) => `Bonjour ${name},`,
     body: "Votre essai gratuit se termine le <strong>{date}</strong>. Passez à un forfait payant maintenant pour conserver l'accès à toutes vos fonctionnalités sans interruption.",
     cta: "Passer au Forfait Payant",
     footer: "Ne perdez pas vos données — passez à un forfait avant la fin de votre essai.",
+    fallbackName: "cher administrateur",
   },
   ht: {
     subject: "🎁 Esè gratis ou prèske fini",
     title: "Esè Gratis Ou Prèske Fini",
+    greeting: (name) => `Bonjou ${name},`,
     body: "Esè gratis ou ap fini <strong>{date}</strong>. Mete ajou kounye a pou kenbe aksè nan tout fonksyonalite jesyon legliz ou yo san entèripsyon.",
     cta: "Mete Ajou Kounye a",
     footer: "Pa pèdi done ou yo — mete ajou anvan esè ou fini.",
+    fallbackName: "chè administratè",
   },
-} as const;
+};
+
+const detectLang = (raw?: string | null): EmailLang => {
+  if (!raw) return 'en';
+  const l = raw.toLowerCase().trim();
+  if (l === 'fr' || l === 'ht') return l;
+  if (l === 'en') return 'en';
+  return 'en';
+};
 
 const colors = { bg: "#4F46E5", accent: "#6366F1" };
 
@@ -66,7 +90,6 @@ serve(async (req) => {
     const customSubject: string | undefined = typeof body.customSubject === "string" && body.customSubject.trim() ? body.customSubject.trim() : undefined;
     const customMessage: string | undefined = typeof body.customMessage === "string" && body.customMessage.trim() ? body.customMessage.trim() : undefined;
 
-
     // Load target trial subscriptions
     let query = supabase
       .from("tenant_subscriptions")
@@ -97,7 +120,7 @@ serve(async (req) => {
         continue;
       }
 
-      // Admin emails
+      // Admin emails + names
       const { data: adminRoles } = await supabase
         .from("tenant_user_roles")
         .select("user_id")
@@ -105,21 +128,35 @@ serve(async (req) => {
         .eq("role", "admin")
         .eq("is_approved", true);
 
-      const emails: string[] = [];
-      let lang = "fr";
-      for (const r of adminRoles || []) {
-        const { data: u } = await supabase.auth.admin.getUserById(r.user_id);
-        if (u?.user?.email) emails.push(u.user.email);
+      const adminUserIds = (adminRoles || []).map((r: any) => r.user_id).filter(Boolean);
+      if (adminUserIds.length === 0) { skipped.push(sub.tenant_id); continue; }
+
+      // Fetch names and emails in parallel
+      const [authUsersResult, profilesResult] = await Promise.all([
+        Promise.all(adminUserIds.map(async (id: string) => {
+          const { data: u } = await supabase.auth.admin.getUserById(id);
+          return { id, email: u?.user?.email || null };
+        })),
+        supabase.from("profiles").select("id, first_name, last_name, language").in("id", adminUserIds),
+      ]);
+
+      const profilesById = new Map((profilesResult.data || []).map((p: any) => [p.id, p]));
+      const lang = detectLang(profilesResult.data?.[0]?.language);
+
+      const recipients: { email: string; name: string }[] = [];
+      for (const au of authUsersResult) {
+        if (!au.email) continue;
+        const p = profilesById.get(au.id);
+        const firstName = p?.first_name?.trim();
+        const lastName = p?.last_name?.trim();
+        const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+        recipients.push({ email: au.email, name: fullName });
       }
-      if (adminRoles?.[0]) {
-        const { data: p } = await supabase.from("profiles").select("language").eq("id", adminRoles[0].user_id).single();
-        if (p?.language) lang = p.language;
-      }
-      if (emails.length === 0) { skipped.push(sub.tenant_id); continue; }
+      if (recipients.length === 0) { skipped.push(sub.tenant_id); continue; }
 
       const { data: tenant } = await supabase.from("tenants").select("name").eq("id", sub.tenant_id).single();
       const tenantName = tenant?.name || "Church Management Pro";
-      const t = translations[lang as keyof typeof translations] || translations.fr;
+      const t = translations[lang] || translations.en;
       const locale = lang === "fr" ? "fr-FR" : lang === "ht" ? "fr-HT" : "en-US";
       const dateStr = endDate.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
 
@@ -128,13 +165,16 @@ serve(async (req) => {
         ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 18px;border-radius:8px;margin:0 0 20px;color:#78350f;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(customMessage)}</div>`
         : "";
 
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+      for (const recipient of recipients) {
+        const displayName = recipient.name || t.fallbackName;
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#f4f4f5;margin:0;padding:20px;">
   <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,.1);">
     <div style="background:linear-gradient(135deg,${colors.bg} 0%,${colors.accent} 100%);padding:30px 20px;text-align:center;">
       <h1 style="color:#fff;margin:0;font-size:22px;">${t.title}</h1>
     </div>
     <div style="padding:30px;">
+      <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 20px;">${t.greeting(escapeHtml(displayName))}</p>
       ${customBlock}
       <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 20px;">${t.body.replace("{date}", dateStr)}</p>
       <div style="text-align:center;margin:25px 0;">
@@ -148,15 +188,15 @@ serve(async (req) => {
   </div>
 </body></html>`;
 
-      await resend.emails.send({
-        from: `${tenantName} <noreply@churchmanagementpro.com>`,
-        to: emails,
-        subject: customSubject ? `${customSubject} — ${tenantName}` : `${t.subject} — ${tenantName}`,
-        html,
-      });
-      sent++;
+        await resend.emails.send({
+          from: `${tenantName} <noreply@churchmanagementpro.com>`,
+          to: [recipient.email],
+          subject: customSubject ? `${customSubject} — ${tenantName}` : `${t.subject} — ${tenantName}`,
+          html,
+        });
+      }
+      sent += recipients.length;
     }
-
 
     return json({ success: true, sent, skipped: skipped.length });
   } catch (e) {
