@@ -14,9 +14,31 @@ export function useAuth() {
   useEffect(() => {
     const SESSION_MARKER = 'app_session_active';
 
+    // Public church site routes (custom domain, subdomain, or /site/<slug>) and
+    // other unauthenticated public pages must NOT trigger a sign-out on load.
+    // Doing so would broadcast SIGNED_OUT to the user's other tabs (e.g. the
+    // tenant admin session) via shared localStorage.
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    let isPublicPage = false;
+    try {
+      // Lazy import to avoid pulling tenant host logic into unrelated bundles.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { isTenantHost } = require('@/lib/tenantHost');
+      isPublicPage =
+        isTenantHost(host) ||
+        path.startsWith('/site/') ||
+        path.startsWith('/give') ||
+        path.startsWith('/event/') ||
+        path.startsWith('/legal/') ||
+        path === '/commercial' ||
+        path.startsWith('/status') ||
+        path.startsWith('/changelog');
+    } catch { /* noop */ }
+
     // Force sign-out if browser was closed and reopened (sessionStorage is empty)
     const isNewBrowserSession = !sessionStorage.getItem(SESSION_MARKER);
-    if (isNewBrowserSession) {
+    if (isNewBrowserSession && !isPublicPage) {
       // Clear any cached data
       sessionStorage.removeItem('user_role_cache');
       sessionStorage.removeItem('tenant_cache');
@@ -34,6 +56,7 @@ export function useAuth() {
 
     // Mark this browser session as active
     sessionStorage.setItem(SESSION_MARKER, 'true');
+
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
