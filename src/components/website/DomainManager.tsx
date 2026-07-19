@@ -177,7 +177,23 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
 
         {/* Existing domains */}
         <div className="space-y-3">
-          <Label className="font-semibold">Your domains</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label className="font-semibold">Your domains</Label>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={checkAll}
+              disabled={checkingAll || loading || domains.every((d) => d.domain_type !== "custom" || d.verification_status === "verified")}
+              title="Re-check DNS TXT records for all pending custom domains"
+            >
+              {checkingAll ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3 mr-1" />
+              )}
+              Check all
+            </Button>
+          </div>
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading…</div>
           ) : domains.length === 0 ? (
