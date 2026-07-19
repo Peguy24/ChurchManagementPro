@@ -408,6 +408,10 @@ export default function TenantManagement() {
         console.error("Failed to log audit:", auditError);
       }
 
+      supabase.functions.invoke("notify-tenant-comp-action", {
+        body: { tenantId, action: "trial_extended", expiresAt: newTrialEnd.toISOString() },
+      }).catch((e) => console.error("notify trial_extended failed", e));
+
       return newTrialEnd;
     },
     onSuccess: (newTrialEnd, variables) => {
@@ -494,6 +498,12 @@ export default function TenantManagement() {
 
       if (auditError) {
         console.error("Failed to log audit:", auditError);
+      }
+
+      if (activate) {
+        supabase.functions.invoke("notify-tenant-comp-action", {
+          body: { tenantId, action: "plan_activated", planLabel: PLAN_CONFIG[plan].label, expiresAt: periodEnd },
+        }).catch((e) => console.error("notify plan_activated failed", e));
       }
 
       return { activate, plan };
