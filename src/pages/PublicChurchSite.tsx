@@ -14,10 +14,15 @@ export default function PublicChurchSite() {
     content: SiteContent;
   } | null>(null);
 
+  const [givingEnabled, setGivingEnabled] = useState(false);
+
   useEffect(() => {
     (async () => {
       if (!slug) { setLoading(false); return; }
-      const { data: rows, error } = await supabase.rpc("get_public_website", { _slug: slug });
+      const [{ data: rows, error }, { data: giving }] = await Promise.all([
+        supabase.rpc("get_public_website", { _slug: slug }),
+        supabase.rpc("get_public_giving_config", { _slug: slug }),
+      ]);
       if (!error && rows && rows.length > 0) {
         const r = rows[0];
         setData({
@@ -29,6 +34,7 @@ export default function PublicChurchSite() {
         });
         document.title = r.tenant_name;
       }
+      setGivingEnabled(!!(giving && giving.length > 0));
       setLoading(false);
     })();
   }, [slug]);
