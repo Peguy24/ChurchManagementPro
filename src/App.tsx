@@ -123,6 +123,7 @@ const OnlineGivingSettings = lazy(() => import("./pages/OnlineGivingSettings"));
 const PublicGivingPage = lazy(() => import("./pages/PublicGivingPage"));
 const GivingResult = lazy(() => import("./pages/GivingResult"));
 const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
+import GlobalFeatureGate from "@/components/GlobalFeatureGate";
 
 
 const queryClient = new QueryClient();
