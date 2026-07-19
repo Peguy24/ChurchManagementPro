@@ -86,24 +86,33 @@ export default function PublicChurchSite() {
 
   useEffect(() => {
     (async () => {
-      if (!slug) { setLoading(false); return; }
-      const [{ data: rows, error }, { data: giving }] = await Promise.all([
-        supabase.rpc("get_public_website", { _slug: slug }),
-        supabase.rpc("get_public_giving_config", { _slug: slug }),
-      ]);
+      const hostname = currentHostname();
+      const useHost = isTenantHost(hostname);
+      if (!useHost && !slug) { setLoading(false); return; }
+
+      // Fetch site by hostname (custom domain / subdomain) or by /site/:slug path
+      const sitePromise = useHost
+        ? supabase.rpc("get_public_website_by_hostname", { _hostname: hostname })
+        : supabase.rpc("get_public_website", { _slug: slug! });
+
+      const { data: rows, error } = await sitePromise;
+
       if (!error && rows && rows.length > 0) {
         const r = rows[0];
         const baseContent = (r.content as SiteContent) || {};
 
-        // Fetch gallery images uploaded via the media library
-        const { data: media } = await supabase
-          .from("tenant_media")
-          .select("public_url,caption,sort_order,created_at")
-          .eq("tenant_id", r.tenant_id)
-          .eq("category", "gallery")
-          .not("public_url", "is", null)
-          .order("sort_order", { ascending: true })
-          .order("created_at", { ascending: false });
+        // Now that we have the tenant, fetch giving config + gallery in parallel
+        const [{ data: giving }, { data: media }] = await Promise.all([
+          supabase.rpc("get_public_giving_config", { _slug: r.slug }),
+          supabase
+            .from("tenant_media")
+            .select("public_url,caption,sort_order,created_at")
+            .eq("tenant_id", r.tenant_id)
+            .eq("category", "gallery")
+            .not("public_url", "is", null)
+            .order("sort_order", { ascending: true })
+            .order("created_at", { ascending: false }),
+        ]);
 
         const gallery = (media || [])
           .filter((m: any) => m.public_url)
@@ -115,10 +124,11 @@ export default function PublicChurchSite() {
           primary_color: r.primary_color,
           template: r.template,
           content: { ...baseContent, gallery: gallery.length ? gallery : baseContent.gallery },
+          slug: r.slug,
         });
+        setGivingEnabled(!!(giving && giving.length > 0));
         document.title = r.tenant_name;
       }
-      setGivingEnabled(!!(giving && giving.length > 0));
       setLoading(false);
     })();
   }, [slug]);
