@@ -26,6 +26,7 @@ const emptyContent: SiteContent = {
   phone: "",
   email: "",
   hero_image_url: "",
+  footer_text: "",
   service_times: [],
   social: { facebook: "", instagram: "", youtube: "", whatsapp: "" },
 };
