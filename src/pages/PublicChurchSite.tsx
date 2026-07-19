@@ -178,6 +178,21 @@ export default function PublicChurchSite() {
     })();
   }, [slug]);
 
+  // Keep hooks before any conditional return so preview/public rendering does not crash
+  // when the site data loads asynchronously.
+  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
+  const siteUrl = data
+    ? (typeof window !== "undefined"
+        ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
+        : `/site/${data.slug}`)
+    : "";
+  const giveHref = data ? (isHostBased ? `/give` : `/site/${data.slug}/give`) : "";
+  const openingHours = useMemo(() => data ? toOpeningHours(data.content.service_times) : undefined, [data?.content.service_times]);
+  const serviceEvents = useMemo(
+    () => data ? toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address) : [],
+    [data?.content.service_times, data?.name, siteUrl, data?.content.address],
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,19 +208,6 @@ export default function PublicChurchSite() {
       </div>
     );
   }
-  // If we resolved via a tenant custom domain / subdomain, keep the URL clean
-  // (origin only). Otherwise fall back to the /site/<slug> canonical path.
-  const isHostBased = typeof window !== "undefined" && isTenantHost(window.location.hostname);
-  const siteUrl = typeof window !== "undefined"
-    ? (isHostBased ? window.location.origin : `${window.location.origin}/site/${data.slug}`)
-    : `/site/${data.slug}`;
-  const giveHref = isHostBased ? `/give` : `/site/${data.slug}/give`;
-  const openingHours = useMemo(() => toOpeningHours(data.content.service_times), [data.content.service_times]);
-  const serviceEvents = useMemo(
-    () => toServiceEvents(data.content.service_times, data.name, siteUrl, data.content.address),
-    [data.content.service_times, data.name, siteUrl, data.content.address],
-  );
-
   const orgJsonLd: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Church",
