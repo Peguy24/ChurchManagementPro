@@ -300,8 +300,28 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
                     </div>
                   </div>
                 )}
+
+                {d.domain_type === "subdomain" && (
+                  <div className="text-xs bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded p-3 space-y-1">
+                    <div className="font-sans">
+                      Your site is live at{" "}
+                      <a
+                        href={effectiveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-mono underline break-all"
+                      >
+                        {effectiveUrl.replace(/^https?:\/\//, "")}
+                      </a>
+                    </div>
+                    <div className="text-muted-foreground font-sans">
+                      To use <code>{d.hostname}</code> directly, add it as a custom domain below and configure the DNS at your registrar.
+                    </div>
+                  </div>
+                )}
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>
