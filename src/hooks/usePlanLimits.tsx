@@ -299,6 +299,7 @@ export function usePlanLimits() {
     usage: usage || { membersCount: 0, branchesCount: 0, usersCount: 0, storageMB: 0 },
     canAddMember, canAddBranch, canAddUser, canUploadFile,
     hasFeature,
+    isGlobalFeatureEnabled,
     getRemainingMembers, getRemainingBranches, getRemainingUsers, getRemainingStorageMB,
     getMemberUsagePercent, getBranchUsagePercent, getStorageUsagePercent,
   };
