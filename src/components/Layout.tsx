@@ -458,14 +458,25 @@ export default function Layout({ children }: LayoutProps) {
     ? getSuperAdminNavGroups(t, language) 
     : getChurchNavGroups(t, isTenantAdmin);
   
+  // Map path -> required global feature flag key (Super Admin platform_settings.feature_flags)
+  const PATH_TO_GLOBAL_FLAG: Record<string, string> = {
+    "/website": "church_website",
+    "/prayer-requests": "prayer_requests",
+    "/settings/online-giving": "online_giving",
+  };
+  const passesGlobalFlag = (path: string) => {
+    const flag = PATH_TO_GLOBAL_FLAG[path];
+    return !flag || isGlobalFeatureEnabled(flag);
+  };
+
   // Filter nav groups and items based on user permissions (only for church users)
-  const navGroups = showAsSuperAdmin 
-    ? allNavGroups 
+  const navGroups = showAsSuperAdmin
+    ? allNavGroups
     : allNavGroups
         .filter(group => canSeeNav(group.key))
         .map(group => ({
           ...group,
-          items: group.items.filter(item => canSeeItem(item.to))
+          items: group.items.filter(item => canSeeItem(item.to) && passesGlobalFlag(item.to))
         }))
         .filter(group => group.items.length > 0);
 
