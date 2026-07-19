@@ -138,22 +138,33 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/settings/tenants": "tenants",
   "/inventory": "inventory",
   "/finance/salaries": "finances",
-  "/insights": "reports",
-  "/automations": "communication",
+  "/finance/credits": "finances",
+  "/insights": "insights",
+  "/automations": "automations",
   "/support": "communication",
   "/support-management": "tenants",
   "/volunteers": "volunteers",
   "/visitors": "visitors",
+  "/events/registrations": "events",
+  "/website": "website",
+  "/prayer-requests": "prayer_requests",
+  "/settings/online-giving": "giving",
+  "/settings/subscription": "subscription",
+  "/settings/referrals": "subscription",
+  "/settings/invitations": "settings",
+  "/settings/tenant-users": "settings",
+  "/settings/branding": "settings",
+  "/settings/backup": "settings",
 };
 
 // Map nav groups to route groups (using internal keys, not translated labels)
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
   "members": ["members", "attendance", "attendance_admin", "branches", "ministries", "visitors"],
-  "finances": ["finances"],
-  "reports": ["dashboard", "reports", "finances"],
-  "communication": ["communication"],
+  "finances": ["finances", "giving"],
+  "reports": ["dashboard", "reports", "finances", "insights"],
+  "communication": ["communication", "prayer_requests", "automations"],
   "planning": ["events", "volunteers"],
-  "settings": ["settings", "users", "tenants"],
+  "settings": ["settings", "users", "tenants", "website", "subscription"],
   "inventory": ["inventory"],
   "administration": ["dashboard", "tenants", "users"],
   "support": ["communication"],
@@ -171,15 +182,11 @@ export function hasPermission(roles: AppRole[], group: RouteGroup): boolean {
 
 // Helper to check if a role can access a specific route
 export function canAccessRouteWithPerms(roles: AppRole[], path: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
-  // Remove query params for matching
   const cleanPath = path.split("?")[0];
   const group = ROUTE_TO_GROUP[cleanPath];
-  
   if (!group) {
-    // Unknown route - allow if user has any approved role
     return roles.some(role => role !== "user");
   }
-  
   return hasPermissionWithPerms(roles, group, permissions);
 }
 
@@ -187,14 +194,9 @@ export function canAccessRoute(roles: AppRole[], path: string): boolean {
   return canAccessRouteWithPerms(roles, path, DEFAULT_ROLE_PERMISSIONS);
 }
 
-// Helper to check if a nav group should be visible to user
 export function canSeeNavGroupWithPerms(roles: AppRole[], navGroupLabel: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
   const routeGroups = NAV_GROUP_TO_ROUTE_GROUP[navGroupLabel];
-  
-  if (!routeGroups || routeGroups.length === 0) {
-    return false;
-  }
-  
+  if (!routeGroups || routeGroups.length === 0) return false;
   return routeGroups.some(group => hasPermissionWithPerms(roles, group, permissions));
 }
 
@@ -202,15 +204,12 @@ export function canSeeNavGroup(roles: AppRole[], navGroupLabel: string): boolean
   return canSeeNavGroupWithPerms(roles, navGroupLabel, DEFAULT_ROLE_PERMISSIONS);
 }
 
-// Helper to check if a nav item should be visible
 export function canSeeNavItemWithPerms(roles: AppRole[], itemPath: string, permissions: Record<AppRole, RouteGroup[]>): boolean {
   const cleanPath = itemPath.split("?")[0];
   const group = ROUTE_TO_GROUP[cleanPath];
-  
   if (!group) {
     return roles.some(role => role !== "user");
   }
-  
   return hasPermissionWithPerms(roles, group, permissions);
 }
 
@@ -236,4 +235,10 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   tenants: "Gestion Multi-Tenant",
   volunteers: "Planification Bénévoles",
   visitors: "Gestion Visiteurs",
+  website: "Site Web de l'Église",
+  giving: "Dons en Ligne",
+  prayer_requests: "Demandes de Prière",
+  insights: "Insights Intelligents",
+  automations: "Automatisations",
+  subscription: "Abonnement & Facturation",
 };
