@@ -82,6 +82,32 @@ export default function DomainManager({ tenantId }: { tenantId: string }) {
     load();
   };
 
+  const checkAll = async () => {
+    const targets = domains.filter(
+      (d) => d.domain_type === "custom" && d.verification_status !== "verified",
+    );
+    if (targets.length === 0) {
+      toast.info("No custom domains pending verification");
+      return;
+    }
+    setCheckingAll(true);
+    const results = await Promise.all(
+      targets.map((d) =>
+        supabase.functions
+          .invoke("verify-tenant-domain", { body: { domain_id: d.id } })
+          .then((r) => ({ id: d.id, host: d.hostname, ok: (r.data as any)?.verified === true, err: r.error }))
+          .catch((err) => ({ id: d.id, host: d.hostname, ok: false, err })),
+      ),
+    );
+    setCheckingAll(false);
+    const verified = results.filter((r) => r.ok).length;
+    const stillPending = results.length - verified;
+    if (verified > 0 && stillPending === 0) toast.success(`${verified} domain(s) verified`);
+    else if (verified > 0) toast.success(`${verified} verified, ${stillPending} still pending DNS`);
+    else toast.info(`No new verifications. ${stillPending} still pending DNS.`);
+    load();
+  };
+
   const setPrimary = async (id: string) => {
     const { error } = await supabase.rpc("set_primary_tenant_domain" as any, { _domain_id: id });
     if (error) { toast.error(error.message); return; }
