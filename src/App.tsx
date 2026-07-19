@@ -275,8 +275,8 @@ const App = () => (
               <Route path="/super-admin/broadcasts" element={<ProtectedRoute requireSuperAdmin><BroadcastsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/rewards" element={<ProtectedRoute requireSuperAdmin><RewardsAdmin /></ProtectedRoute>} />
               <Route path="/super-admin/nps" element={<ProtectedRoute requireSuperAdmin><NpsAdmin /></ProtectedRoute>} />
-              <Route path="/website" element={<ProtectedRoute><ChurchWebsite /></ProtectedRoute>} />
-              <Route path="/prayer-requests" element={<ProtectedRoute><PrayerRequests /></ProtectedRoute>} />
+              <Route path="/website" element={<ProtectedRoute><GlobalFeatureGate flagKey="church_website"><ChurchWebsite /></GlobalFeatureGate></ProtectedRoute>} />
+              <Route path="/prayer-requests" element={<ProtectedRoute><GlobalFeatureGate flagKey="prayer_requests"><PrayerRequests /></GlobalFeatureGate></ProtectedRoute>} />
               <Route path="/super-admin/website-addons" element={<ProtectedRoute requireSuperAdmin><WebsiteAddonsAdmin /></ProtectedRoute>} />
 
               
