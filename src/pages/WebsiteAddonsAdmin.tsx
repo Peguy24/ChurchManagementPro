@@ -132,6 +132,9 @@ export default function WebsiteAddonsAdmin() {
       .eq("id", extendRow.id);
     if (error) toast.error(error.message);
     else {
+      supabase.functions.invoke("notify-tenant-comp-action", {
+        body: { tenantId: extendRow.tenant_id, action: "addon_extended", expiresAt: end },
+      }).catch((e) => console.error("notify addon_extended failed", e));
       toast.success(end ? `Extended to ${new Date(end).toLocaleDateString()}` : "Set to unlimited");
       setExtendOpen(false);
       load();
