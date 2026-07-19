@@ -888,6 +888,7 @@ export default function TenantManagement() {
                     variant="outline"
                     className="h-7 border-orange-500 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40"
                     onClick={() => {
+                      setTrialEmailMode("expiring");
                       setTrialEmailSubject("");
                       setTrialEmailMessage("");
                       setTrialEmailDialogOpen(true);
