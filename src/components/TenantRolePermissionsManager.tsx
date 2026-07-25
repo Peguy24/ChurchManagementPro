@@ -81,6 +81,7 @@ export default function TenantRolePermissionsManager() {
     giving: t("rolePermissions.groupGiving"),
     prayer_requests: t("rolePermissions.groupPrayerRequests"),
     insights: t("rolePermissions.groupInsights"),
+    ai_assistant: t("rolePermissions.groupAiAssistant"),
     automations: t("rolePermissions.groupAutomations"),
     subscription: t("rolePermissions.groupSubscription"),
   };

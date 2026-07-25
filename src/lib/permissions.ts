@@ -24,6 +24,7 @@ export type RouteGroup =
   | "giving"
   | "prayer_requests"
   | "insights"
+  | "ai_assistant"
   | "automations"
   | "subscription";
 
@@ -50,6 +51,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "giving",
     "prayer_requests",
     "insights",
+    "ai_assistant",
     "automations",
     "subscription",
   ],
@@ -70,6 +72,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, RouteGroup[]> = {
     "website",
     "prayer_requests",
     "insights",
+    "ai_assistant",
     "automations",
   ],
   treasurer: [
@@ -140,6 +143,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/finance/salaries": "finances",
   "/finance/credits": "finances",
   "/insights": "insights",
+  "/ai-assistant": "ai_assistant",
   "/automations": "automations",
   "/support": "communication",
   "/support-management": "tenants",
@@ -161,7 +165,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
 export const NAV_GROUP_TO_ROUTE_GROUP: Record<string, RouteGroup[]> = {
   "members": ["members", "attendance", "attendance_admin", "branches", "ministries", "visitors"],
   "finances": ["finances", "giving"],
-  "reports": ["dashboard", "reports", "finances", "insights"],
+  "reports": ["dashboard", "reports", "finances", "insights", "ai_assistant"],
   "communication": ["communication", "prayer_requests", "automations"],
   "planning": ["events", "volunteers"],
   "settings": ["settings", "users", "tenants", "website", "subscription"],
@@ -239,6 +243,7 @@ export const ROUTE_GROUP_LABELS: Record<RouteGroup, string> = {
   giving: "Dons en Ligne",
   prayer_requests: "Demandes de Prière",
   insights: "Insights Intelligents",
+  ai_assistant: "Assistant IA Pastoral",
   automations: "Automatisations",
   subscription: "Abonnement & Facturation",
 };

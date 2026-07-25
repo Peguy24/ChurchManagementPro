@@ -66,6 +66,7 @@ const AdminInvitations = lazy(() => import("./pages/AdminInvitations"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const TenantDataViewer = lazy(() => import("./pages/TenantDataViewer"));
 const SmartInsights = lazy(() => import("./pages/SmartInsights"));
+const AiAssistant = lazy(() => import("./pages/AiAssistant"));
 const SystemGuide = lazy(() => import("./pages/SystemGuide"));
 const Support = lazy(() => import("./pages/Support"));
 const PlatformActivityLog = lazy(() => import("./pages/PlatformActivityLog"));
@@ -228,6 +229,7 @@ const App = () => (
               <Route path="/volunteers" element={<ProtectedRoute><FeatureGate feature="volunteerScheduling" featureKey="volunteerScheduling" requiredPlan="professionnel"><VolunteerScheduling /></FeatureGate></ProtectedRoute>} />
               <Route path="/visitors" element={<ProtectedRoute><Visitors /></ProtectedRoute>} />
               <Route path="/insights" element={<ProtectedRoute><FeatureGate feature="smartInsights" featureKey="smartInsights" requiredPlan="professionnel"><SmartInsights /></FeatureGate></ProtectedRoute>} />
+              <Route path="/ai-assistant" element={<ProtectedRoute><GlobalFeatureGate flagKey="ai_assistant"><AiAssistant /></GlobalFeatureGate></ProtectedRoute>} />
               <Route path="/custom-fields" element={<ProtectedRoute><FeatureGate feature="customFields" featureKey="customFields" requiredPlan="professionnel"><CustomFields /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
               <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />

@@ -56,6 +56,7 @@ import {
   Palette,
   UserCog,
   Sparkles,
+  Bot,
   UserPlus,
   Megaphone,
   GitCompareArrows,
@@ -160,6 +161,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
         { to: "/donations/reports", icon: PieChart, label: t("nav.financialReports") },
         { to: "/attendance/comparison", icon: BarChart3, label: t("nav.groupComparison") },
         { to: "/insights", icon: Sparkles, label: t("layout.smartInsights") },
+        { to: "/ai-assistant", icon: Bot, label: t("nav.aiAssistant") },
       ],
     },
     {
@@ -462,6 +464,7 @@ export default function Layout({ children }: LayoutProps) {
   const PATH_TO_GLOBAL_FLAG: Record<string, string> = {
     "/website": "church_website",
     "/prayer-requests": "prayer_requests",
+    "/ai-assistant": "ai_assistant",
     "/settings/online-giving": "online_giving",
   };
   const passesGlobalFlag = (path: string) => {
