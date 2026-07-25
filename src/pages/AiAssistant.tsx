@@ -21,7 +21,17 @@ import {
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
-import { Church, Lightbulb, RotateCcw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Church, Lightbulb, RotateCcw, Trash2 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
 import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
@@ -101,6 +111,7 @@ export default function AiAssistant() {
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<AssistantRole | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const roleOptions = useMemo(() => availableAssistantRoles(roles as string[]), [roles]);
@@ -142,9 +153,10 @@ export default function AiAssistant() {
     setInput("");
   };
 
-  const handleClear = () => {
+  const confirmClear = () => {
     setMessages([]);
     setInput("");
+    setConfirmOpen(false);
     textareaRef.current?.focus();
     toast({ title: t("dashboard.conversationCleared") });
   };
@@ -188,7 +200,7 @@ export default function AiAssistant() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={handleClear}
+              onClick={() => setConfirmOpen(true)}
               disabled={busy}
             >
               <RotateCcw className="h-4 w-4" />
@@ -323,6 +335,27 @@ export default function AiAssistant() {
           </PromptInputFooter>
         </PromptInput>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              {t("dashboard.clearConversationTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t("dashboard.clearConversationConfirm")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClear} className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <RotateCcw className="h-4 w-4" />
+              {t("dashboard.clearConversationAction")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
