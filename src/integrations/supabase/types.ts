@@ -100,6 +100,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_denials: {
+        Row: {
+          args: Json | null
+          column_name: string | null
+          created_at: string
+          id: string
+          message: string
+          required_scope: string | null
+          roles: string[]
+          rule: string
+          table_name: string | null
+          tenant_id: string
+          tool_name: string
+          user_id: string
+        }
+        Insert: {
+          args?: Json | null
+          column_name?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          required_scope?: string | null
+          roles?: string[]
+          rule: string
+          table_name?: string | null
+          tenant_id: string
+          tool_name: string
+          user_id: string
+        }
+        Update: {
+          args?: Json | null
+          column_name?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          required_scope?: string | null
+          roles?: string[]
+          rule?: string
+          table_name?: string | null
+          tenant_id?: string
+          tool_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       annual_upgrade_prompts: {
         Row: {
           action: string | null
