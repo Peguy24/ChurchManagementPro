@@ -29,9 +29,12 @@ export default function Dashboard() {
   const { t } = useLanguage();
   const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const { formatAmount } = useCurrency();
+  const { hasFeature } = usePlanLimits();
+  const { isSuperAdmin } = useUserRole();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [reviewOpen, setReviewOpen] = useState(false);
+  const aiAssistantEnabled = hasFeature("aiAssistant");
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardTitle: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
