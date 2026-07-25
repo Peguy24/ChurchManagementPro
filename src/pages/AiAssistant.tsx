@@ -219,7 +219,28 @@ export default function AiAssistant() {
               </Message>
             ))}
 
+            {followUps.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <Lightbulb className="h-3.5 w-3.5" />
+                  {labels.followUps}
+                </span>
+                {followUps.map((s) => (
+                  <Button
+                    key={s}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 rounded-full text-xs"
+                    onClick={() => send(s)}
+                  >
+                    {s}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             {status === "submitted" && <Shimmer>{copy.thinking}</Shimmer>}
+
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
