@@ -366,6 +366,27 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {aiAssistantEnabled && !isSuperAdmin && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                    <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-base sm:text-lg">{t("dashboard.aiAssistantTitle")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.aiAssistantSubtitle")}</p>
+                  </div>
+                </div>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/ai-assistant">{t("dashboard.openAiAssistant")}</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats Grid */}
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
