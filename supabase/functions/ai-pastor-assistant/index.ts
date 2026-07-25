@@ -47,26 +47,212 @@ function errText(e: unknown) {
   return e instanceof Error ? e.message : String(e);
 }
 
+// ---------- server-side query validation ----------
+
+/**
+ * Allow-list of every table/column/filter the assistant may ever touch.
+ * Anything not described here is rejected before a query is built, so a
+ * prompt-injected or hallucinated tool argument can never widen the scope.
+ */
+const QUERY_POLICY = {
+  members: {
+    tenantScoped: true,
+    columns: ["id", "first_name", "last_name", "phone", "email", "status", "date_of_birth"],
+    filters: ["status", "date_of_birth"],
+    requires: "members",
+  },
+  attendance_records: {
+    tenantScoped: true,
+    columns: ["member_id", "event_date"],
+    filters: ["event_date"],
+    requires: "members",
+  },
+  visitors: {
+    tenantScoped: true,
+    columns: [
+      "first_name",
+      "last_name",
+      "phone",
+      "email",
+      "visit_date",
+      "how_heard",
+      "follow_up_status",
+      "converted_to_member_id",
+    ],
+    filters: ["visit_date"],
+    requires: "members",
+  },
+  ministries: {
+    tenantScoped: true,
+    columns: ["id", "name", "status"],
+    filters: [],
+    requires: "members",
+  },
+  ministry_members: {
+    // No tenant_id column: always constrained to ministry ids already
+    // resolved through the tenant-scoped `ministries` query.
+    tenantScoped: false,
+    columns: ["ministry_id", "joined_date"],
+    filters: ["ministry_id"],
+    requires: "members",
+  },
+  member_engagement_scores: {
+    tenantScoped: true,
+    columns: [
+      "total_score",
+      "attendance_score",
+      "giving_score",
+      "ministry_score",
+      "trend",
+      "members(first_name, last_name)",
+    ],
+    filters: [],
+    requires: "members",
+  },
+  member_risk_predictions: {
+    tenantScoped: true,
+    columns: [
+      "risk_probability",
+      "risk_category",
+      "days_since_last_attendance",
+      "contributing_factors",
+      "members(first_name, last_name)",
+    ],
+    filters: [],
+    requires: "members",
+  },
+  donations: {
+    tenantScoped: true,
+    columns: ["member_id", "donation_date", "amount", "donation_type", "payment_method"],
+    filters: ["donation_date"],
+    requires: "finance",
+  },
+  expenses: {
+    tenantScoped: true,
+    columns: ["amount", "status", "expense_date", "category_id", "description"],
+    filters: ["expense_date"],
+    requires: "finance",
+  },
+  expense_categories: {
+    tenantScoped: true,
+    columns: ["id", "name"],
+    filters: ["id"],
+    requires: "finance",
+  },
+} as const;
+
+type TableName = keyof typeof QUERY_POLICY;
+type Scope = "members" | "finance";
+
+class QueryDenied extends Error {}
+
+type Ctx = {
+  supabase: SupabaseClient;
+  userId: string;
+  tenantId: string;
+  scopes: Set<Scope>;
+};
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Validate a caller-supplied date. Rejects anything that is not a plain ISO date. */
+function safeDate(value: string, label: string): string {
+  if (!ISO_DATE.test(value)) throw new QueryDenied(`${label} must be a plain YYYY-MM-DD date.`);
+  const parsed = new Date(`${value}T12:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) throw new QueryDenied(`${label} is not a valid date.`);
+  return value;
+}
+
+/** Validate an id list used in an `in()` filter (uuids only, bounded length). */
+function safeIds(ids: unknown[], label: string): string[] {
+  if (ids.length > 500) throw new QueryDenied(`${label} contains too many values.`);
+  return ids.map((v) => {
+    if (typeof v !== "string" || !/^[0-9a-fA-F-]{36}$/.test(v)) {
+      throw new QueryDenied(`${label} contains an invalid identifier.`);
+    }
+    return v;
+  });
+}
+
+/**
+ * Builds a query that is guaranteed to be:
+ *  - on an allow-listed table,
+ *  - limited to allow-listed columns,
+ *  - forced to the caller's tenant,
+ *  - allowed only for the caller's role scope,
+ *  - hard-capped in row count.
+ * RLS remains the outer boundary; this is the inner, explicit one.
+ */
+function createScopedQuery(ctx: Ctx) {
+  return function scoped(table: TableName, columns: string[], opts?: { limit?: number }) {
+    const policy = QUERY_POLICY[table];
+    if (!policy) throw new QueryDenied(`Table "${table}" is not available to the assistant.`);
+    if (!ctx.scopes.has(policy.requires as Scope)) {
+      throw new QueryDenied(`You are not allowed to read ${table}.`);
+    }
+    for (const col of columns) {
+      if (!(policy.columns as readonly string[]).includes(col)) {
+        throw new QueryDenied(`Column "${col}" is not readable on ${table}.`);
+      }
+    }
+    let q = ctx.supabase.from(table).select(columns.join(", "));
+    if (policy.tenantScoped) q = q.eq("tenant_id", ctx.tenantId);
+    q = q.limit(Math.min(opts?.limit ?? 1000, 5000));
+    return {
+      query: q,
+      /** Only filters declared in the policy for this table may be applied. */
+      assertFilter(column: string) {
+        if (!(policy.filters as readonly string[]).includes(column)) {
+          throw new QueryDenied(`Filtering ${table} by "${column}" is not permitted.`);
+        }
+        return column;
+      },
+    };
+  };
+}
+
+/** Wraps a tool execute so denials/errors are returned as data, never thrown into the stream. */
+function guarded<T>(name: string, fn: (args: T) => Promise<unknown>) {
+  return async (args: T) => {
+    try {
+      return await fn(args);
+    } catch (e) {
+      if (e instanceof QueryDenied) {
+        console.warn(`[ai-pastor-assistant] denied ${name}: ${e.message}`);
+        return { error: `Request denied: ${e.message}` };
+      }
+      console.error(`[ai-pastor-assistant] ${name} failed`, e);
+      return { error: errText(e) };
+    }
+  };
+}
+
 // ---------- tool builders ----------
 
-function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
+function buildTools(ctx: Ctx) {
+  const scoped = createScopedQuery(ctx);
+  const canSeeFinance = ctx.scopes.has("finance");
+
   const memberTools = {
     get_absent_members: tool({
       description:
         "List active members who did not attend any of the last N Sunday services. Use for questions like 'who missed the last four Sundays?'.",
-      inputSchema: z.object({
-        sundays: z.number().int().min(1).max(12).default(4).describe("How many recent Sundays to check."),
-        limit: z.number().int().min(1).max(200).default(100),
-      }),
-      execute: async ({ sundays, limit }) => {
+      inputSchema: z
+        .object({
+          sundays: z.number().int().min(1).max(12).default(4).describe("How many recent Sundays to check."),
+          limit: z.number().int().min(1).max(200).default(100),
+        })
+        .strict(),
+      execute: guarded("get_absent_members", async ({ sundays, limit }) => {
         const dates = lastSundays(sundays);
         const oldest = dates[dates.length - 1];
+
+        const membersQ = scoped("members", ["id", "first_name", "last_name", "phone", "email"]);
+        const attQ = scoped("attendance_records", ["member_id", "event_date"], { limit: 5000 });
+
         const [{ data: members, error: mErr }, { data: att, error: aErr }] = await Promise.all([
-          supabase
-            .from("members")
-            .select("id, first_name, last_name, phone, email")
-            .eq("status", "active"),
-          supabase.from("attendance_records").select("member_id, event_date").gte("event_date", oldest),
+          membersQ.query.eq(membersQ.assertFilter("status"), "active"),
+          attQ.query.gte(attQ.assertFilter("event_date"), safeDate(oldest, "oldest Sunday")),
         ]);
         if (mErr) return { error: mErr.message };
         if (aErr) return { error: aErr.message };
@@ -88,25 +274,40 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             email: m.email,
           })),
         };
-      },
+      }),
     }),
 
     get_visitors: tool({
       description:
         "List visitors (first-time guests) recorded in a date range, with their follow-up status.",
-      inputSchema: z.object({
-        from_date: z.string().nullable().default(null).describe("ISO date YYYY-MM-DD, inclusive."),
-        to_date: z.string().nullable().default(null).describe("ISO date YYYY-MM-DD, inclusive."),
-        limit: z.number().int().min(1).max(200).default(100),
-      }),
-      execute: async ({ from_date, to_date, limit }) => {
-        let q = supabase
-          .from("visitors")
-          .select("first_name, last_name, phone, email, visit_date, how_heard, follow_up_status, converted_to_member_id")
-          .order("visit_date", { ascending: false })
-          .limit(limit);
-        if (from_date) q = q.gte("visit_date", from_date);
-        if (to_date) q = q.lte("visit_date", to_date);
+      inputSchema: z
+        .object({
+          from_date: z.string().nullable().default(null).describe("ISO date YYYY-MM-DD, inclusive."),
+          to_date: z.string().nullable().default(null).describe("ISO date YYYY-MM-DD, inclusive."),
+          limit: z.number().int().min(1).max(200).default(100),
+        })
+        .strict(),
+      execute: guarded("get_visitors", async ({ from_date, to_date, limit }) => {
+        const v = scoped(
+          "visitors",
+          [
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "visit_date",
+            "how_heard",
+            "follow_up_status",
+            "converted_to_member_id",
+          ],
+          { limit },
+        );
+        let q = v.query.order("visit_date", { ascending: false });
+        if (from_date) q = q.gte(v.assertFilter("visit_date"), safeDate(from_date, "from_date"));
+        if (to_date) q = q.lte(v.assertFilter("visit_date"), safeDate(to_date, "to_date"));
+        if (from_date && to_date && from_date > to_date) {
+          throw new QueryDenied("from_date must be earlier than or equal to to_date.");
+        }
         const { data, error } = await q;
         if (error) return { error: error.message };
         return {
@@ -121,20 +322,21 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             became_member: !!v.converted_to_member_id,
           })),
         };
-      },
+      }),
     }),
 
     get_birthdays: tool({
       description: "List active members whose birthday falls in the next N days (default 7).",
-      inputSchema: z.object({
-        days: z.number().int().min(1).max(90).default(7),
-      }),
-      execute: async ({ days }) => {
-        const { data, error } = await supabase
-          .from("members")
-          .select("first_name, last_name, phone, email, date_of_birth")
-          .eq("status", "active")
-          .not("date_of_birth", "is", null);
+      inputSchema: z
+        .object({
+          days: z.number().int().min(1).max(90).default(7),
+        })
+        .strict(),
+      execute: guarded("get_birthdays", async ({ days }) => {
+        const m = scoped("members", ["first_name", "last_name", "phone", "email", "date_of_birth"]);
+        const { data, error } = await m.query
+          .eq(m.assertFilter("status"), "active")
+          .not(m.assertFilter("date_of_birth"), "is", null);
         if (error) return { error: error.message };
 
         const window: string[] = [];
@@ -158,31 +360,29 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             email: m.email,
           })),
         };
-      },
+      }),
     }),
 
     get_ministry_growth: tool({
       description:
         "Compare ministry membership growth over the last N months. Returns each ministry with its total members and how many joined in the period.",
-      inputSchema: z.object({
-        months: z.number().int().min(1).max(24).default(6),
-      }),
-      execute: async ({ months }) => {
+      inputSchema: z
+        .object({
+          months: z.number().int().min(1).max(24).default(6),
+        })
+        .strict(),
+      execute: guarded("get_ministry_growth", async ({ months }) => {
         const cutoff = new Date();
         cutoff.setUTCMonth(cutoff.getUTCMonth() - months);
-        const cutoffStr = ymd(cutoff);
+        const cutoffStr = safeDate(ymd(cutoff), "cutoff");
 
-        const { data: ministries, error: minErr } = await supabase
-          .from("ministries")
-          .select("id, name, status");
+        const { data: ministries, error: minErr } = await scoped("ministries", ["id", "name", "status"]).query;
         if (minErr) return { error: minErr.message };
-        const ids = (ministries ?? []).map((m: any) => m.id);
+        const ids = safeIds((ministries ?? []).map((m: any) => m.id), "ministry ids");
         if (ids.length === 0) return { months, ministries: [] };
 
-        const { data: links, error: linkErr } = await supabase
-          .from("ministry_members")
-          .select("ministry_id, joined_date")
-          .in("ministry_id", ids);
+        const mm = scoped("ministry_members", ["ministry_id", "joined_date"], { limit: 5000 });
+        const { data: links, error: linkErr } = await mm.query.in(mm.assertFilter("ministry_id"), ids);
         if (linkErr) return { error: linkErr.message };
 
         const rows = (ministries ?? []).map((m: any) => {
@@ -199,23 +399,31 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
         });
         rows.sort((a, b) => b.joined_last_period - a.joined_last_period);
         return { months, since: cutoffStr, ministries: rows };
-      },
+      }),
     }),
 
     get_engagement_insights: tool({
       description:
         "Return existing engagement scores and churn-risk predictions for members (already computed by the platform). Use for 'who is at risk of leaving' or 'who are our most engaged members'.",
-      inputSchema: z.object({
-        mode: z.enum(["top_engaged", "least_engaged", "at_risk"]).default("at_risk"),
-        limit: z.number().int().min(1).max(50).default(15),
-      }),
-      execute: async ({ mode, limit }) => {
+      inputSchema: z
+        .object({
+          mode: z.enum(["top_engaged", "least_engaged", "at_risk"]).default("at_risk"),
+          limit: z.number().int().min(1).max(50).default(15),
+        })
+        .strict(),
+      execute: guarded("get_engagement_insights", async ({ mode, limit }) => {
         if (mode === "at_risk") {
-          const { data, error } = await supabase
-            .from("member_risk_predictions")
-            .select("risk_probability, risk_category, days_since_last_attendance, contributing_factors, members(first_name, last_name)")
-            .order("risk_probability", { ascending: false })
-            .limit(limit);
+          const { data, error } = await scoped(
+            "member_risk_predictions",
+            [
+              "risk_probability",
+              "risk_category",
+              "days_since_last_attendance",
+              "contributing_factors",
+              "members(first_name, last_name)",
+            ],
+            { limit },
+          ).query.order("risk_probability", { ascending: false });
           if (error) return { error: error.message };
           return {
             mode,
@@ -228,11 +436,18 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             })),
           };
         }
-        const { data, error } = await supabase
-          .from("member_engagement_scores")
-          .select("total_score, attendance_score, giving_score, ministry_score, trend, members(first_name, last_name)")
-          .order("total_score", { ascending: mode === "least_engaged" })
-          .limit(limit);
+        const { data, error } = await scoped(
+          "member_engagement_scores",
+          [
+            "total_score",
+            "attendance_score",
+            "giving_score",
+            "ministry_score",
+            "trend",
+            "members(first_name, last_name)",
+          ],
+          { limit },
+        ).query.order("total_score", { ascending: mode === "least_engaged" });
         if (error) return { error: error.message };
         return {
           mode,
@@ -245,7 +460,7 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             trend: r.trend,
           })),
         };
-      },
+      }),
     }),
   };
 
@@ -255,18 +470,23 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
     get_lapsed_givers: tool({
       description:
         "List active members who have not given any donation in the last N months (default 6). Also reports how many have never given.",
-      inputSchema: z.object({
-        months: z.number().int().min(1).max(36).default(6),
-        limit: z.number().int().min(1).max(200).default(100),
-      }),
-      execute: async ({ months, limit }) => {
+      inputSchema: z
+        .object({
+          months: z.number().int().min(1).max(36).default(6),
+          limit: z.number().int().min(1).max(200).default(100),
+        })
+        .strict(),
+      execute: guarded("get_lapsed_givers", async ({ months, limit }) => {
         const cutoff = new Date();
         cutoff.setUTCMonth(cutoff.getUTCMonth() - months);
-        const cutoffStr = ymd(cutoff);
+        const cutoffStr = safeDate(ymd(cutoff), "cutoff");
+
+        const m = scoped("members", ["id", "first_name", "last_name", "phone", "email"]);
+        const d = scoped("donations", ["member_id", "donation_date", "amount"], { limit: 5000 });
 
         const [{ data: members, error: mErr }, { data: donations, error: dErr }] = await Promise.all([
-          supabase.from("members").select("id, first_name, last_name, phone, email").eq("status", "active"),
-          supabase.from("donations").select("member_id, donation_date, amount"),
+          m.query.eq(m.assertFilter("status"), "active"),
+          d.query,
         ]);
         if (mErr) return { error: mErr.message };
         if (dErr) return { error: dErr.message };
@@ -290,28 +510,29 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
             has_ever_given: ever.has(m.id),
           })),
         };
-      },
+      }),
     }),
 
     get_financial_summary: tool({
       description:
         "Financial summary for a date range: total donations, total expenses, net, breakdown by donation type and by payment method, plus top expense categories.",
-      inputSchema: z.object({
-        from_date: z.string().describe("ISO date YYYY-MM-DD, inclusive."),
-        to_date: z.string().describe("ISO date YYYY-MM-DD, inclusive."),
-      }),
-      execute: async ({ from_date, to_date }) => {
+      inputSchema: z
+        .object({
+          from_date: z.string().describe("ISO date YYYY-MM-DD, inclusive."),
+          to_date: z.string().describe("ISO date YYYY-MM-DD, inclusive."),
+        })
+        .strict(),
+      execute: guarded("get_financial_summary", async ({ from_date, to_date }) => {
+        const from = safeDate(from_date, "from_date");
+        const to = safeDate(to_date, "to_date");
+        if (from > to) throw new QueryDenied("from_date must be earlier than or equal to to_date.");
+
+        const d = scoped("donations", ["amount", "donation_type", "payment_method", "donation_date"], { limit: 5000 });
+        const e = scoped("expenses", ["amount", "status", "expense_date", "category_id", "description"], { limit: 5000 });
+
         const [{ data: donations, error: dErr }, { data: expenses, error: eErr }] = await Promise.all([
-          supabase
-            .from("donations")
-            .select("amount, donation_type, payment_method, donation_date")
-            .gte("donation_date", from_date)
-            .lte("donation_date", to_date),
-          supabase
-            .from("expenses")
-            .select("amount, status, expense_date, category_id, description")
-            .gte("expense_date", from_date)
-            .lte("expense_date", to_date),
+          d.query.gte(d.assertFilter("donation_date"), from).lte(d.assertFilter("donation_date"), to),
+          e.query.gte(e.assertFilter("expense_date"), from).lte(e.assertFilter("expense_date"), to),
         ]);
         if (dErr) return { error: dErr.message };
         if (eErr) return { error: eErr.message };
@@ -330,13 +551,14 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
         const totalIn = sum(donations ?? []);
         const totalOut = sum(approvedExpenses);
 
-        let categories: Record<string, number> = {};
-        const catIds = [...new Set(approvedExpenses.map((e: any) => e.category_id).filter(Boolean))];
+        const categories: Record<string, number> = {};
+        const catIds = safeIds(
+          [...new Set(approvedExpenses.map((e: any) => e.category_id).filter(Boolean))],
+          "expense category ids",
+        );
         if (catIds.length) {
-          const { data: cats } = await supabase
-            .from("expense_categories")
-            .select("id, name")
-            .in("id", catIds as string[]);
+          const c = scoped("expense_categories", ["id", "name"], { limit: catIds.length });
+          const { data: cats } = await c.query.in(c.assertFilter("id"), catIds);
           const names = Object.fromEntries((cats ?? []).map((c: any) => [c.id, c.name]));
           for (const e of approvedExpenses) {
             const k = names[e.category_id] || "unspecified";
@@ -345,7 +567,7 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
         }
 
         return {
-          period: { from: from_date, to: to_date },
+          period: { from, to },
           total_donations: totalIn,
           donations_count: donations?.length ?? 0,
           total_expenses: totalOut,
@@ -355,7 +577,7 @@ function buildTools(supabase: SupabaseClient, canSeeFinance: boolean) {
           donations_by_payment_method: byKey(donations ?? [], "payment_method"),
           expenses_by_category: categories,
         };
-      },
+      }),
     }),
   };
 
@@ -403,16 +625,41 @@ Deno.serve(async (req) => {
     const messages: UIMessage[] = body?.messages ?? [];
     const language: string = body?.language === "fr" || body?.language === "ht" ? body.language : "en";
 
+    // Tenant scope is resolved server-side only — never taken from the request body.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .maybeSingle();
+    const tenantId: string | null = profile?.tenant_id ?? null;
+
     const { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
     const roles = (roleRows ?? []).map((r: any) => r.role as string);
-    const canSeeFinance = roles.some((r) => ["admin", "treasurer", "pastor"].includes(r));
-    const canSeeMembers = roles.some((r) => ["admin", "pastor", "treasurer", "secretary"].includes(r));
-    if (!canSeeMembers && !canSeeFinance) {
+
+    // Cross-check the tenant membership actually granted to this user.
+    const { data: tenantRoles } = await supabase
+      .from("tenant_user_roles")
+      .select("role, tenant_id, is_approved")
+      .eq("user_id", user.id)
+      .eq("is_approved", true);
+    const approvedTenantRoles = (tenantRoles ?? []).filter((r: any) => r.tenant_id === tenantId);
+    const allRoles = [...roles, ...approvedTenantRoles.map((r: any) => r.role as string)];
+
+    const canSeeFinance = allRoles.some((r) => ["admin", "treasurer", "pastor"].includes(r));
+    const canSeeMembers = allRoles.some((r) => ["admin", "pastor", "treasurer", "secretary"].includes(r));
+
+    if (!tenantId || (!canSeeMembers && !canSeeFinance)) {
       return new Response(JSON.stringify({ error: "You do not have access to this assistant." }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const scopes = new Set<Scope>();
+    if (canSeeMembers) scopes.add("members");
+    if (canSeeFinance) scopes.add("finance");
+
+    const ctx: Ctx = { supabase, userId: user.id, tenantId, scopes };
 
     const gateway = createOpenAICompatible({
       name: "lovable",
@@ -429,6 +676,7 @@ Deno.serve(async (req) => {
       `Always answer in ${langName}.`,
       "You help pastors and church admins understand their congregation: attendance, visitors, giving, birthdays, ministries and finances.",
       "You MUST use the provided tools to obtain any figure, name, list or amount. Never invent or estimate data.",
+      "All tools are restricted server-side to this church's own records. If a tool replies with 'Request denied', tell the user the request is outside what you are allowed to look up, and do not retry with different arguments.",
       "If a tool returns an error or empty result, say so plainly instead of guessing.",
       "Answer concisely with markdown: a one-sentence summary, then a short bullet list or table. Keep lists to the most relevant 20 rows and mention the total count.",
       "Be pastoral and practical: when useful, suggest a next step (a call, a visit, a thank-you note).",
@@ -441,7 +689,7 @@ Deno.serve(async (req) => {
       model: gateway("google/gemini-3.6-flash"),
       system,
       messages: await convertToModelMessages(messages),
-      tools: buildTools(supabase, canSeeFinance),
+      tools: buildTools(ctx),
       stopWhen: stepCountIs(50),
     });
 
