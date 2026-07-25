@@ -12,6 +12,8 @@ import {
   type Ctx,
   type Scope,
 } from "./validation.ts";
+import { buildSystemPrompt } from "./prompt.ts";
+
 
 
 
