@@ -114,11 +114,30 @@ export type DenialDetails = {
   requiredScope?: string;
 };
 
+/**
+ * In-process ledger of every policy decision (allow or deny).
+ * Used only by the test coverage reporter; it never changes behaviour.
+ */
+export type CoverageEvent = {
+  kind: "allowed" | "denied";
+  rule?: DenialRule;
+  table?: string;
+  column?: string;
+  requiredScope?: string;
+};
+
+export const COVERAGE: CoverageEvent[] = [];
+
+export function recordCoverage(event: CoverageEvent) {
+  if (COVERAGE.length < 20000) COVERAGE.push(event);
+}
+
 export class QueryDenied extends Error {
   readonly details: DenialDetails;
   constructor(message: string, details: DenialDetails) {
     super(message);
     this.details = details;
+    recordCoverage({ kind: "denied", ...details });
   }
 }
 
