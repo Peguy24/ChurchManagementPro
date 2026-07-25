@@ -192,13 +192,26 @@ export function safeIds(ids: unknown[], label: string): string[] {
 export function createScopedQuery(ctx: Ctx) {
   return function scoped(table: TableName, columns: string[], opts?: { limit?: number }) {
     const policy = QUERY_POLICY[table];
-    if (!policy) throw new QueryDenied(`Table "${table}" is not available to the assistant.`);
+    if (!policy) {
+      throw new QueryDenied(`Table "${table}" is not available to the assistant.`, {
+        rule: "table_not_allowed",
+        table,
+      });
+    }
     if (!ctx.scopes.has(policy.requires as Scope)) {
-      throw new QueryDenied(`You are not allowed to read ${table}.`);
+      throw new QueryDenied(`You are not allowed to read ${table}.`, {
+        rule: "scope_denied",
+        table,
+        requiredScope: policy.requires,
+      });
     }
     for (const col of columns) {
       if (!(policy.columns as readonly string[]).includes(col)) {
-        throw new QueryDenied(`Column "${col}" is not readable on ${table}.`);
+        throw new QueryDenied(`Column "${col}" is not readable on ${table}.`, {
+          rule: "column_not_allowed",
+          table,
+          column: col,
+        });
       }
     }
     let q = ctx.supabase.from(table).select(columns.join(", "));
@@ -209,7 +222,11 @@ export function createScopedQuery(ctx: Ctx) {
       /** Only filters declared in the policy for this table may be applied. */
       assertFilter(column: string) {
         if (!(policy.filters as readonly string[]).includes(column)) {
-          throw new QueryDenied(`Filtering ${table} by "${column}" is not permitted.`);
+          throw new QueryDenied(`Filtering ${table} by "${column}" is not permitted.`, {
+            rule: "filter_not_allowed",
+            table,
+            column,
+          });
         }
         return column;
       },
@@ -224,11 +241,18 @@ export function guarded<T>(name: string, fn: (args: T) => Promise<unknown>) {
       return await fn(args);
     } catch (e) {
       if (e instanceof QueryDenied) {
-        console.warn(`[ai-pastor-assistant] denied ${name}: ${e.message}`);
+        const event: DenialEvent = { ...e.details, toolName: name, message: e.message, args };
+        console.warn(`[ai-pastor-assistant] denied ${JSON.stringify(event)}`);
+        try {
+          await denialLogger?.(event);
+        } catch (logErr) {
+          console.error("[ai-pastor-assistant] denial log failed", logErr);
+        }
         return { error: `Request denied: ${e.message}` };
       }
       console.error(`[ai-pastor-assistant] ${name} failed`, e);
       return { error: e instanceof Error ? e.message : String(e) };
     }
+
   };
 }
