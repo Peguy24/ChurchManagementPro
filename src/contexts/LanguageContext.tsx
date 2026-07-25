@@ -640,6 +640,9 @@ const translations = {
       openAiAssistant: "Ouvrir l'assistant",
       clearConversation: "Nouvelle conversation",
       conversationCleared: "Conversation effacée",
+      clearConversationTitle: "Effacer la conversation ?",
+      clearConversationConfirm: "Cette action supprimera définitivement l'historique actuel de la conversation. Cette opération ne peut pas être annulée.",
+      clearConversationAction: "Effacer",
     },
     members: {
       title: "Gestion des Membres",
@@ -4137,6 +4140,9 @@ const translations = {
       openAiAssistant: "Open Assistant",
       clearConversation: "New conversation",
       conversationCleared: "Conversation cleared",
+      clearConversationTitle: "Clear conversation?",
+      clearConversationConfirm: "This will permanently delete the current chat history. This action cannot be undone.",
+      clearConversationAction: "Clear",
     },
     members: {
       title: "Member Management",
@@ -7624,6 +7630,9 @@ const translations = {
       openAiAssistant: "Ouvri asistan an",
       clearConversation: "Nouvo konvèsasyon",
       conversationCleared: "Konvèsasyon efase",
+      clearConversationTitle: "Efase konvèsasyon an?",
+      clearConversationConfirm: "Aksyon sa a ap siprime tout istwa konvèsasyon kounye a nèt. Ou pa ka anile aksyon sa a.",
+      clearConversationAction: "Efase",
     },
     members: {
       title: "Jesyon Manm",
