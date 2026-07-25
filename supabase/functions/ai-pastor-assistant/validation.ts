@@ -248,7 +248,17 @@ export function guarded<T>(name: string, fn: (args: T) => Promise<unknown>) {
         } catch (logErr) {
           console.error("[ai-pastor-assistant] denial log failed", logErr);
         }
-        return { error: `Request denied: ${e.message}` };
+        // Returned to the model AND surfaced to the user in the chat UI so a
+        // denial is explained instead of silently logged for admins only.
+        return {
+          error: `Request denied: ${e.message}`,
+          denied: true,
+          rule: e.details.rule,
+          table: e.details.table ?? null,
+          column: e.details.column ?? null,
+          requiredScope: e.details.requiredScope ?? null,
+          tool: name,
+        };
       }
       console.error(`[ai-pastor-assistant] ${name} failed`, e);
       return { error: e instanceof Error ? e.message : String(e) };

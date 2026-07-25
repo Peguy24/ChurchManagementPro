@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Church, Lightbulb } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
+import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
 
 import {
   ROLE_STARTERS,
@@ -224,14 +225,20 @@ export default function AiAssistant() {
                     }
                     if (part.type.startsWith("tool-") || part.type === "dynamic-tool") {
                       const p = part as any;
+                      const denial = asDenial(p.output);
                       return (
-                        <Tool key={i} defaultOpen={false}>
-                          <ToolHeader type={p.type} state={p.state} />
-                          <ToolContent>
-                            <ToolInput input={p.input} />
-                            <ToolOutput output={p.output} errorText={p.errorText} />
-                          </ToolContent>
-                        </Tool>
+                        <div key={i} className="space-y-2">
+                          <Tool defaultOpen={false}>
+                            <ToolHeader type={p.type} state={p.state} />
+                            <ToolContent>
+                              <ToolInput input={p.input} />
+                              <ToolOutput output={p.output} errorText={p.errorText} />
+                            </ToolContent>
+                          </Tool>
+                          {denial && (
+                            <AiDenialNotice denial={denial} language={lang} onAsk={send} />
+                          )}
+                        </div>
                       );
                     }
                     return null;
