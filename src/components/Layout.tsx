@@ -228,11 +228,17 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
           label: t("layout.churchUsers"),
         },
         {
+          to: "/ai-assistant/denials",
+          icon: ShieldAlert,
+          label: "AI Access Denials",
+        },
+        {
           to: "/settings/branding",
           icon: Palette,
           label: t("layout.customization"),
         }
       );
+
     }
   }
 
