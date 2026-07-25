@@ -153,9 +153,10 @@ export default function AiAssistant() {
     setInput("");
   };
 
-  const handleClear = () => {
+  const confirmClear = () => {
     setMessages([]);
     setInput("");
+    setConfirmOpen(false);
     textareaRef.current?.focus();
     toast({ title: t("dashboard.conversationCleared") });
   };
@@ -199,7 +200,7 @@ export default function AiAssistant() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={handleClear}
+              onClick={() => setConfirmOpen(true)}
               disabled={busy}
             >
               <RotateCcw className="h-4 w-4" />
