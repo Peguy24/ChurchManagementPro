@@ -21,7 +21,7 @@ import {
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
-import { Church, Lightbulb } from "lucide-react";
+import { Church, Lightbulb, RotateCcw } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
 import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
@@ -93,7 +93,7 @@ function lastUserText(messages: any[], index: number): string {
 
 
 export default function AiAssistant() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const lang = COPY[language] ? language : "en";
   const copy = COPY[lang];
   const labels = LABELS[lang] ?? LABELS.en;
@@ -121,7 +121,7 @@ export default function AiAssistant() {
     [token, lang],
   );
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     id: "ai-pastor-assistant",
     transport,
     onError: (error) => {
