@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2, Church } from "lucide-react";
+import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2, Church, Bot } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,9 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Button } from "@/components/ui/button";
 import { MessageSquareQuote, Star } from "lucide-react";
 import LeaveReviewDialog from "@/components/LeaveReviewDialog";
+import { Link } from "react-router-dom";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useUserRole } from "@/hooks/useUserRole";
 
 
 export default function Dashboard() {
