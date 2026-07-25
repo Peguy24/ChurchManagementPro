@@ -2,6 +2,16 @@ import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage }
 import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@^3.0.14";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@^4.4.3";
+import {
+  createScopedQuery,
+  guarded,
+  QueryDenied,
+  safeDate,
+  safeIds,
+  type Ctx,
+  type Scope,
+} from "./validation.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
