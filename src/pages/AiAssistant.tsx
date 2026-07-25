@@ -23,6 +23,8 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
 import { Church, Lightbulb } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import AiMessageFeedback from "@/components/AiMessageFeedback";
+
 import {
   ROLE_STARTERS,
   ROLE_FOLLOW_UPS,
