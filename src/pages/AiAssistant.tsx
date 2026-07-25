@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Church, Lightbulb } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
+import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
 
 import {
   ROLE_STARTERS,
