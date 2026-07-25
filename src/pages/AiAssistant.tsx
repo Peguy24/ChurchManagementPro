@@ -335,6 +335,27 @@ export default function AiAssistant() {
           </PromptInputFooter>
         </PromptInput>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              {t("dashboard.clearConversationTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t("dashboard.clearConversationConfirm")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClear} className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <RotateCcw className="h-4 w-4" />
+              {t("dashboard.clearConversationAction")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
