@@ -56,6 +56,7 @@ import {
   Palette,
   UserCog,
   Sparkles,
+  Bot,
   UserPlus,
   Megaphone,
   GitCompareArrows,
