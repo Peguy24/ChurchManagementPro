@@ -8,9 +8,11 @@ import {
   QueryDenied,
   safeDate,
   safeIds,
+  setDenialLogger,
   type Ctx,
   type Scope,
 } from "./validation.ts";
+
 
 
 const corsHeaders = {
