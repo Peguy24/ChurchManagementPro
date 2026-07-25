@@ -55,6 +55,51 @@ export type Database = {
           },
         ]
       }
+      ai_assistant_feedback: {
+        Row: {
+          answer: string | null
+          assistant_role: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          language: string | null
+          message_id: string
+          question: string | null
+          rating: string
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          assistant_role?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          message_id: string
+          question?: string | null
+          rating: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          answer?: string | null
+          assistant_role?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          message_id?: string
+          question?: string | null
+          rating?: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       annual_upgrade_prompts: {
         Row: {
           action: string | null
