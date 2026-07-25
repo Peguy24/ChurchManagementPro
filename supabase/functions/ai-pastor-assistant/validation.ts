@@ -236,6 +236,7 @@ export function createScopedQuery(ctx: Ctx) {
     let q = ctx.supabase.from(table).select(columns.join(", "));
     if (policy.tenantScoped) q = q.eq("tenant_id", ctx.tenantId);
     q = q.limit(Math.min(opts?.limit ?? 1000, 5000));
+    recordCoverage({ kind: "allowed", table, requiredScope: policy.requires });
     return {
       query: q,
       /** Only filters declared in the policy for this table may be applied. */
@@ -247,6 +248,7 @@ export function createScopedQuery(ctx: Ctx) {
             column,
           });
         }
+        recordCoverage({ kind: "allowed", table, column });
         return column;
       },
     };
