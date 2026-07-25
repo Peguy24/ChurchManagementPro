@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2, Church } from "lucide-react";
+import { Users, TrendingUp, Calendar, DollarSign, Cake, Building2, Church, Bot } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,15 +20,21 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Button } from "@/components/ui/button";
 import { MessageSquareQuote, Star } from "lucide-react";
 import LeaveReviewDialog from "@/components/LeaveReviewDialog";
+import { Link } from "react-router-dom";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useUserRole } from "@/hooks/useUserRole";
 
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const { formatAmount } = useCurrency();
+  const { hasFeature } = usePlanLimits();
+  const { isSuperAdmin } = useUserRole();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [reviewOpen, setReviewOpen] = useState(false);
+  const aiAssistantEnabled = hasFeature("aiAssistant");
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardTitle: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -359,6 +365,27 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {aiAssistantEnabled && !isSuperAdmin && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                    <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-base sm:text-lg">{t("dashboard.aiAssistantTitle")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.aiAssistantSubtitle")}</p>
+                  </div>
+                </div>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/ai-assistant">{t("dashboard.openAiAssistant")}</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Grid */}
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

@@ -635,6 +635,9 @@ const translations = {
       donationsTrend: "Évolution des Recettes",
       attendanceTrend: "Évolution de la Présence",
       newMembers: "Nouveaux Membres",
+      aiAssistantTitle: "Assistant IA Pastoral",
+      aiAssistantSubtitle: "Posez une question sur votre congrégation",
+      openAiAssistant: "Ouvrir l'assistant",
     },
     members: {
       title: "Gestion des Membres",
@@ -4127,6 +4130,9 @@ const translations = {
       donationsTrend: "Income Trend",
       attendanceTrend: "Attendance Trend",
       newMembers: "New Members",
+      aiAssistantTitle: "AI Pastor Assistant",
+      aiAssistantSubtitle: "Ask a question about your congregation",
+      openAiAssistant: "Open Assistant",
     },
     members: {
       title: "Member Management",
@@ -7609,6 +7615,9 @@ const translations = {
       donationsTrend: "Evolisyon Resèt",
       attendanceTrend: "Evolisyon Prezans",
       newMembers: "Nouvo Manm",
+      aiAssistantTitle: "Asistan IA Pastoral",
+      aiAssistantSubtitle: "Poze yon kesyon sou kongregasyon w",
+      openAiAssistant: "Ouvri asistan an",
     },
     members: {
       title: "Jesyon Manm",
