@@ -74,9 +74,16 @@ export default function AiAssistant() {
   const { language } = useLanguage();
   const lang = COPY[language] ? language : "en";
   const copy = COPY[lang];
+  const labels = LABELS[lang] ?? LABELS.en;
+  const { roles } = useUserRole();
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [activeRole, setActiveRole] = useState<AssistantRole | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const roleOptions = useMemo(() => availableAssistantRoles(roles as string[]), [roles]);
+  const role: AssistantRole = activeRole ?? resolveAssistantRole(roles as string[]);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
