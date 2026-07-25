@@ -63,6 +63,13 @@ const COPY: Record<string, Record<string, string>> = {
   },
 };
 
+const LABELS: Record<string, { starters: string; followUps: string; role: string }> = {
+  en: { starters: "Suggested questions", followUps: "You might also ask", role: "Questions for" },
+  fr: { starters: "Questions suggérées", followUps: "Vous pouvez aussi demander", role: "Questions pour" },
+  ht: { starters: "Kesyon sijere", followUps: "Ou ka mande tou", role: "Kesyon pou" },
+};
+
+
 export default function AiAssistant() {
   const { language } = useLanguage();
   const lang = COPY[language] ? language : "en";
