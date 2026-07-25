@@ -228,11 +228,17 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
           label: t("layout.churchUsers"),
         },
         {
+          to: "/ai-assistant/denials",
+          icon: ShieldAlert,
+          label: "AI Access Denials",
+        },
+        {
           to: "/settings/branding",
           icon: Palette,
           label: t("layout.customization"),
         }
       );
+
     }
   }
 
@@ -465,6 +471,7 @@ export default function Layout({ children }: LayoutProps) {
     "/website": "church_website",
     "/prayer-requests": "prayer_requests",
     "/ai-assistant": "ai_assistant",
+    "/ai-assistant/denials": "ai_assistant",
     "/settings/online-giving": "online_giving",
   };
   const passesGlobalFlag = (path: string) => {

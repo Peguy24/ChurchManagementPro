@@ -8,9 +8,11 @@ import {
   QueryDenied,
   safeDate,
   safeIds,
+  setDenialLogger,
   type Ctx,
   type Scope,
 } from "./validation.ts";
+
 
 
 const corsHeaders = {
@@ -494,6 +496,23 @@ Deno.serve(async (req) => {
     if (canSeeFinance) scopes.add("finance");
 
     const ctx: Ctx = { supabase, userId: user.id, tenantId, scopes };
+
+    // Structured audit trail: every denied tool call is persisted for admins.
+    setDenialLogger(async (event) => {
+      await supabase.from("ai_tool_denials").insert({
+        tenant_id: tenantId,
+        user_id: user.id,
+        roles: allRoles,
+        tool_name: event.toolName,
+        rule: event.rule,
+        table_name: event.table ?? null,
+        column_name: event.column ?? null,
+        required_scope: event.requiredScope ?? null,
+        message: event.message,
+        args: event.args ?? null,
+      });
+    });
+
 
     const gateway = createOpenAICompatible({
       name: "lovable",

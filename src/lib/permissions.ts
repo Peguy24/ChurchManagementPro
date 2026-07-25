@@ -144,6 +144,8 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/finance/credits": "finances",
   "/insights": "insights",
   "/ai-assistant": "ai_assistant",
+  "/ai-assistant/denials": "users",
+
   "/automations": "automations",
   "/support": "communication",
   "/support-management": "tenants",

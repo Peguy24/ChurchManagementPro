@@ -97,7 +97,44 @@ export const QUERY_POLICY = {
 export type TableName = keyof typeof QUERY_POLICY;
 export type Scope = "members" | "finance";
 
-export class QueryDenied extends Error {}
+/** Machine-readable identifier of the policy rule that blocked a request. */
+export type DenialRule =
+  | "table_not_allowed"
+  | "scope_denied"
+  | "column_not_allowed"
+  | "filter_not_allowed"
+  | "invalid_date"
+  | "invalid_identifier"
+  | "too_many_values";
+
+export type DenialDetails = {
+  rule: DenialRule;
+  table?: string;
+  column?: string;
+  requiredScope?: string;
+};
+
+export class QueryDenied extends Error {
+  readonly details: DenialDetails;
+  constructor(message: string, details: DenialDetails) {
+    super(message);
+    this.details = details;
+  }
+}
+
+/** Structured record emitted for every denied tool call. */
+export type DenialEvent = DenialDetails & {
+  toolName: string;
+  message: string;
+  args: unknown;
+};
+
+let denialLogger: ((event: DenialEvent) => void | Promise<void>) | null = null;
+
+/** Register a sink (e.g. a DB insert) for denial events. */
+export function setDenialLogger(fn: ((event: DenialEvent) => void | Promise<void>) | null) {
+  denialLogger = fn;
+}
 
 export type Ctx = {
   supabase: SupabaseClient;
@@ -110,22 +147,38 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Validate a caller-supplied date. Rejects anything that is not a plain ISO date. */
 export function safeDate(value: string, label: string): string {
-  if (!ISO_DATE.test(value)) throw new QueryDenied(`${label} must be a plain YYYY-MM-DD date.`);
+  if (!ISO_DATE.test(value)) {
+    throw new QueryDenied(`${label} must be a plain YYYY-MM-DD date.`, {
+      rule: "invalid_date",
+      column: label,
+    });
+  }
   const parsed = new Date(`${value}T12:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) throw new QueryDenied(`${label} is not a valid date.`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new QueryDenied(`${label} is not a valid date.`, { rule: "invalid_date", column: label });
+  }
   return value;
 }
 
 /** Validate an id list used in an `in()` filter (uuids only, bounded length). */
 export function safeIds(ids: unknown[], label: string): string[] {
-  if (ids.length > 500) throw new QueryDenied(`${label} contains too many values.`);
+  if (ids.length > 500) {
+    throw new QueryDenied(`${label} contains too many values.`, {
+      rule: "too_many_values",
+      column: label,
+    });
+  }
   return ids.map((v) => {
     if (typeof v !== "string" || !/^[0-9a-fA-F-]{36}$/.test(v)) {
-      throw new QueryDenied(`${label} contains an invalid identifier.`);
+      throw new QueryDenied(`${label} contains an invalid identifier.`, {
+        rule: "invalid_identifier",
+        column: label,
+      });
     }
     return v;
   });
 }
+
 
 /**
  * Builds a query that is guaranteed to be:
@@ -139,13 +192,26 @@ export function safeIds(ids: unknown[], label: string): string[] {
 export function createScopedQuery(ctx: Ctx) {
   return function scoped(table: TableName, columns: string[], opts?: { limit?: number }) {
     const policy = QUERY_POLICY[table];
-    if (!policy) throw new QueryDenied(`Table "${table}" is not available to the assistant.`);
+    if (!policy) {
+      throw new QueryDenied(`Table "${table}" is not available to the assistant.`, {
+        rule: "table_not_allowed",
+        table,
+      });
+    }
     if (!ctx.scopes.has(policy.requires as Scope)) {
-      throw new QueryDenied(`You are not allowed to read ${table}.`);
+      throw new QueryDenied(`You are not allowed to read ${table}.`, {
+        rule: "scope_denied",
+        table,
+        requiredScope: policy.requires,
+      });
     }
     for (const col of columns) {
       if (!(policy.columns as readonly string[]).includes(col)) {
-        throw new QueryDenied(`Column "${col}" is not readable on ${table}.`);
+        throw new QueryDenied(`Column "${col}" is not readable on ${table}.`, {
+          rule: "column_not_allowed",
+          table,
+          column: col,
+        });
       }
     }
     let q = ctx.supabase.from(table).select(columns.join(", "));
@@ -156,7 +222,11 @@ export function createScopedQuery(ctx: Ctx) {
       /** Only filters declared in the policy for this table may be applied. */
       assertFilter(column: string) {
         if (!(policy.filters as readonly string[]).includes(column)) {
-          throw new QueryDenied(`Filtering ${table} by "${column}" is not permitted.`);
+          throw new QueryDenied(`Filtering ${table} by "${column}" is not permitted.`, {
+            rule: "filter_not_allowed",
+            table,
+            column,
+          });
         }
         return column;
       },
@@ -171,11 +241,18 @@ export function guarded<T>(name: string, fn: (args: T) => Promise<unknown>) {
       return await fn(args);
     } catch (e) {
       if (e instanceof QueryDenied) {
-        console.warn(`[ai-pastor-assistant] denied ${name}: ${e.message}`);
+        const event: DenialEvent = { ...e.details, toolName: name, message: e.message, args };
+        console.warn(`[ai-pastor-assistant] denied ${JSON.stringify(event)}`);
+        try {
+          await denialLogger?.(event);
+        } catch (logErr) {
+          console.error("[ai-pastor-assistant] denial log failed", logErr);
+        }
         return { error: `Request denied: ${e.message}` };
       }
       console.error(`[ai-pastor-assistant] ${name} failed`, e);
       return { error: e instanceof Error ? e.message : String(e) };
     }
+
   };
 }
