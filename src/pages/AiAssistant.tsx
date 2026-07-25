@@ -120,6 +120,27 @@ export default function AiAssistant() {
     setInput("");
   };
 
+  const starters = (ROLE_STARTERS[lang] ?? ROLE_STARTERS.en)[role] ?? [];
+
+  // Follow-ups are derived from the tools the assistant just used, falling back to the role defaults.
+  const followUps = useMemo(() => {
+    if (busy || messages.length === 0) return [];
+    const last = messages[messages.length - 1];
+    if (last.role !== "assistant") return [];
+    const toolNames = last.parts
+      .map((p: any) => (typeof p.type === "string" && p.type.startsWith("tool-") ? p.type.slice(5) : null))
+      .filter(Boolean) as string[];
+    const out: string[] = [];
+    for (const name of toolNames) {
+      const set = TOOL_FOLLOW_UPS[name]?.[lang] ?? TOOL_FOLLOW_UPS[name]?.en;
+      if (set) out.push(...set);
+    }
+    const fallback = (ROLE_FOLLOW_UPS[lang] ?? ROLE_FOLLOW_UPS.en)[role] ?? [];
+    return [...new Set(out.length ? out : fallback)].slice(0, 3);
+  }, [messages, busy, lang, role]);
+
+
+
   return (
     <Layout>
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
