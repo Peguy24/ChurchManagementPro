@@ -471,6 +471,7 @@ export default function Layout({ children }: LayoutProps) {
     "/website": "church_website",
     "/prayer-requests": "prayer_requests",
     "/ai-assistant": "ai_assistant",
+    "/ai-assistant/denials": "ai_assistant",
     "/settings/online-giving": "online_giving",
   };
   const passesGlobalFlag = (path: string) => {
