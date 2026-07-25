@@ -114,11 +114,46 @@ export type DenialDetails = {
   requiredScope?: string;
 };
 
+/**
+ * In-process ledger of every policy decision (allow or deny).
+ * Used only by the test coverage reporter; it never changes behaviour.
+ */
+export type CoverageEvent = {
+  kind: "allowed" | "denied";
+  rule?: DenialRule;
+  table?: string;
+  column?: string;
+  requiredScope?: string;
+};
+
+export const COVERAGE: CoverageEvent[] = [];
+
+// Deno isolates each test file, so the ledger is also appended (as JSONL) to
+// the file named by AI_TEST_COVERAGE_FILE when the report runner sets it.
+let ledgerFile: string | null | undefined;
+
+export function recordCoverage(event: CoverageEvent) {
+  if (COVERAGE.length < 20000) COVERAGE.push(event);
+  try {
+    if (ledgerFile === undefined) {
+      ledgerFile = (globalThis as any).Deno?.env?.get?.("AI_TEST_COVERAGE_FILE") ?? null;
+    }
+    if (ledgerFile) {
+      (globalThis as any).Deno.writeTextFileSync(ledgerFile, JSON.stringify(event) + "\n", {
+        append: true,
+      });
+    }
+  } catch {
+    // coverage recording must never affect runtime behaviour
+  }
+}
+
 export class QueryDenied extends Error {
   readonly details: DenialDetails;
   constructor(message: string, details: DenialDetails) {
     super(message);
     this.details = details;
+    recordCoverage({ kind: "denied", ...details });
   }
 }
 
@@ -217,6 +252,7 @@ export function createScopedQuery(ctx: Ctx) {
     let q = ctx.supabase.from(table).select(columns.join(", "));
     if (policy.tenantScoped) q = q.eq("tenant_id", ctx.tenantId);
     q = q.limit(Math.min(opts?.limit ?? 1000, 5000));
+    recordCoverage({ kind: "allowed", table, requiredScope: policy.requires });
     return {
       query: q,
       /** Only filters declared in the policy for this table may be applied. */
@@ -228,6 +264,7 @@ export function createScopedQuery(ctx: Ctx) {
             column,
           });
         }
+        recordCoverage({ kind: "allowed", table, column });
         return column;
       },
     };

@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-07-25T21:25:58.833Z",
+  "totals": {
+    "tests": 25,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 1,
+    "decisions": 147,
+    "allowed": 49,
+    "denied": 98,
+    "rulesCovered": 7,
+    "rulesTotal": 7
+  },
+  "rules": [
+    {
+      "rule": "table_not_allowed",
+      "hits": 12
+    },
+    {
+      "rule": "scope_denied",
+      "hits": 19
+    },
+    {
+      "rule": "column_not_allowed",
+      "hits": 7
+    },
+    {
+      "rule": "filter_not_allowed",
+      "hits": 47
+    },
+    {
+      "rule": "invalid_date",
+      "hits": 7
+    },
+    {
+      "rule": "invalid_identifier",
+      "hits": 5
+    },
+    {
+      "rule": "too_many_values",
+      "hits": 1
+    }
+  ],
+  "tables": [
+    {
+      "table": "members",
+      "allowed": 10,
+      "denied": 14
+    },
+    {
+      "table": "attendance_records",
+      "allowed": 4,
+      "denied": 7
+    },
+    {
+      "table": "visitors",
+      "allowed": 3,
+      "denied": 7
+    },
+    {
+      "table": "ministries",
+      "allowed": 4,
+      "denied": 6
+    },
+    {
+      "table": "ministry_members",
+      "allowed": 5,
+      "denied": 2
+    },
+    {
+      "table": "member_engagement_scores",
+      "allowed": 4,
+      "denied": 6
+    },
+    {
+      "table": "member_risk_predictions",
+      "allowed": 3,
+      "denied": 6
+    },
+    {
+      "table": "donations",
+      "allowed": 7,
+      "denied": 11
+    },
+    {
+      "table": "expenses",
+      "allowed": 4,
+      "denied": 8
+    },
+    {
+      "table": "expense_categories",
+      "allowed": 5,
+      "denied": 6
+    }
+  ]
+}
