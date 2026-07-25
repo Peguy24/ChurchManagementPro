@@ -230,6 +230,8 @@ const App = () => (
               <Route path="/visitors" element={<ProtectedRoute><Visitors /></ProtectedRoute>} />
               <Route path="/insights" element={<ProtectedRoute><FeatureGate feature="smartInsights" featureKey="smartInsights" requiredPlan="professionnel"><SmartInsights /></FeatureGate></ProtectedRoute>} />
               <Route path="/ai-assistant" element={<ProtectedRoute><GlobalFeatureGate flagKey="ai_assistant"><AiAssistant /></GlobalFeatureGate></ProtectedRoute>} />
+              <Route path="/ai-assistant/denials" element={<ProtectedRoute><GlobalFeatureGate flagKey="ai_assistant"><AiDenialLogs /></GlobalFeatureGate></ProtectedRoute>} />
+
               <Route path="/custom-fields" element={<ProtectedRoute><FeatureGate feature="customFields" featureKey="customFields" requiredPlan="professionnel"><CustomFields /></FeatureGate></ProtectedRoute>} />
               <Route path="/settings/email-templates" element={<ProtectedRoute><EmailTemplates /></ProtectedRoute>} />
               <Route path="/settings/church" element={<ProtectedRoute><ChurchSettings /></ProtectedRoute>} />
