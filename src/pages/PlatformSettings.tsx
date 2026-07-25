@@ -453,6 +453,7 @@ function FeatureFlagsSettings({
     client_reviews: t("platformSettings.featureClientReviews"),
     public_contact_form: t("platformSettings.featurePublicContactForm"),
     mcp_integration: t("platformSettings.featureMcpIntegration"),
+    ai_assistant: t("platformSettings.featureAiAssistant"),
   };
 
   return (

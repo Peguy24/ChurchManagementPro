@@ -1,132 +1,58 @@
+## AI Pastor Assistant
 
-# Church Custom Domains for the Mini-Site
+A chat page where an admin/pastor asks natural-language questions and the AI answers using **live data from your database**, not guesses.
 
-Give every church two options for their public website:
-
-1. **Free subdomain** — `mychurch.churchmanagementpro.com`, included with the $15/mo Website add-on. Set up in one click.
-2. **Bring your own domain** — `www.mychurch.org`. Church buys it from any registrar (or through Lovable), points DNS at our platform, we auto-issue SSL. Also included in the add-on — no extra fee.
-
-Both options resolve to the same beautiful template the church already edits at `/church-website`.
-
----
-
-## What the church sees
-
-New **Domain** tab inside Church Website (right next to Basic / Services / Contact / Social / Media):
+### How it works
 
 ```text
-┌─ Your website URL ────────────────────────────────────┐
-│                                                        │
-│  ◉ Free subdomain                                      │
-│    [ mychurch          ] .churchmanagementpro.com     │
-│    ✓ Available          [ Claim subdomain ]           │
-│                                                        │
-│  ○ Use my own domain (e.g. www.mychurch.org)          │
-│    [ www.mychurch.org                        ] [Add]  │
-│                                                        │
-│    Status: Pending DNS · SSL not issued yet           │
-│    Add these two DNS records at your registrar:       │
-│      Type: CNAME  Host: www  Value: sites.churchmanagementpro.com │
-│      Type: TXT    Host: _cmp-verify  Value: cmp-verify=abc123…    │
-│    [ Copy records ]  [ Check DNS ]  [ Remove domain ] │
-│                                                        │
-└────────────────────────────────────────────────────────┘
-
-Primary domain: www.mychurch.org  (used in emails & shares)
-Also live at: mychurch.churchmanagementpro.com  (auto-redirects to primary)
+Pastor types question
+   -> Edge function "ai-pastor-assistant"
+      -> AI model (Lovable AI, no API key needed)
+         -> calls read-only tools (attendance, members, donations, ...)
+            -> queries DB as the signed-in user (RLS enforced)
+         -> AI writes the answer in the user's language (EN/FR/HT)
+   -> Streamed back into the chat UI
 ```
 
-Statuses shown to the church:
-- **Pending DNS** — records not detected yet
-- **Verifying** — records found, waiting for SSL
-- **Active** — live and secure (green padlock)
-- **Failed** — DNS moved away or SSL couldn't issue (with retry button)
+The key part is **tool calling**: the AI never invents numbers. It calls a small set of typed data tools and only summarizes what comes back.
 
----
+### Tools the assistant gets
 
-## What the super admin sees
+| Tool | Answers questions like |
+| --- | --- |
+| `get_absent_members` | "Who missed the last four Sundays?" |
+| `get_visitors` | "Show first-time visitors this month" |
+| `get_lapsed_givers` | "Who hasn't given in six months?" |
+| `get_birthdays` | "Who has a birthday this week?" |
+| `get_financial_summary` | "Generate a monthly financial summary" |
+| `get_ministry_growth` | "Which ministry is growing fastest?" |
+| `get_engagement_insights` | Reuses existing engagement/risk scores |
 
-New "Custom Domains" section in `/super-admin/website-addons`:
-- Table of every custom domain: church name, hostname, status, added date
-- Force re-verify, revoke, view DNS records
-- Alerts widget: X domains failed verification, Y offline
+Each tool is a narrow, parameterized query (date range + limit). No free-form SQL.
 
----
+### Scope and access
 
-## How routing works
+- New page `/ai-assistant`, visible only to roles with member + finance visibility (admin, pastor; treasurer sees finance tools only).
+- Finance tools are omitted from the tool list when the caller lacks finance permission, so the AI cannot reveal giving data to a role that shouldn't see it.
+- Gated by a new global feature flag `ai_assistant` in Platform Settings (so you can kill it), and by plan tier via the existing feature-gating system.
+- Everything is tenant-scoped: the function forwards the user's token, so RLS returns only their church's rows.
 
-Two new public entry points, both served by React Router:
+### Conversation history
 
-- `mychurch.churchmanagementpro.com` → resolve subdomain → render existing `PublicChurchSite`
-- `www.mychurch.org` → resolve custom hostname → same `PublicChurchSite`
+One conversation per user, kept in the browser only (no new tables), with a "New conversation" button. If you'd rather have saved threads with history in the database, say so and I'll build that instead.
 
-The existing `/site/:slug` route keeps working forever as a fallback.
+### UI
 
----
+- Chat page matching the app's design system, with suggested starter questions (the six examples above) as clickable chips.
+- Streaming answers with markdown rendering, plus a compact result table when a tool returns a member/donation list, and an export-to-CSV button on those results.
+- Trilingual: the assistant replies in the UI language (EN/FR/HT), with all labels added to `LanguageContext`.
 
-## Cost & billing
+### Technical details
 
-- Free subdomain: **no extra charge**, part of the $15/mo add-on.
-- BYO custom domain: **no extra charge from us**. Church pays their registrar (~$12/year). We eat the SSL cost (Cloudflare SaaS free tier or Let's Encrypt).
-- Optional future: sell domains directly through the app with a $5–10/yr markup.
-
----
-
-## Technical details
-
-**Database — new table `tenant_domains`:**
-
-```
-tenant_domains
-  id, tenant_id, hostname (unique), kind ('subdomain' | 'custom'),
-  is_primary, verification_token, status
-  ('pending' | 'verifying' | 'active' | 'failed' | 'removed'),
-  ssl_provisioned_at, last_verified_at, created_at
-```
-
-Enforce: one primary per tenant, subdomain slug reserved from `tenants.slug` if desired, RLS so tenants only see their own rows.
-
-**DNS + SSL provider — Cloudflare for SaaS (recommended):**
-- Wildcard `*.churchmanagementpro.com` CNAME → our origin (one-time DNS)
-- For custom domains: call Cloudflare API from an edge function to add a "custom hostname" — Cloudflare handles verification + SSL automatically
-- Requires two secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`
-- Free plan supports 100 custom hostnames; SaaS plan is ~$7/mo for more
-
-If Cloudflare SaaS is off the table, alternative is Caddy on our origin with on-demand TLS (Let's Encrypt) — cheaper but more ops work.
-
-**Edge functions (new):**
-- `provision-tenant-domain` — church adds hostname → generate verify token → call Cloudflare API → return DNS instructions
-- `verify-tenant-domain` — polled/manual "Check DNS" → resolves TXT + CNAME, updates status
-- `remove-tenant-domain` — deletes from Cloudflare + our DB
-- Cron every 15 min: re-check "verifying" and "active" domains, mark offline if DNS drifted
-
-**Frontend routing (`PublicChurchSite`):**
-- On mount, read `window.location.hostname`
-- If it matches `*.churchmanagementpro.com` and isn't the apex → look up by subdomain
-- If it's neither our apex nor a Lovable subdomain → look up by custom hostname
-- Otherwise fall back to `/site/:slug`
-
-Extend the existing `get_public_website` RPC to accept a `hostname` parameter.
-
-**Public URL used everywhere else:**
-- `useCurrentTenant`, share buttons, QR codes, emails all read the tenant's `primary_domain` (falls back to Lovable URL if none set).
-
-**Rollout order:**
-1. Migration + `tenant_domains` table + RLS + grants
-2. Update `get_public_website` RPC to support hostname lookup
-3. Update `PublicChurchSite` + router to handle host-based resolution
-4. Free subdomain flow (no external API — just DB + wildcard DNS one-time setup)
-5. Cloudflare secrets + provisioning edge functions
-6. Church-facing Domain tab in editor
-7. Super-admin management page
-8. Verification cron + status monitoring
-
----
-
-## Out of scope for this plan
-
-- Selling domains inside the app (registrar API integration — separate plan later)
-- Per-church email at their custom domain (e.g. `pastor@mychurch.org`) — that's a separate email-hosting problem
-- Wildcard subdomains under the church's custom domain (e.g. `giving.mychurch.org`)
-
-Confirm and I'll start with step 1 (schema + subdomain-only flow), so churches immediately get `mychurch.churchmanagementpro.com`, and layer the Cloudflare BYO-domain flow on top once you've added the two Cloudflare secrets.
+- Edge function `supabase/functions/ai-pastor-assistant/index.ts` using the AI SDK (`streamText`, `tool`, `stepCountIs(50)`) against the Lovable AI Gateway with `google/gemini-3.6-flash`. No API key from you; usage draws on workspace AI credits.
+- Tools query existing tables: `attendance_records`, `members`, `visitors`, `donations`, `expenses`, `ministry_members`, `member_engagement_scores`.
+- "Missed last N Sundays" is computed by listing the past N Sunday service dates and finding active members with no attendance row on any of them.
+- Dates handled with the existing `parseDateOnly` helper to avoid timezone shifts; currency formatted via the existing currency helpers.
+- Errors surfaced explicitly in the UI: 429 (rate limited) and 402 (credits exhausted) get their own messages.
+- Feature flag added to `PlatformSettings.tsx`; route wrapped in `GlobalFeatureGate`; nav item added in `Layout.tsx`.
+- New permission key `ai_assistant` added to `src/lib/permissions.ts` so tenant admins can grant it per custom role.

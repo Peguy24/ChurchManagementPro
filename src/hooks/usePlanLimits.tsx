@@ -10,6 +10,7 @@ export const ALL_FEATURE_KEYS = [
   "smartInsights", "bulkCommunication", "automations", "volunteerScheduling",
   "memberCards", "attendanceAlerts", "churchHealth", "customFields",
   "dataBackup", "churnPrevention", "branding", "bankReconciliation", "cashRegister",
+  "aiAssistant",
 ] as const;
 
 export type FeatureKey = typeof ALL_FEATURE_KEYS[number];
@@ -235,6 +236,7 @@ export function usePlanLimits() {
     bankReconciliation: "bank_reconciliation",
     cashRegister: "cash_register",
     inventory: "inventory_management",
+    aiAssistant: "ai_assistant",
   };
 
   const hasFeature = (feature: FeatureKey) => {
