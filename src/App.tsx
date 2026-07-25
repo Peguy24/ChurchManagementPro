@@ -67,6 +67,8 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const TenantDataViewer = lazy(() => import("./pages/TenantDataViewer"));
 const SmartInsights = lazy(() => import("./pages/SmartInsights"));
 const AiAssistant = lazy(() => import("./pages/AiAssistant"));
+const AiDenialLogs = lazy(() => import("./pages/AiDenialLogs"));
+
 const SystemGuide = lazy(() => import("./pages/SystemGuide"));
 const Support = lazy(() => import("./pages/Support"));
 const PlatformActivityLog = lazy(() => import("./pages/PlatformActivityLog"));
