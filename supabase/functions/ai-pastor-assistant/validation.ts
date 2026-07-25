@@ -128,8 +128,24 @@ export type CoverageEvent = {
 
 export const COVERAGE: CoverageEvent[] = [];
 
+// Deno isolates each test file, so the ledger is also appended (as JSONL) to
+// the file named by AI_TEST_COVERAGE_FILE when the report runner sets it.
+let ledgerFile: string | null | undefined;
+
 export function recordCoverage(event: CoverageEvent) {
   if (COVERAGE.length < 20000) COVERAGE.push(event);
+  try {
+    if (ledgerFile === undefined) {
+      ledgerFile = (globalThis as any).Deno?.env?.get?.("AI_TEST_COVERAGE_FILE") ?? null;
+    }
+    if (ledgerFile) {
+      (globalThis as any).Deno.writeTextFileSync(ledgerFile, JSON.stringify(event) + "\n", {
+        append: true,
+      });
+    }
+  } catch {
+    // coverage recording must never affect runtime behaviour
+  }
 }
 
 export class QueryDenied extends Error {
