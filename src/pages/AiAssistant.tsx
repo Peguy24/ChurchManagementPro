@@ -21,36 +21,20 @@ import {
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
-import { Church } from "lucide-react";
+import { Church, Lightbulb } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import {
+  ROLE_STARTERS,
+  ROLE_FOLLOW_UPS,
+  ROLE_LABELS,
+  TOOL_FOLLOW_UPS,
+  resolveAssistantRole,
+  availableAssistantRoles,
+  type AssistantRole,
+} from "@/lib/aiAssistantPrompts";
 
 const ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-pastor-assistant`;
 
-const SUGGESTIONS: Record<string, string[]> = {
-  fr: [
-    "Qui a manqué les 4 derniers dimanches ?",
-    "Montre les nouveaux visiteurs de ce mois-ci",
-    "Quels membres n'ont pas donné depuis 6 mois ?",
-    "Qui fête son anniversaire cette semaine ?",
-    "Résumé financier du mois dernier",
-    "Quel ministère grandit le plus vite ?",
-  ],
-  en: [
-    "Who has missed the last four Sundays?",
-    "Show first-time visitors from this month",
-    "Which members haven't given in six months?",
-    "Who has a birthday this week?",
-    "Generate a monthly financial summary",
-    "Which ministry is growing the fastest?",
-  ],
-  ht: [
-    "Kilès ki manke 4 dimanch ki sot pase yo ?",
-    "Montre m vizitè nouvo mwa sa a",
-    "Ki manm ki pa bay depi 6 mwa ?",
-    "Kilès ki gen anivèsè semèn sa a ?",
-    "Rezime finansye mwa pase a",
-    "Ki ministè k ap grandi pi vit ?",
-  ],
-};
 
 const COPY: Record<string, Record<string, string>> = {
   fr: {
