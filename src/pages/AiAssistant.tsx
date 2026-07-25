@@ -21,36 +21,20 @@ import {
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
-import { Church } from "lucide-react";
+import { Church, Lightbulb } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import {
+  ROLE_STARTERS,
+  ROLE_FOLLOW_UPS,
+  ROLE_LABELS,
+  TOOL_FOLLOW_UPS,
+  resolveAssistantRole,
+  availableAssistantRoles,
+  type AssistantRole,
+} from "@/lib/aiAssistantPrompts";
 
 const ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-pastor-assistant`;
 
-const SUGGESTIONS: Record<string, string[]> = {
-  fr: [
-    "Qui a manqué les 4 derniers dimanches ?",
-    "Montre les nouveaux visiteurs de ce mois-ci",
-    "Quels membres n'ont pas donné depuis 6 mois ?",
-    "Qui fête son anniversaire cette semaine ?",
-    "Résumé financier du mois dernier",
-    "Quel ministère grandit le plus vite ?",
-  ],
-  en: [
-    "Who has missed the last four Sundays?",
-    "Show first-time visitors from this month",
-    "Which members haven't given in six months?",
-    "Who has a birthday this week?",
-    "Generate a monthly financial summary",
-    "Which ministry is growing the fastest?",
-  ],
-  ht: [
-    "Kilès ki manke 4 dimanch ki sot pase yo ?",
-    "Montre m vizitè nouvo mwa sa a",
-    "Ki manm ki pa bay depi 6 mwa ?",
-    "Kilès ki gen anivèsè semèn sa a ?",
-    "Rezime finansye mwa pase a",
-    "Ki ministè k ap grandi pi vit ?",
-  ],
-};
 
 const COPY: Record<string, Record<string, string>> = {
   fr: {
@@ -79,13 +63,27 @@ const COPY: Record<string, Record<string, string>> = {
   },
 };
 
+const LABELS: Record<string, { starters: string; followUps: string; role: string }> = {
+  en: { starters: "Suggested questions", followUps: "You might also ask", role: "Questions for" },
+  fr: { starters: "Questions suggérées", followUps: "Vous pouvez aussi demander", role: "Questions pour" },
+  ht: { starters: "Kesyon sijere", followUps: "Ou ka mande tou", role: "Kesyon pou" },
+};
+
+
 export default function AiAssistant() {
   const { language } = useLanguage();
   const lang = COPY[language] ? language : "en";
   const copy = COPY[lang];
+  const labels = LABELS[lang] ?? LABELS.en;
+  const { roles } = useUserRole();
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [activeRole, setActiveRole] = useState<AssistantRole | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const roleOptions = useMemo(() => availableAssistantRoles(roles as string[]), [roles]);
+  const role: AssistantRole = activeRole ?? resolveAssistantRole(roles as string[]);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
@@ -122,6 +120,27 @@ export default function AiAssistant() {
     setInput("");
   };
 
+  const starters = (ROLE_STARTERS[lang] ?? ROLE_STARTERS.en)[role] ?? [];
+
+  // Follow-ups are derived from the tools the assistant just used, falling back to the role defaults.
+  const followUps = useMemo(() => {
+    if (busy || messages.length === 0) return [];
+    const last = messages[messages.length - 1];
+    if (last.role !== "assistant") return [];
+    const toolNames = last.parts
+      .map((p: any) => (typeof p.type === "string" && p.type.startsWith("tool-") ? p.type.slice(5) : null))
+      .filter(Boolean) as string[];
+    const out: string[] = [];
+    for (const name of toolNames) {
+      const set = TOOL_FOLLOW_UPS[name]?.[lang] ?? TOOL_FOLLOW_UPS[name]?.en;
+      if (set) out.push(...set);
+    }
+    const fallback = (ROLE_FOLLOW_UPS[lang] ?? ROLE_FOLLOW_UPS.en)[role] ?? [];
+    return [...new Set(out.length ? out : fallback)].slice(0, 3);
+  }, [messages, busy, lang, role]);
+
+
+
   return (
     <Layout>
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
@@ -143,13 +162,35 @@ export default function AiAssistant() {
                 title={copy.empty}
                 description={copy.subtitle}
               >
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {(SUGGESTIONS[lang] ?? SUGGESTIONS.en).map((s) => (
-                    <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
-                      {s}
-                    </Button>
-                  ))}
+                <div className="mt-5 w-full max-w-2xl space-y-3">
+                  {roleOptions.length > 1 && (
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">{labels.role}</span>
+                      {roleOptions.map((r) => (
+                        <Button
+                          key={r}
+                          size="sm"
+                          variant={r === role ? "default" : "ghost"}
+                          className="h-7 rounded-full px-3 text-xs"
+                          onClick={() => setActiveRole(r)}
+                        >
+                          {(ROLE_LABELS[lang] ?? ROLE_LABELS.en)[r]}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {labels.starters}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {starters.map((s) => (
+                      <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+
               </ConversationEmptyState>
             )}
 
@@ -178,7 +219,28 @@ export default function AiAssistant() {
               </Message>
             ))}
 
+            {followUps.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <Lightbulb className="h-3.5 w-3.5" />
+                  {labels.followUps}
+                </span>
+                {followUps.map((s) => (
+                  <Button
+                    key={s}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 rounded-full text-xs"
+                    onClick={() => send(s)}
+                  >
+                    {s}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             {status === "submitted" && <Shimmer>{copy.thinking}</Shimmer>}
+
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
