@@ -142,6 +142,13 @@ export default function AiAssistant() {
     setInput("");
   };
 
+  const handleClear = () => {
+    setMessages([]);
+    setInput("");
+    textareaRef.current?.focus();
+    toast({ title: t("dashboard.conversationCleared") });
+  };
+
   const starters = (ROLE_STARTERS[lang] ?? ROLE_STARTERS.en)[role] ?? [];
 
   // Follow-ups are derived from the tools the assistant just used, falling back to the role defaults.
@@ -166,14 +173,28 @@ export default function AiAssistant() {
   return (
     <Layout>
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
-        <header className="flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2 text-primary">
-            <Church className="h-6 w-6" />
+        <header className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-2 text-primary">
+              <Church className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
+              <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
-            <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
-          </div>
+          {messages.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleClear}
+              disabled={busy}
+            >
+              <RotateCcw className="h-4 w-4" />
+              {t("dashboard.clearConversation")}
+            </Button>
+          )}
         </header>
 
         <Conversation className="flex-1 rounded-xl border bg-card">
