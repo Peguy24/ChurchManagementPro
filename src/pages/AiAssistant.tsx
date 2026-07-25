@@ -162,13 +162,35 @@ export default function AiAssistant() {
                 title={copy.empty}
                 description={copy.subtitle}
               >
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {(SUGGESTIONS[lang] ?? SUGGESTIONS.en).map((s) => (
-                    <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
-                      {s}
-                    </Button>
-                  ))}
+                <div className="mt-5 w-full max-w-2xl space-y-3">
+                  {roleOptions.length > 1 && (
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">{labels.role}</span>
+                      {roleOptions.map((r) => (
+                        <Button
+                          key={r}
+                          size="sm"
+                          variant={r === role ? "default" : "ghost"}
+                          className="h-7 rounded-full px-3 text-xs"
+                          onClick={() => setActiveRole(r)}
+                        >
+                          {(ROLE_LABELS[lang] ?? ROLE_LABELS.en)[r]}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {labels.starters}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {starters.map((s) => (
+                      <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+
               </ConversationEmptyState>
             )}
 
