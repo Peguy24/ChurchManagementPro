@@ -194,7 +194,7 @@ export default function AiAssistant() {
               </ConversationEmptyState>
             )}
 
-            {messages.map((message) => (
+            {messages.map((message, mi) => (
               <Message key={message.id} from={message.role}>
                 <MessageContent>
                   {message.parts.map((part, i) => {
@@ -215,9 +215,21 @@ export default function AiAssistant() {
                     }
                     return null;
                   })}
+                  {message.role === "assistant" &&
+                    !(busy && mi === messages.length - 1) &&
+                    messageText(message) && (
+                      <AiMessageFeedback
+                        messageId={message.id}
+                        question={lastUserText(messages, mi)}
+                        answer={messageText(message)}
+                        language={lang}
+                        assistantRole={role}
+                      />
+                    )}
                 </MessageContent>
               </Message>
             ))}
+
 
             {followUps.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-1">
