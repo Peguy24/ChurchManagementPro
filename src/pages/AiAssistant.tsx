@@ -69,6 +69,25 @@ const LABELS: Record<string, { starters: string; followUps: string; role: string
   ht: { starters: "Kesyon sijere", followUps: "Ou ka mande tou", role: "Kesyon pou" },
 };
 
+/** Concatenated plain text of an assistant message (used as the rated answer). */
+function messageText(message: { parts: any[] }): string {
+  return message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => p.text as string)
+    .join("\n")
+    .trim();
+}
+
+/** The most recent user question preceding an assistant message. */
+function lastUserText(messages: any[], index: number): string {
+  for (let i = index - 1; i >= 0; i--) {
+    if (messages[i].role === "user") return messageText(messages[i]);
+  }
+  return "";
+}
+
+
+
 
 export default function AiAssistant() {
   const { language } = useLanguage();
