@@ -1,92 +1,96 @@
 {
-  "generatedAt": "2026-07-25T21:25:02.519Z",
+  "generatedAt": "2026-07-25T21:25:58.833Z",
   "totals": {
-    "decisions": 0,
-    "allowed": 0,
-    "denied": 0,
-    "rulesCovered": 0,
+    "tests": 25,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 1,
+    "decisions": 147,
+    "allowed": 49,
+    "denied": 98,
+    "rulesCovered": 7,
     "rulesTotal": 7
   },
   "rules": [
     {
       "rule": "table_not_allowed",
-      "hits": 0
+      "hits": 12
     },
     {
       "rule": "scope_denied",
-      "hits": 0
+      "hits": 19
     },
     {
       "rule": "column_not_allowed",
-      "hits": 0
+      "hits": 7
     },
     {
       "rule": "filter_not_allowed",
-      "hits": 0
+      "hits": 47
     },
     {
       "rule": "invalid_date",
-      "hits": 0
+      "hits": 7
     },
     {
       "rule": "invalid_identifier",
-      "hits": 0
+      "hits": 5
     },
     {
       "rule": "too_many_values",
-      "hits": 0
+      "hits": 1
     }
   ],
   "tables": [
     {
       "table": "members",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 10,
+      "denied": 14
     },
     {
       "table": "attendance_records",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 4,
+      "denied": 7
     },
     {
       "table": "visitors",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 3,
+      "denied": 7
     },
     {
       "table": "ministries",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 4,
+      "denied": 6
     },
     {
       "table": "ministry_members",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 5,
+      "denied": 2
     },
     {
       "table": "member_engagement_scores",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 4,
+      "denied": 6
     },
     {
       "table": "member_risk_predictions",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 3,
+      "denied": 6
     },
     {
       "table": "donations",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 7,
+      "denied": 11
     },
     {
       "table": "expenses",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 4,
+      "denied": 8
     },
     {
       "table": "expense_categories",
-      "allowed": 0,
-      "denied": 0
+      "allowed": 5,
+      "denied": 6
     }
   ]
 }

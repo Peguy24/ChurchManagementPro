@@ -1,8 +1,10 @@
 # AI Pastor Assistant — Test Report
 
-Generated: 2026-07-25T21:25:02.596Z
+Generated: 2026-07-25T21:25:58.837Z
 
-**Result: FAIL** — 24 passed, 1 failed, 1 skipped (26 total)
+**Result: PASS** — 24 passed, 0 failed, 1 skipped (25 total)
+
+**Rule coverage: 7/7** — 147 policy decisions exercised (49 allowed, 98 denied).
 
 ## Tests
 
@@ -41,37 +43,29 @@ Generated: 2026-07-25T21:25:02.596Z
 | PASS | guarded converts denials into safe tool results |
 | PASS | guarded still surfaces ordinary errors without denial wording |
 
-### zz_coverage_report_test.ts
-
-| Result | Test |
-| --- | --- |
-| FAIL | policy rule coverage report |
-
 ## Policy rules exercised
-
-0/7 rules covered — 0 policy decisions (0 allowed, 0 denied).
 
 | Rule | Times triggered | Covered |
 | --- | ---: | --- |
-| `table_not_allowed` | 0 | NO |
-| `scope_denied` | 0 | NO |
-| `column_not_allowed` | 0 | NO |
-| `filter_not_allowed` | 0 | NO |
-| `invalid_date` | 0 | NO |
-| `invalid_identifier` | 0 | NO |
-| `too_many_values` | 0 | NO |
+| `table_not_allowed` | 12 | yes |
+| `scope_denied` | 19 | yes |
+| `column_not_allowed` | 7 | yes |
+| `filter_not_allowed` | 47 | yes |
+| `invalid_date` | 7 | yes |
+| `invalid_identifier` | 5 | yes |
+| `too_many_values` | 1 | yes |
 
 ## Tables exercised
 
 | Table | Allowed queries | Denials |
 | --- | ---: | ---: |
-| `members` | 0 | 0 |
-| `attendance_records` | 0 | 0 |
-| `visitors` | 0 | 0 |
-| `ministries` | 0 | 0 |
-| `ministry_members` | 0 | 0 |
-| `member_engagement_scores` | 0 | 0 |
-| `member_risk_predictions` | 0 | 0 |
-| `donations` | 0 | 0 |
-| `expenses` | 0 | 0 |
-| `expense_categories` | 0 | 0 |
+| `members` | 10 | 14 |
+| `attendance_records` | 4 | 7 |
+| `visitors` | 3 | 7 |
+| `ministries` | 4 | 6 |
+| `ministry_members` | 5 | 2 |
+| `member_engagement_scores` | 4 | 6 |
+| `member_risk_predictions` | 3 | 6 |
+| `donations` | 7 | 11 |
+| `expenses` | 4 | 8 |
+| `expense_categories` | 5 | 6 |
