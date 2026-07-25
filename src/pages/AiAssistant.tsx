@@ -23,6 +23,8 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
 import { Church, Lightbulb } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import AiMessageFeedback from "@/components/AiMessageFeedback";
+
 import {
   ROLE_STARTERS,
   ROLE_FOLLOW_UPS,
@@ -68,6 +70,25 @@ const LABELS: Record<string, { starters: string; followUps: string; role: string
   fr: { starters: "Questions suggérées", followUps: "Vous pouvez aussi demander", role: "Questions pour" },
   ht: { starters: "Kesyon sijere", followUps: "Ou ka mande tou", role: "Kesyon pou" },
 };
+
+/** Concatenated plain text of an assistant message (used as the rated answer). */
+function messageText(message: { parts: any[] }): string {
+  return message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => p.text as string)
+    .join("\n")
+    .trim();
+}
+
+/** The most recent user question preceding an assistant message. */
+function lastUserText(messages: any[], index: number): string {
+  for (let i = index - 1; i >= 0; i--) {
+    if (messages[i].role === "user") return messageText(messages[i]);
+  }
+  return "";
+}
+
+
 
 
 export default function AiAssistant() {
@@ -194,7 +215,7 @@ export default function AiAssistant() {
               </ConversationEmptyState>
             )}
 
-            {messages.map((message) => (
+            {messages.map((message, mi) => (
               <Message key={message.id} from={message.role}>
                 <MessageContent>
                   {message.parts.map((part, i) => {
@@ -215,9 +236,21 @@ export default function AiAssistant() {
                     }
                     return null;
                   })}
+                  {message.role === "assistant" &&
+                    !(busy && mi === messages.length - 1) &&
+                    messageText(message) && (
+                      <AiMessageFeedback
+                        messageId={message.id}
+                        question={lastUserText(messages, mi)}
+                        answer={messageText(message)}
+                        language={lang}
+                        assistantRole={role}
+                      />
+                    )}
                 </MessageContent>
               </Message>
             ))}
+
 
             {followUps.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-1">
