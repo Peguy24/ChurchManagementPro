@@ -21,7 +21,7 @@ import {
 import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
-import { Church, Lightbulb } from "lucide-react";
+import { Church, Lightbulb, RotateCcw } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
 import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
@@ -93,7 +93,7 @@ function lastUserText(messages: any[], index: number): string {
 
 
 export default function AiAssistant() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const lang = COPY[language] ? language : "en";
   const copy = COPY[lang];
   const labels = LABELS[lang] ?? LABELS.en;
@@ -121,7 +121,7 @@ export default function AiAssistant() {
     [token, lang],
   );
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     id: "ai-pastor-assistant",
     transport,
     onError: (error) => {
@@ -140,6 +140,13 @@ export default function AiAssistant() {
     if (!value || busy || !token) return;
     void sendMessage({ text: value });
     setInput("");
+  };
+
+  const handleClear = () => {
+    setMessages([]);
+    setInput("");
+    textareaRef.current?.focus();
+    toast({ title: t("dashboard.conversationCleared") });
   };
 
   const starters = (ROLE_STARTERS[lang] ?? ROLE_STARTERS.en)[role] ?? [];
@@ -166,14 +173,28 @@ export default function AiAssistant() {
   return (
     <Layout>
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
-        <header className="flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2 text-primary">
-            <Church className="h-6 w-6" />
+        <header className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-2 text-primary">
+              <Church className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
+              <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
-            <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
-          </div>
+          {messages.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleClear}
+              disabled={busy}
+            >
+              <RotateCcw className="h-4 w-4" />
+              {t("dashboard.clearConversation")}
+            </Button>
+          )}
         </header>
 
         <Conversation className="flex-1 rounded-xl border bg-card">

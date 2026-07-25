@@ -638,6 +638,8 @@ const translations = {
       aiAssistantTitle: "Assistant IA Pastoral",
       aiAssistantSubtitle: "Posez une question sur votre congrégation",
       openAiAssistant: "Ouvrir l'assistant",
+      clearConversation: "Nouvelle conversation",
+      conversationCleared: "Conversation effacée",
     },
     members: {
       title: "Gestion des Membres",
@@ -4133,6 +4135,8 @@ const translations = {
       aiAssistantTitle: "AI Pastor Assistant",
       aiAssistantSubtitle: "Ask a question about your congregation",
       openAiAssistant: "Open Assistant",
+      clearConversation: "New conversation",
+      conversationCleared: "Conversation cleared",
     },
     members: {
       title: "Member Management",
@@ -7618,6 +7622,8 @@ const translations = {
       aiAssistantTitle: "Asistan IA Pastoral",
       aiAssistantSubtitle: "Poze yon kesyon sou kongregasyon w",
       openAiAssistant: "Ouvri asistan an",
+      clearConversation: "Nouvo konvèsasyon",
+      conversationCleared: "Konvèsasyon efase",
     },
     members: {
       title: "Jesyon Manm",
