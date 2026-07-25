@@ -111,6 +111,7 @@ export default function AiAssistant() {
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<AssistantRole | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const roleOptions = useMemo(() => availableAssistantRoles(roles as string[]), [roles]);
