@@ -332,23 +332,25 @@ serve(async (req) => {
           .limit(1);
         member = byNumber?.[0] ?? null;
 
-        // 2) phone — compare on digits only, in either direction
+        // 2) phone — country-code and format tolerant (+509, 00509, 0-prefixed, spaces/dashes)
         if (!member) {
-          const digits = normalizePhone(raw);
-          if (digits.length >= 7) {
+          const inputCore = phoneCore(raw);
+          if (inputCore.length >= 6) {
             const { data: candidates } = await supabaseAdmin
               .from("members")
               .select("id, first_name, last_name, branch_id, phone")
               .eq("tenant_id", session.tenant_id)
               .not("phone", "is", null)
               .limit(5000);
-            const matches = (candidates ?? []).filter((m) => {
-              const p = normalizePhone(m.phone ?? "");
-              return p.length >= 7 && (p.endsWith(digits) || digits.endsWith(p));
-            });
-            if (matches.length === 1) member = matches[0];
+            const all = candidates ?? [];
+            // prefer exact national-number matches, then suffix matches
+            const exact = all.filter((m) => phoneCore(m.phone ?? "") === inputCore);
+            const loose = all.filter((m) => phoneMatches(raw, m.phone ?? ""));
+            if (exact.length === 1) member = exact[0];
+            else if (exact.length === 0 && loose.length === 1) member = loose[0];
           }
         }
+
       }
 
 
