@@ -293,7 +293,7 @@ export default function SelfCheckin() {
                   className="space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (identifier.trim()) submit({ identifier: identifier.trim() });
+                    if (canSubmit) submit({ identifier: identifier.trim() });
                   }}
                 >
                   <div className="space-y-2">
@@ -303,14 +303,43 @@ export default function SelfCheckin() {
                     <Input
                       id="identifier"
                       value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      onChange={(e) => setIdentifier(sanitizeIdentifier(e.target.value))}
                       placeholder={c.placeholder}
                       autoComplete="off"
                       inputMode="text"
-                      maxLength={60}
+                      maxLength={40}
+                      aria-invalid={preview.kind === "invalid"}
+                      aria-describedby="identifier-preview"
                     />
+                    <div id="identifier-preview" aria-live="polite" className="min-h-[1.25rem]">
+                      {preview.kind === "member_number" && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <IdCard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>
+                            {c.matchAs}: {c.asMemberNumber}{" "}
+                            <span className="font-medium text-foreground">{preview.normalized}</span>
+                          </span>
+                        </p>
+                      )}
+                      {preview.kind === "phone" && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>
+                            {c.matchAs}: {c.asPhone}{" "}
+                            <span className="font-medium text-foreground">{preview.normalized}</span>
+                          </span>
+                        </p>
+                      )}
+                      {preview.kind === "invalid" && (
+                        <p role="alert" className="text-xs text-destructive flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>{preview.reason === "too_short" ? c.tooShort : c.unrecognized}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={submitting || !identifier.trim()}>
+                  <Button type="submit" className="w-full" disabled={submitting || !canSubmit}>
+
                     {submitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
