@@ -183,17 +183,6 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   }, [fetchTenantInfo]);
 
 
-  const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
-    return { ...data, tenant_id: tenantId };
-  }, [tenantId]);
-
-  const forInsert = useCallback(<T extends object>(data: T): T & { tenant_id: string } => {
-    if (!tenantId) {
-      throw new Error('Aucun tenant associé à cet utilisateur. Impossible de créer des données.');
-    }
-    return { ...data, tenant_id: tenantId };
-  }, [tenantId]);
-
   // Use same-user tenant cache for the first paint after refresh so the app does
   // not briefly show generic/platform branding while the fresh read completes.
   const cachedTenant = user ? loadCachedTenant() : null;
@@ -201,6 +190,17 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   const effectiveTenantId = tenantId ?? effectiveCachedTenant?.tenantId ?? null;
   const effectiveTenant = tenant ?? effectiveCachedTenant?.tenant ?? null;
   const effectiveLoading = authLoading || ((effectiveTenantId || effectiveTenant) ? false : loading);
+
+  const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
+    return { ...data, tenant_id: effectiveTenantId };
+  }, [effectiveTenantId]);
+
+  const forInsert = useCallback(<T extends object>(data: T): T & { tenant_id: string } => {
+    if (!effectiveTenantId) {
+      throw new Error('Aucun tenant associé à cet utilisateur. Impossible de créer des données.');
+    }
+    return { ...data, tenant_id: effectiveTenantId };
+  }, [effectiveTenantId]);
 
   return {
     tenantId: effectiveTenantId,
