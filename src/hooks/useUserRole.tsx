@@ -41,45 +41,39 @@ interface UserRoleContextValue {
 
 const UserRoleContext = createContext<UserRoleContextValue | undefined>(undefined);
 
-function loadCachedRoles(): CachedRoleState | null {
-  try {
-    const raw = sessionStorage.getItem(ROLE_CACHE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as CachedRoleState;
-  } catch {
-    return null;
-  }
-}
-
 function saveCachedRoles(state: CachedRoleState) {
   try {
+    if (!state.isApproved) {
+      sessionStorage.removeItem(ROLE_CACHE_KEY);
+      return;
+    }
     sessionStorage.setItem(ROLE_CACHE_KEY, JSON.stringify(state));
   } catch {}
 }
 
-// Read cache once at module level.
-// Only trust a cache that represents an APPROVED user: a stale "pending" cache
-// would otherwise bounce an approved admin to /pending-approval before the
-// fresh role fetch resolves.
-const rawRoleCache = loadCachedRoles();
-const initialRoleCache = rawRoleCache?.isApproved ? rawRoleCache : null;
+// Invalidate role cache on every full page load. Role/approval state is security
+// sensitive and must always be confirmed freshly after refresh/login so a stale
+// pending cache can never bounce an approved tenant admin to /pending-approval.
+try {
+  sessionStorage.removeItem(ROLE_CACHE_KEY);
+} catch {}
 
 export function UserRoleProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
 
-  const [roles, setRoles] = useState<AppRole[]>(initialRoleCache?.roles ?? []);
+  const [roles, setRoles] = useState<AppRole[]>([]);
   const [permissions, setPermissions] = useState<Record<AppRole, RouteGroup[]>>(
-    initialRoleCache?.permissions ?? DEFAULT_ROLE_PERMISSIONS
+    DEFAULT_ROLE_PERMISSIONS
   );
-  const [loading, setLoading] = useState(!initialRoleCache);
-  const [isApproved, setIsApproved] = useState(initialRoleCache?.isApproved ?? false);
-  const [isAdmin, setIsAdmin] = useState(initialRoleCache?.isAdmin ?? false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(initialRoleCache?.isSuperAdmin ?? false);
+  const [loading, setLoading] = useState(true);
+  const [isApproved, setIsApproved] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [resolved, setResolved] = useState(false);
   const fetchedRef = useRef(false);
   const attemptsRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cachedUserIdRef = useRef<string | null>(initialRoleCache?.userId ?? null);
+  const cachedUserIdRef = useRef<string | null>(null);
 
 
   useEffect(() => {
@@ -111,6 +105,9 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
 
       // Skip if already fetched for this user
       if (fetchedRef.current) return;
+
+      setLoading(true);
+      setResolved(false);
 
       // Retry transient failures instead of declaring the user "pending".
       const scheduleRetry = () => {
@@ -285,6 +282,7 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
           setIsAdmin(globalRoles.includes("admin"));
           setIsSuperAdmin(false);
           fetchedRef.current = true;
+          cachedUserIdRef.current = user.id;
         }
       } catch (error) {
         console.error("Error fetching user roles:", error);
@@ -323,9 +321,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
   // Trust cached data only when it belongs to the signed-in user AND says approved.
   // Otherwise stay "loading" until the fresh fetch resolves, so nobody is bounced
   // to /pending-approval on a stale or partial state.
-  const hasUsableCache =
-    roles.length > 0 && isApproved && (!user || cachedUserIdRef.current === user.id);
-  const effectiveLoading = hasUsableCache ? false : (authLoading || loading || !resolved);
+  const needsFreshFetch = !!user && !fetchedRef.current;
+  const effectiveLoading = authLoading || loading || !resolved || needsFreshFetch;
 
 
   const value: UserRoleContextValue = {
