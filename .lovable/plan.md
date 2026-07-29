@@ -1,58 +1,36 @@
-## AI Pastor Assistant
+## Goal
 
-A chat page where an admin/pastor asks natural-language questions and the AI answers using **live data from your database**, not guesses.
+Make Church Management Pro installable on phones and desktops: admins and pastors add it to their home screen, tap an app icon, and it opens full-screen with no browser bar. No app store needed.
 
-### How it works
+Offline mode is intentionally NOT included — the app depends on live data (members, attendance, finances), and offline caching risks showing stale records. It can be added later if you want an offline attendance kiosk.
 
-```text
-Pastor types question
-   -> Edge function "ai-pastor-assistant"
-      -> AI model (Lovable AI, no API key needed)
-         -> calls read-only tools (attendance, members, donations, ...)
-            -> queries DB as the signed-in user (RLS enforced)
-         -> AI writes the answer in the user's language (EN/FR/HT)
-   -> Streamed back into the chat UI
-```
+## What gets added
 
-The key part is **tool calling**: the AI never invents numbers. It calls a small set of typed data tools and only summarizes what comes back.
+1. **App manifest** (`public/manifest.webmanifest`)
+   - Name: Church Management Pro, short name: ChurchPro
+   - `display: standalone`, portrait-friendly
+   - Theme color matched to the app's primary brand color, light background
+   - Start URL: `/`
 
-### Tools the assistant gets
+2. **App icons** (generated, placed in `public/`)
+   - 192x192 and 512x512 PNG icons
+   - A 512x512 maskable icon so Android doesn't crop the logo badly
+   - 180x180 Apple touch icon for iPhone home screen
 
-| Tool | Answers questions like |
-| --- | --- |
-| `get_absent_members` | "Who missed the last four Sundays?" |
-| `get_visitors` | "Show first-time visitors this month" |
-| `get_lapsed_givers` | "Who hasn't given in six months?" |
-| `get_birthdays` | "Who has a birthday this week?" |
-| `get_financial_summary` | "Generate a monthly financial summary" |
-| `get_ministry_growth` | "Which ministry is growing fastest?" |
-| `get_engagement_insights` | Reuses existing engagement/risk scores |
+3. **Head tags** in `index.html`
+   - `<link rel="manifest">`, `<meta name="theme-color">`, `apple-touch-icon`, and `apple-mobile-web-app-*` tags for iOS full-screen behavior
 
-Each tool is a narrow, parameterized query (date range + limit). No free-form SQL.
+4. **Install helper (optional, included)**
+   - A small dismissible "Install app" prompt shown to signed-in users on Android/Chrome via the browser install event
+   - iPhone users get a short trilingual (EN/FR/HT) hint: Share → Add to Home Screen
+   - Hidden inside the Lovable preview iframe and once already installed
 
-### Scope and access
+## Technical notes
 
-- New page `/ai-assistant`, visible only to roles with member + finance visibility (admin, pastor; treasurer sees finance tools only).
-- Finance tools are omitted from the tool list when the caller lacks finance permission, so the AI cannot reveal giving data to a role that shouldn't see it.
-- Gated by a new global feature flag `ai_assistant` in Platform Settings (so you can kill it), and by plan tier via the existing feature-gating system.
-- Everything is tenant-scoped: the function forwards the user's token, so RLS returns only their church's rows.
+- Manifest-only approach: no service worker, no `vite-plugin-pwa`, no caching layer, so there is zero risk of stale HTML or white screens after a deploy.
+- Icons generated from the existing Church Management Pro logo styling for brand consistency.
+- Install prompt component lives in `src/components/InstallAppPrompt.tsx`, mounted once in the app layout, with copy added to `LanguageContext.tsx` (EN/FR/HT).
 
-### Conversation history
+## After it ships
 
-One conversation per user, kept in the browser only (no new tables), with a "New conversation" button. If you'd rather have saved threads with history in the database, say so and I'll build that instead.
-
-### UI
-
-- Chat page matching the app's design system, with suggested starter questions (the six examples above) as clickable chips.
-- Streaming answers with markdown rendering, plus a compact result table when a tool returns a member/donation list, and an export-to-CSV button on those results.
-- Trilingual: the assistant replies in the UI language (EN/FR/HT), with all labels added to `LanguageContext`.
-
-### Technical details
-
-- Edge function `supabase/functions/ai-pastor-assistant/index.ts` using the AI SDK (`streamText`, `tool`, `stepCountIs(50)`) against the Lovable AI Gateway with `google/gemini-3.6-flash`. No API key from you; usage draws on workspace AI credits.
-- Tools query existing tables: `attendance_records`, `members`, `visitors`, `donations`, `expenses`, `ministry_members`, `member_engagement_scores`.
-- "Missed last N Sundays" is computed by listing the past N Sunday service dates and finding active members with no attendance row on any of them.
-- Dates handled with the existing `parseDateOnly` helper to avoid timezone shifts; currency formatted via the existing currency helpers.
-- Errors surfaced explicitly in the UI: 429 (rate limited) and 402 (credits exhausted) get their own messages.
-- Feature flag added to `PlatformSettings.tsx`; route wrapped in `GlobalFeatureGate`; nav item added in `Layout.tsx`.
-- New permission key `ai_assistant` added to `src/lib/permissions.ts` so tenant admins can grant it per custom role.
+Installability only works on the published site (`churchmanagementpro.com`), not inside the editor preview. Users install via the browser: Android/Chrome shows an install button; on iPhone it's Share → Add to Home Screen.
