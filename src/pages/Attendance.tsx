@@ -53,6 +53,15 @@ import {
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
+import OfflineStatusBar from "@/components/OfflineStatusBar";
+import { useOfflineAttendance } from "@/hooks/useOfflineAttendance";
+import { findCachedMember, queueAttendance } from "@/lib/offlineAttendance";
+
+const OFFLINE_SAVED_COPY = {
+  en: "Saved on this device — it will sync when you are back online.",
+  fr: "Enregistré sur cet appareil — synchronisation dès le retour de la connexion.",
+  ht: "Anrejistre sou aparèy sa a — l ap senkronize lè entènèt la tounen.",
+} as const;
 
 interface TodayEvent {
   id: string;
@@ -120,8 +129,9 @@ export default function Attendance() {
 function AttendanceContent() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const offline = useOfflineAttendance(tenantId ?? null);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
