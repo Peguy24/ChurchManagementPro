@@ -111,7 +111,7 @@ export function SubscriptionCard() {
           <CardTitle className="text-lg">{t("sub.upgradePremium")}</CardTitle>
         </div>
         <CardDescription>
-          {t("sub.unlockFeatures")}
+          {subscriptionStatus === "expired" ? t("sub.accessExpired") : t("sub.unlockFeatures")}
         </CardDescription>
         {/* Billing toggle */}
         <div className="flex items-center justify-center gap-3 pt-3">
