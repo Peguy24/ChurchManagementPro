@@ -8,7 +8,7 @@ interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName: string, lastName: string, extraMetadata?: Record<string, unknown>) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, extraMetadata?: Record<string, unknown>) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
 }
