@@ -498,6 +498,18 @@ export default function Layout({ children }: LayoutProps) {
     return currentGroup ? [currentGroup.key] : [];
   });
 
+  // Keep the group of the active route expanded when navigating,
+  // without collapsing groups the user opened manually.
+  useEffect(() => {
+    const currentGroup = allNavGroups.find(group =>
+      group.items.some(item => location.pathname === item.to)
+    );
+    if (!currentGroup) return;
+    setOpenGroups(prev =>
+      prev.includes(currentGroup.key) ? prev : [...prev, currentGroup.key]
+    );
+  }, [location.pathname]);
+
   const toggleGroup = (key: string) => {
     setOpenGroups(prev => 
       prev.includes(key) 
@@ -505,6 +517,7 @@ export default function Layout({ children }: LayoutProps) {
         : [...prev, key]
     );
   };
+
 
   const handleLogout = async () => {
     const { error } = await signOut();
@@ -523,7 +536,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   // Navigation content - shared between desktop and mobile
-  const NavigationContent = ({ onItemClick }: { onItemClick?: () => void }) => (
+  const renderNavigation = (onItemClick?: () => void) => (
     <nav className="space-y-1">
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
@@ -644,7 +657,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
-                <NavigationContent onItemClick={() => setMobileMenuOpen(false)} />
+                {renderNavigation(() => setMobileMenuOpen(false))}
               </div>
             </SheetContent>
           </Sheet>
@@ -690,7 +703,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="container flex px-4 sm:px-8">
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 border-r py-6 md:block flex-shrink-0">
-          <NavigationContent />
+          {renderNavigation()}
         </aside>
 
         {/* Main Content */}
