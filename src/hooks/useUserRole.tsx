@@ -125,7 +125,9 @@ export function useUserRole() {
           setIsSuperAdmin(true);
           setPermissions(DEFAULT_ROLE_PERMISSIONS);
           setLoading(false);
+          setResolved(true);
           fetchedRef.current = true;
+          cachedUserIdRef.current = user.id;
           saveCachedRoles({
             userId: user.id, roles: globalRoles, isApproved: true,
             isAdmin: true, isSuperAdmin: true, permissions: DEFAULT_ROLE_PERMISSIONS,
@@ -142,7 +144,7 @@ export function useUserRole() {
               .select("role, is_approved, custom_role_id")
               .eq("tenant_id", tenantId)
               .eq("user_id", user.id)
-              .single(),
+              .order("is_approved", { ascending: false }),
             supabase
               .from("role_permissions")
               .select("role, permission_group")
@@ -153,7 +155,17 @@ export function useUserRole() {
             console.error("Error fetching tenant_user_roles:", tenantRoleResult.error);
           }
 
-          const tenantRoleData = tenantRoleResult.data;
+          // A user may have more than one row (e.g. a leftover pending "user" row
+          // alongside their approved role). Always prefer an approved role, and
+          // prefer "admin" among approved rows.
+          const tenantRoleRows = tenantRoleResult.data ?? [];
+          const approvedRows = tenantRoleRows.filter((r) => r.is_approved);
+          const tenantRoleData =
+            approvedRows.find((r) => r.role === "admin") ??
+            approvedRows[0] ??
+            tenantRoleRows[0] ??
+            null;
+
           let finalRoles = globalRoles;
           let finalApproved = false;
           let finalAdmin = false;
