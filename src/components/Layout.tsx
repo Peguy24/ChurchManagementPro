@@ -537,7 +537,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Navigation content - shared between desktop and mobile
   const renderNavigation = (onItemClick?: () => void) => (
-    <nav className="space-y-1">
+    <nav className="space-y-0.5">
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
         const isOpen = openGroups.includes(group.key);
@@ -548,9 +548,9 @@ export default function Layout({ children }: LayoutProps) {
           return (
             <div
               key={group.key}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
             >
-              <GroupIcon className="h-5 w-5" />
+              <GroupIcon className="h-4 w-4 flex-shrink-0" />
               {group.label}
               <span className="ml-auto text-xs">({t("layout.comingSoon")})</span>
             </div>
@@ -566,11 +566,11 @@ export default function Layout({ children }: LayoutProps) {
             <CollapsibleTrigger className="w-full">
               <div
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
                   hasActiveItem ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                <GroupIcon className="h-5 w-5" />
+                <GroupIcon className="h-4 w-4 flex-shrink-0" />
                 {group.label}
                 <ChevronDown
                   className={cn(
@@ -581,7 +581,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="ml-4 space-y-1 border-l pl-4">
+              <div className="ml-3 space-y-0.5 border-l pl-3">
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.to;
@@ -593,7 +593,7 @@ export default function Layout({ children }: LayoutProps) {
                     >
                       <div
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                          "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
                           isActive
                             ? "bg-primary text-primary-foreground"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -702,7 +702,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <div className="container flex px-4 sm:px-8">
         {/* Desktop Sidebar */}
-        <aside className="hidden w-64 border-r py-6 md:block flex-shrink-0">
+        <aside className="hidden w-56 border-r py-4 pr-2 md:block flex-shrink-0">
           {renderNavigation()}
         </aside>
 
