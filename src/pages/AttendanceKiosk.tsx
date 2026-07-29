@@ -220,6 +220,50 @@ export default function AttendanceKiosk() {
       return;
     }
 
+    const today = getLocalToday();
+    const scanTimestamp = new Date().toISOString();
+
+    // ---- Offline path: resolve from the cached roster and queue locally ----
+    if (!navigator.onLine) {
+      const cached =
+        (await getCachedMemberById(memberId)) || (await findCachedMember(tenantId, code));
+
+      if (!cached) {
+        setFeedback("error");
+        setFeedbackMessage(t("kiosk.memberNotFound"));
+        playErrorSound(0.8);
+        resetFeedback();
+        return;
+      }
+
+      const fullName = `${cached.first_name} ${cached.last_name}`;
+      const queued = await queueAttendance({
+        tenant_id: tenantId,
+        member_id: cached.id,
+        member_name: fullName,
+        event_id: selectedEvent.id,
+        event_type: selectedEvent.name,
+        event_date: today,
+        scan_method: "qr_scan",
+        marked_by: user?.id || null,
+        marked_at: scanTimestamp,
+      });
+
+      setMemberName(fullName);
+      if (queued === "duplicate") {
+        setFeedback("duplicate");
+        setFeedbackMessage(t("kiosk.alreadyCheckedIn"));
+        playErrorSound(0.8);
+      } else {
+        setFeedback("success");
+        setFeedbackMessage(t("kiosk.welcomeMessage"));
+        setTotalCheckins(prev => prev + 1);
+        playSuccessSound(0.8);
+      }
+      resetFeedback();
+      return;
+    }
+
     try {
       const { data: member } = await supabase
         .from("members")
@@ -237,9 +281,7 @@ export default function AttendanceKiosk() {
       }
 
       const fullName = `${member.first_name} ${member.last_name}`;
-      const today = getLocalToday();
 
-      const scanTimestamp = new Date().toISOString();
       const { error } = await supabase.from("attendance_records").insert({
         member_id: memberId,
         event_type: selectedEvent.name,
@@ -269,13 +311,35 @@ export default function AttendanceKiosk() {
       }
     } catch (err) {
       console.error("Kiosk scan error:", err);
-      setFeedback("error");
-      setFeedbackMessage(t("kiosk.scanError"));
-      playErrorSound(0.8);
+      // Network failure mid-scan — keep the check-in by queueing it
+      const cached = await getCachedMemberById(memberId);
+      if (cached) {
+        await queueAttendance({
+          tenant_id: tenantId,
+          member_id: cached.id,
+          member_name: `${cached.first_name} ${cached.last_name}`,
+          event_id: selectedEvent.id,
+          event_type: selectedEvent.name,
+          event_date: today,
+          scan_method: "qr_scan",
+          marked_by: user?.id || null,
+          marked_at: scanTimestamp,
+        });
+        setFeedback("success");
+        setMemberName(`${cached.first_name} ${cached.last_name}`);
+        setFeedbackMessage(t("kiosk.welcomeMessage"));
+        setTotalCheckins(prev => prev + 1);
+        playSuccessSound(0.8);
+      } else {
+        setFeedback("error");
+        setFeedbackMessage(t("kiosk.scanError"));
+        playErrorSound(0.8);
+      }
     }
 
     resetFeedback();
   }, [user, t, resetFeedback, selectedEvent, tenantId]);
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
