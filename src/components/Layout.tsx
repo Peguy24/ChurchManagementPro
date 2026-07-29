@@ -523,6 +523,19 @@ export default function Layout({ children }: LayoutProps) {
     );
   }, [location.pathname]);
 
+  // Warm the route chunks of the currently visible menu items while the browser
+  // is idle, so clicking a menu item swaps the page instantly.
+  const visiblePaths = navGroups
+    .filter(group => openGroups.includes(group.key))
+    .flatMap(group => group.items.map(item => item.to))
+    .join("|");
+
+  useEffect(() => {
+    if (!visiblePaths) return;
+    prefetchRoutesWhenIdle(visiblePaths.split("|"));
+  }, [visiblePaths]);
+
+
   const toggleGroup = (key: string) => {
     setOpenGroups(prev => 
       prev.includes(key) 
