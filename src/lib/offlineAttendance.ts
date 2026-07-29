@@ -218,3 +218,8 @@ export function onQueueChange(handler: () => void) {
   window.addEventListener(QUEUE_EVENT, handler);
   return () => window.removeEventListener(QUEUE_EVENT, handler);
 }
+
+export async function getCachedMemberById(id: string): Promise<CachedMember | null> {
+  const db = await getDb();
+  return (await db.get(MEMBER_STORE, id)) ?? null;
+}
