@@ -1,11 +1,21 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isTenantHost } from '@/lib/tenantHost';
 import { useNavigate } from 'react-router-dom';
 
+interface AuthContextValue {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  signUp: (email: string, password: string, firstName: string, lastName: string, extraMetadata?: Record<string, unknown>) => Promise<Awaited<ReturnType<typeof supabase.auth.signUp>>>;
+  signIn: (email: string, password: string) => Promise<{ error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] }>;
+  signOut: () => Promise<{ error: Awaited<ReturnType<typeof supabase.auth.signOut>>['error'] }>;
+}
 
-export function useAuth() {
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +52,7 @@ export function useAuth() {
       // Clear any cached data
       sessionStorage.removeItem('user_role_cache');
       sessionStorage.removeItem('tenant_cache');
+      sessionStorage.removeItem('tenant_cache_tenant_id');
       // Sign out stale session from localStorage
       supabase.auth.getSession().then(({ data: { session: staleSession } }) => {
         if (staleSession) {
@@ -130,7 +141,7 @@ export function useAuth() {
     return { error };
   };
 
-  return {
+  const value: AuthContextValue = {
     user,
     session,
     loading,
@@ -138,4 +149,14 @@ export function useAuth() {
     signIn,
     signOut,
   };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
