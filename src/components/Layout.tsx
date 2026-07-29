@@ -601,7 +601,9 @@ export default function Layout({ children }: LayoutProps) {
                       key={item.to} 
                       to={item.to}
                       onClick={onItemClick}
+                      {...prefetchHandlers(item.to)}
                     >
+
                       <div
                         className={cn(
                           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
