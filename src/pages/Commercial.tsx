@@ -132,6 +132,7 @@ const Commercial = () => {
       features: [
         t("commercial.feat_1000members"),
         t("commercial.feat_3branches"),
+        t("commercial.feat_pro_storage"),
         t("commercial.feat_allFeatures"),
         t("commercial.feat_advancedReports"),
         t("commercial.feat_autoEmails"),
