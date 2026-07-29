@@ -22,6 +22,7 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
 }
 import { Link, useLocation } from "react-router-dom";
 import { prefetchHandlers, prefetchRoute, prefetchRoutesWhenIdle } from "@/lib/routePrefetch";
+import { saveNavSnapshot } from "@/lib/navSnapshot";
 
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
@@ -650,6 +651,25 @@ export default function Layout({ children }: LayoutProps) {
   const brandingLogo = showAsSuperAdmin 
     ? "/images/church-management-pro-logo.webp" 
     : (tenant?.logo_url || whiteLabelSettings.logo_url);
+
+  // Persist a lightweight nav/branding snapshot so the boot skeleton can
+  // reproduce this exact shell (including the active menu item) on refresh.
+  useEffect(() => {
+    if (roleLoading || tenantLoading || navGroups.length === 0) return;
+    saveNavSnapshot({
+      userId: user?.id ?? null,
+      mode: showAsSuperAdmin ? "platform" : "tenant",
+      brandingName,
+      brandingSubtitle: brandingSubtitle || "",
+      brandingLogo: brandingLogo || "",
+      openGroups,
+      groups: navGroups.map(g => ({
+        key: g.key,
+        label: String(g.label),
+        items: g.items.map(i => ({ to: i.to, label: String(i.label) })),
+      })),
+    });
+  }, [roleLoading, tenantLoading, navGroups, openGroups, brandingName, brandingSubtitle, brandingLogo, showAsSuperAdmin, user?.id]);
 
   return (
     <LayoutShellContext.Provider value={true}>
