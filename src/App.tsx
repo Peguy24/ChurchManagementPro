@@ -1,12 +1,12 @@
 // App root - force rebuild
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useDeferredValue } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import InstallAppPrompt from "@/components/InstallAppPrompt";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
