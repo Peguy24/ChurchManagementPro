@@ -5,7 +5,6 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
-import { Church } from 'lucide-react';
 import Layout from '@/components/Layout';
 import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
 import MaintenancePage from '@/components/MaintenancePage';
@@ -21,6 +20,24 @@ const SUBSCRIPTION_EXEMPT_PATHS = [
   '/support',
   '/system-guide',
 ];
+
+function RouteBootSkeleton() {
+  return (
+    <div className="min-h-screen bg-background p-4 sm:p-6">
+      <div className="mx-auto max-w-6xl space-y-4">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
+          <Skeleton className="hidden h-[70vh] md:block" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -107,17 +124,9 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
   if (loading || !user) {
-    // Never flash a full-screen logo splash: always render a neutral skeleton
-    // inside the app shell so refreshes look like the page is simply loading.
-    return (
-      <Layout>
-        <div className="space-y-4 p-2">
-          <Skeleton className="h-8 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </Layout>
-    );
+    // Do not render Layout before auth/tenant identity is known; otherwise a
+    // tenant refresh can briefly show generic or platform branding.
+    return <RouteBootSkeleton />;
   }
 
   if (location.pathname === '/pending-approval') {

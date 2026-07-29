@@ -52,9 +52,6 @@ function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) 
   } catch {}
 }
 
-// Read cache once at module level to avoid repeated sessionStorage access
-const initialCache = loadCachedTenant();
-
 export function useCurrentTenant(): UseCurrentTenantReturn {
   const { user, loading: authLoading } = useAuth();
 
@@ -197,17 +194,22 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     return { ...data, tenant_id: tenantId };
   }, [tenantId]);
 
-  // If we have cached data, don't report loading
-  const effectiveLoading = authLoading || ((tenantId || tenant) ? false : loading);
+  // Use same-user tenant cache for the first paint after refresh so the app does
+  // not briefly show generic/platform branding while the fresh read completes.
+  const cachedTenant = user ? loadCachedTenant() : null;
+  const effectiveCachedTenant = cachedTenant && cachedTenant.userId === user?.id ? cachedTenant : null;
+  const effectiveTenantId = tenantId ?? effectiveCachedTenant?.tenantId ?? null;
+  const effectiveTenant = tenant ?? effectiveCachedTenant?.tenant ?? null;
+  const effectiveLoading = authLoading || ((effectiveTenantId || effectiveTenant) ? false : loading);
 
   return {
-    tenantId,
-    tenant,
+    tenantId: effectiveTenantId,
+    tenant: effectiveTenant,
     loading: effectiveLoading,
     error,
     withTenantId,
     forInsert,
-    hasTenant: !!tenantId,
+    hasTenant: !!effectiveTenantId,
     refresh: forceRefresh,
   };
 }
