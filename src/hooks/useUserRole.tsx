@@ -72,8 +72,20 @@ export function useUserRole() {
         setIsApproved(false);
         setIsAdmin(false);
         setIsSuperAdmin(false);
+        setResolved(true);
         fetchedRef.current = false;
         return;
+      }
+
+      // Drop any cached state that belongs to a different user
+      if (cachedUserIdRef.current && cachedUserIdRef.current !== user.id) {
+        cachedUserIdRef.current = null;
+        try { sessionStorage.removeItem(ROLE_CACHE_KEY); } catch {}
+        setRoles([]);
+        setIsApproved(false);
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+        setPermissions(DEFAULT_ROLE_PERMISSIONS);
       }
 
       // Skip if already fetched for this user
@@ -82,8 +94,9 @@ export function useUserRole() {
       try {
         const [rolesResult, profileResult] = await Promise.all([
           supabase.from("user_roles").select("role").eq("user_id", user.id),
-          supabase.from("profiles").select("tenant_id").eq("id", user.id).single(),
+          supabase.from("profiles").select("tenant_id").eq("id", user.id).maybeSingle(),
         ]);
+
 
         if (rolesResult.error) {
           console.error("Error fetching user_roles:", rolesResult.error);
