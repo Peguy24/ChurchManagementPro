@@ -103,26 +103,16 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
   if (loading || !user) {
-    // After the first successful bootstrap, keep the app shell (sidebar) mounted
-    // so navigating between pages never flashes a full-screen splash.
-    if (hasBootstrapped) {
-      return (
-        <Layout>
-          <div className="space-y-4 p-2">
-            <Skeleton className="h-8 w-1/3" />
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </Layout>
-      );
-    }
+    // Never flash a full-screen logo splash: always render a neutral skeleton
+    // inside the app shell so refreshes look like the page is simply loading.
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+      <Layout>
+        <div className="space-y-4 p-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
         </div>
-      </div>
+      </Layout>
     );
   }
 
