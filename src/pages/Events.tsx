@@ -315,7 +315,17 @@ export default function Events() {
                                 ? t("events.viewReport")
                                 : t("events.edit")}
                             </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => navigate(`/attendance/self-checkin/${event.id}`)}
+                            >
+                              <QrCode className="h-4 w-4 mr-1" />
+                              {t("events.selfCheckin")}
+                            </Button>
                           </div>
+
                         </div>
                       ))}
                     </div>
