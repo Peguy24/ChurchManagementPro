@@ -22,7 +22,7 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
 }
 import { Link, useLocation } from "react-router-dom";
 import { prefetchHandlers, prefetchRoute, prefetchRoutesWhenIdle } from "@/lib/routePrefetch";
-import { saveNavSnapshot } from "@/lib/navSnapshot";
+import { saveNavSnapshot, clearNavSnapshot } from "@/lib/navSnapshot";
 
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
@@ -542,6 +542,7 @@ export default function Layout({ children }: LayoutProps) {
 
 
   const handleLogout = async () => {
+    clearNavSnapshot();
     const { error } = await signOut();
     if (error) {
       toast({
