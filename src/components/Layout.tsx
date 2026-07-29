@@ -688,7 +688,12 @@ export default function Layout({ children }: LayoutProps) {
             </SheetContent>
           </Sheet>
 
-          <Link to={showAsSuperAdmin ? "/super-admin" : "/"} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+          <Link
+            to={showAsSuperAdmin ? "/super-admin" : "/"}
+            className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity"
+            data-testid="app-brand"
+            data-brand-mode={showAsSuperAdmin ? "platform" : "tenant"}
+          >
             {brandingLogo ? (
               <img 
                 src={brandingLogo} 
@@ -703,7 +708,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             )}
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-foreground leading-tight">{brandingName}</h1>
+              <h1 className="text-lg font-bold text-foreground leading-tight" data-testid="app-brand-name">{brandingName}</h1>
               <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>
             </div>
           </Link>

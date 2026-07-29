@@ -13,7 +13,7 @@ import { FeatureGate } from "@/components/FeatureGate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
-import { useAuth } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { UserRoleProvider } from "@/hooks/useUserRole";
 import { isTenantHost, enforceHttps } from "@/lib/tenantHost";
 
@@ -241,6 +241,7 @@ const App = () => (
         <InstallAppPrompt />
 
         <BrowserRouter>
+          <AuthProvider>
           <InactivityGuard>
           <TenantProvider>
             <UserRoleProvider>
@@ -373,6 +374,7 @@ const App = () => (
             </UserRoleProvider>
           </TenantProvider>
           </InactivityGuard>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
