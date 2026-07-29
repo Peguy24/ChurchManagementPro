@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CameraScanner from "@/components/CameraScanner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { CheckCircle2, Loader2, MapPin, QrCode, XCircle, AlertTriangle } from "lucide-react";
+import { previewIdentifier, sanitizeIdentifier } from "@/lib/checkinIdentifier";
+import { CheckCircle2, Loader2, MapPin, Phone, QrCode, IdCard, XCircle, AlertTriangle } from "lucide-react";
+
 
 const COPY = {
   en: {
@@ -23,7 +25,13 @@ const COPY = {
     checkedIn: "You're checked in!",
     already: "You were already checked in.",
     welcome: "Welcome",
+    matchAs: "Will be matched as",
+    asMemberNumber: "Member number",
+    asPhone: "Phone number",
+    tooShort: "Too short — enter a full phone number or your member number.",
+    unrecognized: "Unrecognized format — use digits only, or a number like MBR00023.",
     locationUnverified: "We couldn't verify your location, but your attendance was recorded.",
+
     errors: {
       invalid_token: "This code is no longer valid. Please scan the code on the screen again.",
       expired_token: "This code expired. Please scan the code on the screen again.",
@@ -50,6 +58,11 @@ const COPY = {
     checkedIn: "Votre présence est enregistrée !",
     already: "Votre présence était déjà enregistrée.",
     welcome: "Bienvenue",
+    matchAs: "Sera reconnu comme",
+    asMemberNumber: "Numéro de membre",
+    asPhone: "Numéro de téléphone",
+    tooShort: "Trop court — entrez un numéro de téléphone complet ou votre numéro de membre.",
+    unrecognized: "Format non reconnu — utilisez des chiffres, ou un numéro comme MBR00023.",
     locationUnverified: "Position non vérifiée, mais votre présence a été enregistrée.",
     errors: {
       invalid_token: "Ce code n'est plus valide. Scannez à nouveau le code affiché.",
@@ -77,6 +90,11 @@ const COPY = {
     checkedIn: "Prezans ou make!",
     already: "Prezans ou te deja make.",
     welcome: "Byenveni",
+    matchAs: "N ap chèche l kòm",
+    asMemberNumber: "Nimewo manm",
+    asPhone: "Nimewo telefòn",
+    tooShort: "Twò kout — antre yon nimewo telefòn konplè oswa nimewo manm ou.",
+    unrecognized: "Fòma nou pa rekonèt — sèvi ak chif, oswa yon nimewo tankou MBR00023.",
     locationUnverified: "Nou pa t ka verifye kote w ye, men prezans ou anrejistre.",
     errors: {
       invalid_token: "Kòd sa a pa valab ankò. Eskane kòd ki sou ekran an ankò.",
@@ -113,6 +131,11 @@ export default function SelfCheckin() {
   const [scanMode, setScanMode] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [result, setResult] = useState<{ status: "ok" | "already"; name: string; locationVerified: boolean | null } | null>(null);
+
+  const preview = useMemo(() => previewIdentifier(identifier), [identifier]);
+  const canSubmit = preview.kind === "member_number" || preview.kind === "phone";
+
+
 
   const errorText = (code: string | null) =>
     (code && (c.errors as Record<string, string>)[code]) || c.errors.server_error;
@@ -275,7 +298,7 @@ export default function SelfCheckin() {
                   className="space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (identifier.trim()) submit({ identifier: identifier.trim() });
+                    if (canSubmit) submit({ identifier: identifier.trim() });
                   }}
                 >
                   <div className="space-y-2">
@@ -285,14 +308,43 @@ export default function SelfCheckin() {
                     <Input
                       id="identifier"
                       value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      onChange={(e) => setIdentifier(sanitizeIdentifier(e.target.value))}
                       placeholder={c.placeholder}
                       autoComplete="off"
                       inputMode="text"
-                      maxLength={60}
+                      maxLength={40}
+                      aria-invalid={preview.kind === "invalid"}
+                      aria-describedby="identifier-preview"
                     />
+                    <div id="identifier-preview" aria-live="polite" className="min-h-[1.25rem]">
+                      {preview.kind === "member_number" && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <IdCard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>
+                            {c.matchAs}: {c.asMemberNumber}{" "}
+                            <span className="font-medium text-foreground">{preview.normalized}</span>
+                          </span>
+                        </p>
+                      )}
+                      {preview.kind === "phone" && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>
+                            {c.matchAs}: {c.asPhone}{" "}
+                            <span className="font-medium text-foreground">{preview.normalized}</span>
+                          </span>
+                        </p>
+                      )}
+                      {preview.kind === "invalid" && (
+                        <p role="alert" className="text-xs text-destructive flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span>{preview.reason === "too_short" ? c.tooShort : c.unrecognized}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={submitting || !identifier.trim()}>
+                  <Button type="submit" className="w-full" disabled={submitting || !canSubmit}>
+
                     {submitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
