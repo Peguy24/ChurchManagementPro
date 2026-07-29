@@ -152,7 +152,7 @@ export default function SelfCheckin() {
     setSubmitting(true);
     setError(null);
     try {
-      const pos = info?.requireLocation || true ? await getPosition() : null;
+      const pos = await getPosition();
       const { data, error: fnError } = await supabase.functions.invoke("self-checkin?action=checkin", {
         body: {
           token,
