@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, lazy, Suspense } from "react";
+import { ReactNode, createContext, useContext, useState, useEffect, lazy, Suspense } from "react";
 
 function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -99,6 +99,8 @@ import TenantNotifications from "./TenantNotifications";
 interface LayoutProps {
   children: ReactNode;
 }
+
+const LayoutShellContext = createContext(false);
 
 interface NavItem {
   to: string;
@@ -418,6 +420,15 @@ const getSuperAdminNavGroups = (t: (key: string) => string, language: string): N
 
 
 export default function Layout({ children }: LayoutProps) {
+  const isInsidePersistentShell = useContext(LayoutShellContext);
+
+  // Pages still wrap themselves with <Layout>. When they render inside the
+  // persistent route shell, keep the existing sidebar/header mounted and only
+  // render the page content.
+  if (isInsidePersistentShell) {
+    return <>{children}</>;
+  }
+
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { canSeeNav, canSeeItem, isAdmin } = useUserRole();
@@ -623,6 +634,7 @@ export default function Layout({ children }: LayoutProps) {
     : (tenant?.logo_url || whiteLabelSettings.logo_url);
 
   return (
+    <LayoutShellContext.Provider value={true}>
     <div className="min-h-screen bg-background">
       <ImpersonationBanner />
       {/* Header */}
@@ -715,5 +727,6 @@ export default function Layout({ children }: LayoutProps) {
         </main>
       </div>
     </div>
+    </LayoutShellContext.Provider>
   );
 }
