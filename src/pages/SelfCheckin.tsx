@@ -90,6 +90,11 @@ const COPY = {
     checkedIn: "Prezans ou make!",
     already: "Prezans ou te deja make.",
     welcome: "Byenveni",
+    matchAs: "N ap chèche l kòm",
+    asMemberNumber: "Nimewo manm",
+    asPhone: "Nimewo telefòn",
+    tooShort: "Twò kout — antre yon nimewo telefòn konplè oswa nimewo manm ou.",
+    unrecognized: "Fòma nou pa rekonèt — sèvi ak chif, oswa yon nimewo tankou MBR00023.",
     locationUnverified: "Nou pa t ka verifye kote w ye, men prezans ou anrejistre.",
     errors: {
       invalid_token: "Kòd sa a pa valab ankò. Eskane kòd ki sou ekran an ankò.",
