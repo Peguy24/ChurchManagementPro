@@ -146,6 +146,14 @@ const LazyFallback = () => (
   </div>
 );
 
+// Renders routes from a deferred location so React keeps the current page
+// (and the sidebar) on screen while the next lazy chunk loads.
+function DeferredLocation({ children }: { children: (loc: ReturnType<typeof useLocation>) => React.ReactNode }) {
+  const location = useLocation();
+  const deferred = useDeferredValue(location);
+  return <>{children(deferred)}</>;
+}
+
 // When the app is loaded on a tenant custom domain or subdomain,
 // short-circuit the whole route tree to the public church site.
 function TenantHostGate({ children }: { children: React.ReactNode }) {
