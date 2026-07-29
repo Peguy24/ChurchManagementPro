@@ -56,15 +56,20 @@ function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) 
 const initialCache = loadCachedTenant();
 
 export function useCurrentTenant(): UseCurrentTenantReturn {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
-  const [tenantId, setTenantId] = useState<string | null>(initialCache?.tenantId ?? null);
-  const [tenant, setTenant] = useState<TenantInfo | null>(initialCache?.tenant ?? null);
-  const [loading, setLoading] = useState(!initialCache);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [tenant, setTenant] = useState<TenantInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const lastUserIdRef = useRef<string | null>(null);
 
   const fetchTenantInfo = useCallback(async () => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user) {
       setTenantId(null);
       setTenant(null);
@@ -163,7 +168,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const forceRefresh = useCallback(async () => {
     lastUserIdRef.current = null;
@@ -193,7 +198,7 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   }, [tenantId]);
 
   // If we have cached data, don't report loading
-  const effectiveLoading = (tenantId || tenant) ? false : loading;
+  const effectiveLoading = authLoading || ((tenantId || tenant) ? false : loading);
 
   return {
     tenantId,
