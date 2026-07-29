@@ -268,14 +268,18 @@ export function useUserRole() {
         }
       } catch (error) {
         console.error("Error fetching user roles:", error);
+        if (scheduleRetry()) return;
         setRoles([]);
         setIsApproved(false);
         setIsAdmin(false);
         setIsSuperAdmin(false);
       } finally {
-        setLoading(false);
-        setResolved(true);
+        if (fetchedRef.current || attemptsRef.current >= 3) {
+          setLoading(false);
+          setResolved(true);
+        }
       }
+
 
     }
 
