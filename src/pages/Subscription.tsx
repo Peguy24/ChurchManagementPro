@@ -114,7 +114,7 @@ export default function Subscription() {
       t("sub.emailSupport"),
     ],
     professionnel: [
-      `${t("sub.upTo")} 1,000 ${t("sub.members")}`,
+      `${t("sub.upTo")} 2,000 ${t("sub.members")}`,
       `3 ${t("sub.branches").toLowerCase()}`,
       t("sub.allFeatures"),
       t("sub.advancedReports"),

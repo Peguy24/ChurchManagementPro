@@ -102,7 +102,7 @@ export default function TenantManagement() {
   const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
     free: { label: t("superAdmin.free"), color: "bg-green-600", price: 0, members: 100, branches: 1, users: 3, storage: 200 },
     basic: { label: t("superAdmin.planBasic"), color: "bg-slate-500", price: 29.99, members: 200, branches: 1, users: 5, storage: 500 },
-    standard: { label: t("superAdmin.planStandard"), color: "bg-blue-500", price: 59.99, members: 1000, branches: 3, users: 15, storage: 2000 },
+    standard: { label: t("superAdmin.planStandard"), color: "bg-blue-500", price: 59.99, members: 2000, branches: 3, users: 15, storage: 5120 },
     premium: { label: t("superAdmin.planPremium"), color: "bg-purple-500", price: 99.99, members: -1, branches: -1, users: -1, storage: -1 },
   };
 
