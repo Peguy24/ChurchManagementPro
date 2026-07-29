@@ -21,6 +21,8 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
   return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 import { Link, useLocation } from "react-router-dom";
+import { prefetchHandlers, prefetchRoute, prefetchRoutesWhenIdle } from "@/lib/routePrefetch";
+
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 
