@@ -67,10 +67,14 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   useEffect(() => {
     if (!loading && user && !isApproved) {
       if (location.pathname !== '/pending-approval') {
-        navigate('/pending-approval');
+        // Grace period: right after a refresh the role read can still be
+        // settling. Only redirect if we're still unapproved a moment later.
+        const t = setTimeout(() => navigate('/pending-approval'), 1200);
+        return () => clearTimeout(t);
       }
     }
   }, [user, loading, isApproved, navigate, location.pathname]);
+
 
   useEffect(() => {
     if (!loading && user && isApproved && requireAdmin && !isAdmin) {
@@ -120,7 +124,18 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     return <>{children}</>;
   }
 
-  if (!isApproved) return null;
+  if (!isApproved) {
+    return (
+      <Layout>
+        <div className="space-y-4 p-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (requireAdmin && !isAdmin) return null;
   if (requireSuperAdmin && !isSuperAdmin) return null;
   if (!canAccess(location.pathname)) return null;
