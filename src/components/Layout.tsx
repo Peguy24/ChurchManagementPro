@@ -536,7 +536,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   // Navigation content - shared between desktop and mobile
-  const NavigationContent = ({ onItemClick }: { onItemClick?: () => void }) => (
+  const renderNavigation = (onItemClick?: () => void) => (
     <nav className="space-y-1">
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
@@ -657,7 +657,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
-                <NavigationContent onItemClick={() => setMobileMenuOpen(false)} />
+                {renderNavigation(() => setMobileMenuOpen(false))}
               </div>
             </SheetContent>
           </Sheet>
@@ -703,7 +703,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="container flex px-4 sm:px-8">
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 border-r py-6 md:block flex-shrink-0">
-          <NavigationContent />
+          {renderNavigation()}
         </aside>
 
         {/* Main Content */}
