@@ -21,7 +21,7 @@ import CameraScanner from "@/components/CameraScanner";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
 import OfflineStatusBar from "@/components/OfflineStatusBar";
 import { useOfflineAttendance } from "@/hooks/useOfflineAttendance";
-import { findCachedMember, queueAttendance } from "@/lib/offlineAttendance";
+import { findCachedMember, getCachedMemberById, queueAttendance } from "@/lib/offlineAttendance";
 
 
 type FeedbackStatus = "idle" | "success" | "error" | "duplicate";
