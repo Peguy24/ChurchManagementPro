@@ -124,7 +124,18 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     return <>{children}</>;
   }
 
-  if (!isApproved) return null;
+  if (!isApproved) {
+    return (
+      <Layout>
+        <div className="space-y-4 p-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (requireAdmin && !isAdmin) return null;
   if (requireSuperAdmin && !isSuperAdmin) return null;
   if (!canAccess(location.pathname)) return null;
