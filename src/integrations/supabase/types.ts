@@ -191,10 +191,12 @@ export type Database = {
           event_id: string | null
           event_type: string
           id: string
+          location_verified: boolean | null
           marked_at: string | null
           marked_by: string | null
           member_id: string
           scan_method: string | null
+          self_checkin_session_id: string | null
           tenant_id: string | null
         }
         Insert: {
@@ -204,10 +206,12 @@ export type Database = {
           event_id?: string | null
           event_type: string
           id?: string
+          location_verified?: boolean | null
           marked_at?: string | null
           marked_by?: string | null
           member_id: string
           scan_method?: string | null
+          self_checkin_session_id?: string | null
           tenant_id?: string | null
         }
         Update: {
@@ -217,10 +221,12 @@ export type Database = {
           event_id?: string | null
           event_type?: string
           id?: string
+          location_verified?: boolean | null
           marked_at?: string | null
           marked_by?: string | null
           member_id?: string
           scan_method?: string | null
+          self_checkin_session_id?: string | null
           tenant_id?: string | null
         }
         Relationships: [
@@ -243,6 +249,13 @@ export type Database = {
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_self_checkin_session_id_fkey"
+            columns: ["self_checkin_session_id"]
+            isOneToOne: false
+            referencedRelation: "self_checkin_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -4203,6 +4216,85 @@ export type Database = {
           },
           {
             foreignKeyName: "salary_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      self_checkin_sessions: {
+        Row: {
+          branch_id: string | null
+          checkin_count: number
+          closed_at: string | null
+          created_at: string
+          event_id: string
+          id: string
+          is_open: boolean
+          opened_at: string
+          opened_by: string | null
+          radius_m: number
+          require_location: boolean
+          secret: string
+          tenant_id: string
+          updated_at: string
+          venue_lat: number | null
+          venue_lng: number | null
+        }
+        Insert: {
+          branch_id?: string | null
+          checkin_count?: number
+          closed_at?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          is_open?: boolean
+          opened_at?: string
+          opened_by?: string | null
+          radius_m?: number
+          require_location?: boolean
+          secret?: string
+          tenant_id: string
+          updated_at?: string
+          venue_lat?: number | null
+          venue_lng?: number | null
+        }
+        Update: {
+          branch_id?: string | null
+          checkin_count?: number
+          closed_at?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_open?: boolean
+          opened_at?: string
+          opened_by?: string | null
+          radius_m?: number
+          require_location?: boolean
+          secret?: string
+          tenant_id?: string
+          updated_at?: string
+          venue_lat?: number | null
+          venue_lng?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "self_checkin_sessions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "self_checkin_sessions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "self_checkin_sessions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
