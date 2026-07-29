@@ -278,30 +278,42 @@ serve(async (req) => {
       }
 
       if (!member && identifier) {
+        const raw = identifier.trim();
+
+        // 1) member number — case/format tolerant (MBR00023, mbr00023, 23, 00023)
+        const digitsOnly = raw.replace(/\D/g, "");
+        const candidatesNumbers = new Set<string>([raw, raw.toUpperCase()]);
+        if (digitsOnly && digitsOnly.length <= 8 && /^[a-z]*\d+$/i.test(raw.replace(/[\s-]/g, ""))) {
+          candidatesNumbers.add(`MBR${digitsOnly.padStart(5, "0")}`);
+        }
+
         const { data: byNumber } = await supabaseAdmin
           .from("members")
           .select("id, first_name, last_name, branch_id")
           .eq("tenant_id", session.tenant_id)
-          .eq("member_number", identifier)
-          .maybeSingle();
-        member = byNumber ?? null;
+          .in("member_number", Array.from(candidatesNumbers))
+          .limit(1);
+        member = byNumber?.[0] ?? null;
 
+        // 2) phone — compare on digits only, in either direction
         if (!member) {
-          const digits = normalizePhone(identifier);
+          const digits = normalizePhone(raw);
           if (digits.length >= 7) {
             const { data: candidates } = await supabaseAdmin
               .from("members")
               .select("id, first_name, last_name, branch_id, phone")
               .eq("tenant_id", session.tenant_id)
               .not("phone", "is", null)
-              .limit(2000);
-            const matches = (candidates ?? []).filter(
-              (m) => normalizePhone(m.phone ?? "").endsWith(digits),
-            );
+              .limit(5000);
+            const matches = (candidates ?? []).filter((m) => {
+              const p = normalizePhone(m.phone ?? "");
+              return p.length >= 7 && (p.endsWith(digits) || digits.endsWith(p));
+            });
             if (matches.length === 1) member = matches[0];
           }
         }
       }
+
 
       if (!member) return json({ error: "member_not_found" }, 404);
 

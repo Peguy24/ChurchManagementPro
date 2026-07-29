@@ -1,0 +1,2 @@
+DELETE FROM public.attendance_records WHERE self_checkin_session_id = 'b81cd7f4-882c-4624-a065-d758ccb20c23' AND scan_method = 'self_checkin' AND marked_at > now() - interval '30 minutes';
+UPDATE public.self_checkin_sessions SET checkin_count = (SELECT count(*) FROM public.attendance_records a WHERE a.self_checkin_session_id = self_checkin_sessions.id) WHERE id = 'b81cd7f4-882c-4624-a065-d758ccb20c23';

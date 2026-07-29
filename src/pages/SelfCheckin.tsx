@@ -121,6 +121,19 @@ export default function SelfCheckin() {
     document.title = `${c.heading} | Church Management Pro`;
   }, [c.heading]);
 
+  // supabase.functions.invoke throws on non-2xx and hides the JSON body,
+  // so read the real error code from the response.
+  const readErrorCode = async (fnError: unknown): Promise<string | null> => {
+    const ctx = (fnError as { context?: Response })?.context;
+    if (ctx && typeof ctx.json === "function") {
+      try {
+        const body = await ctx.clone().json();
+        if (body?.error) return String(body.error);
+      } catch { /* noop */ }
+    }
+    return null;
+  };
+
   useEffect(() => {
     if (!token) return;
     (async () => {
@@ -129,7 +142,7 @@ export default function SelfCheckin() {
         body: { token },
       });
       if (fnError || data?.error) {
-        setError(data?.error ?? "invalid_token");
+        setError((await readErrorCode(fnError)) ?? data?.error ?? "invalid_token");
       } else {
         setInfo(data as ResolveInfo);
       }
@@ -163,7 +176,7 @@ export default function SelfCheckin() {
       });
 
       if (fnError || data?.error) {
-        setError(data?.error ?? "server_error");
+        setError((await readErrorCode(fnError)) ?? data?.error ?? "server_error");
         return;
       }
       setResult({
@@ -179,6 +192,7 @@ export default function SelfCheckin() {
       setCameraActive(false);
     }
   };
+
 
   const primary = info?.church?.primaryColor;
 
