@@ -9,6 +9,10 @@ import { Church } from 'lucide-react';
 import Layout from '@/components/Layout';
 import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
 import MaintenancePage from '@/components/MaintenancePage';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Set once the very first auth/role bootstrap completes in this browser session.
+let hasBootstrapped = false;
 
 // Paths that are accessible even without an active subscription
 const SUBSCRIPTION_EXEMPT_PATHS = [
@@ -41,6 +45,10 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   }, [user]);
 
   const loading = authLoading || roleLoading || tenantLoading;
+
+  useEffect(() => {
+    if (!loading && user) hasBootstrapped = true;
+  }, [loading, user]);
 
   useEffect(() => {
     if (loading) return;
@@ -94,18 +102,20 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (loading || !user) {
+    // After the first successful bootstrap, keep the app shell (sidebar) mounted
+    // so navigating between pages never flashes a full-screen splash.
+    if (hasBootstrapped) {
+      return (
+        <Layout>
+          <div className="space-y-4 p-2">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </Layout>
+      );
+    }
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">

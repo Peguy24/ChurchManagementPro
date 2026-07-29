@@ -1,12 +1,12 @@
 // App root - force rebuild
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useDeferredValue } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import InstallAppPrompt from "@/components/InstallAppPrompt";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
@@ -146,6 +146,14 @@ const LazyFallback = () => (
   </div>
 );
 
+// Renders routes from a deferred location so React keeps the current page
+// (and the sidebar) on screen while the next lazy chunk loads.
+function DeferredLocation({ children }: { children: (loc: ReturnType<typeof useLocation>) => React.ReactNode }) {
+  const location = useLocation();
+  const deferred = useDeferredValue(location);
+  return <>{children(deferred)}</>;
+}
+
 // When the app is loaded on a tenant custom domain or subdomain,
 // short-circuit the whole route tree to the public church site.
 function TenantHostGate({ children }: { children: React.ReactNode }) {
@@ -180,7 +188,8 @@ const App = () => (
           <TenantProvider>
             <Suspense fallback={<LazyFallback />}>
             <TenantHostGate>
-            <Routes>
+            <DeferredLocation>{(routeLocation) => (
+            <Routes location={routeLocation}>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
@@ -300,6 +309,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            )}</DeferredLocation>
             </TenantHostGate>
             </Suspense>
           </TenantProvider>
