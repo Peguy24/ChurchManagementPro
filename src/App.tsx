@@ -11,7 +11,9 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { FeatureGate } from "@/components/FeatureGate";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "@/components/Layout";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
+import { useAuth } from "@/hooks/useAuth";
 import { isTenantHost, enforceHttps } from "@/lib/tenantHost";
 
 // Run once at module load — before React mounts — so we redirect before any UI paints.
@@ -146,6 +148,58 @@ const LazyFallback = () => (
   </div>
 );
 
+const PageFallback = () => (
+  <div className="flex min-h-[55vh] items-center justify-center">
+    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+  </div>
+);
+
+const PUBLIC_ROUTE_EXACT = new Set([
+  "/commercial",
+  "/auth",
+  "/reset-password",
+  "/select-tenant",
+  "/select-church",
+  "/status",
+  "/changelog",
+  "/.lovable/oauth/consent",
+]);
+
+const PUBLIC_ROUTE_PREFIXES = [
+  "/join/",
+  "/legal/",
+  "/event/",
+  "/checkin/",
+  "/site/",
+  "/t/",
+];
+
+function isProtectedShellPath(pathname: string, hasUser: boolean) {
+  if (pathname === "/") return hasUser;
+  if (pathname === "/pending-approval") return false;
+  if (PUBLIC_ROUTE_EXACT.has(pathname)) return false;
+  if (PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return false;
+  return true;
+}
+
+function StableRouteShell({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const { user } = useAuth();
+  const useAppShell = isProtectedShellPath(location.pathname, Boolean(user));
+
+  if (!useAppShell) {
+    return <Suspense fallback={<LazyFallback />}>{children}</Suspense>;
+  }
+
+  return (
+    <ProtectedRoute>
+      <Layout>
+        <Suspense fallback={<PageFallback />}>{children}</Suspense>
+      </Layout>
+    </ProtectedRoute>
+  );
+}
+
 // Renders routes from a deferred location so React keeps the current page
 // (and the sidebar) on screen while the next lazy chunk loads.
 function DeferredLocation({ children }: { children: (loc: ReturnType<typeof useLocation>) => React.ReactNode }) {
@@ -160,6 +214,7 @@ function TenantHostGate({ children }: { children: React.ReactNode }) {
   const isTenant = typeof window !== "undefined" && isTenantHost(window.location.hostname);
   if (isTenant) {
     return (
+      <Suspense fallback={<LazyFallback />}>
       <Routes>
         <Route path="/give" element={<PublicGivingPage />} />
         <Route path="/give/success" element={<GivingResult status="success" />} />
@@ -170,6 +225,7 @@ function TenantHostGate({ children }: { children: React.ReactNode }) {
         <Route path="/contact" element={<PublicChurchSite />} />
         <Route path="*" element={<PublicChurchSite />} />
       </Routes>
+      </Suspense>
     );
   }
   return <>{children}</>;
@@ -186,8 +242,8 @@ const App = () => (
         <BrowserRouter>
           <InactivityGuard>
           <TenantProvider>
-            <Suspense fallback={<LazyFallback />}>
             <TenantHostGate>
+            <StableRouteShell>
             <DeferredLocation>{(routeLocation) => (
             <Routes location={routeLocation}>
               <Route path="/commercial" element={<Commercial />} />
@@ -310,8 +366,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             )}</DeferredLocation>
+            </StableRouteShell>
             </TenantHostGate>
-            </Suspense>
           </TenantProvider>
           </InactivityGuard>
         </BrowserRouter>
