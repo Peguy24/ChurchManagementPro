@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CameraScanner from "@/components/CameraScanner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { CheckCircle2, Loader2, MapPin, QrCode, XCircle, AlertTriangle } from "lucide-react";
+import { previewIdentifier, sanitizeIdentifier } from "@/lib/checkinIdentifier";
+import { CheckCircle2, Loader2, MapPin, Phone, QrCode, IdCard, XCircle, AlertTriangle } from "lucide-react";
+
 
 const COPY = {
   en: {
