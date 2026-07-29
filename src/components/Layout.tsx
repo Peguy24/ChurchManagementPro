@@ -21,6 +21,8 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
   return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 import { Link, useLocation } from "react-router-dom";
+import { prefetchHandlers, prefetchRoute, prefetchRoutesWhenIdle } from "@/lib/routePrefetch";
+
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 
@@ -521,6 +523,19 @@ export default function Layout({ children }: LayoutProps) {
     );
   }, [location.pathname]);
 
+  // Warm the route chunks of the currently visible menu items while the browser
+  // is idle, so clicking a menu item swaps the page instantly.
+  const visiblePaths = navGroups
+    .filter(group => openGroups.includes(group.key))
+    .flatMap(group => group.items.map(item => item.to))
+    .join("|");
+
+  useEffect(() => {
+    if (!visiblePaths) return;
+    prefetchRoutesWhenIdle(visiblePaths.split("|"));
+  }, [visiblePaths]);
+
+
   const toggleGroup = (key: string) => {
     setOpenGroups(prev => 
       prev.includes(key) 
@@ -574,7 +589,11 @@ export default function Layout({ children }: LayoutProps) {
             open={isOpen}
             onOpenChange={() => toggleGroup(group.key)}
           >
-            <CollapsibleTrigger className="w-full">
+            <CollapsibleTrigger
+              className="w-full"
+              onMouseEnter={() => group.items.slice(0, 4).forEach(i => prefetchRoute(i.to))}
+            >
+
               <div
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
@@ -601,7 +620,9 @@ export default function Layout({ children }: LayoutProps) {
                       key={item.to} 
                       to={item.to}
                       onClick={onItemClick}
+                      {...prefetchHandlers(item.to)}
                     >
+
                       <div
                         className={cn(
                           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
