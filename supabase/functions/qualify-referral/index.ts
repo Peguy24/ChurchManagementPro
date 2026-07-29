@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-secret",
 };
 
 /**
@@ -12,9 +12,39 @@ const corsHeaders = {
  *
  * Body: { referredTenantId: string, source?: 'webhook' | 'manual' }
  */
+
+/**
+ * Referral rewards may only be granted by internal service-to-service calls
+ * (Stripe webhook / cron) presenting the shared secret, or by a platform super admin.
+ */
+async function authorizeInternalCall(req: Request): Promise<boolean> {
+  const secret = Deno.env.get("CRON_SECRET");
+  const provided = req.headers.get("x-internal-secret");
+  if (secret && provided && provided === secret) return true;
+
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return false;
+  const url = Deno.env.get("SUPABASE_URL") ?? "";
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const authClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
+  const { data: { user } } = await authClient.auth.getUser();
+  if (!user) return false;
+  const admin = createClient(url, service, { auth: { persistSession: false } });
+  const { data: isSuper } = await admin.rpc("is_super_admin", { _user_id: user.id });
+  return !!isSuper;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!(await authorizeInternalCall(req))) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -60,6 +90,7 @@ serve(async (req) => {
     // Trigger reward application
     const { data: rewardData, error: rewardErr } = await supa.functions.invoke("apply-referral-reward", {
       body: { referralId: referral.id },
+      headers: { "x-internal-secret": Deno.env.get("CRON_SECRET") ?? "" },
     });
 
     if (rewardErr) {

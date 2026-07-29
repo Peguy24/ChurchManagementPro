@@ -448,6 +448,7 @@ serve(async (req) => {
         try {
           await supabase.functions.invoke("qualify-referral", {
             body: { referredTenantId: tenantId, source: "stripe_webhook" },
+            headers: { "x-internal-secret": Deno.env.get("CRON_SECRET") ?? "" },
           });
         } catch (refErr) {
           logStep("Referral qualification skipped", { error: String(refErr) });

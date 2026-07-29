@@ -51,15 +51,21 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
+const escapeHtml = (value: unknown): string =>
+  String(value ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!)
+  );
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { firstName, lastName, email, phone, tenantId, tenantName, language = "fr" } = await req.json();
+    const { requestId, language: rawLanguage = "fr" } = await req.json();
+    const language = ["fr", "en", "ht"].includes(rawLanguage) ? rawLanguage : "fr";
 
-    if (!tenantId || !firstName || !lastName) {
+    if (!requestId || typeof requestId !== "string") {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -72,6 +78,35 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Content is sourced from the persisted request row, never from the caller.
+    const { data: request } = await supabaseAdmin
+      .from("member_requests")
+      .select("id, tenant_id, first_name, last_name, email, phone, created_at, tenants(name)")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    if (!request) {
+      return new Response(JSON.stringify({ error: "Request not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Only notify for freshly created requests (guards against replay/spam).
+    if (Date.now() - new Date(request.created_at).getTime() > 10 * 60 * 1000) {
+      return new Response(JSON.stringify({ success: false, message: "Request too old" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const tenantId = request.tenant_id;
+    const firstName = escapeHtml(request.first_name);
+    const lastName = escapeHtml(request.last_name);
+    const email = request.email ? escapeHtml(request.email) : null;
+    const phone = request.phone ? escapeHtml(request.phone) : null;
+    const tenantName = escapeHtml((request as any).tenants?.name || "");
 
     // Get tenant admin emails
     const { data: adminRoles } = await supabaseAdmin
@@ -152,7 +187,7 @@ serve(async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: `${churchName} <noreply@churchmanagementpro.com>`,
         to: adminEmails,
-        subject: `${t.subject} - ${firstName} ${lastName}`,
+        subject: `${t.subject} - ${request.first_name} ${request.last_name}`,
         html: emailHtml,
       }),
     });

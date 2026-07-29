@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorizeAnalyticsRequest } from "../_shared/analyticsAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,26 +55,22 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Allow both CRON_SECRET (scheduled) and authenticated user (manual) access
-  const authHeader = req.headers.get("Authorization");
-  const expectedSecret = Deno.env.get("CRON_SECRET");
-  const isCronCall = expectedSecret && authHeader === `Bearer ${expectedSecret}`;
-  
-  if (!isCronCall) {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader || '' } }
-    });
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    
-    if (authError || !user) {
-      console.error("Unauthorized access attempt to generate-pastoral-alerts");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+  // Parse optional tenant_id first so we can authorize against it
+  let requestedTenantId: string | null = null;
+  try {
+    const body = await req.json();
+    requestedTenantId = body?.tenant_id || null;
+  } catch {
+    // No body or invalid JSON
+  }
+
+  const auth = await authorizeAnalyticsRequest(req, requestedTenantId);
+  if (!auth.ok) {
+    console.error("Unauthorized access attempt to generate-pastoral-alerts");
+    return new Response(
+      JSON.stringify({ error: auth.error }),
+      { status: auth.status, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
   }
 
   try {
@@ -82,14 +79,7 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse request body for optional tenant_id filter
-    let tenantId: string | null = null;
-    try {
-      const body = await req.json();
-      tenantId = body.tenant_id || null;
-    } catch {
-      // No body or invalid JSON
-    }
+    const tenantId: string | null = auth.tenantId;
 
     console.log(`Starting pastoral alert generation${tenantId ? ` for tenant ${tenantId}` : ' for all tenants'}`);
 

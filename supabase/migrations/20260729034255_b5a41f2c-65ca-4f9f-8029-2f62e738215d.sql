@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Tenant users view own field values" ON public.custom_field_values;
