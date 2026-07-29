@@ -288,7 +288,12 @@ export function useUserRole() {
     if (!authLoading) {
       fetchRolesAndPermissions();
     }
+
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
   }, [user, authLoading]);
+
 
   const hasRole = (role: AppRole): boolean => roles.includes(role);
   const hasAnyRole = (checkRoles: AppRole[]): boolean => checkRoles.some((role) => roles.includes(role));
