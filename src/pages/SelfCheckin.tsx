@@ -132,6 +132,11 @@ export default function SelfCheckin() {
   const [cameraActive, setCameraActive] = useState(false);
   const [result, setResult] = useState<{ status: "ok" | "already"; name: string; locationVerified: boolean | null } | null>(null);
 
+  const preview = useMemo(() => previewIdentifier(identifier), [identifier]);
+  const canSubmit = preview.kind === "member_number" || preview.kind === "phone";
+
+
+
   const errorText = (code: string | null) =>
     (code && (c.errors as Record<string, string>)[code]) || c.errors.server_error;
 
