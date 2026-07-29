@@ -23,7 +23,9 @@ export default defineConfig(({ mode }) => ({
       devOptions: { enabled: false },
       manifest: false,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Keep the precache small; JS chunks are cached at runtime on first visit
+        globPatterns: ["**/*.{css,html,ico,webmanifest}", "pwa-*.png", "apple-touch-icon.png"],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         cleanupOutdatedCaches: true,
