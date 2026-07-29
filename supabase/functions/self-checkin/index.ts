@@ -145,6 +145,43 @@ function normalizePhone(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/**
+ * Reduces a phone number to its national significant digits so that
+ * "+509 3712-3456", "00509 37123456", "0 3712 3456" and "37123456" all match.
+ * Handles international prefixes (00/011), common country codes (509 HT,
+ * 1 US/CA, 33 FR, 590/509-style 3-digit codes) and national trunk zeros.
+ */
+const COUNTRY_CODES = ["509", "590", "596", "1", "33", "32", "41", "49", "44", "39", "34", "351", "352"];
+
+function phoneCore(value: string): string {
+  let d = normalizePhone(value);
+  if (!d) return "";
+  // international access prefixes
+  d = d.replace(/^(00|011)/, "");
+  // country code
+  for (const cc of COUNTRY_CODES.slice().sort((a, b) => b.length - a.length)) {
+    if (d.startsWith(cc) && d.length - cc.length >= 7) {
+      d = d.slice(cc.length);
+      break;
+    }
+  }
+  // national trunk prefix zeros
+  d = d.replace(/^0+/, "");
+  return d;
+}
+
+function phoneMatches(input: string, stored: string): boolean {
+  const a = phoneCore(input);
+  const b = phoneCore(stored);
+  if (a.length < 6 || b.length < 6) return false;
+  if (a === b) return true;
+  const min = Math.min(a.length, b.length);
+  if (min < 7) return false;
+  // tolerate leftover prefixes on either side
+  return a.slice(-min) === b.slice(-min);
+}
+
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -295,23 +332,25 @@ serve(async (req) => {
           .limit(1);
         member = byNumber?.[0] ?? null;
 
-        // 2) phone — compare on digits only, in either direction
+        // 2) phone — country-code and format tolerant (+509, 00509, 0-prefixed, spaces/dashes)
         if (!member) {
-          const digits = normalizePhone(raw);
-          if (digits.length >= 7) {
+          const inputCore = phoneCore(raw);
+          if (inputCore.length >= 6) {
             const { data: candidates } = await supabaseAdmin
               .from("members")
               .select("id, first_name, last_name, branch_id, phone")
               .eq("tenant_id", session.tenant_id)
               .not("phone", "is", null)
               .limit(5000);
-            const matches = (candidates ?? []).filter((m) => {
-              const p = normalizePhone(m.phone ?? "");
-              return p.length >= 7 && (p.endsWith(digits) || digits.endsWith(p));
-            });
-            if (matches.length === 1) member = matches[0];
+            const all = candidates ?? [];
+            // prefer exact national-number matches, then suffix matches
+            const exact = all.filter((m) => phoneCore(m.phone ?? "") === inputCore);
+            const loose = all.filter((m) => phoneMatches(raw, m.phone ?? ""));
+            if (exact.length === 1) member = exact[0];
+            else if (exact.length === 0 && loose.length === 1) member = loose[0];
           }
         }
+
       }
 
 
