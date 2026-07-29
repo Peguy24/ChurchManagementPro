@@ -91,6 +91,8 @@ export default function AttendanceKiosk() {
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> }>({ allowed: false, reasonKey: "kiosk.selectEvent" });
 
+  const offline = useOfflineAttendance(tenantId);
+
   // Resolve tenant
   useEffect(() => {
     if (user?.id) {
@@ -98,10 +100,28 @@ export default function AttendanceKiosk() {
     }
   }, [user?.id]);
 
-  // Load today's events
+  // Load today's events (cached locally so the kiosk keeps working offline)
   useEffect(() => {
     if (!tenantId) return;
     const today = getLocalToday();
+    const cacheKey = `kiosk-events-${tenantId}-${today}`;
+
+    const applyEvents = (todayEvents: EventOption[]) => {
+      setEvents(todayEvents);
+      if (todayEvents.length === 1) {
+        setSelectedEventId(todayEvents[0].id);
+      }
+    };
+
+    if (!navigator.onLine) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) applyEvents(JSON.parse(cached));
+      } catch {
+        /* ignore malformed cache */
+      }
+      return;
+    }
 
     supabase
       .from("events")
@@ -116,12 +136,15 @@ export default function AttendanceKiosk() {
           const endDate = e.end_date || e.event_date;
           return e.event_date <= today && endDate >= today;
         });
-        setEvents(todayEvents);
-        if (todayEvents.length === 1) {
-          setSelectedEventId(todayEvents[0].id);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(todayEvents));
+        } catch {
+          /* storage full — non fatal */
         }
+        applyEvents(todayEvents);
       });
-  }, [tenantId]);
+  }, [tenantId, offline.isOnline]);
+
 
   // Check time window periodically
   useEffect(() => {
