@@ -9,6 +9,7 @@ import Layout from '@/components/Layout';
 import SubscriptionBlockPage from '@/components/SubscriptionBlockPage';
 import MaintenancePage from '@/components/MaintenancePage';
 import { Skeleton } from '@/components/ui/skeleton';
+import AppShellSkeleton from '@/components/AppShellSkeleton';
 
 // Set once the very first auth/role bootstrap completes in this browser session.
 let hasBootstrapped = false;
@@ -22,21 +23,7 @@ const SUBSCRIPTION_EXEMPT_PATHS = [
 ];
 
 function RouteBootSkeleton() {
-  return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
-      <div className="mx-auto max-w-6xl space-y-4">
-        <Skeleton className="h-12 w-64" />
-        <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
-          <Skeleton className="hidden h-[70vh] md:block" />
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-1/3" />
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <AppShellSkeleton />;
 }
 
 interface ProtectedRouteProps {
