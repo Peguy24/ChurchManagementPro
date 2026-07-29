@@ -230,6 +230,7 @@ export function useUserRole() {
           setIsSuperAdmin(false);
           setPermissions(finalPerms);
           fetchedRef.current = true;
+          cachedUserIdRef.current = user.id;
           saveCachedRoles({
             userId: user.id, roles: finalRoles, isApproved: finalApproved,
             isAdmin: finalAdmin, isSuperAdmin: false, permissions: finalPerms,
@@ -250,7 +251,9 @@ export function useUserRole() {
         setIsSuperAdmin(false);
       } finally {
         setLoading(false);
+        setResolved(true);
       }
+
     }
 
     if (!authLoading) {
