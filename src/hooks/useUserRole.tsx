@@ -268,9 +268,13 @@ export function useUserRole() {
   const canSeeItem = (itemPath: string): boolean => canSeeNavItemWithPerms(roles, itemPath, permissions);
   const hasPermissionFor = (group: RouteGroup): boolean => hasPermissionWithPerms(roles, group, permissions);
 
-  // If we have cached data, don't wait for auth
-  const hasCachedData = roles.length > 0;
-  const effectiveLoading = hasCachedData ? false : (authLoading || loading);
+  // Trust cached data only when it belongs to the signed-in user AND says approved.
+  // Otherwise stay "loading" until the fresh fetch resolves, so nobody is bounced
+  // to /pending-approval on a stale or partial state.
+  const hasUsableCache =
+    roles.length > 0 && isApproved && (!user || cachedUserIdRef.current === user.id);
+  const effectiveLoading = hasUsableCache ? false : (authLoading || loading || !resolved);
+
 
   return {
     roles,
