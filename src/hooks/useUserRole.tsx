@@ -176,7 +176,9 @@ export function useUserRole() {
 
           if (tenantRoleResult.error) {
             console.error("Error fetching tenant_user_roles:", tenantRoleResult.error);
+            if (scheduleRetry()) return;
           }
+
 
           // A user may have more than one row (e.g. a leftover pending "user" row
           // alongside their approved role). Always prefer an approved role, and
