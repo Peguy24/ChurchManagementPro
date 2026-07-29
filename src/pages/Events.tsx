@@ -70,6 +70,7 @@ const getStatusColors = () => ({
 
 export default function Events() {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
