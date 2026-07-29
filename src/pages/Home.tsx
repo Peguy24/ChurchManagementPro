@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
-import { Church } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Navigate } from 'react-router-dom';
 import Commercial from './Commercial';
 import Dashboard from './Dashboard';
@@ -36,13 +36,14 @@ export default function Home() {
 
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
-  // Show loading state only for authenticated users while hooks resolve
+  // Show a neutral skeleton (no logo splash) while hooks resolve
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Church className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+      <div className="min-h-screen bg-background p-6">
+        <div className="mx-auto max-w-5xl space-y-4">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
         </div>
       </div>
     );
