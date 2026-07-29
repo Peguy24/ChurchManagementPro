@@ -25,7 +25,13 @@ const COPY = {
     checkedIn: "You're checked in!",
     already: "You were already checked in.",
     welcome: "Welcome",
+    matchAs: "Will be matched as",
+    asMemberNumber: "Member number",
+    asPhone: "Phone number",
+    tooShort: "Too short — enter a full phone number or your member number.",
+    unrecognized: "Unrecognized format — use digits only, or a number like MBR00023.",
     locationUnverified: "We couldn't verify your location, but your attendance was recorded.",
+
     errors: {
       invalid_token: "This code is no longer valid. Please scan the code on the screen again.",
       expired_token: "This code expired. Please scan the code on the screen again.",
