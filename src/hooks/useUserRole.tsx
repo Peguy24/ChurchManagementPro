@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { 
@@ -25,6 +25,22 @@ interface CachedRoleState {
   permissions: Record<AppRole, RouteGroup[]>;
 }
 
+interface UserRoleContextValue {
+  roles: AppRole[];
+  loading: boolean;
+  isApproved: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  hasRole: (role: AppRole) => boolean;
+  hasAnyRole: (checkRoles: AppRole[]) => boolean;
+  canAccess: (path: string) => boolean;
+  canSeeNav: (navGroupLabel: string) => boolean;
+  canSeeItem: (itemPath: string) => boolean;
+  hasPermissionFor: (group: RouteGroup) => boolean;
+}
+
+const UserRoleContext = createContext<UserRoleContextValue | undefined>(undefined);
+
 function loadCachedRoles(): CachedRoleState | null {
   try {
     const raw = sessionStorage.getItem(ROLE_CACHE_KEY);
@@ -48,7 +64,7 @@ function saveCachedRoles(state: CachedRoleState) {
 const rawRoleCache = loadCachedRoles();
 const initialRoleCache = rawRoleCache?.isApproved ? rawRoleCache : null;
 
-export function useUserRole() {
+export function UserRoleProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
 
   const [roles, setRoles] = useState<AppRole[]>(initialRoleCache?.roles ?? []);
@@ -83,6 +99,8 @@ export function useUserRole() {
       // Drop any cached state that belongs to a different user
       if (cachedUserIdRef.current && cachedUserIdRef.current !== user.id) {
         cachedUserIdRef.current = null;
+        fetchedRef.current = false;
+        attemptsRef.current = 0;
         try { sessionStorage.removeItem(ROLE_CACHE_KEY); } catch {}
         setRoles([]);
         setIsApproved(false);
@@ -310,7 +328,7 @@ export function useUserRole() {
   const effectiveLoading = hasUsableCache ? false : (authLoading || loading || !resolved);
 
 
-  return {
+  const value: UserRoleContextValue = {
     roles,
     loading: effectiveLoading,
     isApproved,
@@ -323,4 +341,14 @@ export function useUserRole() {
     canSeeItem,
     hasPermissionFor,
   };
+
+  return <UserRoleContext.Provider value={value}>{children}</UserRoleContext.Provider>;
+}
+
+export function useUserRole() {
+  const context = useContext(UserRoleContext);
+  if (!context) {
+    throw new Error("useUserRole must be used within a UserRoleProvider");
+  }
+  return context;
 }

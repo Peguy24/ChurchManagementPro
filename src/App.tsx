@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { useInactivityLogout } from "./hooks/useInactivityLogout";
 import { useAuth } from "@/hooks/useAuth";
+import { UserRoleProvider } from "@/hooks/useUserRole";
 import { isTenantHost, enforceHttps } from "@/lib/tenantHost";
 
 // Run once at module load — before React mounts — so we redirect before any UI paints.
@@ -242,6 +243,7 @@ const App = () => (
         <BrowserRouter>
           <InactivityGuard>
           <TenantProvider>
+            <UserRoleProvider>
             <TenantHostGate>
             <StableRouteShell>
             <DeferredLocation>{(routeLocation) => (
@@ -368,6 +370,7 @@ const App = () => (
             )}</DeferredLocation>
             </StableRouteShell>
             </TenantHostGate>
+            </UserRoleProvider>
           </TenantProvider>
           </InactivityGuard>
         </BrowserRouter>
