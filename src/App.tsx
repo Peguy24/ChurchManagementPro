@@ -180,7 +180,8 @@ const App = () => (
           <TenantProvider>
             <Suspense fallback={<LazyFallback />}>
             <TenantHostGate>
-            <Routes>
+            <DeferredLocation>{(routeLocation) => (
+            <Routes location={routeLocation}>
               <Route path="/commercial" element={<Commercial />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
