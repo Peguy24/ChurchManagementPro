@@ -589,7 +589,11 @@ export default function Layout({ children }: LayoutProps) {
             open={isOpen}
             onOpenChange={() => toggleGroup(group.key)}
           >
-            <CollapsibleTrigger className="w-full">
+            <CollapsibleTrigger
+              className="w-full"
+              onMouseEnter={() => group.items.slice(0, 4).forEach(i => prefetchRoute(i.to))}
+            >
+
               <div
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
