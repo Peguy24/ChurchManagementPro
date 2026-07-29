@@ -145,6 +145,43 @@ function normalizePhone(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/**
+ * Reduces a phone number to its national significant digits so that
+ * "+509 3712-3456", "00509 37123456", "0 3712 3456" and "37123456" all match.
+ * Handles international prefixes (00/011), common country codes (509 HT,
+ * 1 US/CA, 33 FR, 590/509-style 3-digit codes) and national trunk zeros.
+ */
+const COUNTRY_CODES = ["509", "590", "596", "1", "33", "32", "41", "49", "44", "39", "34", "351", "352"];
+
+function phoneCore(value: string): string {
+  let d = normalizePhone(value);
+  if (!d) return "";
+  // international access prefixes
+  d = d.replace(/^(00|011)/, "");
+  // country code
+  for (const cc of COUNTRY_CODES.slice().sort((a, b) => b.length - a.length)) {
+    if (d.startsWith(cc) && d.length - cc.length >= 7) {
+      d = d.slice(cc.length);
+      break;
+    }
+  }
+  // national trunk prefix zeros
+  d = d.replace(/^0+/, "");
+  return d;
+}
+
+function phoneMatches(input: string, stored: string): boolean {
+  const a = phoneCore(input);
+  const b = phoneCore(stored);
+  if (a.length < 6 || b.length < 6) return false;
+  if (a === b) return true;
+  const min = Math.min(a.length, b.length);
+  if (min < 7) return false;
+  // tolerate leftover prefixes on either side
+  return a.slice(-min) === b.slice(-min);
+}
+
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
