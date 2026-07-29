@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useMaintenanceMode } from '@/hooks/useMaintenanceMode';
-import { Church } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Navigate } from 'react-router-dom';
 import Commercial from './Commercial';
 import Dashboard from './Dashboard';
