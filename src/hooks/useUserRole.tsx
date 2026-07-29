@@ -41,8 +41,12 @@ function saveCachedRoles(state: CachedRoleState) {
   } catch {}
 }
 
-// Read cache once at module level
-const initialRoleCache = loadCachedRoles();
+// Read cache once at module level.
+// Only trust a cache that represents an APPROVED user: a stale "pending" cache
+// would otherwise bounce an approved admin to /pending-approval before the
+// fresh role fetch resolves.
+const rawRoleCache = loadCachedRoles();
+const initialRoleCache = rawRoleCache?.isApproved ? rawRoleCache : null;
 
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
@@ -55,7 +59,10 @@ export function useUserRole() {
   const [isApproved, setIsApproved] = useState(initialRoleCache?.isApproved ?? false);
   const [isAdmin, setIsAdmin] = useState(initialRoleCache?.isAdmin ?? false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(initialRoleCache?.isSuperAdmin ?? false);
+  const [resolved, setResolved] = useState(false);
   const fetchedRef = useRef(false);
+  const cachedUserIdRef = useRef<string | null>(initialRoleCache?.userId ?? null);
+
 
   useEffect(() => {
     async function fetchRolesAndPermissions() {
@@ -65,8 +72,20 @@ export function useUserRole() {
         setIsApproved(false);
         setIsAdmin(false);
         setIsSuperAdmin(false);
+        setResolved(true);
         fetchedRef.current = false;
         return;
+      }
+
+      // Drop any cached state that belongs to a different user
+      if (cachedUserIdRef.current && cachedUserIdRef.current !== user.id) {
+        cachedUserIdRef.current = null;
+        try { sessionStorage.removeItem(ROLE_CACHE_KEY); } catch {}
+        setRoles([]);
+        setIsApproved(false);
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+        setPermissions(DEFAULT_ROLE_PERMISSIONS);
       }
 
       // Skip if already fetched for this user
@@ -75,8 +94,9 @@ export function useUserRole() {
       try {
         const [rolesResult, profileResult] = await Promise.all([
           supabase.from("user_roles").select("role").eq("user_id", user.id),
-          supabase.from("profiles").select("tenant_id").eq("id", user.id).single(),
+          supabase.from("profiles").select("tenant_id").eq("id", user.id).maybeSingle(),
         ]);
+
 
         if (rolesResult.error) {
           console.error("Error fetching user_roles:", rolesResult.error);
@@ -105,7 +125,9 @@ export function useUserRole() {
           setIsSuperAdmin(true);
           setPermissions(DEFAULT_ROLE_PERMISSIONS);
           setLoading(false);
+          setResolved(true);
           fetchedRef.current = true;
+          cachedUserIdRef.current = user.id;
           saveCachedRoles({
             userId: user.id, roles: globalRoles, isApproved: true,
             isAdmin: true, isSuperAdmin: true, permissions: DEFAULT_ROLE_PERMISSIONS,
@@ -122,7 +144,7 @@ export function useUserRole() {
               .select("role, is_approved, custom_role_id")
               .eq("tenant_id", tenantId)
               .eq("user_id", user.id)
-              .single(),
+              .order("is_approved", { ascending: false }),
             supabase
               .from("role_permissions")
               .select("role, permission_group")
@@ -133,7 +155,17 @@ export function useUserRole() {
             console.error("Error fetching tenant_user_roles:", tenantRoleResult.error);
           }
 
-          const tenantRoleData = tenantRoleResult.data;
+          // A user may have more than one row (e.g. a leftover pending "user" row
+          // alongside their approved role). Always prefer an approved role, and
+          // prefer "admin" among approved rows.
+          const tenantRoleRows = tenantRoleResult.data ?? [];
+          const approvedRows = tenantRoleRows.filter((r) => r.is_approved);
+          const tenantRoleData =
+            approvedRows.find((r) => r.role === "admin") ??
+            approvedRows[0] ??
+            tenantRoleRows[0] ??
+            null;
+
           let finalRoles = globalRoles;
           let finalApproved = false;
           let finalAdmin = false;
@@ -198,6 +230,7 @@ export function useUserRole() {
           setIsSuperAdmin(false);
           setPermissions(finalPerms);
           fetchedRef.current = true;
+          cachedUserIdRef.current = user.id;
           saveCachedRoles({
             userId: user.id, roles: finalRoles, isApproved: finalApproved,
             isAdmin: finalAdmin, isSuperAdmin: false, permissions: finalPerms,
@@ -218,7 +251,9 @@ export function useUserRole() {
         setIsSuperAdmin(false);
       } finally {
         setLoading(false);
+        setResolved(true);
       }
+
     }
 
     if (!authLoading) {
@@ -233,9 +268,13 @@ export function useUserRole() {
   const canSeeItem = (itemPath: string): boolean => canSeeNavItemWithPerms(roles, itemPath, permissions);
   const hasPermissionFor = (group: RouteGroup): boolean => hasPermissionWithPerms(roles, group, permissions);
 
-  // If we have cached data, don't wait for auth
-  const hasCachedData = roles.length > 0;
-  const effectiveLoading = hasCachedData ? false : (authLoading || loading);
+  // Trust cached data only when it belongs to the signed-in user AND says approved.
+  // Otherwise stay "loading" until the fresh fetch resolves, so nobody is bounced
+  // to /pending-approval on a stale or partial state.
+  const hasUsableCache =
+    roles.length > 0 && isApproved && (!user || cachedUserIdRef.current === user.id);
+  const effectiveLoading = hasUsableCache ? false : (authLoading || loading || !resolved);
+
 
   return {
     roles,
