@@ -41,8 +41,12 @@ function saveCachedRoles(state: CachedRoleState) {
   } catch {}
 }
 
-// Read cache once at module level
-const initialRoleCache = loadCachedRoles();
+// Read cache once at module level.
+// Only trust a cache that represents an APPROVED user: a stale "pending" cache
+// would otherwise bounce an approved admin to /pending-approval before the
+// fresh role fetch resolves.
+const rawRoleCache = loadCachedRoles();
+const initialRoleCache = rawRoleCache?.isApproved ? rawRoleCache : null;
 
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
@@ -55,7 +59,10 @@ export function useUserRole() {
   const [isApproved, setIsApproved] = useState(initialRoleCache?.isApproved ?? false);
   const [isAdmin, setIsAdmin] = useState(initialRoleCache?.isAdmin ?? false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(initialRoleCache?.isSuperAdmin ?? false);
+  const [resolved, setResolved] = useState(false);
   const fetchedRef = useRef(false);
+  const cachedUserIdRef = useRef<string | null>(initialRoleCache?.userId ?? null);
+
 
   useEffect(() => {
     async function fetchRolesAndPermissions() {
