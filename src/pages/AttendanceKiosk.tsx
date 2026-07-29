@@ -390,7 +390,17 @@ export default function AttendanceKiosk() {
       {/* Main content - fills remaining space */}
       <div className="flex-1 flex flex-col items-center px-3 py-3 sm:px-6 sm:py-4 overflow-y-auto">
         <div className="w-full max-w-lg flex flex-col gap-3 sm:gap-4 flex-1">
+          <OfflineStatusBar
+            isOnline={offline.isOnline}
+            pendingCount={offline.pendingCount}
+            cachedMembers={offline.cachedMembers}
+            syncing={offline.syncing}
+            onSync={offline.sync}
+            compact
+          />
+
           {/* Event selector */}
+
           <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
             <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base">
               <SelectValue placeholder={events.length === 0 ? t("kiosk.noEventsToday") : t("kiosk.selectEventPlaceholder")} />
