@@ -118,7 +118,10 @@ export default function JoinChurch() {
         city: formData.city, state: formData.state, zipCode: formData.zipCode, country: formData.country,
       };
 
-      const { data: inserted, error } = await supabase.from("member_requests").insert({
+      const requestId = crypto.randomUUID();
+
+      const { error } = await supabase.from("member_requests").insert({
+        id: requestId,
         tenant_id: tenantId,
         first_name: formData.firstName, last_name: formData.lastName,
         gender: formData.gender || null, date_of_birth: formData.dateOfBirth || null,
@@ -134,7 +137,7 @@ export default function JoinChurch() {
         number_of_children: formData.numberOfChildren ? parseInt(formData.numberOfChildren) : 0,
         children_names: formData.childrenNames || null, message: formData.message || null,
         desired_ministry_id: formData.desiredMinistryId || null,
-      }).select("id").single();
+      });
 
       if (error) throw error;
 
@@ -142,7 +145,7 @@ export default function JoinChurch() {
       try {
         await supabase.functions.invoke("notify-admin-member-request", {
           body: {
-            requestId: inserted.id,
+            requestId,
             language,
           },
         });
