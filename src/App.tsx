@@ -185,8 +185,8 @@ function isProtectedShellPath(pathname: string, hasUser: boolean) {
 
 function StableRouteShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const { user } = useAuth();
-  const useAppShell = isProtectedShellPath(location.pathname, Boolean(user));
+  const { user, loading: authLoading } = useAuth();
+  const useAppShell = isProtectedShellPath(location.pathname, Boolean(user) || authLoading);
 
   if (!useAppShell) {
     return <Suspense fallback={<LazyFallback />}>{children}</Suspense>;

@@ -25,6 +25,18 @@ interface CachedRoleState {
   permissions: Record<AppRole, RouteGroup[]>;
 }
 
+function loadCachedRolesForUser(userId: string): CachedRoleState | null {
+  try {
+    const raw = sessionStorage.getItem(ROLE_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as CachedRoleState;
+    if (cached.userId !== userId || !cached.isApproved) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
 interface UserRoleContextValue {
   roles: AppRole[];
   loading: boolean;
@@ -50,13 +62,6 @@ function saveCachedRoles(state: CachedRoleState) {
     sessionStorage.setItem(ROLE_CACHE_KEY, JSON.stringify(state));
   } catch {}
 }
-
-// Invalidate role cache on every full page load. Role/approval state is security
-// sensitive and must always be confirmed freshly after refresh/login so a stale
-// pending cache can never bounce an approved tenant admin to /pending-approval.
-try {
-  sessionStorage.removeItem(ROLE_CACHE_KEY);
-} catch {}
 
 export function UserRoleProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -311,26 +316,35 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
   }, [user, authLoading]);
 
 
-  const hasRole = (role: AppRole): boolean => roles.includes(role);
-  const hasAnyRole = (checkRoles: AppRole[]): boolean => checkRoles.some((role) => roles.includes(role));
-  const canAccess = (path: string): boolean => canAccessRouteWithPerms(roles, path, permissions);
-  const canSeeNav = (navGroupLabel: string): boolean => canSeeNavGroupWithPerms(roles, navGroupLabel, permissions);
-  const canSeeItem = (itemPath: string): boolean => canSeeNavItemWithPerms(roles, itemPath, permissions);
-  const hasPermissionFor = (group: RouteGroup): boolean => hasPermissionWithPerms(roles, group, permissions);
+  // Use only same-user approved cache for the first paint after a refresh. The
+  // background fetch still revalidates immediately and will replace this state.
+  const cachedRoles = user && !fetchedRef.current ? loadCachedRolesForUser(user.id) : null;
+  const effectiveRoles = cachedRoles?.roles ?? roles;
+  const effectivePermissions = cachedRoles?.permissions ?? permissions;
+  const effectiveIsApproved = cachedRoles?.isApproved ?? isApproved;
+  const effectiveIsAdmin = cachedRoles?.isAdmin ?? isAdmin;
+  const effectiveIsSuperAdmin = cachedRoles?.isSuperAdmin ?? isSuperAdmin;
 
-  // Trust cached data only when it belongs to the signed-in user AND says approved.
-  // Otherwise stay "loading" until the fresh fetch resolves, so nobody is bounced
-  // to /pending-approval on a stale or partial state.
+  const hasRole = (role: AppRole): boolean => effectiveRoles.includes(role);
+  const hasAnyRole = (checkRoles: AppRole[]): boolean => checkRoles.some((role) => effectiveRoles.includes(role));
+  const canAccess = (path: string): boolean => canAccessRouteWithPerms(effectiveRoles, path, effectivePermissions);
+  const canSeeNav = (navGroupLabel: string): boolean => canSeeNavGroupWithPerms(effectiveRoles, navGroupLabel, effectivePermissions);
+  const canSeeItem = (itemPath: string): boolean => canSeeNavItemWithPerms(effectiveRoles, itemPath, effectivePermissions);
+  const hasPermissionFor = (group: RouteGroup): boolean => hasPermissionWithPerms(effectiveRoles, group, effectivePermissions);
+
+  // Pending/unknown cache is never trusted. Approved same-user cache prevents a
+  // visual flash, but the fresh backend fetch remains the source of truth.
   const needsFreshFetch = !!user && !fetchedRef.current;
-  const effectiveLoading = authLoading || loading || !resolved || needsFreshFetch;
+  const hasApprovedPaintCache = !!cachedRoles;
+  const effectiveLoading = authLoading || (!hasApprovedPaintCache && (loading || !resolved || needsFreshFetch));
 
 
   const value: UserRoleContextValue = {
-    roles,
+    roles: effectiveRoles,
     loading: effectiveLoading,
-    isApproved,
-    isAdmin,
-    isSuperAdmin,
+    isApproved: effectiveIsApproved,
+    isAdmin: effectiveIsAdmin,
+    isSuperAdmin: effectiveIsSuperAdmin,
     hasRole,
     hasAnyRole,
     canAccess,

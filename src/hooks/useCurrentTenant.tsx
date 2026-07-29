@@ -52,9 +52,6 @@ function saveCachedTenant(userId: string, tenantId: string, tenant: TenantInfo) 
   } catch {}
 }
 
-// Read cache once at module level to avoid repeated sessionStorage access
-const initialCache = loadCachedTenant();
-
 export function useCurrentTenant(): UseCurrentTenantReturn {
   const { user, loading: authLoading } = useAuth();
 
@@ -186,28 +183,33 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   }, [fetchTenantInfo]);
 
 
+  // Use same-user tenant cache for the first paint after refresh so the app does
+  // not briefly show generic/platform branding while the fresh read completes.
+  const cachedTenant = user ? loadCachedTenant() : null;
+  const effectiveCachedTenant = cachedTenant && cachedTenant.userId === user?.id ? cachedTenant : null;
+  const effectiveTenantId = tenantId ?? effectiveCachedTenant?.tenantId ?? null;
+  const effectiveTenant = tenant ?? effectiveCachedTenant?.tenant ?? null;
+  const effectiveLoading = authLoading || ((effectiveTenantId || effectiveTenant) ? false : loading);
+
   const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
-    return { ...data, tenant_id: tenantId };
-  }, [tenantId]);
+    return { ...data, tenant_id: effectiveTenantId };
+  }, [effectiveTenantId]);
 
   const forInsert = useCallback(<T extends object>(data: T): T & { tenant_id: string } => {
-    if (!tenantId) {
+    if (!effectiveTenantId) {
       throw new Error('Aucun tenant associé à cet utilisateur. Impossible de créer des données.');
     }
-    return { ...data, tenant_id: tenantId };
-  }, [tenantId]);
-
-  // If we have cached data, don't report loading
-  const effectiveLoading = authLoading || ((tenantId || tenant) ? false : loading);
+    return { ...data, tenant_id: effectiveTenantId };
+  }, [effectiveTenantId]);
 
   return {
-    tenantId,
-    tenant,
+    tenantId: effectiveTenantId,
+    tenant: effectiveTenant,
     loading: effectiveLoading,
     error,
     withTenantId,
     forInsert,
-    hasTenant: !!tenantId,
+    hasTenant: !!effectiveTenantId,
     refresh: forceRefresh,
   };
 }

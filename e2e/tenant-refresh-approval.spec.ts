@@ -19,7 +19,6 @@ async function restoreInjectedSession(page: Page) {
     ({ key, value }) => {
       window.localStorage.setItem(key, value);
       window.sessionStorage.setItem("app_session_active", "true");
-      window.sessionStorage.removeItem("user_role_cache");
     },
     { key: storageKey ?? "", value: sessionJson ?? "" },
   );

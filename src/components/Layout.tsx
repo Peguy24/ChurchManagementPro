@@ -433,12 +433,12 @@ export default function Layout({ children }: LayoutProps) {
 
   const location = useLocation();
   const { signOut, user } = useAuth();
-  const { canSeeNav, canSeeItem, isAdmin } = useUserRole();
+  const { canSeeNav, canSeeItem, isAdmin, loading: roleLoading } = useUserRole();
   const { isTenantAdmin } = useTenantRole();
   const { tenantId, tenant, loading: tenantLoading } = useCurrentTenant();
   const { toast } = useToast();
   const { t, language } = useLanguage();
-  const { settings: whiteLabelSettings } = useWhiteLabel();
+  const { settings: whiteLabelSettings, isLoading: whiteLabelLoading } = useWhiteLabel();
   const { isGlobalFeatureEnabled } = usePlanLimits();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -486,7 +486,9 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   // Filter nav groups and items based on user permissions (only for church users)
-  const navGroups = showAsSuperAdmin
+  const navGroups = roleLoading
+    ? []
+    : showAsSuperAdmin
     ? allNavGroups
     : allNavGroups
         .filter(group => canSeeNav(group.key))
@@ -642,7 +644,9 @@ export default function Layout({ children }: LayoutProps) {
   const brandingName = showAsSuperAdmin 
     ? "Church Management Pro" 
     : (tenant?.name || whiteLabelSettings.app_name);
-  const brandingSubtitle = showAsSuperAdmin ? "Administration Platform" : whiteLabelSettings.app_subtitle;
+  const brandingSubtitle = showAsSuperAdmin
+    ? "Administration Platform"
+    : (tenant || whiteLabelLoading ? "" : whiteLabelSettings.app_subtitle);
   const brandingLogo = showAsSuperAdmin 
     ? "/images/church-management-pro-logo.webp" 
     : (tenant?.logo_url || whiteLabelSettings.logo_url);
@@ -679,7 +683,7 @@ export default function Layout({ children }: LayoutProps) {
                 )}
                 <div>
                   <h1 className="text-sm font-bold leading-tight">{brandingName}</h1>
-                  <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>
+                  {brandingSubtitle && <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>}
                 </div>
               </div>
               <div className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
@@ -709,7 +713,7 @@ export default function Layout({ children }: LayoutProps) {
             )}
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-foreground leading-tight" data-testid="app-brand-name">{brandingName}</h1>
-              <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>
+              {brandingSubtitle && <p className="text-xs text-muted-foreground leading-tight">{brandingSubtitle}</p>}
             </div>
           </Link>
           
@@ -734,7 +738,13 @@ export default function Layout({ children }: LayoutProps) {
       <div className="container flex px-4 sm:px-8">
         {/* Desktop Sidebar */}
         <aside className="hidden w-56 border-r py-4 pr-2 md:block flex-shrink-0">
-          {renderNavigation()}
+          {roleLoading ? (
+            <div className="space-y-2">
+              <div className="h-8 rounded-md bg-muted" />
+              <div className="h-8 rounded-md bg-muted" />
+              <div className="h-8 rounded-md bg-muted" />
+            </div>
+          ) : renderNavigation()}
         </aside>
 
         {/* Main Content */}
