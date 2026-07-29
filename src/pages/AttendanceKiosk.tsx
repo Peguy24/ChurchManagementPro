@@ -19,6 +19,10 @@ import { getArrivalStatus, formatScanTime, getStatusTranslationKey, getStatusBad
 import { cn, getLocalToday } from "@/lib/utils";
 import CameraScanner from "@/components/CameraScanner";
 import { playSuccessSound, playErrorSound } from "@/lib/soundGenerator";
+import OfflineStatusBar from "@/components/OfflineStatusBar";
+import { useOfflineAttendance } from "@/hooks/useOfflineAttendance";
+import { findCachedMember, getCachedMemberById, queueAttendance } from "@/lib/offlineAttendance";
+
 
 type FeedbackStatus = "idle" | "success" | "error" | "duplicate";
 
@@ -87,6 +91,8 @@ export default function AttendanceKiosk() {
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [windowStatus, setWindowStatus] = useState<{ allowed: boolean; reasonKey: string; reasonParams?: Record<string, string> }>({ allowed: false, reasonKey: "kiosk.selectEvent" });
 
+  const offline = useOfflineAttendance(tenantId);
+
   // Resolve tenant
   useEffect(() => {
     if (user?.id) {
@@ -94,10 +100,28 @@ export default function AttendanceKiosk() {
     }
   }, [user?.id]);
 
-  // Load today's events
+  // Load today's events (cached locally so the kiosk keeps working offline)
   useEffect(() => {
     if (!tenantId) return;
     const today = getLocalToday();
+    const cacheKey = `kiosk-events-${tenantId}-${today}`;
+
+    const applyEvents = (todayEvents: EventOption[]) => {
+      setEvents(todayEvents);
+      if (todayEvents.length === 1) {
+        setSelectedEventId(todayEvents[0].id);
+      }
+    };
+
+    if (!navigator.onLine) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) applyEvents(JSON.parse(cached));
+      } catch {
+        /* ignore malformed cache */
+      }
+      return;
+    }
 
     supabase
       .from("events")
@@ -112,12 +136,15 @@ export default function AttendanceKiosk() {
           const endDate = e.end_date || e.event_date;
           return e.event_date <= today && endDate >= today;
         });
-        setEvents(todayEvents);
-        if (todayEvents.length === 1) {
-          setSelectedEventId(todayEvents[0].id);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(todayEvents));
+        } catch {
+          /* storage full — non fatal */
         }
+        applyEvents(todayEvents);
       });
-  }, [tenantId]);
+  }, [tenantId, offline.isOnline]);
+
 
   // Check time window periodically
   useEffect(() => {
@@ -193,6 +220,50 @@ export default function AttendanceKiosk() {
       return;
     }
 
+    const today = getLocalToday();
+    const scanTimestamp = new Date().toISOString();
+
+    // ---- Offline path: resolve from the cached roster and queue locally ----
+    if (!navigator.onLine) {
+      const cached =
+        (await getCachedMemberById(memberId)) || (await findCachedMember(tenantId, code));
+
+      if (!cached) {
+        setFeedback("error");
+        setFeedbackMessage(t("kiosk.memberNotFound"));
+        playErrorSound(0.8);
+        resetFeedback();
+        return;
+      }
+
+      const fullName = `${cached.first_name} ${cached.last_name}`;
+      const queued = await queueAttendance({
+        tenant_id: tenantId,
+        member_id: cached.id,
+        member_name: fullName,
+        event_id: selectedEvent.id,
+        event_type: selectedEvent.name,
+        event_date: today,
+        scan_method: "qr_scan",
+        marked_by: user?.id || null,
+        marked_at: scanTimestamp,
+      });
+
+      setMemberName(fullName);
+      if (queued === "duplicate") {
+        setFeedback("duplicate");
+        setFeedbackMessage(t("kiosk.alreadyCheckedIn"));
+        playErrorSound(0.8);
+      } else {
+        setFeedback("success");
+        setFeedbackMessage(t("kiosk.welcomeMessage"));
+        setTotalCheckins(prev => prev + 1);
+        playSuccessSound(0.8);
+      }
+      resetFeedback();
+      return;
+    }
+
     try {
       const { data: member } = await supabase
         .from("members")
@@ -210,9 +281,7 @@ export default function AttendanceKiosk() {
       }
 
       const fullName = `${member.first_name} ${member.last_name}`;
-      const today = getLocalToday();
 
-      const scanTimestamp = new Date().toISOString();
       const { error } = await supabase.from("attendance_records").insert({
         member_id: memberId,
         event_type: selectedEvent.name,
@@ -242,13 +311,35 @@ export default function AttendanceKiosk() {
       }
     } catch (err) {
       console.error("Kiosk scan error:", err);
-      setFeedback("error");
-      setFeedbackMessage(t("kiosk.scanError"));
-      playErrorSound(0.8);
+      // Network failure mid-scan — keep the check-in by queueing it
+      const cached = await getCachedMemberById(memberId);
+      if (cached) {
+        await queueAttendance({
+          tenant_id: tenantId,
+          member_id: cached.id,
+          member_name: `${cached.first_name} ${cached.last_name}`,
+          event_id: selectedEvent.id,
+          event_type: selectedEvent.name,
+          event_date: today,
+          scan_method: "qr_scan",
+          marked_by: user?.id || null,
+          marked_at: scanTimestamp,
+        });
+        setFeedback("success");
+        setMemberName(`${cached.first_name} ${cached.last_name}`);
+        setFeedbackMessage(t("kiosk.welcomeMessage"));
+        setTotalCheckins(prev => prev + 1);
+        playSuccessSound(0.8);
+      } else {
+        setFeedback("error");
+        setFeedbackMessage(t("kiosk.scanError"));
+        playErrorSound(0.8);
+      }
     }
 
     resetFeedback();
   }, [user, t, resetFeedback, selectedEvent, tenantId]);
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -299,7 +390,17 @@ export default function AttendanceKiosk() {
       {/* Main content - fills remaining space */}
       <div className="flex-1 flex flex-col items-center px-3 py-3 sm:px-6 sm:py-4 overflow-y-auto">
         <div className="w-full max-w-lg flex flex-col gap-3 sm:gap-4 flex-1">
+          <OfflineStatusBar
+            isOnline={offline.isOnline}
+            pendingCount={offline.pendingCount}
+            cachedMembers={offline.cachedMembers}
+            syncing={offline.syncing}
+            onSync={offline.sync}
+            compact
+          />
+
           {/* Event selector */}
+
           <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
             <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base">
               <SelectValue placeholder={events.length === 0 ? t("kiosk.noEventsToday") : t("kiosk.selectEventPlaceholder")} />

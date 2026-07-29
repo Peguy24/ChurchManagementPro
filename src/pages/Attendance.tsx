@@ -53,6 +53,15 @@ import {
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useCurrentTenant, getCurrentUserTenantId } from "@/hooks/useCurrentTenant";
+import OfflineStatusBar from "@/components/OfflineStatusBar";
+import { useOfflineAttendance } from "@/hooks/useOfflineAttendance";
+import { findCachedMember, queueAttendance } from "@/lib/offlineAttendance";
+
+const OFFLINE_SAVED_COPY = {
+  en: "Saved on this device — it will sync when you are back online.",
+  fr: "Enregistré sur cet appareil — synchronisation dès le retour de la connexion.",
+  ht: "Anrejistre sou aparèy sa a — l ap senkronize lè entènèt la tounen.",
+} as const;
 
 interface TodayEvent {
   id: string;
@@ -120,8 +129,9 @@ export default function Attendance() {
 function AttendanceContent() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { tenantId } = useCurrentTenant();
+  const offline = useOfflineAttendance(tenantId ?? null);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState(false);
@@ -273,7 +283,73 @@ function AttendanceContent() {
       return;
     }
 
+    // ---- Offline path: use the cached roster and queue the record locally ----
+    if (!navigator.onLine) {
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const selectedEventOffline = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
+      const cached = await findCachedMember(effectiveTenantId, scannedCode);
+
+      if (!cached) {
+        setScanFeedbackStatus('error');
+        setScanFeedbackMessage(t("attendance.memberNotFound"));
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        toast({
+          title: t("attendance.memberNotFound"),
+          description: t("attendance.qrCodeNotFound").replace("{qrCode}", scannedCode),
+          variant: "destructive",
+        });
+        playSound("error");
+        setQrCodeInput("");
+        return;
+      }
+
+      const scanTimestamp = new Date().toISOString();
+      const queued = await queueAttendance({
+        tenant_id: effectiveTenantId,
+        member_id: cached.id,
+        member_name: `${cached.first_name} ${cached.last_name}`,
+        event_id: selectedEventOffline?.id ?? null,
+        event_type: selectedEventOffline?.name || "Culte",
+        event_date: today,
+        scan_method: "qr_scan",
+        marked_by: null,
+        marked_at: scanTimestamp,
+      });
+
+      if (queued === "duplicate") {
+        setScanFeedbackStatus('duplicate');
+        setScanFeedbackMessage(`${cached.first_name} ${cached.last_name} - ${t("attendance.alreadyMarked")}`);
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        playSound("error");
+      } else {
+        setScanFeedbackStatus('success');
+        setScanFeedbackMessage(`${cached.first_name} ${cached.last_name} - ${t("attendance.attendanceMarked")}`);
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        toast({
+          title: t("attendance.attendanceMarked"),
+          description: OFFLINE_SAVED_COPY[language as keyof typeof OFFLINE_SAVED_COPY] ?? OFFLINE_SAVED_COPY.en,
+        });
+        playSound("success");
+        setScannedMembers(prev => [{
+          id: cached.id,
+          first_name: cached.first_name,
+          last_name: cached.last_name,
+          photo_url: cached.photo_url,
+          time: formatScanTime(scanTimestamp),
+          status: 'success' as const,
+          markedAt: scanTimestamp,
+          arrivalStatus: getArrivalStatus(scanTimestamp, selectedEventOffline?.event_time),
+        }, ...prev].slice(0, 10));
+      }
+
+      setQrCodeInput("");
+      if (scanInputRef.current) scanInputRef.current.focus();
+      return;
+    }
+
     try {
+
       // Find member by QR code OR member_number (for flexibility)
       let member = null;
       let error = null;
@@ -936,6 +1012,19 @@ function AttendanceContent() {
               {t("attendance.trackMemberAttendance")}
             </p>
           </div>
+
+          <OfflineStatusBar
+            isOnline={offline.isOnline}
+            pendingCount={offline.pendingCount}
+            cachedMembers={offline.cachedMembers}
+            syncing={offline.syncing}
+            onSync={async () => {
+              await offline.sync();
+              await loadAttendanceRecords();
+            }}
+          />
+
+
           
           {/* Event Selector - Always show */}
           <div className="w-full sm:w-auto">
