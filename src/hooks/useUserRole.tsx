@@ -61,6 +61,8 @@ export function useUserRole() {
   const [isSuperAdmin, setIsSuperAdmin] = useState(initialRoleCache?.isSuperAdmin ?? false);
   const [resolved, setResolved] = useState(false);
   const fetchedRef = useRef(false);
+  const attemptsRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cachedUserIdRef = useRef<string | null>(initialRoleCache?.userId ?? null);
 
 
@@ -74,6 +76,7 @@ export function useUserRole() {
         setIsSuperAdmin(false);
         setResolved(true);
         fetchedRef.current = false;
+        attemptsRef.current = 0;
         return;
       }
 
@@ -91,11 +94,31 @@ export function useUserRole() {
       // Skip if already fetched for this user
       if (fetchedRef.current) return;
 
+      // Retry transient failures instead of declaring the user "pending".
+      const scheduleRetry = () => {
+        if (attemptsRef.current >= 3) return false;
+        attemptsRef.current += 1;
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = setTimeout(() => {
+          fetchedRef.current = false;
+          fetchRolesAndPermissions();
+        }, 400 * attemptsRef.current);
+        return true;
+      };
+
       try {
         const [rolesResult, profileResult] = await Promise.all([
           supabase.from("user_roles").select("role").eq("user_id", user.id),
           supabase.from("profiles").select("tenant_id").eq("id", user.id).maybeSingle(),
         ]);
+
+        // A failed read (network hiccup / token still refreshing right after a
+        // page refresh) must not be interpreted as "no roles".
+        if (rolesResult.error || profileResult.error) {
+          if (scheduleRetry()) return;
+        }
+
+
 
 
         if (rolesResult.error) {
