@@ -58,6 +58,11 @@ const COPY = {
     checkedIn: "Votre présence est enregistrée !",
     already: "Votre présence était déjà enregistrée.",
     welcome: "Bienvenue",
+    matchAs: "Sera reconnu comme",
+    asMemberNumber: "Numéro de membre",
+    asPhone: "Numéro de téléphone",
+    tooShort: "Trop court — entrez un numéro de téléphone complet ou votre numéro de membre.",
+    unrecognized: "Format non reconnu — utilisez des chiffres, ou un numéro comme MBR00023.",
     locationUnverified: "Position non vérifiée, mais votre présence a été enregistrée.",
     errors: {
       invalid_token: "Ce code n'est plus valide. Scannez à nouveau le code affiché.",
