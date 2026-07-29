@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, MapPin, Plus, Users, Loader2, Download, CalendarDays, Tag } from "lucide-react";
+import { Clock, MapPin, Plus, Users, Loader2, Download, CalendarDays, Tag, QrCode } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import EventDialog from "@/components/EventDialog";
