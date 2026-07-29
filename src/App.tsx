@@ -169,6 +169,8 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <InstallAppPrompt />
+
         <BrowserRouter>
           <InactivityGuard>
           <TenantProvider>
