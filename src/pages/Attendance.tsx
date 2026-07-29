@@ -1012,6 +1012,19 @@ function AttendanceContent() {
               {t("attendance.trackMemberAttendance")}
             </p>
           </div>
+
+          <OfflineStatusBar
+            isOnline={offline.isOnline}
+            pendingCount={offline.pendingCount}
+            cachedMembers={offline.cachedMembers}
+            syncing={offline.syncing}
+            onSync={async () => {
+              await offline.sync();
+              await loadAttendanceRecords();
+            }}
+          />
+
+
           
           {/* Event Selector - Always show */}
           <div className="w-full sm:w-auto">
