@@ -273,7 +273,73 @@ function AttendanceContent() {
       return;
     }
 
+    // ---- Offline path: use the cached roster and queue the record locally ----
+    if (!navigator.onLine) {
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const selectedEventOffline = selectedEventId ? todayEvents.find(e => e.id === selectedEventId) : null;
+      const cached = await findCachedMember(effectiveTenantId, scannedCode);
+
+      if (!cached) {
+        setScanFeedbackStatus('error');
+        setScanFeedbackMessage(t("attendance.memberNotFound"));
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        toast({
+          title: t("attendance.memberNotFound"),
+          description: t("attendance.qrCodeNotFound").replace("{qrCode}", scannedCode),
+          variant: "destructive",
+        });
+        playSound("error");
+        setQrCodeInput("");
+        return;
+      }
+
+      const scanTimestamp = new Date().toISOString();
+      const queued = await queueAttendance({
+        tenant_id: effectiveTenantId,
+        member_id: cached.id,
+        member_name: `${cached.first_name} ${cached.last_name}`,
+        event_id: selectedEventOffline?.id ?? null,
+        event_type: selectedEventOffline?.name || "Culte",
+        event_date: today,
+        scan_method: "qr_scan",
+        marked_by: null,
+        marked_at: scanTimestamp,
+      });
+
+      if (queued === "duplicate") {
+        setScanFeedbackStatus('duplicate');
+        setScanFeedbackMessage(`${cached.first_name} ${cached.last_name} - ${t("attendance.alreadyMarked")}`);
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        playSound("error");
+      } else {
+        setScanFeedbackStatus('success');
+        setScanFeedbackMessage(`${cached.first_name} ${cached.last_name} - ${t("attendance.attendanceMarked")}`);
+        setTimeout(() => { setScanFeedbackStatus(null); setScanFeedbackMessage(""); }, 2000);
+        toast({
+          title: t("attendance.attendanceMarked"),
+          description: OFFLINE_SAVED_COPY[language as keyof typeof OFFLINE_SAVED_COPY] ?? OFFLINE_SAVED_COPY.en,
+        });
+        playSound("success");
+        setScannedMembers(prev => [{
+          id: cached.id,
+          first_name: cached.first_name,
+          last_name: cached.last_name,
+          photo_url: cached.photo_url,
+          time: formatScanTime(scanTimestamp),
+          status: 'success' as const,
+          markedAt: scanTimestamp,
+          arrivalStatus: getArrivalStatus(scanTimestamp, selectedEventOffline?.event_time),
+        }, ...prev].slice(0, 10));
+      }
+
+      setQrCodeInput("");
+      if (scanInputRef.current) scanInputRef.current.focus();
+      return;
+    }
+
     try {
+
       // Find member by QR code OR member_number (for flexibility)
       let member = null;
       let error = null;
