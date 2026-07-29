@@ -86,6 +86,8 @@ const TenantComparison = lazy(() => import("./pages/TenantComparison"));
 const PaymentMonitoring = lazy(() => import("./pages/PaymentMonitoring"));
 const EventCalendar = lazy(() => import("./pages/EventCalendar"));
 const AttendanceKiosk = lazy(() => import("./pages/AttendanceKiosk"));
+const SelfCheckinDisplay = lazy(() => import("./pages/SelfCheckinDisplay"));
+const SelfCheckin = lazy(() => import("./pages/SelfCheckin"));
 const EngagementAutomations = lazy(() => import("./pages/EngagementAutomations"));
 const JoinChurch = lazy(() => import("./pages/JoinChurch"));
 const MemberRequests = lazy(() => import("./pages/MemberRequests"));
@@ -186,6 +188,7 @@ const App = () => (
               <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
+              <Route path="/checkin/:token" element={<SelfCheckin />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
               <Route path="/site/:slug/about" element={<PublicChurchSite />} />
               <Route path="/site/:slug/sermons" element={<PublicChurchSite />} />
@@ -226,6 +229,7 @@ const App = () => (
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
               <Route path="/events/calendar" element={<ProtectedRoute><EventCalendar /></ProtectedRoute>} />
               <Route path="/attendance/kiosk" element={<ProtectedRoute><AttendanceKiosk /></ProtectedRoute>} />
+              <Route path="/attendance/self-checkin/:eventId" element={<ProtectedRoute><SelfCheckinDisplay /></ProtectedRoute>} />
               <Route path="/automations" element={<ProtectedRoute><FeatureGate feature="automations" featureKey="automations" requiredPlan="professionnel"><EngagementAutomations /></FeatureGate></ProtectedRoute>} />
               <Route path="/events/registrations" element={<ProtectedRoute><EventRegistrations /></ProtectedRoute>} />
               <Route path="/ministries" element={<ProtectedRoute><Ministries /></ProtectedRoute>} />

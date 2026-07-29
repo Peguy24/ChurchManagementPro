@@ -1,36 +1,61 @@
-## Goal
+## Self Check-In
 
-Make Church Management Pro installable on phones and desktops: admins and pastors add it to their home screen, tap an app icon, and it opens full-screen with no browser bar. No app store needed.
+Members scan a QR shown on a screen at the entrance and mark their own attendance from their phone. No app install, no login.
 
-Offline mode is intentionally NOT included — the app depends on live data (members, attendance, finances), and offline caching risks showing stale records. It can be added later if you want an offline attendance kiosk.
+### How it works
 
-## What gets added
+```text
+[Display screen]                    [Member phone]
+Admin opens a check-in       -->    Scans QR with camera
+session for an event                    |
+QR refreshes every 45s              Opens /checkin/<token>
+(signed rotating token)                 |
+                                    Phone asks for location
+                                        |
+                                    Identify:
+                                    (a) member number or phone
+                                    (b) scan my member card QR
+                                        |
+                                    "Welcome, Marie — you're checked in"
+                                    (appears live on the display screen)
+```
 
-1. **App manifest** (`public/manifest.webmanifest`)
-   - Name: Church Management Pro, short name: ChurchPro
-   - `display: standalone`, portrait-friendly
-   - Theme color matched to the app's primary brand color, light background
-   - Start URL: `/`
+### 1. Check-in session (manual open/close)
 
-2. **App icons** (generated, placed in `public/`)
-   - 192x192 and 512x512 PNG icons
-   - A 512x512 maskable icon so Android doesn't crop the logo badly
-   - 180x180 Apple touch icon for iPhone home screen
+- New "Self Check-In" action on each event, plus a full-screen display page (`/attendance/self-checkin/:eventId`) meant for a projector or tablet at the door.
+- The admin presses **Start check-in**; the screen captures the venue GPS coordinates once (from the display device) and stores them with the session. It shows the event name, the rotating QR, a live counter, and the last few names checked in.
+- Pressing **Stop check-in** closes the session; scans after that are refused with a clear message.
 
-3. **Head tags** in `index.html`
-   - `<link rel="manifest">`, `<meta name="theme-color">`, `apple-touch-icon`, and `apple-mobile-web-app-*` tags for iOS full-screen behavior
+### 2. Rotating QR + location check
 
-4. **Install helper (optional, included)**
-   - A small dismissible "Install app" prompt shown to signed-in users on Android/Chrome via the browser install event
-   - iPhone users get a short trilingual (EN/FR/HT) hint: Share → Add to Home Screen
-   - Hidden inside the Lovable preview iframe and once already installed
+- The QR encodes a short-lived signed token (event + session + timestamp, HMAC-signed server-side) that is regenerated every 45 seconds. A screenshot forwarded to someone at home expires almost immediately.
+- Old tokens stay valid for one extra cycle so a slow scanner still works.
+- The member's browser is asked for location. If it is more than a configurable radius (default 200 m) from the venue coordinates, check-in is refused with "You must be at the church to check in". If the member denies location permission, the check-in is still recorded but flagged as **unverified location** so admins can see it in the attendance list.
 
-## Technical notes
+### 3. Identifying the member
 
-- Manifest-only approach: no service worker, no `vite-plugin-pwa`, no caching layer, so there is zero risk of stale HTML or white screens after a deploy.
-- Icons generated from the existing Church Management Pro logo styling for brand consistency.
-- Install prompt component lives in `src/components/InstallAppPrompt.tsx`, mounted once in the app layout, with copy added to `LanguageContext.tsx` (EN/FR/HT).
+Two paths on the check-in page:
 
-## After it ships
+- **Member number or phone** — they type it, the page shows the matching name masked (e.g. "Marie D."), they confirm. Only exact matches within that church are accepted; no member list is ever exposed.
+- **Scan my member card** — the phone camera reads their personal member QR card, which auto-fills the identity step.
 
-Installability only works on the published site (`churchmanagementpro.com`), not inside the editor preview. Users install via the browser: Android/Chrome shows an install button; on iPhone it's Share → Add to Home Screen.
+Wrong or unknown numbers give a generic "We couldn't find you — see a greeter" message, with a per-device attempt limit to stop guessing.
+
+### 4. The attendance record
+
+- Saved into the existing attendance table with `scan_method = 'self_checkin'`, linked to the event, dated to the event day, with `marked_by` left empty (self-recorded).
+- Duplicate check-ins for the same member and event are ignored gracefully ("You're already checked in").
+- These records show up everywhere attendance already does: attendance list, arrival punctuality (early / on time / late), stats and reports. A "Self" badge distinguishes them.
+
+### 5. Admin controls
+
+- Enable or disable self check-in per church in Attendance settings, with the radius and whether location is mandatory or optional.
+- Role permission `attendance.self_checkin_manage` for who can open/close sessions, added to the existing role permission screens.
+- Everything trilingual (EN / FR / HT), including the member-facing page, which follows the church logo and colors.
+
+### Technical notes
+
+- New tables: `self_checkin_sessions` (event, tenant, opened/closed timestamps, venue lat/lng, radius, secret) and a `location_verified` + `self_checkin_session_id` addition to attendance records.
+- The public check-in page is unauthenticated, so all validation happens in a new edge function `self-checkin` (token signature and freshness, session open, member lookup scoped to the session's tenant, distance calculation, duplicate guard, rate limiting). No direct table access from the public page — a pattern already used by the public giving page.
+- The display screen subscribes to realtime inserts so names appear as people check in.
+- Offline note: self check-in needs internet on the member's phone; the existing offline kiosk scanning stays as the fallback when the venue has no connection.

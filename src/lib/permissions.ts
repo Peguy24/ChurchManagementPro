@@ -114,6 +114,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/attendance/stats": "attendance_admin",
   "/attendance/alerts": "attendance_admin",
   "/attendance/kiosk": "attendance",
+  "/attendance/self-checkin": "attendance_admin",
   "/attendance/comparison": "reports",
   "/attendance/arrivals": "attendance_admin",
   "/donations": "finances",

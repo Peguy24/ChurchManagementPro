@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, MapPin, Plus, Users, Loader2, Download, CalendarDays, Tag } from "lucide-react";
+import { Clock, MapPin, Plus, Users, Loader2, Download, CalendarDays, Tag, QrCode } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import EventDialog from "@/components/EventDialog";
@@ -69,6 +70,7 @@ const getStatusColors = () => ({
 
 export default function Events() {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -315,7 +317,17 @@ export default function Events() {
                                 ? t("events.viewReport")
                                 : t("events.edit")}
                             </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => navigate(`/attendance/self-checkin/${event.id}`)}
+                            >
+                              <QrCode className="h-4 w-4 mr-1" />
+                              {t("events.selfCheckin")}
+                            </Button>
                           </div>
+
                         </div>
                       ))}
                     </div>
