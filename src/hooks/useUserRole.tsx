@@ -99,6 +99,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
       // Drop any cached state that belongs to a different user
       if (cachedUserIdRef.current && cachedUserIdRef.current !== user.id) {
         cachedUserIdRef.current = null;
+        fetchedRef.current = false;
+        attemptsRef.current = 0;
         try { sessionStorage.removeItem(ROLE_CACHE_KEY); } catch {}
         setRoles([]);
         setIsApproved(false);
