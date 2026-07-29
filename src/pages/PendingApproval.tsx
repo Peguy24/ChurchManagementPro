@@ -1,8 +1,11 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, LogOut } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Navigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -33,6 +36,7 @@ const localTranslations: Record<string, Record<string, string>> = {
 
 export default function PendingApproval() {
   const { signOut, user } = useAuth();
+  const { isApproved, loading: roleLoading } = useUserRole();
   const { language } = useLanguage();
 
   const lt = (key: string) => localTranslations[language]?.[key] || localTranslations.en[key] || key;
@@ -40,6 +44,22 @@ export default function PendingApproval() {
   const handleLogout = async () => {
     await signOut();
   };
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="mx-auto max-w-5xl space-y-4">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isApproved) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
