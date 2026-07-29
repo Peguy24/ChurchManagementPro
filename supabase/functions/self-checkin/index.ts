@@ -358,14 +358,6 @@ serve(async (req) => {
         return json({ error: "insert_failed" }, 500);
       }
 
-      await supabaseAdmin.rpc("noop_placeholder").catch(() => {});
-
-      const { data: countRow } = await supabaseAdmin
-        .from("attendance_records")
-        .select("id", { count: "exact", head: true })
-        .eq("self_checkin_session_id", session.id);
-      void countRow;
-
       const { count } = await supabaseAdmin
         .from("attendance_records")
         .select("id", { count: "exact", head: true })
