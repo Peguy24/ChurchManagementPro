@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError, AuthResponse } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isTenantHost } from '@/lib/tenantHost';
 import { useNavigate } from 'react-router-dom';
@@ -8,9 +8,9 @@ interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName: string, lastName: string, extraMetadata?: Record<string, unknown>) => Promise<Awaited<ReturnType<typeof supabase.auth.signUp>>>;
-  signIn: (email: string, password: string) => Promise<{ error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] }>;
-  signOut: () => Promise<{ error: Awaited<ReturnType<typeof supabase.auth.signOut>>['error'] }>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, extraMetadata?: Record<string, unknown>) => Promise<AuthResponse>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signOut: () => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
