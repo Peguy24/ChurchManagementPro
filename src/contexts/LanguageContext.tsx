@@ -63,6 +63,31 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 // Translation data - updated with admin invitations keys
 const translations = {
   fr: {
+    taxExemption: {
+      title: "Statut d'exonération fiscale",
+      description: "Téléversez votre certificat 501(c)(3) ou votre certificat d'exonération de l'État. Une fois approuvé par notre équipe, aucune taxe de vente ne sera facturée sur votre abonnement.",
+      statusNone: "Non soumis",
+      statusPending: "En attente de révision",
+      statusApproved: "Approuvé",
+      statusRejected: "Rejeté",
+      approvedNote: "Votre église est approuvée comme exonérée de taxes. Les futures factures n'incluront pas de taxe de vente.",
+      refundsIssued: "Remboursements effectués",
+      refundsNote: "Nous avons automatiquement remboursé les taxes facturées avant l'approbation de votre exonération.",
+      periodAll: "Tout le temps",
+      periodWeek: "Semaine dernière",
+      periodMonth: "Mois dernier",
+      periodYear: "Année dernière",
+      rejected: "Rejeté",
+      state: "État (ex. NJ)",
+      ein: "EIN / Numéro fiscal",
+      certificate: "Certificat d'exonération (PDF ou image)",
+      viewCurrent: "Voir le certificat actuel",
+      submit: "Soumettre pour révision",
+      resubmit: "Soumettre à nouveau",
+      submitted: "Soumis pour révision",
+      fillFields: "Veuillez remplir l'État et l'EIN.",
+      uploadRequired: "Veuillez téléverser un certificat.",
+    },
     common: {
       save: "Enregistrer",
       cancel: "Annuler",
