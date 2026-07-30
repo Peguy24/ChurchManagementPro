@@ -45,9 +45,9 @@ const planNames = {
 };
 
 const planPrices = {
-  essentiel: "49",
-  professionnel: "99",
-  entreprise: "199",
+  essentiel: "29.99",
+  professionnel: "59.99",
+  entreprise: "99.99",
 };
 
 const featureTranslations: Record<FeatureKey, { fr: { name: string; desc: string }; en: { name: string; desc: string }; ht: { name: string; desc: string } }> = {
