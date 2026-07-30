@@ -44,13 +44,16 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const t = (key: string): string => {
     const keys = key.split(".");
     let value: any = (translations as any)[language];
-    
+
     for (const k of keys) {
-      if (value === undefined || value === null) return key;
+      if (value === undefined || value === null) break;
       value = value[k];
     }
-    
-    return typeof value === 'string' ? value : key;
+
+    if (typeof value === 'string') return value;
+
+    const fb = (fallbackTranslations as any)[language]?.[key] ?? (fallbackTranslations as any).en[key];
+    return typeof fb === 'string' ? fb : key;
   };
 
   return (
