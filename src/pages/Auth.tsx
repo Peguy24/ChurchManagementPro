@@ -145,6 +145,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Verifye bwat imèl ou pou reyinisyalize modpas ou.',
     signupSuccess: 'Enskripsyon reyisi!',
     accountCreated: 'Kont ou kreye. Yon administratè dwe apwouve aksè ou.',
+    confirmEmailDesc: 'Tcheke bwat imel ou epi klike sou lyen konfimasyon an pou aktive kont ou.',
+
     alreadyExists: 'Kont deja egziste',
     alreadyExistsDesc: 'Yon kont ak imèl sa a deja egziste. Tanpri konekte ou.',
     signupError: 'Erè enskripsyon',
