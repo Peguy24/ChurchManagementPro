@@ -27,6 +27,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Check your mailbox to reset your password.',
     signupSuccess: 'Registration Successful!',
     accountCreated: 'Your account has been created. An administrator must approve your access.',
+    confirmEmailDesc: 'Check your inbox and click the confirmation link to activate your account.',
+
     alreadyExists: 'Account Already Exists',
     alreadyExistsDesc: 'An account with this email already exists. Please log in.',
     signupError: 'Registration Error',
