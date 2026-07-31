@@ -27,6 +27,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Check your mailbox to reset your password.',
     signupSuccess: 'Registration Successful!',
     accountCreated: 'Your account has been created. An administrator must approve your access.',
+    confirmEmailDesc: 'Check your inbox and click the confirmation link to activate your account.',
+
     alreadyExists: 'Account Already Exists',
     alreadyExistsDesc: 'An account with this email already exists. Please log in.',
     signupError: 'Registration Error',
@@ -84,6 +86,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.',
     signupSuccess: 'Inscription réussie!',
     accountCreated: 'Votre compte a été créé. Un administrateur doit approuver votre accès.',
+    confirmEmailDesc: 'Consultez votre boîte mail et cliquez sur le lien de confirmation pour activer votre compte.',
+
     alreadyExists: 'Compte déjà existant',
     alreadyExistsDesc: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
     signupError: "Erreur d'inscription",
@@ -141,6 +145,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Verifye bwat imèl ou pou reyinisyalize modpas ou.',
     signupSuccess: 'Enskripsyon reyisi!',
     accountCreated: 'Kont ou kreye. Yon administratè dwe apwouve aksè ou.',
+    confirmEmailDesc: 'Tcheke bwat imel ou epi klike sou lyen konfimasyon an pou aktive kont ou.',
+
     alreadyExists: 'Kont deja egziste',
     alreadyExistsDesc: 'Yon kont ak imèl sa a deja egziste. Tanpri konekte ou.',
     signupError: 'Erè enskripsyon',
@@ -541,6 +547,25 @@ export default function Auth() {
       }
     } else {
       const userId = data?.user?.id;
+
+      // Supabase obfuscates existing accounts: user returned with empty identities.
+      const looksLikeExistingAccount = Boolean(
+        !data?.session &&
+        data?.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      );
+
+      if (looksLikeExistingAccount) {
+        toast({
+          title: lt('alreadyExists'),
+          description: lt('alreadyExistsDesc'),
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       
       // Handle Super Admin / Platform invitation
       if (superAdminInviteToken && superAdminInvite?.valid && userId) {
@@ -643,11 +668,22 @@ export default function Auth() {
         console.error('Failed to notify admins:', notifyError);
       }
 
+      if (!data?.session) {
+        // Email confirmation required — user is NOT signed in yet.
+        toast({
+          title: lt('signupSuccess'),
+          description: lt('confirmEmailDesc'),
+        });
+        setIsLoading(false);
+        return;
+      }
+
       toast({
         title: lt('signupSuccess'),
         description: lt('accountCreated'),
       });
       goAfterAuth('/');
+
     }
 
     setIsLoading(false);
