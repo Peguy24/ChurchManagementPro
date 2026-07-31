@@ -662,11 +662,22 @@ export default function Auth() {
         console.error('Failed to notify admins:', notifyError);
       }
 
+      if (!data?.session) {
+        // Email confirmation required — user is NOT signed in yet.
+        toast({
+          title: lt('signupSuccess'),
+          description: lt('confirmEmailDesc'),
+        });
+        setIsLoading(false);
+        return;
+      }
+
       toast({
         title: lt('signupSuccess'),
         description: lt('accountCreated'),
       });
       goAfterAuth('/');
+
     }
 
     setIsLoading(false);
