@@ -13,7 +13,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle, Coins } from "lucide-react";
+import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle, Coins, Eraser } from "lucide-react";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -86,6 +86,7 @@ export default function ChurchSettings() {
     currency_code: "USD",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isClearingCache, setIsClearingCache] = useState(false);
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["church-settings", tenantId],
@@ -575,6 +576,56 @@ export default function ChurchSettings() {
           </Card>
 
           <TaxExemptionSection />
+
+          {/* App Maintenance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eraser className="h-5 w-5" />
+                {t("churchSettings.appMaintenance")}
+              </CardTitle>
+              <CardDescription>
+                {t("churchSettings.appMaintenanceDesc")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t("churchSettings.clearCacheNote")}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isClearingCache}
+                onClick={async () => {
+                  setIsClearingCache(true);
+                  try {
+                    const { clearCachedAssets } = await import("@/lib/clearCache");
+                    const result = await clearCachedAssets();
+                    toast.success(
+                      `${t("churchSettings.clearCacheSuccess")} (${result.serviceWorkers} SW, ${result.caches} caches)`
+                    );
+                    setTimeout(() => window.location.reload(), 800);
+                  } catch {
+                    toast.error(t("churchSettings.clearCacheError"));
+                  } finally {
+                    setIsClearingCache(false);
+                  }
+                }}
+              >
+                {isClearingCache ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("churchSettings.clearingCache")}
+                  </>
+                ) : (
+                  <>
+                    <Eraser className="mr-2 h-4 w-4" />
+                    {t("churchSettings.clearCache")}
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           <div className="flex justify-end">
             <Button type="submit" disabled={updateSettings.isPending}>
