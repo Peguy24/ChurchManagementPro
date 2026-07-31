@@ -86,6 +86,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     checkMailbox: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.',
     signupSuccess: 'Inscription réussie!',
     accountCreated: 'Votre compte a été créé. Un administrateur doit approuver votre accès.',
+    confirmEmailDesc: 'Consultez votre boîte mail et cliquez sur le lien de confirmation pour activer votre compte.',
+
     alreadyExists: 'Compte déjà existant',
     alreadyExistsDesc: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
     signupError: "Erreur d'inscription",
