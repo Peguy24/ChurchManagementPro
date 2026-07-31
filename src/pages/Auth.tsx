@@ -541,6 +541,25 @@ export default function Auth() {
       }
     } else {
       const userId = data?.user?.id;
+
+      // Supabase obfuscates existing accounts: user returned with empty identities.
+      const looksLikeExistingAccount = Boolean(
+        !data?.session &&
+        data?.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      );
+
+      if (looksLikeExistingAccount) {
+        toast({
+          title: lt('alreadyExists'),
+          description: lt('alreadyExistsDesc'),
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       
       // Handle Super Admin / Platform invitation
       if (superAdminInviteToken && superAdminInvite?.valid && userId) {
