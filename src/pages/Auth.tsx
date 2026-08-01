@@ -771,7 +771,21 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
       <div className="w-full max-w-md">
+        {/* Church Management Pro branding */}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img
+            src="/images/church-management-pro-logo.png"
+            alt="Church Management Pro"
+            className="h-20 w-auto object-contain"
+            loading="eager"
+          />
+          <h1 className="mt-3 text-lg font-semibold tracking-tight text-foreground">
+            Church Management Pro
+          </h1>
+        </div>
+
         {/* Super Admin invitation banner */}
+
         {superAdminInvite?.valid && (
           <Card className="mb-4 border-purple-500/50 bg-purple-500/5">
             <CardContent className="pt-4">
@@ -817,17 +831,8 @@ export default function Auth() {
           </Card>
         )}
         
-        <div className="mb-8 text-center">
-          <div className="flex flex-col items-center gap-3 mb-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">{lt('administration')}</h1>
-              <p className="text-sm text-muted-foreground">{lt('superAdminPortal')}</p>
-            </div>
-          </div>
-        </div>
+
+
 
         {/* Only show signup tab if there's a valid invitation */}
         {(superAdminInvite?.valid || tenantInfo) ? (

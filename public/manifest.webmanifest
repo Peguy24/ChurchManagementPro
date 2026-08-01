@@ -2,7 +2,7 @@
   "name": "Church Management Pro",
   "short_name": "ChurchPro",
   "description": "Multilingual church management platform: members, attendance, finances, events, reports and AI insights.",
-  "start_url": "/",
+  "start_url": "/auth",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

@@ -26,6 +26,7 @@ import { saveNavSnapshot, clearNavSnapshot } from "@/lib/navSnapshot";
 
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
+import InstallAppPrompt from "@/components/InstallAppPrompt";
 
 import { cn } from "@/lib/utils";
 import {
@@ -777,6 +778,8 @@ export default function Layout({ children }: LayoutProps) {
             {!showAsSuperAdmin && <NpsPrompt />}
           </div>
         </main>
+
+        {!showAsSuperAdmin && <InstallAppPrompt />}
 
       </div>
     </div>

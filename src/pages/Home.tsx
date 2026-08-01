@@ -9,6 +9,15 @@ import Dashboard from './Dashboard';
 import SuperAdminDashboard from './SuperAdminDashboard';
 import PendingApproval from './PendingApproval';
 import MaintenancePage from '@/components/MaintenancePage';
+// True when the app runs as an installed PWA (home-screen launch)
+function isStandaloneApp() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    (window.navigator as any).standalone === true
+  );
+}
+
 
 // Ordered list of fallback routes for users without dashboard access
 const FALLBACK_ROUTES = [
@@ -29,10 +38,13 @@ export default function Home() {
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
-  // Not logged in → Show commercial page immediately (don't wait for other hooks)
+  // Not logged in → Show commercial page immediately (don't wait for other hooks).
+  // Exception: when launched from the installed app (standalone PWA), go straight
+  // to the church login page instead of the marketing site.
   if (!authLoading && !user) {
-    return <Commercial />;
+    return isStandaloneApp() ? <Navigate to="/auth" replace /> : <Commercial />;
   }
+
 
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
