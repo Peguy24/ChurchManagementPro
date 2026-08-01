@@ -548,20 +548,40 @@ export default function JoinChurch() {
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-6">
-                <Button type="submit" className="w-full" disabled={isSubmitting} size="lg">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t("joinForm.submitting")}
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      {t("joinForm.submit")}
-                    </>
-                  )}
-                </Button>
+              <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+                {stepIndex > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="sm:w-auto w-full"
+                    onClick={handleBack}
+                    disabled={isSubmitting}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("joinForm.back")}
+                  </Button>
+                )}
+                {!isLastStep ? (
+                  <Button type="button" className="flex-1" size="lg" onClick={handleNext}>
+                    {t("joinForm.next")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button type="submit" className="flex-1" disabled={isSubmitting} size="lg">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {t("joinForm.submitting")}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        {t("joinForm.submit")}
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </form>
           </CardContent>
