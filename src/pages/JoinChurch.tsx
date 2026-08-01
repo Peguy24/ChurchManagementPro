@@ -334,8 +334,22 @@ export default function JoinChurch() {
 
         <Card>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit}>
-              <Tabs defaultValue="personal" className="w-full">
+            <form
+              onSubmit={handleSubmit}
+              onKeyDown={(e) => {
+                // Enter must not submit from an intermediate step
+                if (e.key === "Enter" && !isLastStep) {
+                  const target = e.target as HTMLElement;
+                  if (target.tagName !== "TEXTAREA") e.preventDefault();
+                }
+              }}
+            >
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                {t("joinForm.stepOf")
+                  .replace("{current}", String(stepIndex + 1))
+                  .replace("{total}", String(STEPS.length))}
+              </p>
+              <Tabs value={step} onValueChange={(v) => goToStep(v as Step)} className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="personal" className="text-xs sm:text-sm">
                     <User className="h-4 w-4 mr-1 hidden sm:inline" />
