@@ -525,27 +525,19 @@ export default function MemberCards() {
             };
             
             return (
-              <Card
+              <div
                 key={member.id}
-                className={`group overflow-hidden transition-all duration-300 cursor-pointer print:break-inside-avoid print:mb-4 relative ${
+                className={`group relative w-full aspect-[856/540] rounded-xl overflow-hidden border bg-white dark:bg-card flex flex-col transition-all duration-300 cursor-pointer print:break-inside-avoid print:mb-4 ${
                   shouldPrint ? "" : "print:hidden"
-                } ${isSelected 
-                  ? "ring-2 ring-primary shadow-xl scale-[1.02]" 
+                } ${isSelected
+                  ? "ring-2 ring-primary shadow-xl scale-[1.02]"
                   : "hover:shadow-lg hover:scale-[1.01] opacity-70 hover:opacity-90"
                 }`}
                 onClick={() => toggleMemberSelection(member.id)}
-                style={{
-                  background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 0%, ${cardCustomization?.secondaryColor || 'hsl(221, 83%, 25%)'} 100%)`,
-                }}
               >
-                {/* Selection Indicator */}
-                <div className={`absolute top-0 left-0 w-full h-1 transition-all duration-300 ${
-                  isSelected ? 'bg-secondary' : 'bg-transparent'
-                }`} />
-                
                 {/* Selection Checkbox */}
-                <div 
-                  className="absolute top-3 right-3 z-10 print:hidden"
+                <div
+                  className="absolute top-2 right-2 z-10 print:hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className={`p-1 rounded-full transition-all duration-300 ${
@@ -554,94 +546,78 @@ export default function MemberCards() {
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={() => toggleMemberSelection(member.id)}
-                      className="h-5 w-5 border-2 border-white data-[state=checked]:bg-white data-[state=checked]:text-primary"
+                      className="h-4 w-4 border-2 border-white data-[state=checked]:bg-white data-[state=checked]:text-primary"
                     />
                   </div>
                 </div>
-                
-                {/* Card Header with Logo */}
-                <div className="px-4 py-3 flex items-center gap-3">
+
+                {/* Header band (24% like PDF: 13mm / 54mm) */}
+                <div
+                  className="h-[24%] px-2 flex items-center gap-2 shrink-0"
+                  style={{
+                    background: `linear-gradient(90deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 0%, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 40%, ${cardCustomization?.secondaryColor || 'hsl(221, 83%, 25%)'} 100%)`,
+                  }}
+                >
                   {cardCustomization?.showLogo && cardCustomization?.logoUrl && (
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-white rounded-full blur-sm opacity-50" />
-                      <img 
-                        src={cardCustomization.logoUrl} 
-                        alt="Logo" 
-                        className="relative h-10 w-10 object-contain rounded-full bg-white p-1 shadow-lg"
-                      />
-                    </div>
+                    <img
+                      src={cardCustomization.logoUrl}
+                      alt="Logo"
+                      className="h-[70%] aspect-square object-contain rounded-full bg-white p-0.5 shadow"
+                    />
                   )}
-                  <div className="flex-1">
-                    <h4 className="font-bold text-sm uppercase tracking-wider text-white drop-shadow-md">
-                      {cardCustomization?.churchNameOnCard && cardCustomization?.churchName 
-                        ? cardCustomization.churchName.length > 30 
-                          ? cardCustomization.churchName.slice(0, 30) + "..." 
-                          : cardCustomization.churchName
+                  <div className="min-w-0">
+                    <p className="font-bold text-[10px] leading-tight uppercase tracking-wider text-white truncate">
+                      {cardCustomization?.churchNameOnCard && cardCustomization?.churchName
+                        ? cardCustomization.churchName
                         : t("memberCards.memberCard")}
-                    </h4>
-                    {member.member_number && (
-                      <span className="text-xs font-mono text-white/80">
-                        N° {member.member_number}
-                      </span>
-                    )}
+                    </p>
+                    <span className="text-[8px] font-mono text-white/80">
+                      N° {member.member_number || `#${member.id.slice(0, 4)}`}
+                    </span>
                   </div>
                 </div>
-                
-                {/* Card Body - White Section */}
-                <CardContent className="bg-white dark:bg-card p-4 relative">
-                  {/* Decorative corner */}
-                  <div 
-                    className="absolute top-0 right-0 w-20 h-20 opacity-10"
-                    style={{
-                      background: `radial-gradient(circle at top right, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, transparent 70%)`,
-                    }}
-                  />
-                  
-                  {/* Photo and Name Section */}
-                  <div className="flex gap-4 mb-4">
-                    {/* Photo with modern frame */}
-                    <div className="relative group/photo">
-                      <div 
-                        className="absolute -inset-1 rounded-xl opacity-75 blur-sm"
-                        style={{
-                          background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'})`,
-                        }}
-                      />
-                      <div className="relative h-24 w-24 rounded-xl overflow-hidden bg-muted shadow-xl">
-                        {member.photo_url ? (
-                          <SignedImage
-                            storedUrl={member.photo_url}
-                            bucket="member-photos"
-                            alt={`${member.first_name} ${member.last_name}`}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
-                            fallback={
-                              <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                                <UserCircle className="h-14 w-14 text-muted-foreground" />
-                              </div>
-                            }
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                            <UserCircle className="h-14 w-14 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
+
+                {/* Body */}
+                <div className="flex-1 min-h-0 px-2 py-1.5 flex flex-col">
+                  <div className="flex gap-2">
+                    {/* Photo (20mm square like PDF) */}
+                    <div
+                      className="h-[3.6rem] w-[3.6rem] shrink-0 rounded-md overflow-hidden bg-muted"
+                      style={{ outline: `1.5px solid ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}` }}
+                    >
+                      {member.photo_url ? (
+                        <SignedImage
+                          storedUrl={member.photo_url}
+                          bucket="member-photos"
+                          alt={`${member.first_name} ${member.last_name}`}
+                          className="h-full w-full object-cover"
+                          fallback={
+                            <div className="h-full w-full flex items-center justify-center bg-muted">
+                              <UserCircle className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          }
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-muted">
+                          <UserCircle className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
-                    
-                    {/* Name and Role */}
-                    <div className="flex-1 min-w-0 space-y-1 pt-1">
-                      <h3 className="font-bold text-lg leading-tight text-foreground">
+
+                    {/* Name / role */}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs leading-tight text-foreground truncate">
                         {member.first_name}
-                      </h3>
-                      <h3 
-                        className="font-bold text-lg leading-tight"
+                      </p>
+                      <p
+                        className="font-bold text-xs leading-tight uppercase truncate"
                         style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }}
                       >
                         {member.last_name}
-                      </h3>
+                      </p>
                       {member.role && (
-                        <span 
-                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold text-white shadow-sm"
+                        <span
+                          className="inline-block mt-0.5 text-[8px] px-1.5 py-0.5 rounded-full font-semibold text-white"
                           style={{ backgroundColor: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }}
                         >
                           {member.role}
@@ -649,94 +625,87 @@ export default function MemberCards() {
                       )}
                     </div>
                   </div>
-                  
-                  {/* Member Info with icons */}
-                  <div className="space-y-2 mb-4">
+
+                  {/* Info rows */}
+                  <div className="mt-1 space-y-0.5">
                     {member.ministry_members?.[0]?.ministries?.name && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <div 
-                          className="p-1.5 rounded-lg"
-                          style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className="p-0.5 rounded"
+                          style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}26` }}
                         >
-                          <Briefcase className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
+                          <Briefcase className="h-2.5 w-2.5" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground">Ministère</p>
-                          <p className="font-medium text-foreground truncate">{member.ministry_members[0].ministries!.name}</p>
-                        </div>
+                        <span className="text-[8px] text-muted-foreground">{t("memberCards.ministry") || "Ministère"}</span>
+                        <span className="text-[8px] font-semibold text-foreground truncate">
+                          {member.ministry_members[0].ministries!.name}
+                        </span>
                       </div>
                     )}
-                    <div className="flex items-center gap-3 text-sm">
-                      <div 
-                        className="p-1.5 rounded-lg"
-                        style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}15` }}
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className="p-0.5 rounded"
+                        style={{ backgroundColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}26` }}
                       >
-                        <Church className="h-4 w-4" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
+                        <Church className="h-2.5 w-2.5" style={{ color: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">{t("memberCards.memberSince")}</p>
-                        <p className="font-medium text-foreground truncate">{formatDate(member.join_date)}</p>
-                      </div>
+                      <span className="text-[8px] text-muted-foreground">{t("memberCards.memberSince")}</span>
+                      <span className="text-[8px] font-semibold text-foreground truncate">{formatDate(member.join_date)}</span>
                     </div>
                   </div>
 
-                  {/* QR Code Section */}
-                  <div 
-                    className="flex items-end justify-between pt-3 border-t"
-                    style={{ borderColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}20` }}
+                  {/* Footer: QR left, badges right */}
+                  <div
+                    className="mt-auto pt-1 border-t flex items-end justify-between"
+                    style={{ borderColor: `${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}33` }}
                   >
                     <div className="text-center">
-                      <div 
-                        className="p-2 rounded-xl shadow-inner"
-                        style={{ 
-                          background: `linear-gradient(135deg, white, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}08)`,
-                          border: `2px solid ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}20`
-                        }}
+                      <div
+                        className="p-0.5 rounded"
+                        style={{ border: `1px solid ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}33` }}
                       >
                         {qrCodes[member.id] ? (
                           <img
                             src={qrCodes[member.id]}
                             alt={`QR Code - ${member.first_name} ${member.last_name}`}
-                            className="w-20 h-20"
+                            className="w-9 h-9"
                           />
                         ) : (
-                          <div className="w-20 h-20 bg-muted animate-pulse rounded-lg"></div>
+                          <div className="w-9 h-9 bg-muted animate-pulse rounded"></div>
                         )}
                       </div>
-                      <p className="text-[9px] text-muted-foreground font-mono mt-1.5 max-w-[90px] truncate">
-                        {member.qr_code || `MEMBER-${member.id.slice(0, 8)}`}
+                      <p className="text-[6px] text-muted-foreground font-mono mt-0.5 max-w-[3rem] truncate">
+                        {member.member_number || member.qr_code || member.id.slice(0, 8)}
                       </p>
                     </div>
-                    
-                    {/* Status Badges */}
-                    <div className="text-right space-y-1.5">
-                      <div 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-md"
-                        style={{ 
-                          background: `linear-gradient(135deg, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(221, 83%, 30%)'})` 
-                        }}
+
+                    <div className="text-right space-y-0.5">
+                      <div
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold text-white"
+                        style={{ backgroundColor: cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)' }}
                       >
-                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                         {t("memberCards.activeMember")}
                       </div>
                       {member.baptism_status === "baptise" && (
-                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-semibold bg-emerald-500 text-white">
                           ✓ {t("memberCards.baptized")}
                         </div>
                       )}
                     </div>
                   </div>
-                </CardContent>
-                
+                </div>
+
                 {/* Bottom accent bar */}
-                <div 
-                  className="h-1.5"
+                <div
+                  className="h-[3px] shrink-0"
                   style={{
-                    background: `linear-gradient(90deg, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'}, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'}, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'})`,
+                    background: `linear-gradient(90deg, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'} 0%, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'} 33%, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 33%, ${cardCustomization?.primaryColor || 'hsl(221, 83%, 40%)'} 66%, ${cardCustomization?.secondaryColor || 'hsl(43, 76%, 49%)'} 66%)`,
                   }}
                 />
-              </Card>
+              </div>
             );
+
           })}
         </div>
 
