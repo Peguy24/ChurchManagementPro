@@ -29,10 +29,13 @@ export default function Home() {
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
-  // Not logged in → Show commercial page immediately (don't wait for other hooks)
+  // Not logged in → Show commercial page immediately (don't wait for other hooks).
+  // Exception: when launched from the installed app (standalone PWA), go straight
+  // to the church login page instead of the marketing site.
   if (!authLoading && !user) {
-    return <Commercial />;
+    return isStandaloneApp() ? <Navigate to="/auth" replace /> : <Commercial />;
   }
+
 
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
