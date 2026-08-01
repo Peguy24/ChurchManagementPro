@@ -955,16 +955,31 @@ export default function MemberDialog({
                       className="hidden"
                       id="photo-upload"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingPhoto}
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      {photoPreview ? lt.memberChangePhoto : lt.memberAddPhoto}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setCameraOpen(true)}
+                        disabled={uploadingPhoto}
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        {language === "fr"
+                          ? "Prendre une photo"
+                          : language === "ht"
+                          ? "Pran yon foto"
+                          : "Take a photo"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingPhoto}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {photoPreview ? lt.memberChangePhoto : lt.memberAddPhoto}
+                      </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {lt.memberPhotoHint}
                     </p>
