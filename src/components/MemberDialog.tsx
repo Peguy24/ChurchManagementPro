@@ -27,6 +27,7 @@ import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upl
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
+import CameraCapture from "./CameraCapture";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
