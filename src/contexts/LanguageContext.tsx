@@ -7252,6 +7252,7 @@ const translations = {
       dashboard: "Tablo Debò",
       members: "Manm",
       memberCards: "Kat Manm",
+      photoBooth: "Estidyo Foto",
       attendance: "Prezans",
       attendanceAlerts: "Alèt Prezans",
       arrivalReport: "Rapò Arive",
