@@ -277,6 +277,7 @@ const App = () => (
               <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
               <Route path="/members/cards" element={<ProtectedRoute><FeatureGate feature="memberCards" featureKey="memberCards" requiredPlan="professionnel"><MemberCards /></FeatureGate></ProtectedRoute>} />
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
+              <Route path="/members/photo-booth" element={<ProtectedRoute><PhotoBooth /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
               <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
               <Route path="/attendance/alerts" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceAlerts" requiredPlan="essentiel"><AttendanceAlerts /></FeatureGate></ProtectedRoute>} />
