@@ -635,6 +635,22 @@ export default function TenantManagement() {
     }
   };
 
+  const handleCleanupOrphans = async () => {
+    setCleaningOrphans(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cleanup-orphan-accounts", { body: {} });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`${(data as any)?.removed_count ?? 0} compte(s) orphelin(s) supprimé(s)`);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setCleaningOrphans(false);
+    }
+  };
+
+
+
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
