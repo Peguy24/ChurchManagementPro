@@ -77,13 +77,16 @@ export default function CustomFields() {
     <Layout>
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <Settings className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">{t("customFields.title")}</h1>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Settings className="h-5 w-5" />
+            </span>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("customFields.title")}</h1>
           </div>
+
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t("customFields.addField")}
