@@ -41,19 +41,37 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     });
   };
 
+  // Last-resort label: turn "taxExemption.statusNone" into "Status None"
+  // so a missing key never renders as a raw variable name in the UI.
+  const humanizeKey = (key: string): string => {
+    const last = key.split(".").pop() || key;
+    const spaced = last
+      .replace(/[_-]+/g, " ")
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .trim();
+    if (!spaced) return key;
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  };
+
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: any = (translations as any)[language];
 
-    for (const k of keys) {
-      if (value === undefined || value === null) break;
-      value = value[k];
-    }
+    const lookup = (lang: Language) => {
+      let value: any = (translations as any)[lang];
+      for (const k of keys) {
+        if (value === undefined || value === null) break;
+        value = value[k];
+      }
+      return typeof value === "string" ? value : undefined;
+    };
 
-    if (typeof value === 'string') return value;
+    const direct = lookup(language) ?? lookup("en");
+    if (direct !== undefined) return direct;
 
     const fb = (fallbackTranslations as any)[language]?.[key] ?? (fallbackTranslations as any).en[key];
-    return typeof fb === 'string' ? fb : key;
+    if (typeof fb === "string") return fb;
+
+    return humanizeKey(key);
   };
 
   return (
