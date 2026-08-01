@@ -1662,6 +1662,16 @@ export default function MemberDialog({
             onCropComplete={handleCropComplete}
           />
         )}
+
+        {/* Camera capture */}
+        <CameraCapture
+          open={cameraOpen}
+          onOpenChange={setCameraOpen}
+          onCapture={(file) => {
+            setTempPhotoFile(file);
+            setCropperOpen(true);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
