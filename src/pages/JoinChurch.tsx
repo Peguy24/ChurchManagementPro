@@ -88,6 +88,7 @@ export default function JoinChurch() {
   const [notFound, setNotFound] = useState(false);
   const [ministries, setMinistries] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [step, setStep] = useState<Step>("personal");
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", gender: "", dateOfBirth: "",
     phone: "", email: "", emergencyPhone: "",
