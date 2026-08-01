@@ -293,7 +293,11 @@ export default function PhotoBooth() {
               >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 {lt.onlyNoPhoto}
+                <Badge variant="secondary" className="ml-2">
+                  {members.filter((m) => !m.photo_url).length}
+                </Badge>
               </Button>
+
             </div>
 
             {!loading && filtered.length === 0 && (
@@ -320,7 +324,7 @@ export default function PhotoBooth() {
                         {m.member_number || (m.photo_url ? lt.hasPhoto : lt.noPhoto)}
                       </p>
                     </div>
-                    <div className="flex shrink-0 gap-1">
+                    <div className="flex shrink-0 flex-col gap-1">
                       <Button
                         size="sm"
                         onClick={() => {
@@ -328,7 +332,8 @@ export default function PhotoBooth() {
                           setCameraOpen(true);
                         }}
                       >
-                        <Camera className="h-4 w-4" />
+                        <Camera className="mr-2 h-4 w-4" />
+                        {lt.take}
                       </Button>
                       <Button
                         size="sm"
@@ -336,9 +341,11 @@ export default function PhotoBooth() {
                         title={lt.copyLink}
                         onClick={() => createLink(m)}
                       >
-                        <Link2 className="h-4 w-4" />
+                        <Link2 className="mr-2 h-4 w-4" />
+                        {lt.copyLink}
                       </Button>
                     </div>
+
                   </CardContent>
                 </Card>
               ))}
