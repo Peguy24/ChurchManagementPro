@@ -643,7 +643,17 @@ export default function TenantManagement() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("superAdmin.tenantManagement")}</h1>
             <p className="text-sm md:text-base text-muted-foreground">{t("superAdmin.tenantManagementDesc")}</p>
           </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            disabled={cleaningOrphans}
+            onClick={handleCleanupOrphans}
+          >
+            {cleaningOrphans ? "..." : "Nettoyer les comptes orphelins"}
+          </Button>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
+
             <DialogTrigger asChild>
               <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
