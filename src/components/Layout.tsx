@@ -770,11 +770,14 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Main Content */}
         <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">
-          {!showAsSuperAdmin && <PlatformAnnouncementBanner />}
-          {children}
-          {!showAsSuperAdmin && <AnnualUpgradePrompt />}
-          {!showAsSuperAdmin && <NpsPrompt />}
+          <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-6">
+            {!showAsSuperAdmin && <PlatformAnnouncementBanner />}
+            {children}
+            {!showAsSuperAdmin && <AnnualUpgradePrompt />}
+            {!showAsSuperAdmin && <NpsPrompt />}
+          </div>
         </main>
+
       </div>
     </div>
     </LayoutShellContext.Provider>
