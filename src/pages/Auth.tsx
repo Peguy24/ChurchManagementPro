@@ -771,7 +771,21 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
       <div className="w-full max-w-md">
+        {/* Church Management Pro branding */}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img
+            src="/images/church-management-pro-logo.png"
+            alt="Church Management Pro"
+            className="h-16 w-auto object-contain"
+            loading="eager"
+          />
+          <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
+            Church Management Pro
+          </p>
+        </div>
+
         {/* Super Admin invitation banner */}
+
         {superAdminInvite?.valid && (
           <Card className="mb-4 border-purple-500/50 bg-purple-500/5">
             <CardContent className="pt-4">
