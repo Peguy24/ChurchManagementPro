@@ -41,6 +41,7 @@ import {
   Bell,
   BarChart3,
   CreditCard,
+  Camera,
   Briefcase,
   PieChart,
   Settings,
