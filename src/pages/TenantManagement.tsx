@@ -98,6 +98,9 @@ export default function TenantManagement() {
   const queryClient = useQueryClient();
   const { t, language } = useLanguage();
   const dateLocale = language === 'fr' ? fr : language === 'ht' ? fr : enUS;
+  const [cleaningOrphans, setCleaningOrphans] = useState(false);
+
+
 
   const PLAN_CONFIG: Record<SubscriptionPlan, { label: string; color: string; price: number; members: number; branches: number; users: number; storage: number }> = {
     free: { label: t("superAdmin.free"), color: "bg-green-600", price: 0, members: 100, branches: 1, users: 3, storage: 200 },
