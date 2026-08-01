@@ -227,16 +227,22 @@ export default function ChurchWebsite() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto py-6 space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2"><Globe className="w-7 h-7 text-primary" /> Church Website</h1>
-            {publicUrl && (
-              <a href={publicUrl} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1 mt-1">
-                {publicUrl} <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Globe className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">Church Website</h1>
+              {publicUrl && (
+                <a href={publicUrl} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                  {publicUrl} <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
           </div>
+
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Switch checked={isPublished} onCheckedChange={(v) => handleSave(v)} />
