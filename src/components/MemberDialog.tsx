@@ -345,6 +345,7 @@ export default function MemberDialog({
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
