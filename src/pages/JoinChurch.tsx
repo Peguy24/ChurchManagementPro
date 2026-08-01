@@ -170,10 +170,34 @@ export default function JoinChurch() {
     </DropdownMenu>
   );
 
+  const brandStyle = (() => {
+    const hsl = primaryColor ? hexToHSL(primaryColor) : null;
+    if (!hsl) return undefined;
+    return {
+      ["--primary" as any]: `${hsl.h} ${hsl.s}% ${hsl.l}%`,
+      ["--ring" as any]: `${hsl.h} ${hsl.s}% ${hsl.l}%`,
+      ["--accent" as any]: `${hsl.h} ${Math.max(hsl.s - 25, 10)}% ${Math.min(hsl.l + 35, 95)}%`,
+    } as React.CSSProperties;
+  })();
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-muted/40 to-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center">
+          <CardContent className="pt-8 pb-8 space-y-3">
+            <Church className="h-12 w-12 text-muted-foreground mx-auto" />
+            <h2 className="text-xl font-bold">{t("joinForm.errorInvalidLink")}</h2>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
+      <div style={brandStyle} className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center overflow-hidden">
+          <div className="h-2 w-full bg-primary" />
           <CardContent className="pt-8 pb-8 space-y-4">
             {logoUrl && (
               <img src={logoUrl} alt={churchName} className="h-16 w-16 mx-auto rounded-lg object-contain" />
@@ -190,28 +214,34 @@ export default function JoinChurch() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 py-8 px-4">
+    <div style={brandStyle} className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Language Switcher */}
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
 
-        {/* Header with Logo */}
+        {/* Header with church branding */}
         <div className="text-center mb-8">
           {logoUrl ? (
-            <img src={logoUrl} alt={churchName} className="h-20 w-20 mx-auto mb-3 rounded-xl object-contain" />
+            <div className="mx-auto mb-4 h-24 w-24 rounded-2xl bg-card border shadow-sm flex items-center justify-center overflow-hidden">
+              <img src={logoUrl} alt={churchName} className="h-20 w-20 object-contain" />
+            </div>
           ) : (
-            <Church className="h-12 w-12 text-primary mx-auto mb-3" />
+            <div className="mx-auto mb-4 h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Church className="h-10 w-10 text-primary" />
+            </div>
           )}
-          <h1 className="text-3xl font-bold">{t("joinForm.title")}</h1>
           {churchName && (
-            <p className="text-lg text-muted-foreground mt-1">{churchName}</p>
+            <h1 className="text-3xl font-bold text-primary">{churchName}</h1>
           )}
+          <p className="text-lg font-medium mt-1">{t("joinForm.title")}</p>
           <p className="text-sm text-muted-foreground mt-2">
             {t("joinForm.subtitle")}
           </p>
         </div>
+
+
 
         <Card>
           <CardContent className="pt-6">
