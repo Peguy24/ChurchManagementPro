@@ -396,6 +396,7 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.dateOfBirth")}</Label>
                       <Input type="date" value={formData.dateOfBirth} onChange={(e) => updateField("dateOfBirth", e.target.value)} />
+                      <FieldError name="dateOfBirth" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -413,39 +414,47 @@ export default function JoinChurch() {
                   <div className="space-y-2">
                     <Label>{t("joinForm.emergencyPhone")}</Label>
                     <Input value={formData.emergencyPhone} onChange={(e) => updateField("emergencyPhone", e.target.value)} />
+                    <FieldError name="emergencyPhone" errors={errors} />
                   </div>
                   <h4 className="font-semibold text-sm pt-2">{t("joinForm.address")}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2 col-span-2">
                       <Label>{t("joinForm.street")}</Label>
                       <Input value={formData.street} onChange={(e) => updateField("street", e.target.value)} />
+                      <FieldError name="street" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.number")}</Label>
                       <Input value={formData.number} onChange={(e) => updateField("number", e.target.value)} />
+                      <FieldError name="number" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.apartment")}</Label>
                       <Input value={formData.apartment} onChange={(e) => updateField("apartment", e.target.value)} />
+                      <FieldError name="apartment" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.city")}</Label>
                       <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} />
+                      <FieldError name="city" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.stateRegion")}</Label>
                       <Input value={formData.state} onChange={(e) => updateField("state", e.target.value)} />
+                      <FieldError name="state" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.zipCode")}</Label>
                       <Input value={formData.zipCode} onChange={(e) => updateField("zipCode", e.target.value)} />
+                      <FieldError name="zipCode" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.country")}</Label>
                     <Input value={formData.country} onChange={(e) => updateField("country", e.target.value)} />
+                    <FieldError name="country" errors={errors} />
                   </div>
                 </TabsContent>
 
@@ -453,10 +462,12 @@ export default function JoinChurch() {
                   <div className="space-y-2">
                     <Label>{t("joinForm.academicFormation")}</Label>
                     <Textarea value={formData.academicFormation} onChange={(e) => updateField("academicFormation", e.target.value)} placeholder={t("joinForm.academicPlaceholder")} rows={3} />
+                    <FieldError name="academicFormation" errors={errors} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.professionalFormation")}</Label>
                     <Textarea value={formData.professionalFormation} onChange={(e) => updateField("professionalFormation", e.target.value)} placeholder={t("joinForm.professionalPlaceholder")} rows={3} />
+                    <FieldError name="professionalFormation" errors={errors} />
                   </div>
                 </TabsContent>
 
@@ -476,21 +487,25 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.baptismDate")}</Label>
                       <Input type="date" value={formData.baptismDate} onChange={(e) => updateField("baptismDate", e.target.value)} />
+                      <FieldError name="baptismDate" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.originChurch")}</Label>
                       <Input value={formData.originChurch} onChange={(e) => updateField("originChurch", e.target.value)} />
+                      <FieldError name="originChurch" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.conversionDate")}</Label>
                       <Input type="date" value={formData.conversionDate} onChange={(e) => updateField("conversionDate", e.target.value)} />
+                      <FieldError name="conversionDate" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.christianExperience")}</Label>
                     <Textarea value={formData.christianExperience} onChange={(e) => updateField("christianExperience", e.target.value)} placeholder={t("joinForm.christianExperiencePlaceholder")} rows={3} />
+                    <FieldError name="christianExperience" errors={errors} />
                   </div>
                   {ministries.length > 0 && (
                     <div className="space-y-2">
@@ -525,25 +540,30 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.spouseName")}</Label>
                       <Input value={formData.spouseName} onChange={(e) => updateField("spouseName", e.target.value)} />
+                      <FieldError name="spouseName" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.marriageDate")}</Label>
                       <Input type="date" value={formData.marriageDate} onChange={(e) => updateField("marriageDate", e.target.value)} />
+                      <FieldError name="marriageDate" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.numberOfChildren")}</Label>
                       <Input type="number" min="0" value={formData.numberOfChildren} onChange={(e) => updateField("numberOfChildren", e.target.value)} />
+                      <FieldError name="numberOfChildren" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.childrenNames")}</Label>
                     <Textarea value={formData.childrenNames} onChange={(e) => updateField("childrenNames", e.target.value)} placeholder={t("joinForm.childrenNamesPlaceholder")} rows={2} />
+                    <FieldError name="childrenNames" errors={errors} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.message")}</Label>
                     <Textarea value={formData.message} onChange={(e) => updateField("message", e.target.value)} placeholder={t("joinForm.messagePlaceholder")} rows={2} />
+                    <FieldError name="message" errors={errors} />
                   </div>
                 </TabsContent>
               </Tabs>
