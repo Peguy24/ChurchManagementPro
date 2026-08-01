@@ -77,3 +77,5 @@ project_id = "ihwhbtmnyhhceiwdcfsc"
     verify_jwt = true
   [functions.verify-tenant-domain]
     verify_jwt = true
+  [functions.member-photo-upload]
+    verify_jwt = false
