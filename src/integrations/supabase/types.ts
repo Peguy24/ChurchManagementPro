@@ -6049,6 +6049,16 @@ export type Database = {
           thank_you_message: Json
         }[]
       }
+      get_public_join_config: {
+        Args: { _slug: string }
+        Returns: {
+          logo_url: string
+          ministries: Json
+          primary_color: string
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_public_nps_stats: {
         Args: never
         Returns: {
