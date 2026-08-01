@@ -119,7 +119,7 @@ export default function TaxExemptionReviews() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Tax Exemption Reviews</h1>

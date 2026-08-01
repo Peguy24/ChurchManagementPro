@@ -299,7 +299,7 @@ export default function MemberAttendanceStats() {
   if (!member) {
     return (
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Button variant="ghost" onClick={() => navigate("/attendance")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {lt.back}

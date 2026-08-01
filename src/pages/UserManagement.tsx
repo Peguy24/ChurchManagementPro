@@ -231,7 +231,7 @@ export default function UserManagement() {
           onOpenChange={setIsInviteDialogOpen} 
         />
 
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="users" className="space-y-4 sm:space-y-6">
           <TabsList>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />

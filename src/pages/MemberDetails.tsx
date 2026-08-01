@@ -353,7 +353,7 @@ export default function MemberDetails() {
   if (!member) {
     return (
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Button variant="ghost" onClick={() => navigate("/members")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t("memberDetails.back")}

@@ -487,7 +487,7 @@ const Commercial = () => {
             </p>
           </div>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="space-y-4 sm:space-y-6">
             <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
               {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                 <AccordionItem

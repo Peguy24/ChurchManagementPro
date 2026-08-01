@@ -354,7 +354,7 @@ export default function MemberCards() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header - Hidden when printing */}
         <div className="flex flex-col gap-4 print:hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

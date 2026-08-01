@@ -71,7 +71,7 @@ export default function SuperAdminReferrals() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2"><Gift className="h-7 w-7 text-primary" /> Referrals</h1>

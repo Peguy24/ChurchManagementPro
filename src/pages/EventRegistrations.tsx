@@ -111,7 +111,7 @@ export default function EventRegistrations() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/events")}>
             <ArrowLeft className="h-5 w-5" />

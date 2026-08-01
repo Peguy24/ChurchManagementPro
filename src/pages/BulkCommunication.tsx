@@ -81,7 +81,7 @@ export default function BulkCommunication() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.communication.title")}</h1>
           <p className="text-muted-foreground mt-1">{t("superAdmin.communication.subtitle")}</p>

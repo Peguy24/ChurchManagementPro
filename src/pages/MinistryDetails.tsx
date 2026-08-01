@@ -186,7 +186,7 @@ export default function MinistryDetails() {
   if (!ministryId) {
     return (
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Button variant="ghost" onClick={() => navigate("/ministries")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour

@@ -194,7 +194,7 @@ export default function LegalDocuments() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <FileText className="h-8 w-8 text-primary" />

@@ -546,7 +546,7 @@ export default function TenantDataViewer() {
 
                 {/* Archived Data Tab */}
                 <TabsContent value="archived">
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Archived Attendance */}
                     <div>
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">

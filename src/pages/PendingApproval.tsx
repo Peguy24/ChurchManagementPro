@@ -71,7 +71,7 @@ export default function PendingApproval() {
           <CardTitle className="text-2xl">{lt("title")}</CardTitle>
           <CardDescription>{lt("subtitle")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           <div className="rounded-lg bg-muted p-4 text-center">
             <p className="text-sm text-muted-foreground">{lt("description")}</p>
           </div>
