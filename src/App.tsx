@@ -92,6 +92,8 @@ const SelfCheckinDisplay = lazy(() => import("./pages/SelfCheckinDisplay"));
 const SelfCheckin = lazy(() => import("./pages/SelfCheckin"));
 const EngagementAutomations = lazy(() => import("./pages/EngagementAutomations"));
 const JoinChurch = lazy(() => import("./pages/JoinChurch"));
+const PhotoBooth = lazy(() => import("./pages/PhotoBooth"));
+const MemberPhotoUpload = lazy(() => import("./pages/MemberPhotoUpload"));
 const MemberRequests = lazy(() => import("./pages/MemberRequests"));
 const EventRegister = lazy(() => import("./pages/EventRegister"));
 const EventRegistrations = lazy(() => import("./pages/EventRegistrations"));
