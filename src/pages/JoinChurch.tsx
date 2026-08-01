@@ -121,23 +121,61 @@ export default function JoinChurch() {
 
   const updateField = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
+
+  const stepIndex = STEPS.indexOf(step);
+  const isLastStep = stepIndex === STEPS.length - 1;
+
+  /** Validates one step; sets its field errors and returns validity. */
+  const validateStep = (target: Step): boolean => {
+    const fields = STEP_FIELDS[target];
+    const payload: Record<string, string> = {};
+    for (const f of fields) payload[f] = (formData as any)[f] ?? "";
+    const result = validateForm(STEP_SCHEMAS[target] as any, payload);
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const f of fields) delete next[f];
+      return { ...next, ...result.fieldErrors };
+    });
+    if (!result.success) {
+      toast.error(
+        firstErrorMessage(result.fieldErrors, t) || t("joinForm.errorStepInvalid"),
+      );
+    }
+    return result.success;
+  };
+
+  const goToStep = (target: Step) => {
+    const targetIndex = STEPS.indexOf(target);
+    if (targetIndex <= stepIndex) {
+      setStep(target);
+      return;
+    }
+    // Moving forward: every step in between must be valid
+    for (let i = stepIndex; i < targetIndex; i++) {
+      if (!validateStep(STEPS[i])) {
+        setStep(STEPS[i]);
+        return;
+      }
+    }
+    setStep(target);
+  };
+
+  const handleNext = () => goToStep(STEPS[stepIndex + 1]);
+  const handleBack = () => setStep(STEPS[Math.max(stepIndex - 1, 0)]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validation = validateForm(joinChurchSchema, {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-    });
-    if (!validation.success) {
-      setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("joinForm.errorRequired"));
-      return;
+    // Validate every step, not just the visible one
+    for (const s of STEPS) {
+      if (!validateStep(s)) {
+        setStep(s);
+        return;
+      }
     }
-    setErrors({});
+
 
     if (!tenantId) {
       toast.error(t("joinForm.errorInvalidLink"));
