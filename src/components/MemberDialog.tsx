@@ -27,6 +27,7 @@ import { Download, QrCode as QrCodeIcon, User, Heart, Users, Church, Camera, Upl
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { todayInputValue } from "@/lib/date";
 import PhotoCropper from "./PhotoCropper";
+import CameraCapture from "./CameraCapture";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
@@ -344,6 +345,7 @@ export default function MemberDialog({
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [tempPhotoFile, setTempPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMinistryId, setSelectedMinistryId] = useState("");
@@ -953,16 +955,31 @@ export default function MemberDialog({
                       className="hidden"
                       id="photo-upload"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingPhoto}
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      {photoPreview ? lt.memberChangePhoto : lt.memberAddPhoto}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setCameraOpen(true)}
+                        disabled={uploadingPhoto}
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        {language === "fr"
+                          ? "Prendre une photo"
+                          : language === "ht"
+                          ? "Pran yon foto"
+                          : "Take a photo"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingPhoto}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {photoPreview ? lt.memberChangePhoto : lt.memberAddPhoto}
+                      </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {lt.memberPhotoHint}
                     </p>
@@ -1645,6 +1662,16 @@ export default function MemberDialog({
             onCropComplete={handleCropComplete}
           />
         )}
+
+        {/* Camera capture */}
+        <CameraCapture
+          open={cameraOpen}
+          onOpenChange={setCameraOpen}
+          onCapture={(file) => {
+            setTempPhotoFile(file);
+            setCropperOpen(true);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

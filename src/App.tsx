@@ -92,6 +92,8 @@ const SelfCheckinDisplay = lazy(() => import("./pages/SelfCheckinDisplay"));
 const SelfCheckin = lazy(() => import("./pages/SelfCheckin"));
 const EngagementAutomations = lazy(() => import("./pages/EngagementAutomations"));
 const JoinChurch = lazy(() => import("./pages/JoinChurch"));
+const PhotoBooth = lazy(() => import("./pages/PhotoBooth"));
+const MemberPhotoUpload = lazy(() => import("./pages/MemberPhotoUpload"));
 const MemberRequests = lazy(() => import("./pages/MemberRequests"));
 const EventRegister = lazy(() => import("./pages/EventRegister"));
 const EventRegistrations = lazy(() => import("./pages/EventRegistrations"));
@@ -172,6 +174,7 @@ const PUBLIC_ROUTE_PREFIXES = [
   "/checkin/",
   "/site/",
   "/t/",
+  "/member-photo/",
 ];
 
 function isProtectedShellPath(pathname: string, hasUser: boolean) {
@@ -255,6 +258,7 @@ const App = () => (
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/checkin/:token" element={<SelfCheckin />} />
+              <Route path="/member-photo/:token" element={<MemberPhotoUpload />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
               <Route path="/site/:slug/about" element={<PublicChurchSite />} />
               <Route path="/site/:slug/sermons" element={<PublicChurchSite />} />
@@ -273,6 +277,7 @@ const App = () => (
               <Route path="/members/requests" element={<ProtectedRoute><MemberRequests /></ProtectedRoute>} />
               <Route path="/members/cards" element={<ProtectedRoute><FeatureGate feature="memberCards" featureKey="memberCards" requiredPlan="professionnel"><MemberCards /></FeatureGate></ProtectedRoute>} />
               <Route path="/members/details" element={<ProtectedRoute><MemberDetails /></ProtectedRoute>} />
+              <Route path="/members/photo-booth" element={<ProtectedRoute><PhotoBooth /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
               <Route path="/attendance/stats" element={<ProtectedRoute><MemberAttendanceStats /></ProtectedRoute>} />
               <Route path="/attendance/alerts" element={<ProtectedRoute><FeatureGate feature="attendanceAlerts" featureKey="attendanceAlerts" requiredPlan="essentiel"><AttendanceAlerts /></FeatureGate></ProtectedRoute>} />
