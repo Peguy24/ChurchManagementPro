@@ -127,8 +127,7 @@ export default function PhotoBooth() {
   const fetchMembers = async () => {
     if (!tenantId) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("members")
+    const { data, error } = await (supabase.from("members") as any)
       .select(
         "id, first_name, last_name, member_number, photo_url, pending_photo_url, pending_photo_at"
       )
