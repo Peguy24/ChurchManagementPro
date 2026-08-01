@@ -355,14 +355,15 @@ export default function Dashboard() {
                 <Church className="h-5 w-5 text-primary" />
               </div>
             )}
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">
                 {tenant?.name || t("dashboard.title")}
-              </h2>
-              <p className="text-muted-foreground text-sm sm:text-base">
+              </h1>
+              <p className="text-sm text-muted-foreground">
                 {tenant ? t("common.welcome") : t("dashboard.title")}
               </p>
             </div>
+
           </div>
         </div>
 
