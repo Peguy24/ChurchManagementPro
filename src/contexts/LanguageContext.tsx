@@ -190,6 +190,7 @@ const translations = {
       dashboard: "Tableau de Bord",
       members: "Membres",
       memberCards: "Cartes Membres",
+      photoBooth: "Studio Photo",
       attendance: "Présence",
       attendanceAlerts: "Alertes Présence",
       arrivalReport: "Rapport d'Arrivées",
