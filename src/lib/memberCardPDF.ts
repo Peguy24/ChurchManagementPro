@@ -332,10 +332,10 @@ const drawCard = async (
   const rows: Array<[string, string]> = [];
   if (member.ministry) rows.push([t.ministry, sanitize(member.ministry)]);
   rows.push([t.memberSince, formatDate(member.join_date, customization?.language)]);
-  if (member.phone && rows.length < 3) rows.push([t.phone, sanitize(member.phone)]);
+  if (member.phone && rows.length < 2) rows.push([t.phone, sanitize(member.phone)]);
 
   let rowY = sepY + 4.2;
-  for (const [label, value] of rows.slice(0, 3)) {
+  for (const [label, value] of rows.slice(0, 2)) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(4.6);
     pdf.setTextColor(135, 140, 150);
