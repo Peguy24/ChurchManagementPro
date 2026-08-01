@@ -189,7 +189,11 @@ export function useCurrentTenant(): UseCurrentTenantReturn {
   const effectiveCachedTenant = cachedTenant && cachedTenant.userId === user?.id ? cachedTenant : null;
   const effectiveTenantId = tenantId ?? effectiveCachedTenant?.tenantId ?? null;
   const effectiveTenant = tenant ?? effectiveCachedTenant?.tenant ?? null;
-  const effectiveLoading = authLoading || ((effectiveTenantId || effectiveTenant) ? false : loading);
+  // Stay "loading" until the tenant record itself is known. Releasing as soon as
+  // tenantId resolves let the shell paint with generic branding/colors for a
+  // frame before the church name, logo and primary color arrived.
+  const effectiveLoading = authLoading || (effectiveTenant ? false : loading);
+
 
   const withTenantId = useCallback(<T extends object>(data: T): T & { tenant_id: string | null } => {
     return { ...data, tenant_id: effectiveTenantId };
