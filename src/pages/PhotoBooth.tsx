@@ -293,7 +293,11 @@ export default function PhotoBooth() {
               >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 {lt.onlyNoPhoto}
+                <Badge variant="secondary" className="ml-2">
+                  {members.filter((m) => !m.photo_url).length}
+                </Badge>
               </Button>
+
             </div>
 
             {!loading && filtered.length === 0 && (
