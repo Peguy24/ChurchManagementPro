@@ -34,6 +34,8 @@ export default function JoinChurch() {
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [churchName, setChurchName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [ministries, setMinistries] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -46,45 +48,25 @@ export default function JoinChurch() {
     message: "", desiredMinistryId: "",
   });
 
-  // Fetch tenant by slug (or UUID) and resolve to tenant_id
+  // Resolve tenant branding + ministries via a public, tenant-scoped RPC
   useEffect(() => {
     async function fetchTenant() {
       if (!tenantIdOrSlug) return;
-
-      // Try by slug first
-      let { data, error } = await supabase
-        .from("tenants")
-        .select("id, name, logo_url, slug")
-        .eq("slug", tenantIdOrSlug)
-        .maybeSingle();
-
-      // If not found by slug, try by id (backward compatibility)
-      if (!data) {
-        const result = await supabase
-          .from("tenants")
-          .select("id, name, logo_url, slug")
-          .eq("id", tenantIdOrSlug)
-          .maybeSingle();
-        data = result.data;
+      const { data, error } = await supabase.rpc("get_public_join_config", { _slug: tenantIdOrSlug });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (error || !row) {
+        setNotFound(true);
+        return;
       }
-
-      if (data) {
-        setTenantId(data.id);
-        setChurchName(data.name);
-        setLogoUrl(data.logo_url);
-
-        // Fetch ministries
-        const { data: ministriesData } = await supabase
-          .from("ministries")
-          .select("id, name")
-          .eq("tenant_id", data.id)
-          .eq("status", "active")
-          .order("name");
-        if (ministriesData) setMinistries(ministriesData);
-      }
+      setTenantId(row.tenant_id);
+      setChurchName(row.tenant_name);
+      setLogoUrl(row.logo_url);
+      setPrimaryColor(row.primary_color);
+      setMinistries(Array.isArray(row.ministries) ? row.ministries : []);
     }
     fetchTenant();
   }, [tenantIdOrSlug]);
+
 
   const updateField = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
