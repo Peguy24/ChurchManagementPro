@@ -3318,6 +3318,10 @@ const translations = {
       error: "Erreur",
     },
     joinForm: {
+      next: "Suivant",
+      back: "Précédent",
+      stepOf: "Étape {current} sur {total}",
+      errorStepInvalid: "Veuillez corriger les champs en rouge avant de continuer",
       title: "Demande d'adhésion",
       subtitle: "Remplissez ce formulaire pour devenir membre de notre église",
       tabPersonal: "Personnel",
@@ -3533,6 +3537,11 @@ const translations = {
     memberRequest: "Demande d'adhésion",
   },
   validation: {
+    text: { invalidChars: "Ce champ ne peut contenir que des lettres, espaces, apostrophes et tirets" },
+    zip: { invalid: "Code postal invalide" },
+    children: { invalid: "Le nombre d'enfants doit être un nombre entre 0 et 99" },
+    spouse: { requiresMarried: "Indiquez le nom du conjoint uniquement si le statut est « Marié(e) »" },
+    marriageDate: { requiresMarried: "La date de mariage ne s'applique pas au statut « Célibataire »" },
     email: {
       required: "L'email est requis",
       invalid: "Adresse email invalide",
@@ -3573,6 +3582,7 @@ const translations = {
       outOfRange: "La date doit être dans les 100 ans à partir d'aujourd'hui",
       endBeforeStart: "La date de fin doit être égale ou postérieure à la date de début",
       notInFuture: "La date ne peut pas être dans le futur",
+      tooOld: "La date est trop ancienne",
       durationTooLong: "La durée de l'événement ne peut pas dépasser 1 an (366 jours)",
     },
     customField: {
@@ -6844,6 +6854,10 @@ const translations = {
       error: "Error",
     },
     joinForm: {
+      next: "Next",
+      back: "Back",
+      stepOf: "Step {current} of {total}",
+      errorStepInvalid: "Please correct the highlighted fields before continuing",
       title: "Membership Application",
       subtitle: "Fill out this form to become a member of our church",
       tabPersonal: "Personal",
@@ -7059,6 +7073,11 @@ const translations = {
     memberRequest: "Membership request",
   },
   validation: {
+    text: { invalidChars: "This field may only contain letters, spaces, apostrophes and hyphens" },
+    zip: { invalid: "Invalid ZIP / postal code" },
+    children: { invalid: "Number of children must be a number between 0 and 99" },
+    spouse: { requiresMarried: "Only provide a spouse name when the marital status is \"Married\"" },
+    marriageDate: { requiresMarried: "A marriage date does not apply to the \"Single\" status" },
     email: {
       required: "Email is required",
       invalid: "Invalid email address",
@@ -7099,6 +7118,7 @@ const translations = {
       outOfRange: "Date must be within 100 years from today",
       endBeforeStart: "End date must be on or after start date",
       notInFuture: "Date cannot be in the future",
+      tooOld: "The date is too far in the past",
       durationTooLong: "Event duration cannot exceed 1 year (366 days)",
     },
     customField: {
@@ -10369,6 +10389,10 @@ const translations = {
       error: "Erè",
     },
     joinForm: {
+      next: "Apre",
+      back: "Anvan",
+      stepOf: "Etap {current} sou {total}",
+      errorStepInvalid: "Tanpri korije chan ki make yo anvan ou kontinye",
       title: "Demann Adhesyon",
       subtitle: "Ranpli fòmilè sa a pou vin manm legliz nou an",
       tabPersonal: "Pèsonèl",
@@ -10584,6 +10608,11 @@ const translations = {
     memberRequest: "Demann adhesyon",
   },
   validation: {
+    text: { invalidChars: "Chan sa a ka gen sèlman lèt, espas, apostwòf ak tire" },
+    zip: { invalid: "Kòd postal la pa valid" },
+    children: { invalid: "Kantite timoun dwe yon nimewo ant 0 ak 99" },
+    spouse: { requiresMarried: "Mete non konjwen an sèlman si estati a se « Marye »" },
+    marriageDate: { requiresMarried: "Dat maryaj la pa aplike pou estati « Selibatè »" },
     email: {
       required: "Imèl la obligatwa",
       invalid: "Adrès imèl pa valab",
@@ -10624,6 +10653,7 @@ const translations = {
       outOfRange: "Dat la dwe nan 100 ane apati jodi a",
       endBeforeStart: "Dat fen an dwe menm jou oswa apre dat kòmansman an",
       notInFuture: "Dat la pa ka nan lavni",
+      tooOld: "Dat la twò lwen nan tan pase a",
       durationTooLong: "Dire evènman an pa ka depase 1 ane (366 jou)",
     },
     customField: {

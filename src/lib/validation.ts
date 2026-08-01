@@ -256,6 +256,115 @@ export const joinChurchSchema = z.object({
   phone: optionalPhoneSchema,
 });
 
+/* ---------------------------------------------------------------- */
+/* Join-church multi-step schemas (one per tab)                     */
+/* ---------------------------------------------------------------- */
+
+const optionalLettersSchema = z
+  .string()
+  .trim()
+  .max(100, "validation.field.tooLong100")
+  .regex(/^[\p{L}\p{M}'’\-.\s]*$/u, "validation.text.invalidChars")
+  .optional()
+  .or(z.literal(""));
+
+const optionalZipSchema = z
+  .string()
+  .trim()
+  .max(12, "validation.zip.invalid")
+  .regex(/^[A-Za-z0-9\- ]*$/, "validation.zip.invalid")
+  .optional()
+  .or(z.literal(""));
+
+const optionalStreetNumberSchema = z
+  .string()
+  .trim()
+  .max(20, "validation.field.tooLong100")
+  .regex(/^[\p{L}\p{N}\-/ ]*$/u, "validation.text.invalidChars")
+  .optional()
+  .or(z.literal(""));
+
+const MIN_BIRTH_YEARS = 120;
+const optionalBirthDateSchema = z
+  .string()
+  .refine((v) => !v || isValidDate(v), "validation.date.invalid")
+  .refine((v) => !v || isNotInFuture(v), "validation.date.notInFuture")
+  .refine((v) => {
+    if (!v) return true;
+    const min = new Date();
+    min.setFullYear(min.getFullYear() - MIN_BIRTH_YEARS);
+    return new Date(v).getTime() >= min.getTime();
+  }, "validation.date.tooOld")
+  .optional()
+  .or(z.literal(""));
+
+export const joinChurchPersonalSchema = z.object({
+  firstName: personNameSchema,
+  lastName: personNameSchema,
+  gender: z.enum(["M", "F"]).optional().or(z.literal("")),
+  dateOfBirth: optionalBirthDateSchema,
+  email: emailSchema,
+  phone: optionalPhoneSchema,
+  emergencyPhone: optionalPhoneSchema,
+  street: shortTextSchema.optional().or(z.literal("")),
+  number: optionalStreetNumberSchema,
+  apartment: optionalStreetNumberSchema,
+  city: optionalLettersSchema,
+  state: optionalLettersSchema,
+  zipCode: optionalZipSchema,
+  country: optionalLettersSchema,
+});
+
+export const joinChurchFormationSchema = z.object({
+  academicFormation: longTextSchema.optional().or(z.literal("")),
+  professionalFormation: longTextSchema.optional().or(z.literal("")),
+});
+
+export const joinChurchSpiritualSchema = z.object({
+  baptismStatus: z
+    .enum(["baptized", "not_baptized", "in_preparation"])
+    .optional()
+    .or(z.literal("")),
+  baptismDate: optionalPastDateSchema,
+  originChurch: shortTextSchema.optional().or(z.literal("")),
+  conversionDate: optionalPastDateSchema,
+  christianExperience: longTextSchema.optional().or(z.literal("")),
+});
+
+export const joinChurchFamilySchema = z
+  .object({
+    maritalStatus: z
+      .enum(["single", "married", "divorced", "widowed"])
+      .optional()
+      .or(z.literal("")),
+    spouseName: z
+      .string()
+      .trim()
+      .max(100, "validation.field.tooLong100")
+      .regex(/^[\p{L}\p{M}'’\-.\s]*$/u, "validation.name.invalidChars")
+      .optional()
+      .or(z.literal("")),
+    marriageDate: optionalPastDateSchema,
+    numberOfChildren: z
+      .string()
+      .trim()
+      .regex(/^\d{0,2}$/, "validation.children.invalid")
+      .optional()
+      .or(z.literal("")),
+    childrenNames: longTextSchema.optional().or(z.literal("")),
+    message: longTextSchema.optional().or(z.literal("")),
+  })
+  .refine((d) => !(d.spouseName && d.maritalStatus !== "married"), {
+    message: "validation.spouse.requiresMarried",
+    path: ["spouseName"],
+  })
+  .refine((d) => !(d.marriageDate && d.maritalStatus === "single"), {
+    message: "validation.marriageDate.requiresMarried",
+    path: ["marriageDate"],
+  });
+
+
+
 export const donationSchema = z.object({
   amount: positiveAmountSchema,
   donationType: z.string().min(1, "validation.type.required"),

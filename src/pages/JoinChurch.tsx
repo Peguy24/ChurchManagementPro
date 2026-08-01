@@ -40,7 +40,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, joinChurchSchema, firstErrorMessage } from "@/lib/validation";
+import {
+  validateForm,
+  joinChurchPersonalSchema,
+  joinChurchFormationSchema,
+  joinChurchSpiritualSchema,
+  joinChurchFamilySchema,
+  firstErrorMessage,
+} from "@/lib/validation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+
+const STEPS = ["personal", "formation", "spiritual", "family"] as const;
+type Step = (typeof STEPS)[number];
+
+const STEP_SCHEMAS = {
+  personal: joinChurchPersonalSchema,
+  formation: joinChurchFormationSchema,
+  spiritual: joinChurchSpiritualSchema,
+  family: joinChurchFamilySchema,
+} as const;
+
+const STEP_FIELDS: Record<Step, string[]> = {
+  personal: [
+    "firstName", "lastName", "gender", "dateOfBirth", "email", "phone", "emergencyPhone",
+    "street", "number", "apartment", "city", "state", "zipCode", "country",
+  ],
+  formation: ["academicFormation", "professionalFormation"],
+  spiritual: ["baptismStatus", "baptismDate", "originChurch", "conversionDate", "christianExperience"],
+  family: ["maritalStatus", "spouseName", "marriageDate", "numberOfChildren", "childrenNames", "message"],
+};
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
@@ -60,6 +88,7 @@ export default function JoinChurch() {
   const [notFound, setNotFound] = useState(false);
   const [ministries, setMinistries] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [step, setStep] = useState<Step>("personal");
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", gender: "", dateOfBirth: "",
     phone: "", email: "", emergencyPhone: "",
@@ -92,23 +121,61 @@ export default function JoinChurch() {
 
   const updateField = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
+
+  const stepIndex = STEPS.indexOf(step);
+  const isLastStep = stepIndex === STEPS.length - 1;
+
+  /** Validates one step; sets its field errors and returns validity. */
+  const validateStep = (target: Step): boolean => {
+    const fields = STEP_FIELDS[target];
+    const payload: Record<string, string> = {};
+    for (const f of fields) payload[f] = (formData as any)[f] ?? "";
+    const result = validateForm(STEP_SCHEMAS[target] as any, payload);
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const f of fields) delete next[f];
+      return { ...next, ...result.fieldErrors };
+    });
+    if (!result.success) {
+      toast.error(
+        firstErrorMessage(result.fieldErrors, t) || t("joinForm.errorStepInvalid"),
+      );
+    }
+    return result.success;
+  };
+
+  const goToStep = (target: Step) => {
+    const targetIndex = STEPS.indexOf(target);
+    if (targetIndex <= stepIndex) {
+      setStep(target);
+      return;
+    }
+    // Moving forward: every step in between must be valid
+    for (let i = stepIndex; i < targetIndex; i++) {
+      if (!validateStep(STEPS[i])) {
+        setStep(STEPS[i]);
+        return;
+      }
+    }
+    setStep(target);
+  };
+
+  const handleNext = () => goToStep(STEPS[stepIndex + 1]);
+  const handleBack = () => setStep(STEPS[Math.max(stepIndex - 1, 0)]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validation = validateForm(joinChurchSchema, {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-    });
-    if (!validation.success) {
-      setErrors(validation.fieldErrors);
-      toast.error(firstErrorMessage(validation.fieldErrors, t) || t("joinForm.errorRequired"));
-      return;
+    // Validate every step, not just the visible one
+    for (const s of STEPS) {
+      if (!validateStep(s)) {
+        setStep(s);
+        return;
+      }
     }
-    setErrors({});
+
 
     if (!tenantId) {
       toast.error(t("joinForm.errorInvalidLink"));
@@ -267,8 +334,22 @@ export default function JoinChurch() {
 
         <Card>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit}>
-              <Tabs defaultValue="personal" className="w-full">
+            <form
+              onSubmit={handleSubmit}
+              onKeyDown={(e) => {
+                // Enter must not submit from an intermediate step
+                if (e.key === "Enter" && !isLastStep) {
+                  const target = e.target as HTMLElement;
+                  if (target.tagName !== "TEXTAREA") e.preventDefault();
+                }
+              }}
+            >
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                {t("joinForm.stepOf")
+                  .replace("{current}", String(stepIndex + 1))
+                  .replace("{total}", String(STEPS.length))}
+              </p>
+              <Tabs value={step} onValueChange={(v) => goToStep(v as Step)} className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="personal" className="text-xs sm:text-sm">
                     <User className="h-4 w-4 mr-1 hidden sm:inline" />
@@ -315,6 +396,7 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.dateOfBirth")}</Label>
                       <Input type="date" value={formData.dateOfBirth} onChange={(e) => updateField("dateOfBirth", e.target.value)} />
+                      <FieldError name="dateOfBirth" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -332,39 +414,47 @@ export default function JoinChurch() {
                   <div className="space-y-2">
                     <Label>{t("joinForm.emergencyPhone")}</Label>
                     <Input value={formData.emergencyPhone} onChange={(e) => updateField("emergencyPhone", e.target.value)} />
+                    <FieldError name="emergencyPhone" errors={errors} />
                   </div>
                   <h4 className="font-semibold text-sm pt-2">{t("joinForm.address")}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2 col-span-2">
                       <Label>{t("joinForm.street")}</Label>
                       <Input value={formData.street} onChange={(e) => updateField("street", e.target.value)} />
+                      <FieldError name="street" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.number")}</Label>
                       <Input value={formData.number} onChange={(e) => updateField("number", e.target.value)} />
+                      <FieldError name="number" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.apartment")}</Label>
                       <Input value={formData.apartment} onChange={(e) => updateField("apartment", e.target.value)} />
+                      <FieldError name="apartment" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.city")}</Label>
                       <Input value={formData.city} onChange={(e) => updateField("city", e.target.value)} />
+                      <FieldError name="city" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.stateRegion")}</Label>
                       <Input value={formData.state} onChange={(e) => updateField("state", e.target.value)} />
+                      <FieldError name="state" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.zipCode")}</Label>
                       <Input value={formData.zipCode} onChange={(e) => updateField("zipCode", e.target.value)} />
+                      <FieldError name="zipCode" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.country")}</Label>
                     <Input value={formData.country} onChange={(e) => updateField("country", e.target.value)} />
+                    <FieldError name="country" errors={errors} />
                   </div>
                 </TabsContent>
 
@@ -372,10 +462,12 @@ export default function JoinChurch() {
                   <div className="space-y-2">
                     <Label>{t("joinForm.academicFormation")}</Label>
                     <Textarea value={formData.academicFormation} onChange={(e) => updateField("academicFormation", e.target.value)} placeholder={t("joinForm.academicPlaceholder")} rows={3} />
+                    <FieldError name="academicFormation" errors={errors} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.professionalFormation")}</Label>
                     <Textarea value={formData.professionalFormation} onChange={(e) => updateField("professionalFormation", e.target.value)} placeholder={t("joinForm.professionalPlaceholder")} rows={3} />
+                    <FieldError name="professionalFormation" errors={errors} />
                   </div>
                 </TabsContent>
 
@@ -395,21 +487,25 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.baptismDate")}</Label>
                       <Input type="date" value={formData.baptismDate} onChange={(e) => updateField("baptismDate", e.target.value)} />
+                      <FieldError name="baptismDate" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.originChurch")}</Label>
                       <Input value={formData.originChurch} onChange={(e) => updateField("originChurch", e.target.value)} />
+                      <FieldError name="originChurch" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.conversionDate")}</Label>
                       <Input type="date" value={formData.conversionDate} onChange={(e) => updateField("conversionDate", e.target.value)} />
+                      <FieldError name="conversionDate" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.christianExperience")}</Label>
                     <Textarea value={formData.christianExperience} onChange={(e) => updateField("christianExperience", e.target.value)} placeholder={t("joinForm.christianExperiencePlaceholder")} rows={3} />
+                    <FieldError name="christianExperience" errors={errors} />
                   </div>
                   {ministries.length > 0 && (
                     <div className="space-y-2">
@@ -444,43 +540,68 @@ export default function JoinChurch() {
                     <div className="space-y-2">
                       <Label>{t("joinForm.spouseName")}</Label>
                       <Input value={formData.spouseName} onChange={(e) => updateField("spouseName", e.target.value)} />
+                      <FieldError name="spouseName" errors={errors} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.marriageDate")}</Label>
                       <Input type="date" value={formData.marriageDate} onChange={(e) => updateField("marriageDate", e.target.value)} />
+                      <FieldError name="marriageDate" errors={errors} />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("joinForm.numberOfChildren")}</Label>
                       <Input type="number" min="0" value={formData.numberOfChildren} onChange={(e) => updateField("numberOfChildren", e.target.value)} />
+                      <FieldError name="numberOfChildren" errors={errors} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.childrenNames")}</Label>
                     <Textarea value={formData.childrenNames} onChange={(e) => updateField("childrenNames", e.target.value)} placeholder={t("joinForm.childrenNamesPlaceholder")} rows={2} />
+                    <FieldError name="childrenNames" errors={errors} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("joinForm.message")}</Label>
                     <Textarea value={formData.message} onChange={(e) => updateField("message", e.target.value)} placeholder={t("joinForm.messagePlaceholder")} rows={2} />
+                    <FieldError name="message" errors={errors} />
                   </div>
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-6">
-                <Button type="submit" className="w-full" disabled={isSubmitting} size="lg">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t("joinForm.submitting")}
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      {t("joinForm.submit")}
-                    </>
-                  )}
-                </Button>
+              <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+                {stepIndex > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="sm:w-auto w-full"
+                    onClick={handleBack}
+                    disabled={isSubmitting}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("joinForm.back")}
+                  </Button>
+                )}
+                {!isLastStep ? (
+                  <Button type="button" className="flex-1" size="lg" onClick={handleNext}>
+                    {t("joinForm.next")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button type="submit" className="flex-1" disabled={isSubmitting} size="lg">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {t("joinForm.submitting")}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        {t("joinForm.submit")}
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </form>
           </CardContent>
