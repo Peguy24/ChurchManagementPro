@@ -23,7 +23,11 @@ const KEY = "app_shell_snapshot";
 
 export function saveNavSnapshot(snapshot: NavSnapshot) {
   try {
-    sessionStorage.setItem(KEY, JSON.stringify(snapshot));
+    const raw = JSON.stringify(snapshot);
+    sessionStorage.setItem(KEY, raw);
+    // Also persist across sessions so the first paint right after a login
+    // reproduces the known shell instead of flashing a blank skeleton.
+    localStorage.setItem(KEY, raw);
   } catch {
     /* storage unavailable */
   }
@@ -31,7 +35,7 @@ export function saveNavSnapshot(snapshot: NavSnapshot) {
 
 export function loadNavSnapshot(): NavSnapshot | null {
   try {
-    const raw = sessionStorage.getItem(KEY);
+    const raw = sessionStorage.getItem(KEY) ?? localStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as NavSnapshot;
     if (!parsed || !Array.isArray(parsed.groups)) return null;
@@ -44,7 +48,9 @@ export function loadNavSnapshot(): NavSnapshot | null {
 export function clearNavSnapshot() {
   try {
     sessionStorage.removeItem(KEY);
+    localStorage.removeItem(KEY);
   } catch {
     /* storage unavailable */
   }
 }
+
