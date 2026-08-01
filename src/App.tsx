@@ -174,6 +174,7 @@ const PUBLIC_ROUTE_PREFIXES = [
   "/checkin/",
   "/site/",
   "/t/",
+  "/member-photo/",
 ];
 
 function isProtectedShellPath(pathname: string, hasUser: boolean) {
