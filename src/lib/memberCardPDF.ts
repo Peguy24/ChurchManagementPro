@@ -126,6 +126,38 @@ const generateQRCodeBase64 = async (data: string): Promise<string> => {
   });
 };
 
+/** Truncate a string so it fits `maxW` mm at the current font settings. */
+const fitText = (pdf: jsPDF, text: string, maxW: number): string => {
+  let out = text;
+  if (pdf.getTextWidth(out) <= maxW) return out;
+  while (out.length > 1 && pdf.getTextWidth(out + "...") > maxW) {
+    out = out.slice(0, -1);
+  }
+  return out.trimEnd() + "...";
+};
+
+/** Rounded pill badge with centered label. Returns its width. */
+const drawBadge = (
+  pdf: jsPDF,
+  label: string,
+  rightX: number,
+  topY: number,
+  fill: { r: number; g: number; b: number },
+  fontSize: number,
+  height: number,
+  maxW: number
+): number => {
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(fontSize);
+  const text = fitText(pdf, label, maxW - 4);
+  const w = Math.min(maxW, pdf.getTextWidth(text) + 4);
+  pdf.setFillColor(fill.r, fill.g, fill.b);
+  pdf.roundedRect(rightX - w, topY, w, height, height / 2, height / 2, "F");
+  pdf.setTextColor(255, 255, 255);
+  pdf.text(text, rightX - w / 2, topY + height / 2 + fontSize * 0.12, { align: "center" });
+  return w;
+};
+
 const drawCard = async (
   pdf: jsPDF,
   member: MemberCardData,
@@ -139,74 +171,71 @@ const drawCard = async (
   const secondaryColor = hexToRgb(customization?.secondaryColor || "#1E40AF");
   const textColor = hexToRgb(customization?.textColor || "#FFFFFF");
 
-  // ── Card outline with rounded corners ──
+  const RIGHT = x + CARD_WIDTH;
+  const PAD = 4;
+
+  // ── Card body ──
   pdf.setFillColor(255, 255, 255);
   pdf.roundedRect(x, y, CARD_WIDTH, CARD_HEIGHT, 3, 3, "F");
 
-  // ── Gradient-style header (simulate gradient with two overlapping rects) ──
-  const headerH = 13;
-  // Main primary fill
+  // ── Header band ──
+  const headerH = 12.5;
   pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.roundedRect(x, y, CARD_WIDTH, headerH, 3, 3, "F");
-  // Square off bottom corners of header
   pdf.rect(x, y + headerH - 3, CARD_WIDTH, 3, "F");
-  // Secondary overlay on right half to simulate gradient
-  pdf.setGState(new (pdf as any).GState({ opacity: 0.35 }));
+  pdf.setGState(new (pdf as any).GState({ opacity: 0.3 }));
   pdf.setFillColor(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-  pdf.rect(x + CARD_WIDTH * 0.4, y, CARD_WIDTH * 0.6, headerH, "F");
+  pdf.rect(x + CARD_WIDTH * 0.45, y, CARD_WIDTH * 0.55, headerH, "F");
   pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
 
-  // ── Logo in header ──
-  let headerTextX = x + 3;
+  // Logo
+  let headerTextX = x + PAD;
   if (customization?.showLogo && customization?.logoUrl) {
     try {
       const logoBase64 = await loadImageAsBase64(customization.logoUrl);
       if (logoBase64) {
-        // White circle background for logo
         pdf.setFillColor(255, 255, 255);
-        pdf.circle(x + 6.5, y + headerH / 2, 5, "F");
-        pdf.addImage(logoBase64, "PNG", x + 2, y + 1.5, 9, 9);
-        headerTextX = x + 13;
+        pdf.circle(x + PAD + 4.25, y + headerH / 2, 4.5, "F");
+        pdf.addImage(logoBase64, "PNG", x + PAD + 0.75, y + headerH / 2 - 3.5, 7, 7);
+        headerTextX = x + PAD + 10.5;
       }
     } catch (e) {
       console.error("Error loading logo:", e);
     }
   }
 
-  // ── Header text (church name or "MEMBER CARD") ──
-  pdf.setTextColor(textColor.r, textColor.g, textColor.b);
-  pdf.setFontSize(7);
-  pdf.setFont("helvetica", "bold");
-  const headerTitle = customization?.churchNameOnCard && customization?.churchName
-    ? sanitize(customization.churchName)
-    : sanitize(t.memberCard);
-  // Truncate long names
-  const maxTitleLen = customization?.showLogo ? 28 : 35;
-  const displayTitle = headerTitle.length > maxTitleLen ? headerTitle.slice(0, maxTitleLen) + "..." : headerTitle;
-  pdf.text(displayTitle.toUpperCase(), headerTextX, y + 5.5);
-
-  // Member number below church name
+  // Member number (right side of the header, reserved space)
   const displayId = member.member_number || `#${String(memberIndex + 1).padStart(4, "0")}`;
-  pdf.setFontSize(5);
-  pdf.setFont("helvetica", "normal");
-  pdf.setTextColor(255, 255, 255);
-  pdf.text(`N° ${displayId}`, headerTextX, y + 9.5);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(6);
+  pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+  const idText = sanitize(`No ${displayId}`);
+  const idW = pdf.getTextWidth(idText);
+  pdf.text(idText, RIGHT - PAD, y + headerH / 2 + 1.9, { align: "right" });
 
-  // ── Photo with colored border (simulate gradient border) ──
-  const photoX = x + 3;
-  const photoY = y + headerH + 2;
-  const photoSize = 20;
+  // Header title + subtitle
+  const headerMaxW = RIGHT - PAD - 2 - idW - headerTextX;
+  const usingChurchName = !!(customization?.churchNameOnCard && customization?.churchName);
+  const headerTitle = sanitize(usingChurchName ? customization!.churchName : t.memberCard).toUpperCase();
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7.5);
+  pdf.text(fitText(pdf, headerTitle, headerMaxW), headerTextX, y + (usingChurchName ? 5.6 : 7.6));
+  if (usingChurchName) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(5);
+    pdf.setGState(new (pdf as any).GState({ opacity: 0.85 }));
+    pdf.text(fitText(pdf, sanitize(t.memberCard).toUpperCase(), headerMaxW), headerTextX, y + 9.4);
+    pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+  }
 
-  // Gradient-style border around photo
+  // ── Photo ──
+  const photoSize = 18;
+  const photoX = x + PAD;
+  const photoY = y + headerH + 2.5;
+
   pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.roundedRect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6, 2.5, 2.5, "F");
-  pdf.setGState(new (pdf as any).GState({ opacity: 0.5 }));
-  pdf.setFillColor(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-  pdf.roundedRect(photoX - 0.8, photoY - 0.8 + photoSize * 0.5, photoSize + 1.6, (photoSize + 1.6) * 0.5, 0, 0, "F");
-  pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-
-  // Photo background
-  pdf.setFillColor(240, 240, 240);
+  pdf.roundedRect(photoX - 0.7, photoY - 0.7, photoSize + 1.4, photoSize + 1.4, 2.4, 2.4, "F");
+  pdf.setFillColor(242, 244, 248);
   pdf.roundedRect(photoX, photoY, photoSize, photoSize, 2, 2, "F");
 
   if (member.photo_url) {
@@ -222,95 +251,72 @@ const drawCard = async (
       console.error("Error loading photo:", e);
     }
   } else {
-    // Placeholder icon
-    pdf.setDrawColor(180, 180, 180);
-    pdf.setLineWidth(0.3);
-    pdf.circle(photoX + photoSize / 2, photoY + 6, 4, "S");
-    pdf.line(photoX + 4, photoY + 16, photoX + 16, photoY + 16);
+    pdf.setDrawColor(175, 180, 190);
+    pdf.setLineWidth(0.35);
+    pdf.circle(photoX + photoSize / 2, photoY + 6.5, 3.2, "S");
+    pdf.line(photoX + 3.5, photoY + 14.5, photoX + photoSize - 3.5, photoY + 14.5);
   }
 
-  // ── Name and Role (right of photo) ──
-  const nameX = x + 26;
-  const nameY = photoY + 4;
+  // ── Identity block (right of photo) ──
+  const nameX = photoX + photoSize + 3.5;
+  const nameMaxW = RIGHT - PAD - nameX;
 
-  // First name
-  pdf.setTextColor(40, 40, 40);
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(sanitize(member.first_name), nameX, nameY);
-
-  // Last name in primary color
-  pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.setFontSize(10);
-  pdf.text(sanitize(member.last_name.toUpperCase()), nameX, nameY + 5);
-
-  // Role badge
-  if (member.role) {
-    const roleText = sanitize(member.role);
-    const roleTextWidth = pdf.getStringUnitWidth(roleText) * 5 / pdf.internal.scaleFactor;
-    pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    pdf.roundedRect(nameX, nameY + 7, roleTextWidth + 4, 4, 2, 2, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(5);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(roleText, nameX + 2, nameY + 9.8);
-  }
-
-  // ── Info section with colored dot indicators ──
-  const infoStartY = y + headerH + 24;
-  pdf.setFontSize(5.5);
-
-  // Ministry
-  if (member.ministry) {
-    // Colored dot
-    pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
-    pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
-    pdf.roundedRect(x + 3, infoStartY - 2.5, 5, 5, 1.5, 1.5, "F");
-    pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-
-    pdf.setTextColor(120, 120, 120);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(sanitize(t.ministry.replace(":", "")), x + 10, infoStartY - 0.5);
-    pdf.setTextColor(40, 40, 40);
-    pdf.setFont("helvetica", "bold");
-    const ministryName = sanitize(member.ministry);
-    pdf.text(ministryName.length > 25 ? ministryName.slice(0, 25) + "..." : ministryName, x + 10, infoStartY + 2.5);
-  }
-
-  // Member since
-  const sinceY = member.ministry ? infoStartY + 6 : infoStartY;
-  pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
-  pdf.roundedRect(x + 3, sinceY - 2.5, 5, 5, 1.5, 1.5, "F");
-  pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-
-  pdf.setTextColor(120, 120, 120);
+  pdf.setTextColor(35, 38, 45);
   pdf.setFont("helvetica", "normal");
-  pdf.text(sanitize(t.memberSince.replace(":", "")), x + 10, sinceY - 0.5);
-  pdf.setTextColor(40, 40, 40);
+  pdf.setFontSize(9);
+  pdf.text(fitText(pdf, sanitize(member.first_name), nameMaxW), nameX, photoY + 4.6);
+
+  pdf.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.setFont("helvetica", "bold");
-  pdf.text(formatDate(member.join_date, customization?.language), x + 10, sinceY + 2.5);
+  pdf.setFontSize(10);
+  pdf.text(fitText(pdf, sanitize(member.last_name).toUpperCase(), nameMaxW), nameX, photoY + 10);
 
-  // ── Separator line ──
-  const sepY = y + CARD_HEIGHT - 16;
+  // Role pill + status badges on one baseline (no overlap)
+  const pillY = photoY + 12.6;
+  let usedRight = 0;
+  const baptized = member.baptism_status === "baptise" || member.baptism_status === "Oui";
+  if (baptized) {
+    usedRight += drawBadge(pdf, sanitize(t.baptized), RIGHT - PAD, pillY, { r: 16, g: 185, b: 129 }, 4.8, 4.4, 20) + 1.5;
+  }
+  usedRight += drawBadge(
+    pdf,
+    sanitize(t.activeMember),
+    RIGHT - PAD - usedRight,
+    pillY,
+    { r: 71, g: 85, b: 105 },
+    4.8,
+    4.4,
+    22
+  );
+
+  if (member.role) {
+    const roleMaxW = Math.max(10, RIGHT - PAD - usedRight - 2 - nameX);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(5);
+    const roleText = fitText(pdf, sanitize(member.role).toUpperCase(), roleMaxW - 4);
+    const roleW = pdf.getTextWidth(roleText) + 4;
+    pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
+    pdf.roundedRect(nameX, pillY, roleW, 4.4, 2.2, 2.2, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(roleText, nameX + roleW / 2, pillY + 2.9, { align: "center" });
+  }
+
+  // ── Separator ──
+  const sepY = photoY + photoSize + 2.6;
   pdf.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
+  pdf.setGState(new (pdf as any).GState({ opacity: 0.25 }));
+  pdf.setLineWidth(0.25);
+  pdf.line(x + PAD, sepY, RIGHT - PAD, sepY);
+  pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+
+  // ── QR code (bottom-right) ──
+  const qrSize = 13.5;
+  const qrX = RIGHT - PAD - qrSize;
+  const qrY = sepY + 1.6;
+  pdf.setFillColor(252, 252, 253);
+  pdf.setDrawColor(225, 228, 235);
   pdf.setLineWidth(0.2);
-  pdf.line(x + 3, sepY, x + CARD_WIDTH - 3, sepY);
-  pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-
-  // ── QR Code with styled container ──
-  const qrSize = 13;
-  const qrX = x + 3;
-  const qrY = sepY + 1;
-
-  // QR container with subtle border
-  pdf.setFillColor(250, 250, 252);
-  pdf.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.setGState(new (pdf as any).GState({ opacity: 0.2 }));
-  pdf.roundedRect(qrX - 0.5, qrY - 0.5, qrSize + 1, qrSize + 1, 1.5, 1.5, "FD");
-  pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-
+  pdf.roundedRect(qrX - 0.7, qrY - 0.7, qrSize + 1.4, qrSize + 1.4, 1.4, 1.4, "FD");
   if (member.qr_code) {
     try {
       const qrCodeBase64 = await generateQRCodeBase64(member.qr_code);
@@ -320,60 +326,42 @@ const drawCard = async (
     }
   }
 
-  // QR label
-  pdf.setFontSize(3.5);
-  pdf.setTextColor(140, 140, 140);
-  pdf.setFont("helvetica", "normal");
-  const qrLabel = member.member_number || member.qr_code || `#${String(memberIndex + 1).padStart(4, "0")}`;
-  pdf.text(qrLabel, qrX + qrSize / 2, qrY + qrSize + 2, { align: "center" });
+  // ── Info rows (bottom-left, clear of the QR block) ──
+  const infoX = x + PAD;
+  const infoMaxW = qrX - 2.5 - infoX;
+  const rows: Array<[string, string]> = [];
+  if (member.ministry) rows.push([t.ministry, sanitize(member.ministry)]);
+  rows.push([t.memberSince, formatDate(member.join_date, customization?.language)]);
+  if (member.phone && rows.length < 3) rows.push([t.phone, sanitize(member.phone)]);
 
-  // ── Status badges (right side, bottom) ──
-  const badgeX = x + CARD_WIDTH - 3;
-  const badgeY = sepY + 3;
+  let rowY = sepY + 4.2;
+  for (const [label, value] of rows.slice(0, 3)) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(4.6);
+    pdf.setTextColor(135, 140, 150);
+    pdf.text(sanitize(label.replace(":", "")).toUpperCase(), infoX, rowY);
 
-  // Active member badge with gradient-style fill
-  const activeBadgeText = sanitize(t.activeMember);
-  const activeBadgeW = pdf.getStringUnitWidth(activeBadgeText) * 5 / pdf.internal.scaleFactor + 7;
-  pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
-  pdf.roundedRect(badgeX - activeBadgeW, badgeY, activeBadgeW, 5, 2.5, 2.5, "F");
-  // Green dot indicator
-  pdf.setFillColor(74, 222, 128);
-  pdf.circle(badgeX - activeBadgeW + 3, badgeY + 2.5, 1, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(5);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(activeBadgeText, badgeX - activeBadgeW + 5.5, badgeY + 3.5);
-
-  // Baptism badge
-  if (member.baptism_status === "baptise" || member.baptism_status === "Oui") {
-    const baptBadgeText = sanitize("✓ " + t.baptized);
-    const baptBadgeW = pdf.getStringUnitWidth(baptBadgeText) * 4.5 / pdf.internal.scaleFactor + 4;
-    pdf.setFillColor(16, 185, 129);
-    pdf.roundedRect(badgeX - baptBadgeW, badgeY + 6, baptBadgeW, 4, 2, 2, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(4.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text(baptBadgeText, badgeX - baptBadgeW + 2, badgeY + 8.8);
+    pdf.setFontSize(6.2);
+    pdf.setTextColor(40, 44, 52);
+    pdf.text(fitText(pdf, value, infoMaxW), infoX, rowY + 3.3);
+    rowY += 7.2;
   }
 
-  // ── Bottom accent bar (gradient-style) ──
-  const barH = 1.5;
+  // ── Bottom accent bar ──
+  const barH = 1.6;
   const barY = y + CARD_HEIGHT - barH;
-  // Left secondary
   pdf.setFillColor(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-  pdf.rect(x, barY, CARD_WIDTH / 3, barH, "F");
-  // Center primary
+  pdf.rect(x, barY, CARD_WIDTH, barH, "F");
   pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
   pdf.rect(x + CARD_WIDTH / 3, barY, CARD_WIDTH / 3, barH, "F");
-  // Right secondary
-  pdf.setFillColor(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-  pdf.rect(x + (CARD_WIDTH * 2) / 3, barY, CARD_WIDTH / 3, barH, "F");
 
-  // ── Card border ──
-  pdf.setDrawColor(220, 220, 220);
+  // ── Outline ──
+  pdf.setDrawColor(215, 219, 226);
   pdf.setLineWidth(0.3);
   pdf.roundedRect(x, y, CARD_WIDTH, CARD_HEIGHT, 3, 3, "S");
 };
+
 
 export const generateMemberCardsPDF = async (
   members: MemberCardData[],
