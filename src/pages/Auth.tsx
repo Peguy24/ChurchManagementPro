@@ -776,12 +776,12 @@ export default function Auth() {
           <img
             src="/images/church-management-pro-logo.png"
             alt="Church Management Pro"
-            className="h-16 w-auto object-contain"
+            className="h-20 w-auto object-contain"
             loading="eager"
           />
-          <p className="mt-2 text-sm font-medium tracking-tight text-muted-foreground">
+          <h1 className="mt-3 text-lg font-semibold tracking-tight text-foreground">
             Church Management Pro
-          </p>
+          </h1>
         </div>
 
         {/* Super Admin invitation banner */}
