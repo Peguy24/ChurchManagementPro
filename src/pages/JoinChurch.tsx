@@ -40,7 +40,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { validateForm, joinChurchSchema, firstErrorMessage } from "@/lib/validation";
+import {
+  validateForm,
+  joinChurchPersonalSchema,
+  joinChurchFormationSchema,
+  joinChurchSpiritualSchema,
+  joinChurchFamilySchema,
+  firstErrorMessage,
+} from "@/lib/validation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+
+const STEPS = ["personal", "formation", "spiritual", "family"] as const;
+type Step = (typeof STEPS)[number];
+
+const STEP_SCHEMAS = {
+  personal: joinChurchPersonalSchema,
+  formation: joinChurchFormationSchema,
+  spiritual: joinChurchSpiritualSchema,
+  family: joinChurchFamilySchema,
+} as const;
+
+const STEP_FIELDS: Record<Step, string[]> = {
+  personal: [
+    "firstName", "lastName", "gender", "dateOfBirth", "email", "phone", "emergencyPhone",
+    "street", "number", "apartment", "city", "state", "zipCode", "country",
+  ],
+  formation: ["academicFormation", "professionalFormation"],
+  spiritual: ["baptismStatus", "baptismDate", "originChurch", "conversionDate", "christianExperience"],
+  family: ["maritalStatus", "spouseName", "marriageDate", "numberOfChildren", "childrenNames", "message"],
+};
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
