@@ -6193,6 +6193,10 @@ export type Database = {
         Returns: boolean
       }
       has_website_addon: { Args: { _tenant_id: string }; Returns: boolean }
+      is_approved_tenant_user: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_reserved_subdomain: { Args: { _slug: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: { Args: { _user_id: string }; Returns: boolean }
