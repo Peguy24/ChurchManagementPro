@@ -14,6 +14,7 @@ const loaders: Record<string, Loader> = {
   "/members": () => import("@/pages/Members"),
   "/members/requests": () => import("@/pages/MemberRequests"),
   "/members/cards": () => import("@/pages/MemberCards"),
+  "/members/photo-booth": () => import("@/pages/PhotoBooth"),
   "/members/details": () => import("@/pages/MemberDetails"),
   "/attendance": () => import("@/pages/Attendance"),
   "/attendance/stats": () => import("@/pages/MemberAttendanceStats"),

@@ -110,6 +110,7 @@ export const ROUTE_TO_GROUP: Record<string, RouteGroup> = {
   "/members/cards": "members",
   "/members/requests": "members",
   "/members/details": "members",
+  "/members/photo-booth": "members",
   "/attendance": "attendance",
   "/attendance/stats": "attendance_admin",
   "/attendance/alerts": "attendance_admin",
