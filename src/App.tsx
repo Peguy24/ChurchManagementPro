@@ -258,6 +258,7 @@ const App = () => (
               <Route path="/legal/:docType" element={<LegalPage />} />
               <Route path="/event/:eventId/register" element={<EventRegister />} />
               <Route path="/checkin/:token" element={<SelfCheckin />} />
+              <Route path="/member-photo/:token" element={<MemberPhotoUpload />} />
               <Route path="/site/:slug" element={<PublicChurchSite />} />
               <Route path="/site/:slug/about" element={<PublicChurchSite />} />
               <Route path="/site/:slug/sermons" element={<PublicChurchSite />} />
