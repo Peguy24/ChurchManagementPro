@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calendar, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2, Clock } from "lucide-react";
+import { Calendar, CalendarCheck, Plus, TrendingUp, Users, BarChart3, Scan, CheckCircle, XCircle, Maximize, Minimize, Camera, CalendarDays, Trash2, Clock } from "lucide-react";
 import { getArrivalStatus, formatScanTime, getStatusTranslationKey, getStatusBadgeVariant } from "@/lib/attendanceStatus";
 import {
   AlertDialog,
