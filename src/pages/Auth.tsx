@@ -831,17 +831,8 @@ export default function Auth() {
           </Card>
         )}
         
-        <div className="mb-8 text-center">
-          <div className="flex flex-col items-center gap-3 mb-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">{lt('administration')}</h1>
-              <p className="text-sm text-muted-foreground">{lt('superAdminPortal')}</p>
-            </div>
-          </div>
-        </div>
+
+
 
         {/* Only show signup tab if there's a valid invitation */}
         {(superAdminInvite?.valid || tenantInfo) ? (
