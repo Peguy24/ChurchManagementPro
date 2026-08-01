@@ -3533,6 +3533,11 @@ const translations = {
     memberRequest: "Demande d'adhésion",
   },
   validation: {
+    text: { invalidChars: "Ce champ ne peut contenir que des lettres, espaces, apostrophes et tirets" },
+    zip: { invalid: "Code postal invalide" },
+    children: { invalid: "Le nombre d'enfants doit être un nombre entre 0 et 99" },
+    spouse: { requiresMarried: "Indiquez le nom du conjoint uniquement si le statut est « Marié(e) »" },
+    marriageDate: { requiresMarried: "La date de mariage ne s'applique pas au statut « Célibataire »" },
     email: {
       required: "L'email est requis",
       invalid: "Adresse email invalide",
@@ -7059,6 +7064,11 @@ const translations = {
     memberRequest: "Membership request",
   },
   validation: {
+    text: { invalidChars: "This field may only contain letters, spaces, apostrophes and hyphens" },
+    zip: { invalid: "Invalid ZIP / postal code" },
+    children: { invalid: "Number of children must be a number between 0 and 99" },
+    spouse: { requiresMarried: "Only provide a spouse name when the marital status is \"Married\"" },
+    marriageDate: { requiresMarried: "A marriage date does not apply to the \"Single\" status" },
     email: {
       required: "Email is required",
       invalid: "Invalid email address",
@@ -10584,6 +10594,11 @@ const translations = {
     memberRequest: "Demann adhesyon",
   },
   validation: {
+    text: { invalidChars: "Chan sa a ka gen sèlman lèt, espas, apostwòf ak tire" },
+    zip: { invalid: "Kòd postal la pa valid" },
+    children: { invalid: "Kantite timoun dwe yon nimewo ant 0 ak 99" },
+    spouse: { requiresMarried: "Mete non konjwen an sèlman si estati a se « Marye »" },
+    marriageDate: { requiresMarried: "Dat maryaj la pa aplike pou estati « Selibatè »" },
     email: {
       required: "Imèl la obligatwa",
       invalid: "Adrès imèl pa valab",
