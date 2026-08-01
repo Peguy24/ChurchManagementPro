@@ -9,6 +9,15 @@ import Dashboard from './Dashboard';
 import SuperAdminDashboard from './SuperAdminDashboard';
 import PendingApproval from './PendingApproval';
 import MaintenancePage from '@/components/MaintenancePage';
+// True when the app runs as an installed PWA (home-screen launch)
+function isStandaloneApp() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    (window.navigator as any).standalone === true
+  );
+}
+
 
 // Ordered list of fallback routes for users without dashboard access
 const FALLBACK_ROUTES = [
