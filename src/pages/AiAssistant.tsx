@@ -31,7 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Church, Lightbulb, RotateCcw, Trash2 } from "lucide-react";
+import { Bot, Church, Lightbulb, RotateCcw, Trash2 } from 'lucide-react';
 import { useUserRole } from "@/hooks/useUserRole";
 import AiMessageFeedback from "@/components/AiMessageFeedback";
 import AiDenialNotice, { asDenial } from "@/components/AiDenialNotice";
@@ -190,10 +190,15 @@ export default function AiAssistant() {
             <div className="rounded-xl bg-primary/10 p-2 text-primary">
               <Church className="h-6 w-6" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Bot className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{copy.title}</h1>
               <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
             </div>
+          </div>
           </div>
           {messages.length > 0 && (
             <Button

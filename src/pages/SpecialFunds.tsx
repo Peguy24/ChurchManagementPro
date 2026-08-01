@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { Plus, PiggyBank, ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, PiggyBank, Plus, Target, Wallet } from 'lucide-react';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -156,9 +156,14 @@ const SpecialFunds = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">{t("specialFundsPage.title")}</h1>
-            <p className="text-muted-foreground">{t("specialFundsPage.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Wallet className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("specialFundsPage.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("specialFundsPage.subtitle")}</p>
+            </div>
           </div>
           <Dialog open={fundDialogOpen} onOpenChange={setFundDialogOpen}>
             <DialogTrigger asChild>

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Mail, Trash2, RefreshCw, Clock, CheckCircle, XCircle, Send, Shield, Copy, Check } from "lucide-react";
+import { Check, CheckCircle, Clock, Copy, Mail, MailPlus, RefreshCw, Send, Shield, Trash2, XCircle } from 'lucide-react';
 import { format, formatDistanceToNow } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -229,10 +229,15 @@ export default function AdminInvitations() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{lt("title")}</h1>
-          <p className="text-sm md:text-base text-muted-foreground">{lt("desc")}</p>
-        </div>
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <MailPlus className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lt("title")}</h1>
+              <p className="text-sm text-muted-foreground">{lt("desc")}</p>
+            </div>
+          </div>
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           <Card>

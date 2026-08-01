@@ -13,7 +13,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Building2, Save, Loader2, Phone, Mail, MapPin, FileText, Hash, Palette, CreditCard, AlertCircle, Coins, Eraser } from "lucide-react";
+import { AlertCircle, Building2, Coins, CreditCard, Eraser, FileText, Hash, Loader2, Mail, MapPin, Palette, Phone, Save, Settings } from 'lucide-react';
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -208,12 +208,17 @@ export default function ChurchSettings() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t("churchSettings.title")}</h2>
-          <p className="text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Settings className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("churchSettings.title")}</h1>
+              <p className="text-sm text-muted-foreground">
             {t("churchSettings.subtitle")}
           </p>
-        </div>
+            </div>
+          </div>
 
         {/* Tenant selector for super admins */}
         {needsTenantSelection && (

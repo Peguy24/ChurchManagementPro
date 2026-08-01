@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Download, Plus, TrendingUp, FileText, Eye, Pencil, Wallet, Building2 } from "lucide-react";
+import { Building2, DollarSign, Download, Eye, FileText, HandCoins, Pencil, Plus, TrendingUp, Wallet } from 'lucide-react';
 import DonationDialog from "@/components/DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDonationReceiptPDF, downloadDonationReceiptPDF } from "@/lib/donationReceiptPDF";
@@ -272,13 +272,16 @@ function DonationsContent() {
     <Layout>
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              {t("donations.title")}
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <HandCoins className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("donations.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("donations.subtitle")}
             </p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={exportData}>

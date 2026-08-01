@@ -19,7 +19,7 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Handshake, TrendingDown, TrendingUp, DollarSign } from "lucide-react";
+import { DollarSign, HandCoins, Handshake, Plus, TrendingDown, TrendingUp } from 'lucide-react';
 import { format } from "date-fns";
 
 type OperationType = "credit_purchase" | "loan_received" | "loan_given";
@@ -262,9 +262,14 @@ const CreditAndLoans = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t("creditAndLoans.title")}</h1>
-            <p className="text-muted-foreground">{t("creditAndLoans.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <HandCoins className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("creditAndLoans.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("creditAndLoans.subtitle")}</p>
+            </div>
           </div>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>

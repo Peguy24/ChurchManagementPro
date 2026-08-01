@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Plus, Pencil, Trash2, FolderOpen, AlertTriangle } from "lucide-react";
+import { AlertTriangle, FolderOpen, Pencil, Plus, Tags, Trash2 } from 'lucide-react';
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -215,9 +215,14 @@ export default function ExpenseCategories() {
     <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("layout.expenseCategoriesTitle")}</h1>
-            <p className="text-muted-foreground">{t("layout.expenseCategoriesDesc")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Tags className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("layout.expenseCategoriesTitle")}</h1>
+              <p className="text-sm text-muted-foreground">{t("layout.expenseCategoriesDesc")}</p>
+            </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>

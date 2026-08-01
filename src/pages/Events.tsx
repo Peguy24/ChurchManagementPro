@@ -164,13 +164,16 @@ export default function Events() {
     <Layout>
       <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              {t("events.title")}
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <CalendarDays className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("events.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("events.subtitle")}
             </p>
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={handleDownloadPDF}>

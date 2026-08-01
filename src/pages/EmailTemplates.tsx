@@ -181,14 +181,16 @@ function EmailTemplatesContent() {
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Mail className="h-8 w-8" />
-              {t("emailTemplatesPage.title")}
-            </h1>
-            <p className="text-muted-foreground mt-1">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Mail className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("emailTemplatesPage.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("emailTemplatesPage.subtitle")}
             </p>
+            </div>
           </div>
         </div>
 

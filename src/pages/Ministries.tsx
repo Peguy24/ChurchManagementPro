@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Users, Trash2, BarChart3, ArrowLeft } from "lucide-react";
+import { ArrowLeft, BarChart3, Church, Edit, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import MinistryDialog from "@/components/MinistryDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,12 +107,17 @@ export default function Ministries() {
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("ministries.title")}</h2>
-              <p className="text-muted-foreground text-sm sm:text-base">
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Church className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("ministries.title")}</h1>
+              <p className="text-sm text-muted-foreground">
                 {t("ministries.subtitle")}
               </p>
             </div>
+          </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button

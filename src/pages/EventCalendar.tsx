@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Users } from "lucide-react";
+import { CalendarRange, ChevronLeft, ChevronRight, Clock, MapPin, Plus, Users } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth, isToday } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -85,9 +85,14 @@ export default function EventCalendar() {
     <Layout>
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("eventCalendar.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("eventCalendar.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <CalendarRange className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("eventCalendar.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("eventCalendar.subtitle")}</p>
+            </div>
           </div>
           <Button onClick={() => setShowEventDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />

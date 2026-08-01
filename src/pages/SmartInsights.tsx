@@ -8,23 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SignedAvatar } from '@/components/SignedAvatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Brain, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  AlertTriangle, 
-  UserCheck, 
-  Bell, 
-  RefreshCw,
-  ChevronRight,
-  Users,
-  Heart,
-  Calendar,
-  Gift,
-  CheckCircle2,
-  Eye
-} from 'lucide-react';
+import { AlertTriangle, Bell, Brain, Calendar, CheckCircle2, ChevronRight, Eye, Gift, Heart, Lightbulb, Minus, RefreshCw, TrendingDown, TrendingUp, UserCheck, Users } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -416,10 +400,15 @@ export default function SmartInsights() {
             <div className="p-2 rounded-lg bg-primary/10">
               <Brain className="h-6 w-6 text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">{lt('pageTitle')}</h1>
-              <p className="text-muted-foreground text-sm">{lt('pageSubtitle')}</p>
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Lightbulb className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lt('pageTitle')}</h1>
+              <p className="text-sm text-muted-foreground">{lt('pageSubtitle')}</p>
             </div>
+          </div>
           </div>
           <Button 
             onClick={() => recalculate.mutate()} 

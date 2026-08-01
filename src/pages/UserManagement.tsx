@@ -211,9 +211,14 @@ export default function UserManagement() {
     <Layout>
       <div className="space-y-4 md:space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("platform.superAdminManagement")}</h1>
-            <p className="text-sm md:text-base text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Users className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("platform.superAdminManagement")}</h1>
+              <p className="text-sm text-muted-foreground">{t("platform.superAdminManagementDesc")}</p>
+            </div>
           </div>
           <Button onClick={() => setIsInviteDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="h-4 w-4 mr-2" />

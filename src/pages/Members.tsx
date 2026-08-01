@@ -41,7 +41,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Download, Upload, Edit, BarChart, Eye, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft, UserPlus } from "lucide-react";
+import { Archive, ArrowRightLeft, BarChart, Download, Edit, Eye, MoreHorizontal, Plus, Search, Skull, Upload, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import MemberDialog from "@/components/MemberDialog";
 import MemberImportDialog from "@/components/MemberImportDialog";
@@ -225,11 +225,16 @@ export default function Members() {
     <Layout>
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("members.title")}</h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Users className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("members.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("members.subtitle")}
             </p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setJoinDialogOpen(true)}>

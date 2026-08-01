@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Edit, Trash2, Calendar, Users, UserCheck } from 'lucide-react';
+import { Calendar, CalendarClock, Edit, Plus, Trash2, UserCheck, Users } from 'lucide-react';
 import { sanitizeLine, sanitizeText, sanitizeName, todayISO, maxFutureISO, clampMaxFuture } from '@/lib/inputSanitize';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -190,9 +190,14 @@ export default function VolunteerScheduling() {
     <Layout>
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{v('title')}</h1>
-            <p className="text-muted-foreground">{v('subtitle')}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <CalendarClock className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{v('title')}</h1>
+              <p className="text-sm text-muted-foreground">{v('subtitle')}</p>
+            </div>
           </div>
         </div>
 

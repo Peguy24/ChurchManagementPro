@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Archive, CalendarCheck, DollarSign, Receipt, Loader2, AlertTriangle, Search, History } from "lucide-react";
+import { AlertTriangle, Archive, CalendarCheck, Database, DollarSign, History, Loader2, Receipt, Search } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTenantRole } from "@/hooks/useTenantRole";
 import { toast } from "sonner";
@@ -284,13 +284,15 @@ export default function DataManagement() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Archive className="h-8 w-8" />
-            {lt.title}
-          </h1>
-          <p className="text-muted-foreground mt-1">{lt.subtitle}</p>
-        </div>
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Database className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lt.title}</h1>
+              <p className="text-sm text-muted-foreground">{lt.subtitle}</p>
+            </div>
+          </div>
 
         <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
           <ArchiveCard

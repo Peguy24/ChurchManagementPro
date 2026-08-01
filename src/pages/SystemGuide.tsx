@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { generateSystemGuidePDF } from "@/lib/systemGuidePDF";
-import { Download, FileText, Users, DollarSign, ClipboardCheck, Calendar, Package, BarChart3, Shield, Sparkles, Mail, Building2 } from "lucide-react";
+import { BarChart3, BookOpen, Building2, Calendar, ClipboardCheck, DollarSign, Download, FileText, Mail, Package, Shield, Sparkles, Users } from 'lucide-react';
 
 const sections = [
   { icon: Users, key: "members" },
@@ -54,15 +54,18 @@ export default function SystemGuide() {
     <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {lang === "fr" ? "Guide du Système" : "System Guide"}
-            </h1>
-            <p className="text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <BookOpen className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lang === "fr" ? "Guide du Système" : "System Guide"}</h1>
+              <p className="text-sm text-muted-foreground">
               {lang === "fr"
                 ? "Téléchargez un document PDF décrivant toutes les fonctionnalités pour votre leadership."
                 : "Download a PDF document describing all features for your leadership."}
             </p>
+            </div>
           </div>
           <Button size="lg" onClick={() => generateSystemGuidePDF(lang)} className="gap-2">
             <Download className="h-5 w-5" />

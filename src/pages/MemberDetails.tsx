@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, User, Phone, Mail, MapPin, Calendar, Users, Book, Heart, Briefcase, Plus, History, QrCode, MoreHorizontal, Archive, Skull, UserCheck, UserX, ArrowRightLeft, Clock } from "lucide-react";
+import { Archive, ArrowLeft, ArrowRightLeft, Book, Briefcase, Calendar, Clock, Edit, Heart, History, Mail, MapPin, MoreHorizontal, Phone, Plus, QrCode, Skull, User, UserCheck, UserCircle, UserX, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -395,11 +395,14 @@ export default function MemberDetails() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("memberDetails.back")}
             </Button>
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                {t("memberDetails.title")}
-              </h2>
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <UserCircle className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("memberDetails.title")}</h1>
             </div>
+          </div>
           </div>
           <div className="flex gap-2">
             <DropdownMenu>

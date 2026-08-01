@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Check, X, Clock, Download, Eye, Building2, Wallet } from "lucide-react";
+import { Building2, Check, Clock, Download, Eye, FileText, Plus, Receipt, Wallet, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -414,9 +414,14 @@ export default function Expenses() {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("expense.title")}</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">{t("expense.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Receipt className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("expense.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("expense.subtitle")}</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={exportData}>

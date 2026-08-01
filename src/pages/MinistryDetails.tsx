@@ -43,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Plus, Trash2, User, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Church, Plus, Trash2, User } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -221,14 +221,17 @@ export default function MinistryDetails() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Button>
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                {ministry.name}
-              </h2>
-              <p className="text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Church className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{ministry.name}</h1>
+              <p className="text-sm text-muted-foreground">
                 {ministry.description || "Aucune description"}
               </p>
             </div>
+          </div>
           </div>
           <Button onClick={() => setAddMemberDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
