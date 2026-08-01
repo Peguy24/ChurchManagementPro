@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, BarChart4, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateInputValue, toSafeDate } from '@/lib/date';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -261,10 +261,15 @@ const GroupComparisonDashboard = () => {
             <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <BarChart4 className="h-5 w-5" />
+            </span>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">{lt("title")}</h1>
-              <p className="text-xs md:text-sm text-muted-foreground">{lt("subtitle")}</p>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lt("title")}</h1>
+              <p className="text-sm text-muted-foreground">{lt("subtitle")}</p>
             </div>
+          </div>
           </div>
           <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
             <SelectTrigger className="w-full sm:w-[200px]">

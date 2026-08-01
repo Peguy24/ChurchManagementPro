@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, MapPin, Phone, Mail, Users, Building2, Edit, Trash2, Network, ChevronDown, List, Briefcase, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Briefcase, Building2, ChevronDown, Edit, GitBranch, List, Mail, MapPin, Network, Phone, Plus, Search, Trash2, Users } from 'lucide-react';
 import { BranchDialog } from "@/components/BranchDialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -303,17 +303,22 @@ export default function Branches() {
 
   return (
     <Layout>
-    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">{t("branches.title")}</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <GitBranch className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("branches.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("branches.subtitle")}
             </p>
+            </div>
           </div>
         </div>
         <Button onClick={handleAddBranch} className="self-start sm:self-auto">

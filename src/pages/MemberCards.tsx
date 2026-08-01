@@ -17,7 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Download, UserCircle, Search, Filter, CheckSquare, Square, Calendar, Church, Hash, FileDown, Briefcase, Eye } from "lucide-react";
+import { Briefcase, Calendar, CheckSquare, Church, CreditCard, Download, Eye, FileDown, Filter, Hash, Printer, Search, Square, UserCircle } from 'lucide-react';
 import { SignedImage } from "@/components/SignedImage";
 import {
   Dialog,
@@ -354,16 +354,21 @@ export default function MemberCards() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header - Hidden when printing */}
         <div className="flex flex-col gap-4 print:hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">{t("memberCards.title")}</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <CreditCard className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("memberCards.title")}</h1>
+              <p className="text-sm text-muted-foreground">
                 {selectedCount} {t("memberCards.cardsSelected")} / {members.length} {t("memberCards.filtered")} / {allMembers.length} {t("memberCards.total")}
               </p>
             </div>
+          </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <Button 
                 variant="default" 

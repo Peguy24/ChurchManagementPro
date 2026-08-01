@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Users, TrendingUp, Briefcase, Award } from "lucide-react";
+import { ArrowLeft, Award, BarChart3, Briefcase, TrendingUp, Users } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -197,7 +197,7 @@ export default function MinistriesStats() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -205,14 +205,17 @@ export default function MinistriesStats() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("ministries.back")}
             </Button>
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                {t("ministries.statsTitle")}
-              </h2>
-              <p className="text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <BarChart3 className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("ministries.statsTitle")}</h1>
+              <p className="text-sm text-muted-foreground">
                 {t("ministries.statsSubtitle")}
               </p>
             </div>
+          </div>
           </div>
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[150px]">

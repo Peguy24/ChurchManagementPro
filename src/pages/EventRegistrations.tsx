@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Download, Loader2, Users } from "lucide-react";
+import { ArrowLeft, ClipboardList, Download, Loader2, Users } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import EventQRCode from "@/components/EventQRCode";
@@ -111,14 +111,19 @@ export default function EventRegistrations() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/events")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{event?.name || t("eventRegistration.registrations")}</h1>
-            <p className="text-sm text-muted-foreground">{t("eventRegistration.registrationsList")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <ClipboardList className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{event?.name || t("eventRegistration.registrations")}</h1>
+              <p className="text-sm text-muted-foreground">{t("eventRegistration.registrationsList")}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-muted-foreground" />

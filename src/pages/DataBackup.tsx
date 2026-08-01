@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Download, Database, Loader2, FileDown, CheckCircle, Shield, Users, DollarSign, Calendar, Package, ClipboardCheck, Briefcase, Church } from "lucide-react";
+import { Briefcase, Calendar, CheckCircle, Church, ClipboardCheck, Database, DatabaseBackup, DollarSign, Download, FileDown, Loader2, Package, Shield, Users } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -327,12 +327,17 @@ export default function DataBackup() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{lt("title")}</h2>
-          <p className="text-muted-foreground">{lt("subtitle")}</p>
-        </div>
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <DatabaseBackup className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lt("title")}</h1>
+              <p className="text-sm text-muted-foreground">{lt("subtitle")}</p>
+            </div>
+          </div>
 
         {/* Security Notice */}
         <Card className="border-primary/20 bg-primary/5">

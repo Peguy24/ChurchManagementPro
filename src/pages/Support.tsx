@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MessageSquare, Clock, Crown, Shield, Headphones } from "lucide-react";
+import { Clock, Crown, Headphones, LifeBuoy, MessageSquare, Plus, Shield } from 'lucide-react';
 import { format } from "date-fns";
 import SupportDialog from "@/components/SupportDialog";
 import { FeatureLockedCard } from "@/components/FeatureLockedCard";
@@ -198,10 +198,15 @@ export default function Support() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t("layout.support")}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <LifeBuoy className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("layout.support")}</h1>
+            </div>
           </div>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />

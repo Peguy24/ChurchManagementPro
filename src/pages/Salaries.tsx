@@ -37,7 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Plus, Users, History, Edit, Trash2, Banknote, Search, Download, Filter } from "lucide-react";
+import { Banknote, Download, Edit, Filter, History, Plus, Search, Trash2, Users, Wallet } from 'lucide-react';
 import * as XLSX from "xlsx";
 import { subMonths, subYears, isAfter } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -538,13 +538,18 @@ export default function Salaries() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">{t("salariesPage.title")}</h1>
-            <p className="text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Wallet className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("salariesPage.title")}</h1>
+              <p className="text-sm text-muted-foreground">
               {t("salariesPage.subtitle")}
             </p>
+            </div>
           </div>
         </div>
 

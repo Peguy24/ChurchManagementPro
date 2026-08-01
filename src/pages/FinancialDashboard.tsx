@@ -5,19 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Wallet,
-  PiggyBank,
-  CreditCard,
-  ArrowUpRight,
-  ArrowDownRight,
-  AlertTriangle,
-  Banknote,
-  Handshake
-} from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Banknote, CreditCard, DollarSign, Handshake, LineChart, PiggyBank, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -268,13 +256,18 @@ const FinancialDashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">{t("finance.dashboard")}</h1>
-          <p className="text-muted-foreground">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <LineChart className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("finance.dashboard")}</h1>
+              <p className="text-sm text-muted-foreground">
             {format(currentDate, "MMMM yyyy", { locale: language === "fr" ? fr : undefined })}
           </p>
-        </div>
+            </div>
+          </div>
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

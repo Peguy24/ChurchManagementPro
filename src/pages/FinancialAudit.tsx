@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { History, Search, FileText, Eye } from "lucide-react";
+import { Eye, FileText, History, Search, ShieldCheck } from 'lucide-react';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -84,14 +84,16 @@ const FinancialAudit = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <History className="h-8 w-8" />
-            {t("finance.auditTrail")}
-          </h1>
-          <p className="text-muted-foreground">{t("financialAudit.subtitle")}</p>
-        </div>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("finance.auditTrail")}</h1>
+              <p className="text-sm text-muted-foreground">{t("financialAudit.subtitle")}</p>
+            </div>
+          </div>
 
         {/* Filters */}
         <Card>

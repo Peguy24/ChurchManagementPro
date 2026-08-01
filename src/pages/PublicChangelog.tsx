@@ -61,7 +61,7 @@ export default function PublicChangelog() {
             No published updates yet. Check back soon!
           </CardContent></Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {entries.map((e) => {
               const meta = CATEGORY_META[e.category] || CATEGORY_META.improvement;
               const Icon = meta.icon;

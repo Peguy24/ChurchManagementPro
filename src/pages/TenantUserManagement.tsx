@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Check, X, UserPlus, Crown, Mail, Send, Link2, Copy, Loader2, AlertTriangle, Trash2, Users2 } from 'lucide-react';
+import { AlertTriangle, Check, Copy, Crown, Link2, Loader2, Mail, Send, Shield, Trash2, UserCog, UserPlus, Users, Users2, X } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -426,11 +426,16 @@ export default function TenantUserManagement() {
     <Layout>
       <div className="space-y-4 md:space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('tenant.userManagementTitle')}</h1>
-            <p className="text-sm md:text-base text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <UserCog className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t('tenant.userManagementTitle')}</h1>
+              <p className="text-sm text-muted-foreground">
               {t('tenant.userManagementSubtitle')}
             </p>
+            </div>
           </div>
           <Button onClick={() => setInviteDialogOpen(true)} className="w-full sm:w-auto">
             <Mail className="mr-2 h-4 w-4" />
@@ -655,7 +660,7 @@ export default function TenantUserManagement() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="permissions" className="space-y-6">
+          <TabsContent value="permissions" className="space-y-4 sm:space-y-6">
             <TenantRolePermissionsManager />
             <TenantCustomRolesManager />
           </TabsContent>

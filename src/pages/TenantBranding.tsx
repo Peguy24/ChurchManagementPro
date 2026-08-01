@@ -96,13 +96,18 @@ export default function TenantBranding() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{t("tenant.brandingTitle")}</h2>
-          <p className="text-sm md:text-base text-muted-foreground">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Palette className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("tenant.brandingTitle")}</h1>
+              <p className="text-sm text-muted-foreground">
             {t("tenant.brandingSubtitle")}
           </p>
-        </div>
+            </div>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Branding */}

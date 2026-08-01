@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, CheckCircle, XCircle, ArrowUpRight, ArrowDownRight, RefreshCw, FileText, Loader2 } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Building2, CheckCircle, FileText, Landmark, Loader2, Plus, RefreshCw, XCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -289,12 +289,17 @@ export default function BankReconciliation() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("bank.title")}</h1>
-            <p className="text-muted-foreground">{t("bank.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Landmark className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("bank.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("bank.subtitle")}</p>
+            </div>
           </div>
           <Dialog open={accountDialogOpen} onOpenChange={setAccountDialogOpen}>
             <DialogTrigger asChild>

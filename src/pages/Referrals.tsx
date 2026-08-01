@@ -110,20 +110,22 @@ export default function Referrals() {
 
   return (
     <Layout>
-      <div className="space-y-6 max-w-5xl mx-auto">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Gift className="h-7 w-7 text-primary" />
-            {tt("Refer a Church", "Parrainer une Église", "Refere yon Legliz")}
-          </h1>
-          <p className="text-muted-foreground mt-1">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Gift className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{tt("Refer a Church", "Parrainer une Église", "Refere yon Legliz")}</h1>
+              <p className="text-sm text-muted-foreground">
             {tt(
               "Invite another church and you both get 1 month free when they subscribe.",
               "Invitez une autre église et vous obtenez tous les deux 1 mois gratuit lors de leur abonnement.",
               "Envite yon lòt legliz epi tou de a w ap jwenn 1 mwa gratis lè yo abònen."
             )}
           </p>
-        </div>
+            </div>
+          </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>

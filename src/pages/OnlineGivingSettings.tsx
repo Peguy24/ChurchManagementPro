@@ -241,9 +241,14 @@ export default function OnlineGivingSettings() {
       <div className="container max-w-3xl py-8 space-y-6">
         <div className="flex items-center gap-3">
           <HeartHandshake className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">{T.title}</h1>
-            <p className="text-muted-foreground">{T.subtitle}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <HeartHandshake className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{T.title}</h1>
+              <p className="text-sm text-muted-foreground">{T.subtitle}</p>
+            </div>
           </div>
         </div>
 

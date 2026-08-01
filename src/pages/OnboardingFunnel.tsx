@@ -48,7 +48,7 @@ export default function OnboardingFunnel() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Onboarding Funnel</h1>
           <p className="text-muted-foreground">Where new churches drop off during setup</p>

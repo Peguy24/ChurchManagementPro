@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Zap, Cake, CalendarCheck, UserMinus, Bell, Save, Loader2, Clock } from "lucide-react";
+import { Bell, Cake, CalendarCheck, Clock, Loader2, Save, UserMinus, Workflow, Zap } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
@@ -121,11 +121,16 @@ export default function EngagementAutomations() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("automations.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("automations.subtitle")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Workflow className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{t("automations.title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("automations.subtitle")}</p>
+            </div>
           </div>
           <Button onClick={() => saveMutation.mutate()} disabled={!hasChanges || saveMutation.isPending}>
             {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
