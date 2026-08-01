@@ -3318,6 +3318,10 @@ const translations = {
       error: "Erreur",
     },
     joinForm: {
+      next: "Suivant",
+      back: "Précédent",
+      stepOf: "Étape {current} sur {total}",
+      errorStepInvalid: "Veuillez corriger les champs en rouge avant de continuer",
       title: "Demande d'adhésion",
       subtitle: "Remplissez ce formulaire pour devenir membre de notre église",
       tabPersonal: "Personnel",
@@ -6850,6 +6854,10 @@ const translations = {
       error: "Error",
     },
     joinForm: {
+      next: "Next",
+      back: "Back",
+      stepOf: "Step {current} of {total}",
+      errorStepInvalid: "Please correct the highlighted fields before continuing",
       title: "Membership Application",
       subtitle: "Fill out this form to become a member of our church",
       tabPersonal: "Personal",
@@ -10381,6 +10389,10 @@ const translations = {
       error: "Erè",
     },
     joinForm: {
+      next: "Apre",
+      back: "Anvan",
+      stepOf: "Etap {current} sou {total}",
+      errorStepInvalid: "Tanpri korije chan ki make yo anvan ou kontinye",
       title: "Demann Adhesyon",
       subtitle: "Ranpli fòmilè sa a pou vin manm legliz nou an",
       tabPersonal: "Pèsonèl",
