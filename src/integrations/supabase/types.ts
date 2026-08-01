@@ -2615,6 +2615,50 @@ export type Database = {
           },
         ]
       }
+      member_photo_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          member_id: string
+          tenant_id: string
+          token: string
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          member_id: string
+          tenant_id: string
+          token: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          member_id?: string
+          tenant_id?: string
+          token?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_photo_links_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_requests: {
         Row: {
           academic_formation: string | null
@@ -2822,6 +2866,8 @@ export type Database = {
           member_type: string | null
           number_of_children: number | null
           origin_church: string | null
+          pending_photo_at: string | null
+          pending_photo_url: string | null
           phone: string | null
           photo_url: string | null
           professional_formation: string | null
@@ -2859,6 +2905,8 @@ export type Database = {
           member_type?: string | null
           number_of_children?: number | null
           origin_church?: string | null
+          pending_photo_at?: string | null
+          pending_photo_url?: string | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null
@@ -2896,6 +2944,8 @@ export type Database = {
           member_type?: string | null
           number_of_children?: number | null
           origin_church?: string | null
+          pending_photo_at?: string | null
+          pending_photo_url?: string | null
           phone?: string | null
           photo_url?: string | null
           professional_formation?: string | null
