@@ -3726,6 +3726,7 @@ const translations = {
       dashboard: "Dashboard",
       members: "Members",
       memberCards: "Member Cards",
+      photoBooth: "Photo Booth",
       attendance: "Attendance",
       attendanceAlerts: "Attendance Alerts",
       arrivalReport: "Arrival Report",
