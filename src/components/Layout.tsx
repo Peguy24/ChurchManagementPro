@@ -510,6 +510,16 @@ export default function Layout({ children }: LayoutProps) {
     return currentGroup ? [currentGroup.key] : [];
   });
 
+  // Role data resolves after the first render, so the initializer above may run
+  // before tenant navigation exists. Keep Members open by default so key tools
+  // such as Photo Booth are immediately discoverable in the sidebar.
+  useEffect(() => {
+    if (roleLoading || showAsSuperAdmin) return;
+    const hasMembersGroup = navGroups.some(group => group.key === "members");
+    if (!hasMembersGroup) return;
+    setOpenGroups(prev => prev.includes("members") ? prev : [...prev, "members"]);
+  }, [roleLoading, showAsSuperAdmin]);
+
   // Keep the group of the active route expanded when navigating,
   // without collapsing groups the user opened manually.
   useEffect(() => {
@@ -761,7 +771,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <div className="container flex px-4 sm:px-8">
         {/* Desktop Sidebar */}
-        <aside className="hidden w-56 border-r py-4 pr-2 md:block flex-shrink-0">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 flex-shrink-0 overflow-y-auto border-r py-4 pr-2 md:block">
           {roleLoading ? (
             <div className="space-y-2">
               <div className="h-8 rounded-md bg-muted" />
