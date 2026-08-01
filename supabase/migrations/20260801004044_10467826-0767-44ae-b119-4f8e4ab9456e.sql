@@ -1,0 +1,1 @@
+update platform_settings set setting_value = jsonb_set(setting_value::jsonb, '{features,branding}', 'true'::jsonb) where setting_key = 'plan_professionnel_limits';
