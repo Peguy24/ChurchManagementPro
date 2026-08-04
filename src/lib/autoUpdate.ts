@@ -6,7 +6,7 @@
  * `no-store`, read the hashed bundle name, and reload once it changes.
  */
 
-const CHECK_INTERVAL_MS = 60_000;
+const CHECK_INTERVAL_MS = 30_000;
 let currentBuildId: string | null = null;
 let reloading = false;
 let started = false;
