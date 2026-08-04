@@ -94,6 +94,7 @@ interface MemberRow {
   id: string;
   first_name: string;
   last_name: string;
+  status: string | null;
   member_number: string | null;
   photo_url: string | null;
   pending_photo_url: string | null;
@@ -129,16 +130,15 @@ export default function PhotoBooth() {
     setLoading(true);
     const { data, error } = await (supabase.from("members") as any)
       .select(
-        "id, first_name, last_name, member_number, photo_url, pending_photo_url, pending_photo_at"
+        "id, first_name, last_name, status, member_number, photo_url, pending_photo_url, pending_photo_at"
       )
       .eq("tenant_id", tenantId)
-      .eq("status", "active")
       .order("last_name", { ascending: true });
 
     if (error) {
       toast({ title: lt.error, description: error.message, variant: "destructive" });
     } else {
-      setMembers((data as MemberRow[]) ?? []);
+      setMembers(((data as MemberRow[]) ?? []).filter((member) => member.status === "active"));
     }
     setLoading(false);
   };
