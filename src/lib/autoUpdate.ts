@@ -63,4 +63,9 @@ export function startAutoUpdate() {
     if (document.visibilityState === "visible") void checkForUpdate();
   });
   window.addEventListener("focus", () => void checkForUpdate());
+  // iOS Safari restores pages from the back/forward cache without re-running
+  // scripts, which is a common source of "my phone still shows the old app".
+  window.addEventListener("pageshow", (event) => {
+    if ((event as PageTransitionEvent).persisted) void checkForUpdate();
+  });
 }
