@@ -117,7 +117,7 @@ serve(async (req) => {
       }
 
       const ext = match[1] === "png" ? "png" : "jpg";
-      const path = `pending/${link.member_id}.${ext}`;
+      const path = `${link.tenant_id}/pending/${link.member_id}.${ext}`;
 
       const { error: upErr } = await supabaseAdmin.storage
         .from("member-photos")

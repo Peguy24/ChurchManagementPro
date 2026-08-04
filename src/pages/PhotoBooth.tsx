@@ -170,10 +170,14 @@ export default function PhotoBooth() {
   );
 
   const saveCropped = async (blob: Blob) => {
-    if (!activeMember) return;
+    if (!activeMember || !tenantId) return;
+    const member = activeMember;
     try {
       const ext = blob.type === "image/png" ? "png" : "jpg";
-      const path = `${activeMember.id}.${ext}`;
+      // Storage policies isolate files by the first path segment (tenant ID).
+      // A versioned filename prevents browsers/CDNs from showing an older
+      // photo after a replacement is saved.
+      const path = `${tenantId}/${member.id}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("member-photos")
         .upload(path, blob, { upsert: true, contentType: blob.type });
@@ -182,7 +186,8 @@ export default function PhotoBooth() {
       const { error } = await supabase
         .from("members")
         .update({ photo_url: path })
-        .eq("id", activeMember.id);
+        .eq("id", member.id)
+        .eq("tenant_id", tenantId);
       if (error) throw error;
 
       toast({ title: lt.saved, description: lt.savedDesc });
@@ -217,10 +222,10 @@ export default function PhotoBooth() {
   };
 
   const approvePending = async (member: MemberRow) => {
-    if (!member.pending_photo_url) return;
+    if (!member.pending_photo_url || !tenantId) return;
     try {
       const ext = member.pending_photo_url.endsWith(".png") ? "png" : "jpg";
-      const dest = `${member.id}.${ext}`;
+      const dest = `${tenantId}/${member.id}-${Date.now()}.${ext}`;
       const { data: file, error: dlErr } = await supabase.storage
         .from("member-photos")
         .download(member.pending_photo_url);
@@ -238,7 +243,8 @@ export default function PhotoBooth() {
           pending_photo_url: null,
           pending_photo_at: null,
         })
-        .eq("id", member.id);
+        .eq("id", member.id)
+        .eq("tenant_id", tenantId);
       if (error) throw error;
 
       await supabase.storage.from("member-photos").remove([member.pending_photo_url]);
@@ -407,10 +413,9 @@ export default function PhotoBooth() {
 
       <CameraCapture
         open={cameraOpen}
-        onOpenChange={(o) => {
-          setCameraOpen(o);
-          if (!o && !cropperOpen) setActiveMember(null);
-        }}
+        // Keep the selected member while CameraCapture hands the image to the
+        // cropper. Clearing it here races with the cropper opening.
+        onOpenChange={setCameraOpen}
         title={
           activeMember
             ? `${lt.take} — ${activeMember.first_name} ${activeMember.last_name}`
@@ -434,7 +439,10 @@ export default function PhotoBooth() {
           open={cropperOpen}
           onOpenChange={(o) => {
             setCropperOpen(o);
-            if (!o) setCropFile(null);
+            if (!o) {
+              setCropFile(null);
+              setActiveMember(null);
+            }
           }}
           imageFile={cropFile}
           onCropComplete={saveCropped}
