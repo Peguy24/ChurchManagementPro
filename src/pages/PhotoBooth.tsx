@@ -422,6 +422,13 @@ export default function PhotoBooth() {
         }}
       />
 
+      <MemberPhotoLinkDialog
+        open={linkOpen}
+        onOpenChange={setLinkOpen}
+        url={linkUrl}
+        memberName={linkMember}
+      />
+
       {cropFile && (
         <PhotoCropper
           open={cropperOpen}
