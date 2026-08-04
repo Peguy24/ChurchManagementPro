@@ -132,7 +132,7 @@ export default function PhotoBooth() {
         "id, first_name, last_name, member_number, photo_url, pending_photo_url, pending_photo_at"
       )
       .eq("tenant_id", tenantId)
-      .eq("is_active", true)
+      .eq("status", "active")
       .order("last_name", { ascending: true });
 
     if (error) {
