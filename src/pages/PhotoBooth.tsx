@@ -124,6 +124,9 @@ export default function PhotoBooth() {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [linkMember, setLinkMember] = useState<string>("");
+  const [linkOpen, setLinkOpen] = useState(false);
 
   const fetchMembers = async () => {
     if (!tenantId) return;
