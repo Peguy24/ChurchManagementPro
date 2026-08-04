@@ -219,6 +219,10 @@ function TenantHostGate({ children }: { children: React.ReactNode }) {
     return (
       <Suspense fallback={<LazyFallback />}>
       <Routes>
+        <Route path="/member-photo/:token" element={<MemberPhotoUpload />} />
+        <Route path="/checkin/:token" element={<SelfCheckin />} />
+        <Route path="/join/:tenantIdOrSlug" element={<JoinChurch />} />
+        <Route path="/event/:eventId/register" element={<EventRegister />} />
         <Route path="/give" element={<PublicGivingPage />} />
         <Route path="/give/success" element={<GivingResult status="success" />} />
         <Route path="/give/cancel" element={<GivingResult status="cancel" />} />
