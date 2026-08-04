@@ -7,6 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignedAvatar } from "@/components/SignedAvatar";
+import { SignedImage } from "@/components/SignedImage";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import CameraCapture from "@/components/CameraCapture";
 import MemberPhotoLinkDialog from "@/components/MemberPhotoLinkDialog";
 import PhotoCropper from "@/components/PhotoCropper";
@@ -14,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
-import { Camera, Check, Link2, Search, X, ImageIcon } from "lucide-react";
+import { Camera, Check, Link2, Search, X, ImageIcon, Maximize2 } from "lucide-react";
 
 const localT: Record<Language, Record<string, string>> = {
   fr: {
@@ -33,6 +41,7 @@ const localT: Record<Language, Record<string, string>> = {
     saved: "Photo enregistrée",
     savedDesc: "La photo du membre a été mise à jour.",
     error: "Erreur",
+    enlarge: "Agrandir",
     approve: "Approuver",
     reject: "Rejeter",
     approved: "Photo approuvée",
@@ -57,6 +66,7 @@ const localT: Record<Language, Record<string, string>> = {
     saved: "Photo saved",
     savedDesc: "The member photo was updated.",
     error: "Error",
+    enlarge: "Enlarge",
     approve: "Approve",
     reject: "Reject",
     approved: "Photo approved",
@@ -87,6 +97,7 @@ const localT: Record<Language, Record<string, string>> = {
     rejected: "Foto rejte",
     noPending: "Pa gen foto k ap tann.",
     noResults: "Pa jwenn manm.",
+    enlarge: "Agrandi",
     onlyNoPhoto: "Sèlman san foto",
   },
 };
@@ -128,6 +139,7 @@ export default function PhotoBooth() {
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
   const [linkMember, setLinkMember] = useState<string>("");
   const [linkOpen, setLinkOpen] = useState(false);
+  const [previewMember, setPreviewMember] = useState<MemberRow | null>(null);
 
   const fetchMembers = async () => {
     if (!tenantId) return;
@@ -377,12 +389,19 @@ export default function PhotoBooth() {
                 {pending.map((m) => (
                   <Card key={m.id}>
                     <CardContent className="flex items-center gap-3 p-3">
-                      <SignedAvatar
-                        storedUrl={m.pending_photo_url}
-                        bucket="member-photos"
-                        fallbackText={`${m.first_name?.[0] ?? ""}${m.last_name?.[0] ?? ""}`}
-                        className="h-14 w-14"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMember(m)}
+                        title={lt.enlarge}
+                        className="shrink-0 rounded-full ring-offset-2 transition hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <SignedAvatar
+                          storedUrl={m.pending_photo_url}
+                          bucket="member-photos"
+                          fallbackText={`${m.first_name?.[0] ?? ""}${m.last_name?.[0] ?? ""}`}
+                          className="h-14 w-14"
+                        />
+                      </button>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">
                           {m.first_name} {m.last_name}
@@ -392,6 +411,14 @@ export default function PhotoBooth() {
                             ? new Date(m.pending_photo_at).toLocaleString()
                             : ""}
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMember(m)}
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          <Maximize2 className="h-3 w-3" />
+                          {lt.enlarge}
+                        </button>
                       </div>
                       <div className="flex shrink-0 gap-1">
                         <Button size="sm" onClick={() => approvePending(m)}>
@@ -409,10 +436,63 @@ export default function PhotoBooth() {
                   </Card>
                 ))}
               </div>
+
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!previewMember} onOpenChange={(o) => !o && setPreviewMember(null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>
+              {previewMember
+                ? `${previewMember.first_name} ${previewMember.last_name}`
+                : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {previewMember && (
+            <>
+              <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-xl border bg-muted">
+                <SignedImage
+                  storedUrl={previewMember.pending_photo_url}
+                  bucket="member-photos"
+                  alt={`${previewMember.first_name} ${previewMember.last_name}`}
+                  className="aspect-square w-full object-contain"
+                />
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                {previewMember.pending_photo_at
+                  ? new Date(previewMember.pending_photo_at).toLocaleString()
+                  : ""}
+              </p>
+              <DialogFooter className="gap-2 sm:justify-center">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    rejectPending(previewMember);
+                    setPreviewMember(null);
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  {lt.reject}
+                </Button>
+                <Button
+                  onClick={() => {
+                    approvePending(previewMember);
+                    setPreviewMember(null);
+                  }}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  {lt.approve}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
 
       <CameraCapture
         open={cameraOpen}
