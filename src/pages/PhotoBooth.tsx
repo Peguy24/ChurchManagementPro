@@ -377,12 +377,19 @@ export default function PhotoBooth() {
                 {pending.map((m) => (
                   <Card key={m.id}>
                     <CardContent className="flex items-center gap-3 p-3">
-                      <SignedAvatar
-                        storedUrl={m.pending_photo_url}
-                        bucket="member-photos"
-                        fallbackText={`${m.first_name?.[0] ?? ""}${m.last_name?.[0] ?? ""}`}
-                        className="h-14 w-14"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMember(m)}
+                        title={lt.enlarge}
+                        className="shrink-0 rounded-full ring-offset-2 transition hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <SignedAvatar
+                          storedUrl={m.pending_photo_url}
+                          bucket="member-photos"
+                          fallbackText={`${m.first_name?.[0] ?? ""}${m.last_name?.[0] ?? ""}`}
+                          className="h-14 w-14"
+                        />
+                      </button>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">
                           {m.first_name} {m.last_name}
@@ -392,6 +399,14 @@ export default function PhotoBooth() {
                             ? new Date(m.pending_photo_at).toLocaleString()
                             : ""}
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMember(m)}
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          <Maximize2 className="h-3 w-3" />
+                          {lt.enlarge}
+                        </button>
                       </div>
                       <div className="flex shrink-0 gap-1">
                         <Button size="sm" onClick={() => approvePending(m)}>
@@ -409,6 +424,7 @@ export default function PhotoBooth() {
                   </Card>
                 ))}
               </div>
+
             )}
           </TabsContent>
         </Tabs>
