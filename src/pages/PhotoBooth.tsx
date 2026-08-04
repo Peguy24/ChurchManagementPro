@@ -208,9 +208,11 @@ export default function PhotoBooth() {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      /* clipboard may be blocked; the toast still shows the link */
+      /* clipboard may be blocked; the dialog still shows the link */
     }
-    toast({ title: lt.linkCopied, description: `${lt.linkCopiedDesc}\n${url}` });
+    setLinkUrl(url);
+    setLinkMember(`${member.first_name} ${member.last_name}`);
+    setLinkOpen(true);
   };
 
   const approvePending = async (member: MemberRow) => {
