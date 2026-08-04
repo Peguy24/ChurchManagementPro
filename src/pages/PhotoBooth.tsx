@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignedAvatar } from "@/components/SignedAvatar";
 import CameraCapture from "@/components/CameraCapture";
+import MemberPhotoLinkDialog from "@/components/MemberPhotoLinkDialog";
 import PhotoCropper from "@/components/PhotoCropper";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
