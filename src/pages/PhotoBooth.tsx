@@ -210,7 +210,10 @@ export default function PhotoBooth() {
       toast({ title: lt.error, description: error.message, variant: "destructive" });
       return;
     }
-    const url = `${window.location.origin}/member-photo/${token}`;
+    // Always share the platform route. Tenant domains may use their root path
+    // for the public mini-site, which can turn utility links into the site home.
+    const uploadUrl = new URL(`/member-photo/${encodeURIComponent(token)}`, "https://churchmanagementpro.com");
+    const url = uploadUrl.toString();
     try {
       await navigator.clipboard.writeText(url);
     } catch {
