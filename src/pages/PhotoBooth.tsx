@@ -442,6 +442,58 @@ export default function PhotoBooth() {
         </Tabs>
       </div>
 
+      <Dialog open={!!previewMember} onOpenChange={(o) => !o && setPreviewMember(null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>
+              {previewMember
+                ? `${previewMember.first_name} ${previewMember.last_name}`
+                : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {previewMember && (
+            <>
+              <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-xl border bg-muted">
+                <SignedImage
+                  storedUrl={previewMember.pending_photo_url}
+                  bucket="member-photos"
+                  alt={`${previewMember.first_name} ${previewMember.last_name}`}
+                  className="aspect-square w-full object-contain"
+                />
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                {previewMember.pending_photo_at
+                  ? new Date(previewMember.pending_photo_at).toLocaleString()
+                  : ""}
+              </p>
+              <DialogFooter className="gap-2 sm:justify-center">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    rejectPending(previewMember);
+                    setPreviewMember(null);
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  {lt.reject}
+                </Button>
+                <Button
+                  onClick={() => {
+                    approvePending(previewMember);
+                    setPreviewMember(null);
+                  }}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  {lt.approve}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
+
       <CameraCapture
         open={cameraOpen}
         // Keep the selected member while CameraCapture hands the image to the
