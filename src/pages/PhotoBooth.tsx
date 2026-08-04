@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignedAvatar } from "@/components/SignedAvatar";
 import CameraCapture from "@/components/CameraCapture";
+import MemberPhotoLinkDialog from "@/components/MemberPhotoLinkDialog";
 import PhotoCropper from "@/components/PhotoCropper";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -124,6 +125,9 @@ export default function PhotoBooth() {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [linkMember, setLinkMember] = useState<string>("");
+  const [linkOpen, setLinkOpen] = useState(false);
 
   const fetchMembers = async () => {
     if (!tenantId) return;
@@ -205,9 +209,11 @@ export default function PhotoBooth() {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      /* clipboard may be blocked; the toast still shows the link */
+      /* clipboard may be blocked; the dialog still shows the link */
     }
-    toast({ title: lt.linkCopied, description: `${lt.linkCopiedDesc}\n${url}` });
+    setLinkUrl(url);
+    setLinkMember(`${member.first_name} ${member.last_name}`);
+    setLinkOpen(true);
   };
 
   const approvePending = async (member: MemberRow) => {
@@ -414,6 +420,13 @@ export default function PhotoBooth() {
           setCropFile(file);
           setCropperOpen(true);
         }}
+      />
+
+      <MemberPhotoLinkDialog
+        open={linkOpen}
+        onOpenChange={setLinkOpen}
+        url={linkUrl}
+        memberName={linkMember}
       />
 
       {cropFile && (
