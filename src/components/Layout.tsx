@@ -129,6 +129,7 @@ const getChurchNavGroups = (t: (key: string) => string, isTenantAdmin: boolean):
       icon: Users,
       items: [
         { to: "/members", icon: Users, label: t("nav.members") },
+        { to: "/members/photo-booth", icon: Camera, label: t("nav.photoBooth") },
         { to: "/members/requests", icon: UserPlus, label: t("memberRequests.title") },
         { to: "/members/cards", icon: CreditCard, label: t("nav.memberCards") },
         { to: "/attendance", icon: ClipboardCheck, label: t("nav.attendance") },
@@ -573,23 +574,6 @@ export default function Layout({ children }: LayoutProps) {
   // Navigation content - shared between desktop and mobile
   const renderNavigation = (onItemClick?: () => void) => (
     <nav className="space-y-0.5">
-      {!showAsSuperAdmin && canSeeItem("/members/photo-booth") && (
-        <Link
-          to="/members/photo-booth"
-          onClick={onItemClick}
-          {...prefetchHandlers("/members/photo-booth")}
-          data-testid="photo-booth-nav-link"
-          className={cn(
-            "mb-2 flex items-center gap-2.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
-            location.pathname === "/members/photo-booth"
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card text-foreground hover:bg-muted"
-          )}
-        >
-          <Camera className="h-4 w-4 flex-shrink-0" />
-          {t("nav.photoBooth")}
-        </Link>
-      )}
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
         const isOpen = openGroups.includes(group.key);
