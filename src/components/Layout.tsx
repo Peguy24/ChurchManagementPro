@@ -496,11 +496,22 @@ export default function Layout({ children }: LayoutProps) {
     ? allNavGroups
     : allNavGroups
         .filter(group => canSeeNav(group.key))
-        .map(group => ({
-          ...group,
-          items: group.items.filter(item => canSeeItem(item.to) && passesGlobalFlag(item.to))
-        }))
+        .map(group => {
+          const items = group.items.filter(item => canSeeItem(item.to) && passesGlobalFlag(item.to));
+          // Photo Booth must always be available to staff who can manage members,
+          // even if a tenant permission override drops the individual route.
+          if (group.key === "members" && items.length > 0 && !items.some(i => i.to === "/members/photo-booth")) {
+            const membersIndex = items.findIndex(i => i.to === "/members");
+            items.splice(membersIndex >= 0 ? membersIndex + 1 : 0, 0, {
+              to: "/members/photo-booth",
+              icon: Camera,
+              label: t("nav.photoBooth"),
+            });
+          }
+          return { ...group, items };
+        })
         .filter(group => group.items.length > 0);
+
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     // Open the group that contains the current route by default
