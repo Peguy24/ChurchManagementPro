@@ -19,7 +19,7 @@ export const removeBackground = async (
   const { removeBackground: removeImageBackground } = await import("@imgly/background-removal");
   return removeImageBackground(source, {
     model: "isnet_quint8",
-    output: { format: "image/png", quality: 1, type: "foreground" },
+    output: { format: "image/png", quality: 1 },
     progress: (_key, current, total) => {
       if (total > 0) onProgress?.(Math.min(100, Math.round((current / total) * 100)));
     },
