@@ -7,6 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignedAvatar } from "@/components/SignedAvatar";
+import { SignedImage } from "@/components/SignedImage";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import CameraCapture from "@/components/CameraCapture";
 import MemberPhotoLinkDialog from "@/components/MemberPhotoLinkDialog";
 import PhotoCropper from "@/components/PhotoCropper";
@@ -14,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
-import { Camera, Check, Link2, Search, X, ImageIcon } from "lucide-react";
+import { Camera, Check, Link2, Search, X, ImageIcon, Maximize2 } from "lucide-react";
 
 const localT: Record<Language, Record<string, string>> = {
   fr: {
@@ -33,6 +41,7 @@ const localT: Record<Language, Record<string, string>> = {
     saved: "Photo enregistrée",
     savedDesc: "La photo du membre a été mise à jour.",
     error: "Erreur",
+    enlarge: "Agrandir",
     approve: "Approuver",
     reject: "Rejeter",
     approved: "Photo approuvée",
@@ -57,6 +66,7 @@ const localT: Record<Language, Record<string, string>> = {
     saved: "Photo saved",
     savedDesc: "The member photo was updated.",
     error: "Error",
+    enlarge: "Enlarge",
     approve: "Approve",
     reject: "Reject",
     approved: "Photo approved",
@@ -87,6 +97,7 @@ const localT: Record<Language, Record<string, string>> = {
     rejected: "Foto rejte",
     noPending: "Pa gen foto k ap tann.",
     noResults: "Pa jwenn manm.",
+    enlarge: "Agrandi",
     onlyNoPhoto: "Sèlman san foto",
   },
 };
@@ -128,6 +139,7 @@ export default function PhotoBooth() {
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
   const [linkMember, setLinkMember] = useState<string>("");
   const [linkOpen, setLinkOpen] = useState(false);
+  const [previewMember, setPreviewMember] = useState<MemberRow | null>(null);
 
   const fetchMembers = async () => {
     if (!tenantId) return;
