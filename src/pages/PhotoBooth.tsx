@@ -411,17 +411,9 @@ export default function PhotoBooth() {
 
       <CameraCapture
         open={cameraOpen}
-        onOpenChange={(o) => {
-          setCameraOpen(o);
-          // Keep the selected member while CameraCapture hands the image to
-          // the cropper. Clearing it here races with the cropper opening and
-          // makes Apply silently skip the upload.
-          if (!o && !cropFile && !cropperOpen) {
-            window.setTimeout(() => {
-              if (!cropFile) setActiveMember((member) => member);
-            }, 0);
-          }
-        }}
+        // Keep the selected member while CameraCapture hands the image to the
+        // cropper. Clearing it here races with the cropper opening.
+        onOpenChange={setCameraOpen}
         title={
           activeMember
             ? `${lt.take} — ${activeMember.first_name} ${activeMember.last_name}`
@@ -447,7 +439,7 @@ export default function PhotoBooth() {
             setCropperOpen(o);
             if (!o) {
               setCropFile(null);
-              if (!cropperOpen) setActiveMember(null);
+              setActiveMember(null);
             }
           }}
           imageFile={cropFile}

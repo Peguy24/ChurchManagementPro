@@ -16,7 +16,7 @@ export const removeBackground = async (
     }, "image/png");
   });
 
-  const { default: removeImageBackground } = await import("@imgly/background-removal");
+  const { removeBackground: removeImageBackground } = await import("@imgly/background-removal");
   return removeImageBackground(source, {
     model: "isnet_quint8",
     output: { format: "image/png", quality: 1, type: "foreground" },
