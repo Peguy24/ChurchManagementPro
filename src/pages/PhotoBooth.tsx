@@ -175,7 +175,9 @@ export default function PhotoBooth() {
     try {
       const ext = blob.type === "image/png" ? "png" : "jpg";
       // Storage policies isolate files by the first path segment (tenant ID).
-      const path = `${tenantId}/${member.id}.${ext}`;
+      // A versioned filename prevents browsers/CDNs from showing an older
+      // photo after a replacement is saved.
+      const path = `${tenantId}/${member.id}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("member-photos")
         .upload(path, blob, { upsert: true, contentType: blob.type });
@@ -223,7 +225,7 @@ export default function PhotoBooth() {
     if (!member.pending_photo_url || !tenantId) return;
     try {
       const ext = member.pending_photo_url.endsWith(".png") ? "png" : "jpg";
-      const dest = `${tenantId}/${member.id}.${ext}`;
+      const dest = `${tenantId}/${member.id}-${Date.now()}.${ext}`;
       const { data: file, error: dlErr } = await supabase.storage
         .from("member-photos")
         .download(member.pending_photo_url);
