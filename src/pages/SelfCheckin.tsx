@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ const COPY = {
     allow: "Allow location",
     allowHint: "This event requires location to confirm you're at the church.",
     granted: "Location enabled",
+    unavailable: "Location is allowed, but your phone could not determine your position. Turn on Precise Location and your phone's Location Services, then try again.",
     denied: "Location is blocked. Open your browser settings for this site and set Location to \"Allow\", then reload this page.",
     unsupported: "Your browser doesn't support location. Please see a greeter.",
     errors: {
@@ -72,6 +73,7 @@ const COPY = {
     allow: "Autoriser la localisation",
     allowHint: "Cet \u00e9v\u00e9nement exige la localisation pour confirmer que vous \u00eates \u00e0 l'\u00e9glise.",
     granted: "Localisation activ\u00e9e",
+    unavailable: "La localisation est autoris\u00e9e, mais votre t\u00e9l\u00e9phone ne trouve pas votre position. Activez Localisation pr\u00e9cise et les services de localisation, puis r\u00e9essayez.",
     denied: "La localisation est bloqu\u00e9e. Ouvrez les r\u00e9glages du navigateur pour ce site et mettez Localisation sur \u00ab Autoriser \u00bb, puis rechargez la page.",
     unsupported: "Votre navigateur ne prend pas en charge la localisation. Voyez un accueillant.",
     errors: {
@@ -109,6 +111,7 @@ const COPY = {
     allow: "Bay p\u00e8misyon lokalizasyon",
     allowHint: "Ev\u00e8nman sa a mande lokalizasyon pou konfime ou nan legliz la.",
     granted: "Lokalizasyon aktive",
+    unavailable: "Lokalizasyon otorize, men telef\u00f2n ou pa jwenn pozisyon ou. Aktive Precise Location ak s\u00e8vis lokalizasyon telef\u00f2n nan, epi eseye ank\u00f2.",
     denied: "Lokalizasyon bloke. Ale nan param\u00e8t navigat\u00e8 a pou sit sa a, mete Lokalizasyon sou \u00ab Allow \u00bb, epi rechaje paj la.",
     unsupported: "Navigat\u00e8 ou pa sip\u00f2te lokalizasyon. W\u00e8 yon akeyan.",
     errors: {
@@ -146,8 +149,10 @@ export default function SelfCheckin() {
   const [scanMode, setScanMode] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [result, setResult] = useState<{ status: "ok" | "already"; name: string; locationVerified: boolean | null } | null>(null);
-  const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied" | "unsupported">("unknown");
+  const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied" | "unavailable" | "unsupported">("unknown");
   const [locRequesting, setLocRequesting] = useState(false);
+  const [verifiedPosition, setVerifiedPosition] = useState<GeolocationPosition | null>(null);
+  const locationDeniedRef = useRef(false);
 
   const preview = useMemo(() => previewIdentifier(identifier), [identifier]);
   const canSubmit = preview.kind === "member_number" || preview.kind === "phone";
@@ -182,16 +187,21 @@ export default function SelfCheckin() {
     const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
     perms?.query?.({ name: "geolocation" as PermissionName })
       .then((res) => {
-        if (res.state === "granted") setLocStatus("granted");
+        // Permission alone does not mean the device has returned coordinates.
+        // Keep the action visible until getCurrentPosition succeeds.
+        if (res.state === "granted") setLocStatus("unknown");
         if (res.state === "denied") setLocStatus("denied");
         res.onchange = () => {
-          if (res.state === "granted") setLocStatus("granted");
-          else if (res.state === "denied") setLocStatus("denied");
+          if (res.state === "granted") setLocStatus(verifiedPosition ? "granted" : "unknown");
+          else if (res.state === "denied") {
+            locationDeniedRef.current = true;
+            setLocStatus("denied");
+          }
           else setLocStatus("unknown");
         };
       })
       .catch(() => undefined);
-  }, []);
+  }, [verifiedPosition]);
 
   useEffect(() => {
     if (!token) return;
@@ -209,29 +219,52 @@ export default function SelfCheckin() {
     })();
   }, [token]);
 
-  const getPosition = () =>
+  const requestPosition = (options: PositionOptions) =>
     new Promise<GeolocationPosition | null>((resolve) => {
       if (!navigator.geolocation) return resolve(null);
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setLocStatus("granted");
-          resolve(pos);
-        },
+        resolve,
         (err) => {
-          if (err.code === err.PERMISSION_DENIED) setLocStatus("denied");
-          // retry once with relaxed accuracy before giving up
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              setLocStatus("granted");
-              resolve(pos);
-            },
-            () => resolve(null),
-            { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
-          );
+          if (err.code === err.PERMISSION_DENIED) {
+            locationDeniedRef.current = true;
+            setLocStatus("denied");
+          }
+          resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 },
+        options,
       );
     });
+
+  const getPosition = async () => {
+    if (verifiedPosition) return verifiedPosition;
+    if (!navigator.geolocation) {
+      setLocStatus("unsupported");
+      return null;
+    }
+
+    // A cached or network-assisted fix is much more reliable indoors and on iOS.
+    locationDeniedRef.current = false;
+    let position = await requestPosition({
+      enableHighAccuracy: false,
+      timeout: 12000,
+      maximumAge: 5 * 60 * 1000,
+    });
+    if (!position && !locationDeniedRef.current) {
+      position = await requestPosition({
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 60 * 1000,
+      });
+    }
+
+    if (position) {
+      setVerifiedPosition(position);
+      setLocStatus("granted");
+    } else if (!locationDeniedRef.current) {
+      setLocStatus("unavailable");
+    }
+    return position;
+  };
 
   const requestLocation = async () => {
     if (!navigator.geolocation) {
@@ -239,6 +272,7 @@ export default function SelfCheckin() {
       return;
     }
     setLocRequesting(true);
+    setError(null);
     await getPosition();
     setLocRequesting(false);
   };
@@ -443,6 +477,9 @@ export default function SelfCheckin() {
                   {locStatus === "unsupported" && (
                     <p className="text-xs text-destructive">{c.unsupported}</p>
                   )}
+                   {locStatus === "unavailable" && (
+                     <p className="text-xs text-destructive">{c.unavailable}</p>
+                   )}
                   {locStatus !== "granted" && locStatus !== "unsupported" && (
                     <Button
                       type="button"
