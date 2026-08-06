@@ -38,12 +38,21 @@ export default function Home() {
   const { tenantId, loading: tenantLoading } = useCurrentTenant();
   const { isMaintenanceMode, loading: maintenanceLoading } = useMaintenanceMode();
 
+  // Detect an in-flight auth callback (email verification, magic link, OAuth).
+  // In that case never fall back to the marketing page — wait for the session.
+  const isAuthCallback =
+    typeof window !== 'undefined' &&
+    (/access_token=|refresh_token=|type=(signup|magiclink|recovery|invite|email_change)/.test(window.location.hash) ||
+      /[?&](code|token_hash)=/.test(window.location.search));
+
   // Not logged in → Show commercial page immediately (don't wait for other hooks).
   // Exception: when launched from the installed app (standalone PWA), go straight
   // to the church login page instead of the marketing site.
-  if (!authLoading && !user) {
+  if (!authLoading && !user && !isAuthCallback) {
     return isStandaloneApp() ? <Navigate to="/auth" replace /> : <Commercial />;
   }
+
+
 
 
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
