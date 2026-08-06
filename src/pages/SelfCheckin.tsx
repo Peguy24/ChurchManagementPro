@@ -32,6 +32,11 @@ const COPY = {
     unrecognized: "Unrecognized format — use digits only, or a number like MBR00023.",
     locationUnverified: "We couldn't verify your location, but your attendance was recorded.",
 
+    allow: "Allow location",
+    allowHint: "This event requires location to confirm you're at the church.",
+    granted: "Location enabled",
+    denied: "Location is blocked. Open your browser settings for this site and set Location to \"Allow\", then reload this page.",
+    unsupported: "Your browser doesn't support location. Please see a greeter.",
     errors: {
       invalid_token: "This code is no longer valid. Please scan the code on the screen again.",
       expired_token: "This code expired. Please scan the code on the screen again.",
@@ -64,6 +69,11 @@ const COPY = {
     tooShort: "Trop court — entrez un numéro de téléphone complet ou votre numéro de membre.",
     unrecognized: "Format non reconnu — utilisez des chiffres, ou un numéro comme MBR00023.",
     locationUnverified: "Position non vérifiée, mais votre présence a été enregistrée.",
+    allow: "Autoriser la localisation",
+    allowHint: "Cet \u00e9v\u00e9nement exige la localisation pour confirmer que vous \u00eates \u00e0 l'\u00e9glise.",
+    granted: "Localisation activ\u00e9e",
+    denied: "La localisation est bloqu\u00e9e. Ouvrez les r\u00e9glages du navigateur pour ce site et mettez Localisation sur \u00ab Autoriser \u00bb, puis rechargez la page.",
+    unsupported: "Votre navigateur ne prend pas en charge la localisation. Voyez un accueillant.",
     errors: {
       invalid_token: "Ce code n'est plus valide. Scannez à nouveau le code affiché.",
       expired_token: "Ce code a expiré. Scannez à nouveau le code affiché.",
@@ -96,6 +106,11 @@ const COPY = {
     tooShort: "Twò kout — antre yon nimewo telefòn konplè oswa nimewo manm ou.",
     unrecognized: "Fòma nou pa rekonèt — sèvi ak chif, oswa yon nimewo tankou MBR00023.",
     locationUnverified: "Nou pa t ka verifye kote w ye, men prezans ou anrejistre.",
+    allow: "Bay p\u00e8misyon lokalizasyon",
+    allowHint: "Ev\u00e8nman sa a mande lokalizasyon pou konfime ou nan legliz la.",
+    granted: "Lokalizasyon aktive",
+    denied: "Lokalizasyon bloke. Ale nan param\u00e8t navigat\u00e8 a pou sit sa a, mete Lokalizasyon sou \u00ab Allow \u00bb, epi rechaje paj la.",
+    unsupported: "Navigat\u00e8 ou pa sip\u00f2te lokalizasyon. W\u00e8 yon akeyan.",
     errors: {
       invalid_token: "Kòd sa a pa valab ankò. Eskane kòd ki sou ekran an ankò.",
       expired_token: "Kòd la ekspire. Eskane kòd ki sou ekran an ankò.",
@@ -131,6 +146,8 @@ export default function SelfCheckin() {
   const [scanMode, setScanMode] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [result, setResult] = useState<{ status: "ok" | "already"; name: string; locationVerified: boolean | null } | null>(null);
+  const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied" | "unsupported">("unknown");
+  const [locRequesting, setLocRequesting] = useState(false);
 
   const preview = useMemo(() => previewIdentifier(identifier), [identifier]);
   const canSubmit = preview.kind === "member_number" || preview.kind === "phone";
@@ -158,6 +175,25 @@ export default function SelfCheckin() {
   };
 
   useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocStatus("unsupported");
+      return;
+    }
+    const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    perms?.query?.({ name: "geolocation" as PermissionName })
+      .then((res) => {
+        if (res.state === "granted") setLocStatus("granted");
+        if (res.state === "denied") setLocStatus("denied");
+        res.onchange = () => {
+          if (res.state === "granted") setLocStatus("granted");
+          else if (res.state === "denied") setLocStatus("denied");
+          else setLocStatus("unknown");
+        };
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     if (!token) return;
     (async () => {
       setLoading(true);
@@ -177,11 +213,35 @@ export default function SelfCheckin() {
     new Promise<GeolocationPosition | null>((resolve) => {
       if (!navigator.geolocation) return resolve(null);
       navigator.geolocation.getCurrentPosition(
-        (pos) => resolve(pos),
-        () => resolve(null),
-        { enableHighAccuracy: true, timeout: 10000 },
+        (pos) => {
+          setLocStatus("granted");
+          resolve(pos);
+        },
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) setLocStatus("denied");
+          // retry once with relaxed accuracy before giving up
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              setLocStatus("granted");
+              resolve(pos);
+            },
+            () => resolve(null),
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
+          );
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 },
       );
     });
+
+  const requestLocation = async () => {
+    if (!navigator.geolocation) {
+      setLocStatus("unsupported");
+      return;
+    }
+    setLocRequesting(true);
+    await getPosition();
+    setLocRequesting(false);
+  };
 
   const submit = async (payload: { identifier?: string; memberQr?: string }) => {
     if (!token) return;
@@ -372,10 +432,34 @@ export default function SelfCheckin() {
               {error && <p className="text-sm text-destructive text-center">{errorText(error)}</p>}
 
               {info.requireLocation && (
-                <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {c.errors.location_required}
-                </p>
+                <div className="space-y-2 rounded-lg border bg-muted/40 p-3 text-center">
+                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {locStatus === "granted" ? c.granted : c.allowHint}
+                  </p>
+                  {locStatus === "denied" && (
+                    <p className="text-xs text-destructive">{c.denied}</p>
+                  )}
+                  {locStatus === "unsupported" && (
+                    <p className="text-xs text-destructive">{c.unsupported}</p>
+                  )}
+                  {locStatus !== "granted" && locStatus !== "unsupported" && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={requestLocation}
+                      disabled={locRequesting}
+                    >
+                      {locRequesting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <MapPin className="h-4 w-4 mr-2" />
+                      )}
+                      {c.allow}
+                    </Button>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
