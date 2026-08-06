@@ -45,10 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         path.startsWith('/changelog');
     } catch { /* noop */ }
 
+    // A freshly opened tab coming from an auth email link (verify / magic link /
+    // recovery / OAuth code) carries the tokens in the URL. Signing out here
+    // would drop the brand-new session and bounce the user to the marketing page.
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const isAuthCallback =
+      /access_token=|refresh_token=|type=(signup|magiclink|recovery|invite|email_change)/.test(hash) ||
+      /[?&](code|token_hash)=/.test(search) ||
+      /type=(signup|magiclink|recovery|invite|email_change)/.test(search);
 
     // Force sign-out if browser was closed and reopened (sessionStorage is empty)
     const isNewBrowserSession = !sessionStorage.getItem(SESSION_MARKER);
-    if (isNewBrowserSession && !isPublicPage) {
+    if (isNewBrowserSession && !isPublicPage && !isAuthCallback) {
+
       // Clear any cached data
       sessionStorage.removeItem('user_role_cache');
       sessionStorage.removeItem('tenant_cache');
