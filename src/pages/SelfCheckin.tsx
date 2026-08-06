@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -152,6 +152,7 @@ export default function SelfCheckin() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied" | "unavailable" | "unsupported">("unknown");
   const [locRequesting, setLocRequesting] = useState(false);
   const [verifiedPosition, setVerifiedPosition] = useState<GeolocationPosition | null>(null);
+  const locationDeniedRef = useRef(false);
 
   const preview = useMemo(() => previewIdentifier(identifier), [identifier]);
   const canSubmit = preview.kind === "member_number" || preview.kind === "phone";
@@ -192,7 +193,10 @@ export default function SelfCheckin() {
         if (res.state === "denied") setLocStatus("denied");
         res.onchange = () => {
           if (res.state === "granted") setLocStatus(verifiedPosition ? "granted" : "unknown");
-          else if (res.state === "denied") setLocStatus("denied");
+          else if (res.state === "denied") {
+            locationDeniedRef.current = true;
+            setLocStatus("denied");
+          }
           else setLocStatus("unknown");
         };
       })
@@ -221,7 +225,10 @@ export default function SelfCheckin() {
       navigator.geolocation.getCurrentPosition(
         resolve,
         (err) => {
-          if (err.code === err.PERMISSION_DENIED) setLocStatus("denied");
+          if (err.code === err.PERMISSION_DENIED) {
+            locationDeniedRef.current = true;
+            setLocStatus("denied");
+          }
           resolve(null);
         },
         options,
@@ -236,12 +243,13 @@ export default function SelfCheckin() {
     }
 
     // A cached or network-assisted fix is much more reliable indoors and on iOS.
+    locationDeniedRef.current = false;
     let position = await requestPosition({
       enableHighAccuracy: false,
       timeout: 12000,
       maximumAge: 5 * 60 * 1000,
     });
-    if (!position && locStatus !== "denied") {
+    if (!position && !locationDeniedRef.current) {
       position = await requestPosition({
         enableHighAccuracy: true,
         timeout: 20000,
@@ -252,7 +260,7 @@ export default function SelfCheckin() {
     if (position) {
       setVerifiedPosition(position);
       setLocStatus("granted");
-    } else if (locStatus !== "denied") {
+    } else if (!locationDeniedRef.current) {
       setLocStatus("unavailable");
     }
     return position;
