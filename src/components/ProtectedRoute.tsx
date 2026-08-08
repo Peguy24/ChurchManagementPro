@@ -110,13 +110,23 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
-  if (loading || !user) {
+  // Background re-validation (token refresh, tab focus, tenant re-read) briefly
+  // flips these hooks back to `loading`. Once the first bootstrap succeeded we
+  // keep the current screen on-screen instead of flashing the boot skeleton.
+  const revalidating = loading && hasBootstrapped && Boolean(user);
+
+  if ((loading || !user) && !revalidating) {
     // Do not render Layout before auth/tenant identity is known; otherwise a
     // tenant refresh can briefly show generic or platform branding.
     return <RouteBootSkeleton />;
   }
 
   if (location.pathname === '/pending-approval') {
+    return <>{children}</>;
+  }
+
+  if (revalidating) {
+    // Identity data is still settling — render the last known good view.
     return <>{children}</>;
   }
 
@@ -132,9 +142,22 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     );
   }
 
-  if (requireAdmin && !isAdmin) return null;
-  if (requireSuperAdmin && !isSuperAdmin) return null;
-  if (!canAccess(location.pathname)) return null;
+  // Access denied: a redirect effect is already running. Keep the app chrome
+  // mounted instead of blanking the screen, which reads as a flash.
+  const blocked =
+    (requireAdmin && !isAdmin) ||
+    (requireSuperAdmin && !isSuperAdmin) ||
+    !canAccess(location.pathname);
+  if (blocked) {
+    return (
+      <Layout>
+        <div className="space-y-4 p-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </Layout>
+    );
+  }
 
   // Maintenance mode: block non-super-admins
   if (!maintenanceLoading && isMaintenanceMode && !isSuperAdmin) {
