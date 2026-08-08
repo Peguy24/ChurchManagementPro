@@ -142,9 +142,22 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     );
   }
 
-  if (requireAdmin && !isAdmin) return null;
-  if (requireSuperAdmin && !isSuperAdmin) return null;
-  if (!canAccess(location.pathname)) return null;
+  // Access denied: a redirect effect is already running. Keep the app chrome
+  // mounted instead of blanking the screen, which reads as a flash.
+  const blocked =
+    (requireAdmin && !isAdmin) ||
+    (requireSuperAdmin && !isSuperAdmin) ||
+    !canAccess(location.pathname);
+  if (blocked) {
+    return (
+      <Layout>
+        <div className="space-y-4 p-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </Layout>
+    );
+  }
 
   // Maintenance mode: block non-super-admins
   if (!maintenanceLoading && isMaintenanceMode && !isSuperAdmin) {
