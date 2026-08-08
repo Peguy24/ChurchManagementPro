@@ -1192,6 +1192,7 @@ export default function MemberDialog({
                       className={errors.addressNumber ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="1234"
                     />
+                    <FieldError name="addressNumber" errors={errors} />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
                     <Label htmlFor="street">{lt.street}</Label>
@@ -1208,6 +1209,7 @@ export default function MemberDialog({
                       className={errors.street ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="Main Street"
                     />
+                    <FieldError name="street" errors={errors} />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1226,6 +1228,7 @@ export default function MemberDialog({
                       className={errors.apartment ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="4B"
                     />
+                    <FieldError name="apartment" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="city">{lt.city} *</Label>
@@ -1233,10 +1236,11 @@ export default function MemberDialog({
                       id="city"
                       value={formData.city}
                       required
+                      maxLength={100}
                       onChange={(e) => {
-                        const v = e.target.value;
+                        const v = e.target.value.slice(0, 100);
                         setFormData({ ...formData, city: v });
-                        setErrors((p) => ({ ...p, city: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                        setErrors((p) => ({ ...p, city: liveCheck(requiredLettersSchema, v) ?? "" }));
                       }}
                       placeholder="New York"
                       aria-invalid={!!errors.city}
@@ -1249,11 +1253,17 @@ export default function MemberDialog({
                     <Input
                       id="zipCode"
                       value={formData.zipCode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, zipCode: e.target.value })
-                      }
+                      maxLength={12}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 12);
+                        setFormData({ ...formData, zipCode: v });
+                        setErrors((p) => ({ ...p, zipCode: liveCheck(optionalZipSchema, v) ?? "" }));
+                      }}
                       placeholder="10001"
+                      aria-invalid={!!errors.zipCode}
+                      className={errors.zipCode ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="zipCode" errors={errors} />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1262,11 +1272,17 @@ export default function MemberDialog({
                     <Input
                       id="state"
                       value={formData.state}
-                      onChange={(e) =>
-                        setFormData({ ...formData, state: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, state: v });
+                        setErrors((p) => ({ ...p, state: liveCheck(optionalLettersSchema, v) ?? "" }));
+                      }}
                       placeholder="NY"
+                      aria-invalid={!!errors.state}
+                      className={errors.state ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="state" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="country">{lt.country} *</Label>
@@ -1274,10 +1290,11 @@ export default function MemberDialog({
                       id="country"
                       value={formData.country}
                       required
+                      maxLength={100}
                       onChange={(e) => {
-                        const v = e.target.value;
+                        const v = e.target.value.slice(0, 100);
                         setFormData({ ...formData, country: v });
-                        setErrors((p) => ({ ...p, country: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                        setErrors((p) => ({ ...p, country: liveCheck(requiredLettersSchema, v) ?? "" }));
                       }}
                       placeholder="United States"
                       aria-invalid={!!errors.country}
@@ -1286,6 +1303,7 @@ export default function MemberDialog({
                     <FieldError name="country" errors={errors} />
                   </div>
                 </div>
+
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
