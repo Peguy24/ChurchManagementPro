@@ -13,14 +13,13 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { useTenant } from "@/contexts/TenantContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { AlertCircle, Building2, Coins, CreditCard, Eraser, FileText, Hash, Loader2, Mail, MapPin, Palette, Phone, Save, Settings } from 'lucide-react';
+import { AlertCircle, Building2, Coins, CreditCard, FileText, Hash, Loader2, Mail, MapPin, Palette, Phone, Save, Settings } from 'lucide-react';
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import LogoUpload from "@/components/LogoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateForm, churchSettingsSchema, firstErrorMessage } from "@/lib/validation";
 import { FieldError } from "@/components/FieldError";
 import { sanitizeName, sanitizeLine, sanitizeText, sanitizePhone, sanitizeHexColor, sanitizeReference } from "@/lib/inputSanitize";
-import TaxExemptionSection from "@/components/TaxExemptionSection";
 
 interface ChurchSettingsData {
   church_name: string;
@@ -86,7 +85,6 @@ export default function ChurchSettings() {
     currency_code: "USD",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isClearingCache, setIsClearingCache] = useState(false);
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["church-settings", tenantId],
