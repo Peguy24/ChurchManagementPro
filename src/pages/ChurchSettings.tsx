@@ -580,57 +580,7 @@ export default function ChurchSettings() {
             </CardContent>
           </Card>
 
-          <TaxExemptionSection />
 
-          {/* App Maintenance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eraser className="h-5 w-5" />
-                {t("churchSettings.appMaintenance")}
-              </CardTitle>
-              <CardDescription>
-                {t("churchSettings.appMaintenanceDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {t("churchSettings.clearCacheNote")}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isClearingCache}
-                onClick={async () => {
-                  setIsClearingCache(true);
-                  try {
-                    const { clearCachedAssets } = await import("@/lib/clearCache");
-                    const result = await clearCachedAssets();
-                    toast.success(
-                      `${t("churchSettings.clearCacheSuccess")} (${result.serviceWorkers} SW, ${result.caches} caches)`
-                    );
-                    setTimeout(() => window.location.reload(), 800);
-                  } catch {
-                    toast.error(t("churchSettings.clearCacheError"));
-                  } finally {
-                    setIsClearingCache(false);
-                  }
-                }}
-              >
-                {isClearingCache ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("churchSettings.clearingCache")}
-                  </>
-                ) : (
-                  <>
-                    <Eraser className="mr-2 h-4 w-4" />
-                    {t("churchSettings.clearCache")}
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
 
           <div className="flex justify-end">
             <Button type="submit" disabled={updateSettings.isPending}>
