@@ -31,7 +31,18 @@ import CameraCapture from "./CameraCapture";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, requiredPastDateSchema, optionalEmailSchema, emailSchema, optionalPhoneSchema, phoneSchema, requiredShortTextSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, requiredPastDateSchema, optionalEmailSchema, emailSchema, optionalPhoneSchema, phoneSchema, requiredShortTextSchema, requiredLettersSchema, optionalLettersSchema, optionalZipSchema, optionalStreetNumberSchema, optionalStreetSchema, optionalCountSchema, shortTextSchema, optionalNameSchema } from "@/lib/validation";
+
+/** Which tab each validated field belongs to, so we can focus the first error. */
+const FIELD_TAB: Record<string, string> = {
+  firstName: "personal", lastName: "personal", gender: "personal", dateOfBirth: "personal",
+  phone: "personal", email: "personal", emergencyPhone: "personal", addressNumber: "personal",
+  street: "personal", apartment: "personal", city: "personal", state: "personal",
+  zipCode: "personal", country: "personal", joinDate: "personal",
+  academicFormation: "personal", professionalFormation: "personal",
+  originChurch: "spiritual",
+  spouseName: "family", numberOfChildren: "family", childrenNames: "family",
+};
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
@@ -676,11 +687,23 @@ export default function MemberDialog({
       country: formData.country,
       joinDate: formData.joinDate,
       emergencyPhone: formData.emergencyPhone,
+      addressNumber: formData.addressNumber,
+      street: formData.street,
+      apartment: formData.apartment,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      academicFormation: formData.academicFormation,
+      professionalFormation: formData.professionalFormation,
+      originChurch: formData.originChurch,
+      spouseName: formData.spouseName,
+      numberOfChildren: formData.numberOfChildren,
+      childrenNames: formData.childrenNames,
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      // All currently required fields live in the Personal tab — switch to it
-      setActiveTab("personal");
+      // Jump to the tab that holds the first invalid field
+      const firstField = Object.keys(validation.fieldErrors)[0];
+      setActiveTab(FIELD_TAB[firstField] ?? "personal");
       toast({
         title: lt.error,
         description: t(firstErrorMessage(validation.fieldErrors, (k) => k) || "validation.field.required"),
@@ -1159,22 +1182,34 @@ export default function MemberDialog({
                     <Input
                       id="addressNumber"
                       value={formData.addressNumber}
-                      onChange={(e) =>
-                        setFormData({ ...formData, addressNumber: e.target.value })
-                      }
+                      maxLength={20}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 20);
+                        setFormData({ ...formData, addressNumber: v });
+                        setErrors((p) => ({ ...p, addressNumber: liveCheck(optionalStreetNumberSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.addressNumber}
+                      className={errors.addressNumber ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="1234"
                     />
+                    <FieldError name="addressNumber" errors={errors} />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
                     <Label htmlFor="street">{lt.street}</Label>
                     <Input
                       id="street"
                       value={formData.street}
-                      onChange={(e) =>
-                        setFormData({ ...formData, street: e.target.value })
-                      }
+                      maxLength={120}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 120);
+                        setFormData({ ...formData, street: v });
+                        setErrors((p) => ({ ...p, street: liveCheck(optionalStreetSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.street}
+                      className={errors.street ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="Main Street"
                     />
+                    <FieldError name="street" errors={errors} />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1183,11 +1218,17 @@ export default function MemberDialog({
                     <Input
                       id="apartment"
                       value={formData.apartment}
-                      onChange={(e) =>
-                        setFormData({ ...formData, apartment: e.target.value })
-                      }
+                      maxLength={20}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 20);
+                        setFormData({ ...formData, apartment: v });
+                        setErrors((p) => ({ ...p, apartment: liveCheck(optionalStreetNumberSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.apartment}
+                      className={errors.apartment ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="4B"
                     />
+                    <FieldError name="apartment" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="city">{lt.city} *</Label>
@@ -1195,10 +1236,11 @@ export default function MemberDialog({
                       id="city"
                       value={formData.city}
                       required
+                      maxLength={100}
                       onChange={(e) => {
-                        const v = e.target.value;
+                        const v = e.target.value.slice(0, 100);
                         setFormData({ ...formData, city: v });
-                        setErrors((p) => ({ ...p, city: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                        setErrors((p) => ({ ...p, city: liveCheck(requiredLettersSchema, v) ?? "" }));
                       }}
                       placeholder="New York"
                       aria-invalid={!!errors.city}
@@ -1211,11 +1253,17 @@ export default function MemberDialog({
                     <Input
                       id="zipCode"
                       value={formData.zipCode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, zipCode: e.target.value })
-                      }
+                      maxLength={12}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 12);
+                        setFormData({ ...formData, zipCode: v });
+                        setErrors((p) => ({ ...p, zipCode: liveCheck(optionalZipSchema, v) ?? "" }));
+                      }}
                       placeholder="10001"
+                      aria-invalid={!!errors.zipCode}
+                      className={errors.zipCode ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="zipCode" errors={errors} />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1224,11 +1272,17 @@ export default function MemberDialog({
                     <Input
                       id="state"
                       value={formData.state}
-                      onChange={(e) =>
-                        setFormData({ ...formData, state: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, state: v });
+                        setErrors((p) => ({ ...p, state: liveCheck(optionalLettersSchema, v) ?? "" }));
+                      }}
                       placeholder="NY"
+                      aria-invalid={!!errors.state}
+                      className={errors.state ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="state" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="country">{lt.country} *</Label>
@@ -1236,10 +1290,11 @@ export default function MemberDialog({
                       id="country"
                       value={formData.country}
                       required
+                      maxLength={100}
                       onChange={(e) => {
-                        const v = e.target.value;
+                        const v = e.target.value.slice(0, 100);
                         setFormData({ ...formData, country: v });
-                        setErrors((p) => ({ ...p, country: liveCheck(requiredShortTextSchema, v) ?? "" }));
+                        setErrors((p) => ({ ...p, country: liveCheck(requiredLettersSchema, v) ?? "" }));
                       }}
                       placeholder="United States"
                       aria-invalid={!!errors.country}
@@ -1248,6 +1303,7 @@ export default function MemberDialog({
                     <FieldError name="country" errors={errors} />
                   </div>
                 </div>
+
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1324,22 +1380,34 @@ export default function MemberDialog({
                     <Input
                       id="academicFormation"
                       value={formData.academicFormation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, academicFormation: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, academicFormation: v });
+                        setErrors((p) => ({ ...p, academicFormation: liveCheck(shortTextSchema, v) ?? "" }));
+                      }}
                       placeholder={lt.academicPlaceholder}
+                      aria-invalid={!!errors.academicFormation}
+                      className={errors.academicFormation ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="academicFormation" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="professionalFormation">{lt.professionalFormation}</Label>
                     <Input
                       id="professionalFormation"
                       value={formData.professionalFormation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, professionalFormation: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, professionalFormation: v });
+                        setErrors((p) => ({ ...p, professionalFormation: liveCheck(shortTextSchema, v) ?? "" }));
+                      }}
                       placeholder={lt.professionalPlaceholder}
+                      aria-invalid={!!errors.professionalFormation}
+                      className={errors.professionalFormation ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="professionalFormation" errors={errors} />
                   </div>
                 </div>
               </div>
@@ -1391,11 +1459,17 @@ export default function MemberDialog({
                 <Input
                   id="originChurch"
                   value={formData.originChurch}
-                  onChange={(e) =>
-                    setFormData({ ...formData, originChurch: e.target.value })
-                  }
+                  maxLength={100}
+                  onChange={(e) => {
+                    const v = e.target.value.slice(0, 100);
+                    setFormData({ ...formData, originChurch: v });
+                    setErrors((p) => ({ ...p, originChurch: liveCheck(shortTextSchema, v) ?? "" }));
+                  }}
                   placeholder={lt.originChurchPlaceholder}
+                  aria-invalid={!!errors.originChurch}
+                  className={errors.originChurch ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                <FieldError name="originChurch" errors={errors} />
               </div>
 
               <div className="grid gap-2">
@@ -1551,13 +1625,20 @@ export default function MemberDialog({
                   <Input
                     id="numberOfChildren"
                     type="number"
+                    inputMode="numeric"
                     value={formData.numberOfChildren}
-                    onChange={(e) =>
-                      setFormData({ ...formData, numberOfChildren: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
+                      setFormData({ ...formData, numberOfChildren: v });
+                      setErrors((p) => ({ ...p, numberOfChildren: liveCheck(optionalCountSchema, v) ?? "" }));
+                    }}
                     placeholder="0"
                     min="0"
+                    max="999"
+                    aria-invalid={!!errors.numberOfChildren}
+                    className={errors.numberOfChildren ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="numberOfChildren" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="familyEmergency">{lt.emergencyContact}</Label>
@@ -1585,9 +1666,11 @@ export default function MemberDialog({
                   id="childrenNames"
                   value={formData.childrenNames}
                   maxLength={500}
-                  onChange={(e) =>
-                    setFormData({ ...formData, childrenNames: e.target.value.slice(0, 500) })
-                  }
+                  onChange={(e) => {
+                    const v = e.target.value.slice(0, 500);
+                    setFormData({ ...formData, childrenNames: v });
+                    setErrors((p) => ({ ...p, childrenNames: v.length > 500 ? "validation.field.tooLong500" : "" }));
+                  }}
                   placeholder={lt.childrenNamesPlaceholder}
                   rows={3}
                 />

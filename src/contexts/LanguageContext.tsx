@@ -3557,6 +3557,7 @@ const translations = {
       tooLong100: "Doit contenir moins de 100 caractères",
       tooLong255: "Doit contenir moins de 255 caractères",
       tooLong2000: "Doit contenir moins de 2000 caractères",
+      tooLong500: "Doit contenir moins de 500 caractères",
     },
     name: {
       invalidChars: "Le nom ne peut contenir que des lettres, espaces, apostrophes et tirets",
@@ -7093,6 +7094,7 @@ const translations = {
       tooLong100: "Must be less than 100 characters",
       tooLong255: "Must be less than 255 characters",
       tooLong2000: "Must be less than 2000 characters",
+      tooLong500: "Must be less than 500 characters",
     },
     name: {
       invalidChars: "Name may only contain letters, spaces, apostrophes and hyphens",
@@ -10628,6 +10630,7 @@ const translations = {
       tooLong100: "Dwe gen mwens pase 100 karaktè",
       tooLong255: "Dwe gen mwens pase 255 karaktè",
       tooLong2000: "Dwe gen mwens pase 2000 karaktè",
+      tooLong500: "Dwe gen mwens pase 500 karaktè",
     },
     name: {
       invalidChars: "Non an ka genyen sèlman lèt, espas, apostwòf ak tirè",

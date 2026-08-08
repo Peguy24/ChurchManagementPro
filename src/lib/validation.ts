@@ -260,7 +260,7 @@ export const joinChurchSchema = z.object({
 /* Join-church multi-step schemas (one per tab)                     */
 /* ---------------------------------------------------------------- */
 
-const optionalLettersSchema = z
+export const optionalLettersSchema = z
   .string()
   .trim()
   .max(100, "validation.field.tooLong100")
@@ -268,7 +268,15 @@ const optionalLettersSchema = z
   .optional()
   .or(z.literal(""));
 
-const optionalZipSchema = z
+/** Required letters-only field (city, country...). */
+export const requiredLettersSchema = z
+  .string()
+  .trim()
+  .min(1, "validation.field.required")
+  .max(100, "validation.field.tooLong100")
+  .regex(/^[\p{L}\p{M}'’\-.\s]+$/u, "validation.text.invalidChars");
+
+export const optionalZipSchema = z
   .string()
   .trim()
   .max(12, "validation.zip.invalid")
@@ -276,13 +284,31 @@ const optionalZipSchema = z
   .optional()
   .or(z.literal(""));
 
-const optionalStreetNumberSchema = z
+export const optionalStreetNumberSchema = z
   .string()
   .trim()
   .max(20, "validation.field.tooLong100")
   .regex(/^[\p{L}\p{N}\-/ ]*$/u, "validation.text.invalidChars")
   .optional()
   .or(z.literal(""));
+
+/** Street / address line: letters, digits and common address punctuation. */
+export const optionalStreetSchema = z
+  .string()
+  .trim()
+  .max(120, "validation.field.tooLong100")
+  .regex(/^[\p{L}\p{M}\p{N}'’\-.,#/\s]*$/u, "validation.text.invalidChars")
+  .optional()
+  .or(z.literal(""));
+
+/** Optional non-negative small integer (e.g. number of children). */
+export const optionalCountSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{0,3}$/, "validation.children.invalid")
+  .optional()
+  .or(z.literal(""));
+
 
 const MIN_BIRTH_YEARS = 120;
 const optionalBirthDateSchema = z
@@ -306,7 +332,7 @@ export const joinChurchPersonalSchema = z.object({
   email: emailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
-  street: shortTextSchema.optional().or(z.literal("")),
+  street: optionalStreetSchema,
   number: optionalStreetNumberSchema,
   apartment: optionalStreetNumberSchema,
   city: optionalLettersSchema,
@@ -569,11 +595,27 @@ export const memberFullSchema = z.object({
   dateOfBirth: requiredPastDateSchema,
   phone: phoneSchema,
   email: emailSchema,
-  city: requiredShortTextSchema,
-  country: requiredShortTextSchema,
+  city: requiredLettersSchema,
+  country: requiredLettersSchema,
   joinDate: requiredPastDateSchema,
   emergencyPhone: optionalPhoneSchema,
+  // Address details
+  addressNumber: optionalStreetNumberSchema,
+  street: optionalStreetSchema,
+  apartment: optionalStreetNumberSchema,
+  state: optionalLettersSchema,
+  zipCode: optionalZipSchema,
+  // Formation
+  academicFormation: shortTextSchema.optional().or(z.literal("")),
+  professionalFormation: shortTextSchema.optional().or(z.literal("")),
+  // Spiritual
+  originChurch: shortTextSchema.optional().or(z.literal("")),
+  // Family
+  spouseName: optionalNameSchema,
+  numberOfChildren: optionalCountSchema,
+  childrenNames: z.string().trim().max(500, "validation.field.tooLong500").optional().or(z.literal("")),
 });
+
 
 /* --- Custom fields (extended with select-options check) ------------ */
 
