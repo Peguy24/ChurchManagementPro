@@ -110,13 +110,23 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
     }
   }, [user, loading, isApproved, canAccess, location.pathname, requireAdmin, navigate]);
 
-  if (loading || !user) {
+  // Background re-validation (token refresh, tab focus, tenant re-read) briefly
+  // flips these hooks back to `loading`. Once the first bootstrap succeeded we
+  // keep the current screen on-screen instead of flashing the boot skeleton.
+  const revalidating = loading && hasBootstrapped && Boolean(user);
+
+  if ((loading || !user) && !revalidating) {
     // Do not render Layout before auth/tenant identity is known; otherwise a
     // tenant refresh can briefly show generic or platform branding.
     return <RouteBootSkeleton />;
   }
 
   if (location.pathname === '/pending-approval') {
+    return <>{children}</>;
+  }
+
+  if (revalidating) {
+    // Identity data is still settling — render the last known good view.
     return <>{children}</>;
   }
 
