@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import { Building2, ChevronDown, LogOut, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadNavSnapshot } from "@/lib/navSnapshot";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Layout-preserving skeleton shown while auth/role/tenant identity resolves.
@@ -13,7 +14,11 @@ import { loadNavSnapshot } from "@/lib/navSnapshot";
  */
 export default function AppShellSkeleton() {
   const location = useLocation();
-  const snapshot = loadNavSnapshot();
+  const { user } = useAuth();
+  const stored = loadNavSnapshot();
+  // Never replay another account's shell (e.g. right after signing in as a
+  // different church) — that reads as a flash of the wrong branding/menu.
+  const snapshot = stored && user?.id && stored.userId && stored.userId !== user.id ? null : stored;
   const groups = snapshot?.groups ?? [];
   const openGroups = snapshot?.openGroups ?? [];
   const hasBranding = Boolean(snapshot?.brandingName);
