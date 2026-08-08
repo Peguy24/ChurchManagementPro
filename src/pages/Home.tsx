@@ -57,15 +57,14 @@ export default function Home() {
 
   const loading = authLoading || roleLoading || tenantLoading || maintenanceLoading;
 
-  // Show a neutral skeleton (no logo splash) while hooks resolve
+  // Show a content-only skeleton (the app shell is already rendered around us)
+  // so signing in does not flash a second full-page layout.
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-5xl space-y-4">
-          <Skeleton className="h-8 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-64 w-full" />
-        </div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
