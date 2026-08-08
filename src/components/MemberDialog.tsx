@@ -31,7 +31,18 @@ import CameraCapture from "./CameraCapture";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { CustomFieldsRenderer } from "@/components/CustomFieldsRenderer";
 import { saveCustomFieldValues } from "@/lib/customFieldsUtils";
-import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, requiredPastDateSchema, optionalEmailSchema, emailSchema, optionalPhoneSchema, phoneSchema, requiredShortTextSchema } from "@/lib/validation";
+import { memberFullSchema, validateForm, firstErrorMessage, personNameSchema, optionalPastDateSchema, requiredPastDateSchema, optionalEmailSchema, emailSchema, optionalPhoneSchema, phoneSchema, requiredShortTextSchema, requiredLettersSchema, optionalLettersSchema, optionalZipSchema, optionalStreetNumberSchema, optionalStreetSchema, optionalCountSchema, shortTextSchema, optionalNameSchema } from "@/lib/validation";
+
+/** Which tab each validated field belongs to, so we can focus the first error. */
+const FIELD_TAB: Record<string, string> = {
+  firstName: "personal", lastName: "personal", gender: "personal", dateOfBirth: "personal",
+  phone: "personal", email: "personal", emergencyPhone: "personal", addressNumber: "personal",
+  street: "personal", apartment: "personal", city: "personal", state: "personal",
+  zipCode: "personal", country: "personal", joinDate: "personal",
+  academicFormation: "personal", professionalFormation: "personal",
+  originChurch: "spiritual",
+  spouseName: "family", numberOfChildren: "family", childrenNames: "family",
+};
 
 const liveCheck = (schema: { safeParse: (v: unknown) => any }, value: string): string | null => {
   const result = schema.safeParse(value);
@@ -676,11 +687,23 @@ export default function MemberDialog({
       country: formData.country,
       joinDate: formData.joinDate,
       emergencyPhone: formData.emergencyPhone,
+      addressNumber: formData.addressNumber,
+      street: formData.street,
+      apartment: formData.apartment,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      academicFormation: formData.academicFormation,
+      professionalFormation: formData.professionalFormation,
+      originChurch: formData.originChurch,
+      spouseName: formData.spouseName,
+      numberOfChildren: formData.numberOfChildren,
+      childrenNames: formData.childrenNames,
     });
     if (!validation.success) {
       setErrors(validation.fieldErrors);
-      // All currently required fields live in the Personal tab — switch to it
-      setActiveTab("personal");
+      // Jump to the tab that holds the first invalid field
+      const firstField = Object.keys(validation.fieldErrors)[0];
+      setActiveTab(FIELD_TAB[firstField] ?? "personal");
       toast({
         title: lt.error,
         description: t(firstErrorMessage(validation.fieldErrors, (k) => k) || "validation.field.required"),
@@ -1159,9 +1182,14 @@ export default function MemberDialog({
                     <Input
                       id="addressNumber"
                       value={formData.addressNumber}
-                      onChange={(e) =>
-                        setFormData({ ...formData, addressNumber: e.target.value })
-                      }
+                      maxLength={20}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 20);
+                        setFormData({ ...formData, addressNumber: v });
+                        setErrors((p) => ({ ...p, addressNumber: liveCheck(optionalStreetNumberSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.addressNumber}
+                      className={errors.addressNumber ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="1234"
                     />
                   </div>
@@ -1170,9 +1198,14 @@ export default function MemberDialog({
                     <Input
                       id="street"
                       value={formData.street}
-                      onChange={(e) =>
-                        setFormData({ ...formData, street: e.target.value })
-                      }
+                      maxLength={120}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 120);
+                        setFormData({ ...formData, street: v });
+                        setErrors((p) => ({ ...p, street: liveCheck(optionalStreetSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.street}
+                      className={errors.street ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="Main Street"
                     />
                   </div>
@@ -1183,9 +1216,14 @@ export default function MemberDialog({
                     <Input
                       id="apartment"
                       value={formData.apartment}
-                      onChange={(e) =>
-                        setFormData({ ...formData, apartment: e.target.value })
-                      }
+                      maxLength={20}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 20);
+                        setFormData({ ...formData, apartment: v });
+                        setErrors((p) => ({ ...p, apartment: liveCheck(optionalStreetNumberSchema, v) ?? "" }));
+                      }}
+                      aria-invalid={!!errors.apartment}
+                      className={errors.apartment ? "border-destructive focus-visible:ring-destructive" : ""}
                       placeholder="4B"
                     />
                   </div>
