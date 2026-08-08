@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeAmount, sanitizeText, sanitizeReference, clampNotFuture, todayISO } from "@/lib/inputSanitize";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -325,9 +326,10 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
           <div>
             <Label>{t("transferDialog.amount")} *</Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              onChange={(e) => setForm({ ...form, amount: sanitizeAmount(e.target.value) })}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -342,7 +344,8 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
             <Label>{t("transferDialog.transferReason")}</Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              maxLength={300}
+              onChange={(e) => setForm({ ...form, description: sanitizeText(e.target.value, 300) })}
               placeholder={t("transferDialog.reasonPlaceholder")}
               rows={2}
             />
@@ -354,7 +357,8 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
               <Label>{t("transferDialog.reference")}</Label>
               <Input
                 value={form.reference_number}
-                onChange={(e) => setForm({ ...form, reference_number: e.target.value })}
+                maxLength={50}
+                onChange={(e) => setForm({ ...form, reference_number: sanitizeReference(e.target.value) })}
                 placeholder={t("transferDialog.referencePlaceholder")}
               />
             </div>
@@ -362,8 +366,9 @@ const TransferDialog = ({ trigger }: TransferDialogProps) => {
               <Label>{t("transferDialog.date")}</Label>
               <Input
                 type="date"
+                max={todayISO()}
                 value={form.transfer_date}
-                onChange={(e) => setForm({ ...form, transfer_date: e.target.value })}
+                onChange={(e) => setForm({ ...form, transfer_date: clampNotFuture(e.target.value) })}
               />
             </div>
           </div>
