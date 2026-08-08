@@ -305,7 +305,7 @@ export const optionalStreetSchema = z
 export const optionalCountSchema = z
   .string()
   .trim()
-  .regex(/^\d{0,3}$/, "validation.number.invalid")
+  .regex(/^\d{0,3}$/, "validation.children.invalid")
   .optional()
   .or(z.literal(""));
 
@@ -332,7 +332,7 @@ export const joinChurchPersonalSchema = z.object({
   email: emailSchema,
   phone: optionalPhoneSchema,
   emergencyPhone: optionalPhoneSchema,
-  street: shortTextSchema.optional().or(z.literal("")),
+  street: optionalStreetSchema,
   number: optionalStreetNumberSchema,
   apartment: optionalStreetNumberSchema,
   city: optionalLettersSchema,
