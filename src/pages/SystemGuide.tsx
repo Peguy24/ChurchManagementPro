@@ -2,53 +2,42 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { generateSystemGuidePDF } from "@/lib/systemGuidePDF";
-import { BarChart3, BookOpen, Building2, Calendar, ClipboardCheck, DollarSign, Download, FileText, Mail, Package, Shield, Sparkles, Users } from 'lucide-react';
+import { generateSystemGuidePDF, getGuideSections } from "@/lib/systemGuidePDF";
+import { ALL_FEATURE_KEYS, FeatureKey, usePlanLimits } from "@/hooks/usePlanLimits";
+import {
+  BarChart3, BookOpen, Building2, Calendar, ClipboardCheck, DollarSign, Download,
+  FileText, Globe, HandCoins, Mail, Package, Settings, Shield, Sparkles, Users,
+} from "lucide-react";
 
-const sections = [
-  { icon: Users, key: "members" },
-  { icon: ClipboardCheck, key: "attendance" },
-  { icon: DollarSign, key: "finances" },
-  { icon: Calendar, key: "events" },
-  { icon: Building2, key: "branches" },
-  { icon: BarChart3, key: "reports" },
-  { icon: Package, key: "inventory" },
-  { icon: Mail, key: "communication" },
-  { icon: Sparkles, key: "ai" },
-  { icon: Shield, key: "security" },
-];
-
-const sectionLabels: Record<string, Record<string, string>> = {
-  fr: {
-    members: "Gestion des Membres",
-    attendance: "Gestion de la Présence",
-    finances: "Gestion Financière",
-    events: "Événements et Ministères",
-    branches: "Gestion Multi-Branches",
-    reports: "Rapports et Tableaux de Bord",
-    inventory: "Gestion de l'Inventaire",
-    communication: "Communication",
-    ai: "Analyses Intelligentes (IA)",
-    security: "Sécurité et Contrôle d'Accès",
-  },
-  en: {
-    members: "Member Management",
-    attendance: "Attendance Management",
-    finances: "Financial Management",
-    events: "Events & Ministries",
-    branches: "Multi-Branch Management",
-    reports: "Reports & Dashboards",
-    inventory: "Inventory Management",
-    communication: "Communication",
-    ai: "Smart Insights (AI)",
-    security: "Security & Access Control",
-  },
+const sectionIcons: Record<string, typeof Users> = {
+  members: Users,
+  attendance: ClipboardCheck,
+  finances: DollarSign,
+  giving: HandCoins,
+  events: Calendar,
+  branches: Building2,
+  reports: BarChart3,
+  inventory: Package,
+  communication: Mail,
+  website: Globe,
+  insights: Sparkles,
+  settings: Settings,
+  security: Shield,
 };
 
 export default function SystemGuide() {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
+  const { hasFeature, isGlobalFeatureEnabled } = usePlanLimits();
   const lang = language === "fr" ? "fr" : "en";
-  const labels = sectionLabels[lang];
+
+  // A feature key is either a plan feature (camelCase) or a global platform flag (snake_case)
+  const isEnabled = (flag: string) =>
+    (ALL_FEATURE_KEYS as readonly string[]).includes(flag)
+      ? hasFeature(flag as FeatureKey)
+      : isGlobalFeatureEnabled(flag);
+
+  const sections = getGuideSections(lang, isEnabled);
+  const featureCount = sections.reduce((sum, s) => sum + s.features.length, 0);
 
   return (
     <Layout>
@@ -59,15 +48,17 @@ export default function SystemGuide() {
               <BookOpen className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">{lang === "fr" ? "Guide du Système" : "System Guide"}</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">
+                {lang === "fr" ? "Guide du Système" : "System Guide"}
+              </h1>
               <p className="text-sm text-muted-foreground">
-              {lang === "fr"
-                ? "Téléchargez un document PDF décrivant toutes les fonctionnalités pour votre leadership."
-                : "Download a PDF document describing all features for your leadership."}
-            </p>
+                {lang === "fr"
+                  ? "Téléchargez un PDF décrivant les fonctionnalités disponibles pour votre église."
+                  : "Download a PDF describing the features available to your church."}
+              </p>
             </div>
           </div>
-          <Button size="lg" onClick={() => generateSystemGuidePDF(lang)} className="gap-2">
+          <Button size="lg" onClick={() => generateSystemGuidePDF(lang, isEnabled)} className="gap-2">
             <Download className="h-5 w-5" />
             {lang === "fr" ? "Télécharger le PDF" : "Download PDF"}
           </Button>
@@ -81,20 +72,29 @@ export default function SystemGuide() {
             </CardTitle>
             <CardDescription>
               {lang === "fr"
-                ? "Le PDF inclut les sections suivantes :"
-                : "The PDF includes the following sections:"}
+                ? `Le PDF inclut ${sections.length} sections et ${featureCount} fonctionnalités actuellement activées pour votre église :`
+                : `The PDF includes ${sections.length} sections and ${featureCount} features currently enabled for your church:`}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {sections.map(({ icon: Icon, key }) => (
-                <div key={key} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+              {sections.map((section, idx) => {
+                const Icon = sectionIcons[section.id] ?? FileText;
+                return (
+                  <div key={section.id} className="flex items-center gap-3 rounded-lg border p-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{idx + 1}. {section.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {section.features.length}{" "}
+                        {lang === "fr" ? "fonctionnalités" : "features"}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium">{labels[key]}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
