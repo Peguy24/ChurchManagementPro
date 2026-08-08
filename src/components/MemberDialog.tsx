@@ -1380,22 +1380,34 @@ export default function MemberDialog({
                     <Input
                       id="academicFormation"
                       value={formData.academicFormation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, academicFormation: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, academicFormation: v });
+                        setErrors((p) => ({ ...p, academicFormation: liveCheck(shortTextSchema, v) ?? "" }));
+                      }}
                       placeholder={lt.academicPlaceholder}
+                      aria-invalid={!!errors.academicFormation}
+                      className={errors.academicFormation ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="academicFormation" errors={errors} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="professionalFormation">{lt.professionalFormation}</Label>
                     <Input
                       id="professionalFormation"
                       value={formData.professionalFormation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, professionalFormation: e.target.value })
-                      }
+                      maxLength={100}
+                      onChange={(e) => {
+                        const v = e.target.value.slice(0, 100);
+                        setFormData({ ...formData, professionalFormation: v });
+                        setErrors((p) => ({ ...p, professionalFormation: liveCheck(shortTextSchema, v) ?? "" }));
+                      }}
                       placeholder={lt.professionalPlaceholder}
+                      aria-invalid={!!errors.professionalFormation}
+                      className={errors.professionalFormation ? "border-destructive focus-visible:ring-destructive" : ""}
                     />
+                    <FieldError name="professionalFormation" errors={errors} />
                   </div>
                 </div>
               </div>
@@ -1447,11 +1459,17 @@ export default function MemberDialog({
                 <Input
                   id="originChurch"
                   value={formData.originChurch}
-                  onChange={(e) =>
-                    setFormData({ ...formData, originChurch: e.target.value })
-                  }
+                  maxLength={100}
+                  onChange={(e) => {
+                    const v = e.target.value.slice(0, 100);
+                    setFormData({ ...formData, originChurch: v });
+                    setErrors((p) => ({ ...p, originChurch: liveCheck(shortTextSchema, v) ?? "" }));
+                  }}
                   placeholder={lt.originChurchPlaceholder}
+                  aria-invalid={!!errors.originChurch}
+                  className={errors.originChurch ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                <FieldError name="originChurch" errors={errors} />
               </div>
 
               <div className="grid gap-2">
@@ -1607,13 +1625,20 @@ export default function MemberDialog({
                   <Input
                     id="numberOfChildren"
                     type="number"
+                    inputMode="numeric"
                     value={formData.numberOfChildren}
-                    onChange={(e) =>
-                      setFormData({ ...formData, numberOfChildren: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
+                      setFormData({ ...formData, numberOfChildren: v });
+                      setErrors((p) => ({ ...p, numberOfChildren: liveCheck(optionalCountSchema, v) ?? "" }));
+                    }}
                     placeholder="0"
                     min="0"
+                    max="999"
+                    aria-invalid={!!errors.numberOfChildren}
+                    className={errors.numberOfChildren ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError name="numberOfChildren" errors={errors} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="familyEmergency">{lt.emergencyContact}</Label>
@@ -1641,9 +1666,11 @@ export default function MemberDialog({
                   id="childrenNames"
                   value={formData.childrenNames}
                   maxLength={500}
-                  onChange={(e) =>
-                    setFormData({ ...formData, childrenNames: e.target.value.slice(0, 500) })
-                  }
+                  onChange={(e) => {
+                    const v = e.target.value.slice(0, 500);
+                    setFormData({ ...formData, childrenNames: v });
+                    setErrors((p) => ({ ...p, childrenNames: v.length > 500 ? "validation.field.tooLong500" : "" }));
+                  }}
                   placeholder={lt.childrenNamesPlaceholder}
                   rows={3}
                 />
