@@ -595,11 +595,27 @@ export const memberFullSchema = z.object({
   dateOfBirth: requiredPastDateSchema,
   phone: phoneSchema,
   email: emailSchema,
-  city: requiredShortTextSchema,
-  country: requiredShortTextSchema,
+  city: requiredLettersSchema,
+  country: requiredLettersSchema,
   joinDate: requiredPastDateSchema,
   emergencyPhone: optionalPhoneSchema,
+  // Address details
+  addressNumber: optionalStreetNumberSchema,
+  street: optionalStreetSchema,
+  apartment: optionalStreetNumberSchema,
+  state: optionalLettersSchema,
+  zipCode: optionalZipSchema,
+  // Formation
+  academicFormation: shortTextSchema.optional().or(z.literal("")),
+  professionalFormation: shortTextSchema.optional().or(z.literal("")),
+  // Spiritual
+  originChurch: shortTextSchema.optional().or(z.literal("")),
+  // Family
+  spouseName: optionalNameSchema,
+  numberOfChildren: optionalCountSchema,
+  childrenNames: z.string().trim().max(500, "validation.field.tooLong500").optional().or(z.literal("")),
 });
+
 
 /* --- Custom fields (extended with select-options check) ------------ */
 
