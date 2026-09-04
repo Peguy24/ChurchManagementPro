@@ -53,9 +53,10 @@ export default function StatusAdmin() {
   };
 
   const saveIncident = async () => {
-    const { id, title, body, status, severity, started_at, resolved_at } = incDialog;
+    const { id, title, body, status, severity, started_at, resolved_at, is_public } = incDialog;
     const payload: any = {
       title, body, status, severity,
+      is_public: is_public !== false,
       started_at: started_at || new Date().toISOString(),
       resolved_at: status === 'resolved' ? (resolved_at || new Date().toISOString()) : null,
     };
