@@ -184,6 +184,14 @@ export default function StatusAdmin() {
                   </Select>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={incDialog.is_public !== false}
+                  onChange={(e) => setIncDialog({ ...incDialog, is_public: e.target.checked })}
+                />
+                <Label>Publish on the public status page</Label>
+              </div>
             </div>
             <DialogFooter><Button onClick={saveIncident}>Save</Button></DialogFooter>
           </DialogContent>
