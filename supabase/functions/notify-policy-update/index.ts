@@ -109,7 +109,7 @@ serve(async (req) => {
       .in("id", ids);
     const profById = new Map((profiles || []).map((p: any) => [p.id, p]));
 
-    const ctaUrl = `https://churchmanagementpro.com/legal/${documentType.replace(/_/g, "-")}`;
+    const ctaUrl = `https://churchmanagementpro.com/legal/${documentType}`;
 
     let sent = 0;
     for (const id of ids) {
