@@ -199,6 +199,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       address: "",
       requested_plan: "basic",
       message: "",
+      referral_code: "",
     });
     onOpenChange(false);
   };
