@@ -164,24 +164,9 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
         }
       }
 
-      // Record policy acceptances
-      if (data?.tenantId || data?.slug) {
-        try {
-          const docTypes = ["terms_of_use", "privacy_policy", "payment_terms"];
-          for (const docType of docTypes) {
-            const doc = legalDocs?.find((d: any) => d.document_type === docType);
-            await (supabase as any).from("tenant_policy_acceptances").insert({
-              tenant_id: data.tenantId,
-              document_type: docType,
-              document_version: doc?.version || 1,
-              accepted_by_name: formData.contact_name,
-              accepted_by_email: formData.contact_email,
-            });
-          }
-        } catch (err) {
-          console.warn("Failed to record policy acceptances:", err);
-        }
-      }
+      // Policy acceptances are recorded server-side by auto-provision-tenant
+      // (the visitor is not authenticated yet, so a client insert would be rejected).
+
       
       if (data.emailSent) {
         toast.success(t("churchForm.successWithEmail"));
