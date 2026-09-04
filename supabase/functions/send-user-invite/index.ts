@@ -316,7 +316,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `${safeTenantName} <noreply@churchmanagementpro.com>`,
+        from: `${String(tenantName).replace(/[<>"\r\n]/g, "").slice(0, 80)} <noreply@churchmanagementpro.com>`,
         to: [email],
         subject: `${t.subject} ${safeTenantName}`,
         html: emailHtml,
