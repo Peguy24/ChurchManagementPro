@@ -113,7 +113,7 @@ export default function StatusAdmin() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Incidents</CardTitle>
-            <Button size="sm" onClick={() => setIncDialog({ title: '', body: '', status: 'investigating', severity: 'minor', started_at: '', resolved_at: '' })}>
+            <Button size="sm" onClick={() => setIncDialog({ title: '', body: '', status: 'investigating', severity: 'minor', started_at: '', resolved_at: '', is_public: true })}>
               <Plus className="h-4 w-4 mr-1" /> Report Incident
             </Button>
           </CardHeader>
