@@ -52,6 +52,9 @@ export default function Referrals() {
       const { data: statsData } = await (supabase as any).rpc("get_tenant_referral_stats", { _tenant_id: tenantId });
       if (statsData) setStats(statsData);
 
+      const { data: clickData } = await (supabase as any).rpc("get_tenant_referral_click_stats", { _tenant_id: tenantId });
+      if (clickData) setClickStats(clickData);
+
       const { data: refs } = await (supabase as any)
         .from("referrals")
         .select("id, referred_tenant_id, status, created_at, qualified_at, rewarded_at")
