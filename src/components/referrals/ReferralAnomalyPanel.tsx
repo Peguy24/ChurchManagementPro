@@ -42,8 +42,8 @@ export default function ReferralAnomalyPanel() {
       const ids = Array.from(new Set(rows.map((r) => r.tenant_id).filter(Boolean)));
       if (ids.length) {
         const { data: tenants } = await (supabase as any).from("tenants").select("id, name").in("id", ids);
-        const map = new Map((tenants || []).map((t: any) => [t.id, t.name]));
-        rows.forEach((r) => (r.tenant_name = (r.tenant_id && map.get(r.tenant_id)) || "—"));
+        const map = new Map<string, string>((tenants || []).map((t: any) => [t.id as string, t.name as string]));
+        rows.forEach((r) => (r.tenant_name = (r.tenant_id ? map.get(r.tenant_id) : undefined) || "—"));
       }
       setAlerts(rows);
     } finally {
