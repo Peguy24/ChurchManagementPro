@@ -252,8 +252,12 @@ serve(async (req) => {
     const roleKey = role || "user";
     const displayRole = t[roleKey] || t["user"];
 
-    const inviterLine = inviterName
-      ? `<strong>${inviterName}</strong> ${t.inviteText}`
+    const escapeHtml = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const safeInviter = typeof inviterName === "string" ? escapeHtml(inviterName.slice(0, 120)) : "";
+    const safeTenantName = escapeHtml(String(tenantName).slice(0, 120));
+    const inviterLine = safeInviter
+      ? `<strong>${safeInviter}</strong> ${t.inviteText}`
       : t.inviteTextNoName;
 
     console.log(`Sending invitation email to ${email} for tenant ${tenantName} with role ${role}`);
