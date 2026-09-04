@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
+import { markReferralClickConverted } from "@/lib/referralTracking";
 import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema, emailSchema, optionalPhoneSchema } from "@/lib/validation";
 
 /** Run a single Zod schema and return the i18n key of the first issue, or null. */
@@ -145,6 +146,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
           await supabase.functions.invoke("track-referral-signup", {
             body: { code: refCode, referredTenantId: data.tenantId },
           });
+          await markReferralClickConverted(refCode, data.tenantId);
           sessionStorage.removeItem("referral_code");
         } catch (refErr) {
           console.warn("Referral tracking failed:", refErr);

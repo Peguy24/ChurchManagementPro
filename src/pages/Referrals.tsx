@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { Copy, Gift, Share2, Loader2, Users, CheckCircle2, Sparkles } from "lucide-react";
+import { Copy, Gift, Share2, Loader2, Users, CheckCircle2, Sparkles, MousePointerClick, TrendingUp } from "lucide-react";
 
 interface ReferralRow {
   id: string;
@@ -26,6 +26,7 @@ export default function Referrals() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState({ invited: 0, qualified: 0, rewarded: 0, free_months_earned: 0 });
+  const [clickStats, setClickStats] = useState({ clicks: 0, unique_visitors: 0, conversions: 0, conversion_rate: 0, last_click_at: null as string | null });
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
 
   const tt = (en: string, fr: string, ht: string) => (language === "fr" ? fr : language === "ht" ? ht : en);
@@ -50,6 +51,9 @@ export default function Referrals() {
 
       const { data: statsData } = await (supabase as any).rpc("get_tenant_referral_stats", { _tenant_id: tenantId });
       if (statsData) setStats(statsData);
+
+      const { data: clickData } = await (supabase as any).rpc("get_tenant_referral_click_stats", { _tenant_id: tenantId });
+      if (clickData) setClickStats(clickData);
 
       const { data: refs } = await (supabase as any)
         .from("referrals")
@@ -127,10 +131,24 @@ export default function Referrals() {
             </div>
           </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <Card>
+            <CardHeader className="pb-2"><CardDescription>{tt("Link clicks", "Clics sur le lien", "Klik sou lyen an")}</CardDescription><CardTitle className="text-3xl">{clickStats.clicks}</CardTitle></CardHeader>
+            <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MousePointerClick className="h-5 w-5" />
+              <span>{clickStats.unique_visitors} {tt("unique visitors", "visiteurs uniques", "vizitè inik")}</span>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="pb-2"><CardDescription>{tt("Churches invited", "Églises invitées", "Legliz envite")}</CardDescription><CardTitle className="text-3xl">{stats.invited}</CardTitle></CardHeader>
             <CardContent><Users className="h-5 w-5 text-muted-foreground" /></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2"><CardDescription>{tt("Click to sign-up rate", "Taux de conversion", "To konvèsyon")}</CardDescription><CardTitle className="text-3xl">{clickStats.conversion_rate}%</CardTitle></CardHeader>
+            <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-5 w-5" />
+              <span>{clickStats.conversions} {tt("sign-ups from clicks", "inscriptions issues des clics", "enskripsyon soti nan klik")}</span>
+            </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardDescription>{tt("Qualified", "Qualifiées", "Kalifye")}</CardDescription><CardTitle className="text-3xl">{stats.qualified}</CardTitle></CardHeader>
