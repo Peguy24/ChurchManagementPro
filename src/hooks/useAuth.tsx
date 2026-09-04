@@ -63,16 +63,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.removeItem('user_role_cache');
       sessionStorage.removeItem('tenant_cache');
       sessionStorage.removeItem('tenant_cache_tenant_id');
-      // Sign out stale session from localStorage
-      supabase.auth.getSession().then(({ data: { session: staleSession } }) => {
-        if (staleSession) {
-          supabase.auth.signOut().then(() => {
-            setSession(null);
-            setUser(null);
-            setLoading(false);
-          });
+
+      // Remove the stale auth token from localStorage SYNCHRONOUSLY, before any
+      // getSession()/onAuthStateChange callback can observe it. Otherwise the
+      // app briefly sees a valid session, mounts the tenant dashboard shell,
+      // then unmounts it when the async sign-out lands — visible as a flash of
+      // the app behind the marketing page.
+      try {
+        const authKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && /^sb-.*-auth-token$/.test(key)) authKeys.push(key);
         }
-      });
+        authKeys.forEach((key) => localStorage.removeItem(key));
+      } catch { /* noop */ }
     }
 
     // Mark this browser session as active
