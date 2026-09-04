@@ -53,6 +53,11 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
     address: "",
     requested_plan: selectedPlan,
     message: "",
+    referral_code:
+      (typeof window !== "undefined" &&
+        (new URLSearchParams(window.location.search).get("ref") ||
+          sessionStorage.getItem("referral_code") ||
+          "")) || "",
   });
 
   const { data: legalDocs } = useQuery({
