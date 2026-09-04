@@ -53,9 +53,10 @@ export default function StatusAdmin() {
   };
 
   const saveIncident = async () => {
-    const { id, title, body, status, severity, started_at, resolved_at } = incDialog;
+    const { id, title, body, status, severity, started_at, resolved_at, is_public } = incDialog;
     const payload: any = {
       title, body, status, severity,
+      is_public: is_public !== false,
       started_at: started_at || new Date().toISOString(),
       resolved_at: status === 'resolved' ? (resolved_at || new Date().toISOString()) : null,
     };
@@ -112,7 +113,7 @@ export default function StatusAdmin() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Incidents</CardTitle>
-            <Button size="sm" onClick={() => setIncDialog({ title: '', body: '', status: 'investigating', severity: 'minor', started_at: '', resolved_at: '' })}>
+            <Button size="sm" onClick={() => setIncDialog({ title: '', body: '', status: 'investigating', severity: 'minor', started_at: '', resolved_at: '', is_public: true })}>
               <Plus className="h-4 w-4 mr-1" /> Report Incident
             </Button>
           </CardHeader>
@@ -182,6 +183,14 @@ export default function StatusAdmin() {
                     <SelectContent>{SEVERITIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={incDialog.is_public !== false}
+                  onChange={(e) => setIncDialog({ ...incDialog, is_public: e.target.checked })}
+                />
+                <Label>Publish on the public status page</Label>
               </div>
             </div>
             <DialogFooter><Button onClick={saveIncident}>Save</Button></DialogFooter>
