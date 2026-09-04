@@ -25,6 +25,7 @@ import { prefetchHandlers, prefetchRoute, prefetchRoutesWhenIdle } from "@/lib/r
 import { saveNavSnapshot, clearNavSnapshot } from "@/lib/navSnapshot";
 
 import PlatformAnnouncementBanner from "@/components/PlatformAnnouncementBanner";
+import PolicyReacceptanceBanner from "@/components/PolicyReacceptanceBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 import InstallAppPrompt from "@/components/InstallAppPrompt";
 
@@ -796,6 +797,7 @@ export default function Layout({ children }: LayoutProps) {
         <main className="flex-1 py-4 sm:py-6 md:pl-6 min-w-0 overflow-x-hidden">
           <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-6">
             {!showAsSuperAdmin && <PlatformAnnouncementBanner />}
+            {!showAsSuperAdmin && <PolicyReacceptanceBanner />}
             {children}
             {!showAsSuperAdmin && <AnnualUpgradePrompt />}
             {!showAsSuperAdmin && <NpsPrompt />}
