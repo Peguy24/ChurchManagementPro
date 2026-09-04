@@ -97,6 +97,48 @@ export default function SuperAdminReferrals() {
         </div>
 
         <Card>
+          <CardHeader>
+            <CardTitle>Referring churches performance</CardTitle>
+            <CardDescription>Link clicks, sign-ups and conversion rate per referring church</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : leaders.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No referral codes yet.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Church</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead className="text-right">Clicks</TableHead>
+                    <TableHead className="text-right">Unique visitors</TableHead>
+                    <TableHead className="text-right">Sign-ups</TableHead>
+                    <TableHead className="text-right">Qualified</TableHead>
+                    <TableHead className="text-right">Conversion</TableHead>
+                    <TableHead>Last click</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {leaders.map((l) => (
+                    <TableRow key={l.tenant_id}>
+                      <TableCell className="font-medium">{l.tenant_name}</TableCell>
+                      <TableCell className="font-mono text-xs">{l.code}</TableCell>
+                      <TableCell className="text-right">{l.clicks}</TableCell>
+                      <TableCell className="text-right">{l.unique_visitors}</TableCell>
+                      <TableCell className="text-right">{l.signups}</TableCell>
+                      <TableCell className="text-right">{l.qualified}</TableCell>
+                      <TableCell className="text-right">{l.conversion_rate}%</TableCell>
+                      <TableCell>{l.last_click_at ? new Date(l.last_click_at).toLocaleDateString() : "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+
+
+        <Card>
           <CardHeader><CardTitle>All referrals</CardTitle><CardDescription>Most recent 500</CardDescription></CardHeader>
           <CardContent>
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : rows.length === 0 ? (
