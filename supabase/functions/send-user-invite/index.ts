@@ -72,22 +72,97 @@ serve(async (req) => {
   }
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
+    const { email, tenantId, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
 
-    if (!email || !tenantId || !tenantName) {
-      console.error("Missing required fields:", { email, tenantId, tenantName });
+    if (!email || !tenantId) {
+      console.error("Missing required fields");
       return new Response(
-        JSON.stringify({ error: "Email, tenantId and tenantName are required" }),
+        JSON.stringify({ error: "Email and tenantId are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const allowedRoles = ["admin", "pastor", "treasurer", "secretary", "volunteer", "user"];
+    if (typeof email !== "string" || email.length > 254 || !emailRe.test(email.trim())) {
+      return new Response(JSON.stringify({ error: "Invalid email" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (typeof tenantId !== "string" || !uuidRe.test(tenantId)) {
+      return new Response(JSON.stringify({ error: "Invalid tenantId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (role && !allowedRoles.includes(role)) {
+      return new Response(JSON.stringify({ error: "Invalid role" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (customRoleId && (typeof customRoleId !== "string" || !uuidRe.test(customRoleId))) {
+      return new Response(JSON.stringify({ error: "Invalid customRoleId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const t = translations[language] || translations["en"];
 
-    // Check if user with this email already has a role in this tenant
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // --- Authentication & authorization -------------------------------------
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!jwt) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(jwt);
+    const caller = userData?.user;
+    if (userErr || !caller) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: isSuper } = await supabaseAdmin.rpc("is_super_admin", { _user_id: caller.id });
+    let authorized = Boolean(isSuper);
+    if (!authorized) {
+      const { data: callerRole } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .select("role, is_approved")
+        .eq("tenant_id", tenantId)
+        .eq("user_id", caller.id)
+        .eq("is_approved", true)
+        .eq("role", "admin")
+        .maybeSingle();
+      authorized = Boolean(callerRole);
+    }
+    if (!authorized) {
+      console.warn("Forbidden invite attempt", { userId: caller.id, tenantId });
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Tenant details are resolved server-side, never trusted from the request
+    const { data: tenantRow } = await supabaseAdmin
+      .from("tenants")
+      .select("name, slug")
+      .eq("id", tenantId)
+      .maybeSingle();
+    if (!tenantRow) {
+      return new Response(JSON.stringify({ error: "Tenant not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const tenantName = tenantRow.name as string;
+    const tenantSlug = (tenantRow.slug as string | null) || tenantId;
+    // ------------------------------------------------------------------------
+
     const normalizedEmail = email.toLowerCase().trim();
 
     // Look up user by email in auth.users
