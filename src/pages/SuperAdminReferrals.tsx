@@ -21,14 +21,30 @@ interface Row {
   referral_code: string;
 }
 
+interface LeaderRow {
+  tenant_id: string;
+  tenant_name: string;
+  code: string;
+  clicks: number;
+  unique_visitors: number;
+  signups: number;
+  qualified: number;
+  conversion_rate: number;
+  last_click_at: string | null;
+}
+
 export default function SuperAdminReferrals() {
   const [rows, setRows] = useState<Row[]>([]);
+  const [leaders, setLeaders] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
     try {
+      const { data: board } = await (supabase as any).rpc("get_referral_click_leaderboard");
+      setLeaders((board || []) as LeaderRow[]);
+
       const { data: refs } = await (supabase as any)
         .from("referrals")
         .select("*")
