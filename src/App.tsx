@@ -187,8 +187,11 @@ function isProtectedShellPath(pathname: string, hasUser: boolean) {
 
 function StableRouteShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const { user, loading: authLoading } = useAuth();
-  const useAppShell = isProtectedShellPath(location.pathname, Boolean(user) || authLoading);
+  const { user } = useAuth();
+  // Never assume the tenant shell belongs on the home page while auth is still
+  // loading. On a fresh visit that briefly mounted the saved tenant navigation
+  // before the session guard resolved and switched to the commercial page.
+  const useAppShell = isProtectedShellPath(location.pathname, Boolean(user));
 
   if (!useAppShell) {
     return <Suspense fallback={<LazyFallback />}>{children}</Suspense>;
