@@ -72,22 +72,97 @@ serve(async (req) => {
   }
 
   try {
-    const { email, tenantId, tenantName, tenantSlug, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
+    const { email, tenantId, role, customRoleId, inviterName, skipEmail, language = "en" } = await req.json();
 
-    if (!email || !tenantId || !tenantName) {
-      console.error("Missing required fields:", { email, tenantId, tenantName });
+    if (!email || !tenantId) {
+      console.error("Missing required fields");
       return new Response(
-        JSON.stringify({ error: "Email, tenantId and tenantName are required" }),
+        JSON.stringify({ error: "Email and tenantId are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const allowedRoles = ["admin", "pastor", "treasurer", "secretary", "volunteer", "user"];
+    if (typeof email !== "string" || email.length > 254 || !emailRe.test(email.trim())) {
+      return new Response(JSON.stringify({ error: "Invalid email" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (typeof tenantId !== "string" || !uuidRe.test(tenantId)) {
+      return new Response(JSON.stringify({ error: "Invalid tenantId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (role && !allowedRoles.includes(role)) {
+      return new Response(JSON.stringify({ error: "Invalid role" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (customRoleId && (typeof customRoleId !== "string" || !uuidRe.test(customRoleId))) {
+      return new Response(JSON.stringify({ error: "Invalid customRoleId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const t = translations[language] || translations["en"];
 
-    // Check if user with this email already has a role in this tenant
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // --- Authentication & authorization -------------------------------------
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!jwt) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(jwt);
+    const caller = userData?.user;
+    if (userErr || !caller) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: isSuper } = await supabaseAdmin.rpc("is_super_admin", { _user_id: caller.id });
+    let authorized = Boolean(isSuper);
+    if (!authorized) {
+      const { data: callerRole } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .select("role, is_approved")
+        .eq("tenant_id", tenantId)
+        .eq("user_id", caller.id)
+        .eq("is_approved", true)
+        .eq("role", "admin")
+        .maybeSingle();
+      authorized = Boolean(callerRole);
+    }
+    if (!authorized) {
+      console.warn("Forbidden invite attempt", { userId: caller.id, tenantId });
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Tenant details are resolved server-side, never trusted from the request
+    const { data: tenantRow } = await supabaseAdmin
+      .from("tenants")
+      .select("name, slug")
+      .eq("id", tenantId)
+      .maybeSingle();
+    if (!tenantRow) {
+      return new Response(JSON.stringify({ error: "Tenant not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const tenantName = tenantRow.name as string;
+    const tenantSlug = (tenantRow.slug as string | null) || tenantId;
+    // ------------------------------------------------------------------------
+
     const normalizedEmail = email.toLowerCase().trim();
 
     // Look up user by email in auth.users
@@ -177,11 +252,15 @@ serve(async (req) => {
     const roleKey = role || "user";
     const displayRole = t[roleKey] || t["user"];
 
-    const inviterLine = inviterName
-      ? `<strong>${inviterName}</strong> ${t.inviteText}`
+    const escapeHtml = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const safeInviter = typeof inviterName === "string" ? escapeHtml(inviterName.slice(0, 120)) : "";
+    const safeTenantName = escapeHtml(String(tenantName).slice(0, 120));
+    const inviterLine = safeInviter
+      ? `<strong>${safeInviter}</strong> ${t.inviteText}`
       : t.inviteTextNoName;
 
-    console.log(`Sending invitation email to ${email} for tenant ${tenantName} with role ${role}`);
+    console.log(`Sending invitation email to ${email} for tenant ${safeTenantName} with role ${role}`);
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -192,7 +271,7 @@ serve(async (req) => {
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">${t.heroTitle} ${tenantName}</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">${t.heroTitle} ${safeTenantName}</h1>
           </div>
           
           <div style="background: #ffffff; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
@@ -201,7 +280,7 @@ serve(async (req) => {
             </p>
             
             <p style="font-size: 16px; margin-bottom: 20px;">
-              ${inviterLine} <strong>${tenantName}</strong> ${t.asRole} <strong>${displayRole}</strong>.
+              ${inviterLine} <strong>${safeTenantName}</strong> ${t.asRole} <strong>${displayRole}</strong>.
             </p>
             
             <p style="font-size: 16px; margin-bottom: 30px;">
@@ -237,9 +316,9 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `${tenantName} <noreply@churchmanagementpro.com>`,
+        from: `${String(tenantName).replace(/[<>"\r\n]/g, "").slice(0, 80)} <noreply@churchmanagementpro.com>`,
         to: [email],
-        subject: `${t.subject} ${tenantName}`,
+        subject: `${t.subject} ${safeTenantName}`,
         html: emailHtml,
       }),
     });

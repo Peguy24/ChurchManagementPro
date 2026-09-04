@@ -42,6 +42,30 @@ serve(async (req) => {
       });
     }
 
+    // Only tenants that were just created through the signup flow may be
+    // attached to a referral code. This prevents replaying the call against
+    // established tenants to farm referral rewards.
+    const { data: referredTenant } = await supa
+      .from("tenants")
+      .select("id, created_at")
+      .eq("id", referredTenantId)
+      .maybeSingle();
+
+    if (!referredTenant) {
+      return new Response(JSON.stringify({ tracked: false, reason: "unknown_tenant" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const ageMs = Date.now() - new Date(referredTenant.created_at as string).getTime();
+    if (!(ageMs >= 0 && ageMs <= 15 * 60 * 1000)) {
+      console.warn("Referral tracking rejected: tenant outside signup window", { referredTenantId, ageMs });
+      return new Response(JSON.stringify({ tracked: false, reason: "outside_signup_window" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     // Already a referral for this referred tenant?
     const { data: existing } = await supa
       .from("referrals")
