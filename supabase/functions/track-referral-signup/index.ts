@@ -91,6 +91,18 @@ serve(async (req) => {
       .single();
     if (insErr) throw insErr;
 
+    // Notify the referring church that their referral completed sign-up
+    try {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-referral-signup`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ referrerTenantId: rc.tenant_id, referredTenantId }),
+      });
+    } catch (notifyErr) {
+      console.error("referral signup notification failed", notifyErr);
+    }
+
     return new Response(JSON.stringify({ tracked: true, referral_id: referral.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

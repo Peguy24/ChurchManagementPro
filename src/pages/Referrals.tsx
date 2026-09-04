@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { Copy, Gift, Share2, Loader2, Users, CheckCircle2, Sparkles, MousePointerClick, TrendingUp } from "lucide-react";
+import ReferralFunnelReport from "@/components/referrals/ReferralFunnelReport";
 
 interface ReferralRow {
   id: string;
@@ -28,6 +29,7 @@ export default function Referrals() {
   const [stats, setStats] = useState({ invited: 0, qualified: 0, rewarded: 0, free_months_earned: 0 });
   const [clickStats, setClickStats] = useState({ clicks: 0, unique_visitors: 0, conversions: 0, conversion_rate: 0, last_click_at: null as string | null });
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
+  const [tenantId, setTenantId] = useState<string | null>(null);
 
   const tt = (en: string, fr: string, ht: string) => (language === "fr" ? fr : language === "ht" ? ht : en);
 
@@ -41,6 +43,7 @@ export default function Referrals() {
       const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).maybeSingle();
       const tenantId = profile?.tenant_id;
       if (!tenantId) return;
+      setTenantId(tenantId);
 
       const { data: existing } = await (supabase as any)
         .from("referral_codes")
@@ -233,6 +236,15 @@ export default function Referrals() {
             )}
           </CardContent>
         </Card>
+
+        {tenantId && (
+          <ReferralFunnelReport
+            tenantId={tenantId}
+            showChurchBreakdown={false}
+            lang={language as any}
+            tt={tt}
+          />
+        )}
 
         <RewardsCatalogSection qualifiedAvailable={stats.qualified - stats.rewarded} tt={tt} />
         <LeaderboardSection tt={tt} />

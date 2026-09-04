@@ -3937,6 +3937,59 @@ export type Database = {
           },
         ]
       }
+      referral_anomaly_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          code: string | null
+          created_at: string
+          details: Json
+          detected_at: string
+          id: string
+          severity: string
+          status: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          code?: string | null
+          created_at?: string
+          details?: Json
+          detected_at?: string
+          id?: string
+          severity?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          code?: string | null
+          created_at?: string
+          details?: Json
+          detected_at?: string
+          id?: string
+          severity?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_anomaly_alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_clicks: {
         Row: {
           code: string
@@ -4058,6 +4111,44 @@ export type Database = {
             columns: ["referral_id"]
             isOneToOne: false
             referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_signup_starts: {
+        Row: {
+          code: string
+          completed_at: string | null
+          completed_tenant_id: string | null
+          created_at: string
+          id: string
+          referrer_tenant_id: string
+          visitor_hash: string | null
+        }
+        Insert: {
+          code: string
+          completed_at?: string | null
+          completed_tenant_id?: string | null
+          created_at?: string
+          id?: string
+          referrer_tenant_id: string
+          visitor_hash?: string | null
+        }
+        Update: {
+          code?: string
+          completed_at?: string | null
+          completed_tenant_id?: string | null
+          created_at?: string
+          id?: string
+          referrer_tenant_id?: string
+          visitor_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_signup_starts_referrer_tenant_id_fkey"
+            columns: ["referrer_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -6056,6 +6147,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      detect_referral_anomalies: { Args: { _days?: number }; Returns: number }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
@@ -6067,6 +6159,10 @@ export type Database = {
       }
       generate_referral_code_for_tenant: {
         Args: { _tenant_id: string }
+        Returns: string
+      }
+      get_attributed_referral_code: {
+        Args: { _visitor_hash: string }
         Returns: string
       }
       get_client_review_email_recipients: {
@@ -6198,6 +6294,7 @@ export type Database = {
           tenant_name: string
         }[]
       }
+      get_referral_attribution_model: { Args: never; Returns: string }
       get_referral_click_leaderboard: {
         Args: never
         Returns: {
@@ -6219,6 +6316,19 @@ export type Database = {
           is_active: boolean
           referrer_name: string
           referrer_tenant_id: string
+        }[]
+      }
+      get_referral_funnel: {
+        Args: { _end: string; _start: string; _tenant_id?: string }
+        Returns: {
+          bucket: string
+          clicks: number
+          code: string
+          qualified: number
+          signup_starts: number
+          signups: number
+          tenant_id: string
+          tenant_name: string
         }[]
       }
       get_referral_leaderboard: {
@@ -6364,6 +6474,10 @@ export type Database = {
           _user_agent?: string
           _visitor_hash?: string
         }
+        Returns: boolean
+      }
+      record_referral_signup_start: {
+        Args: { _code: string; _visitor_hash?: string }
         Returns: boolean
       }
       refresh_tenant_stats: { Args: never; Returns: undefined }

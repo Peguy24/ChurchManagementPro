@@ -7,6 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Gift, RefreshCw } from "lucide-react";
+import ReferralFunnelReport from "@/components/referrals/ReferralFunnelReport";
+import ReferralAttributionSettings, { type AttributionModel } from "@/components/referrals/ReferralAttributionSettings";
+import ReferralAnomalyPanel from "@/components/referrals/ReferralAnomalyPanel";
 
 interface Row {
   id: string;
@@ -38,6 +41,7 @@ export default function SuperAdminReferrals() {
   const [leaders, setLeaders] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [attribution, setAttribution] = useState<AttributionModel>("last_click");
 
   const load = async () => {
     setLoading(true);
@@ -94,6 +98,16 @@ export default function SuperAdminReferrals() {
             <p className="text-muted-foreground mt-1">Monitor and manage church-to-church referrals.</p>
           </div>
           <Button variant="outline" onClick={load}><RefreshCw className="h-4 w-4 mr-2" /> Refresh</Button>
+        </div>
+
+        <ReferralFunnelReport
+          tenantId={null}
+          attribution={attribution === "first_click" ? "First click" : "Last click"}
+        />
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ReferralAttributionSettings onChange={setAttribution} />
+          <ReferralAnomalyPanel />
         </div>
 
         <Card>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Church, Send, Loader2, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FieldError } from "@/components/FieldError";
-import { markReferralClickConverted } from "@/lib/referralTracking";
+import { markReferralClickConverted, recordReferralSignupStart, resolveAttributedReferralCode } from "@/lib/referralTracking";
 import { validateForm, churchRequestSchema, firstErrorMessage, nameSchema, personNameSchema, emailSchema, optionalPhoneSchema } from "@/lib/validation";
 
 /** Run a single Zod schema and return the i18n key of the first issue, or null. */
@@ -60,6 +60,13 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
           sessionStorage.getItem("referral_code") ||
           "")) || "",
   });
+
+  useEffect(() => {
+    const code = (formData.referral_code || "").trim();
+    if (code) recordReferralSignupStart(code);
+    // Only the initial code (from the link) marks a funnel "sign-up start"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: legalDocs } = useQuery({
     queryKey: ["legal-documents-active"],
@@ -119,10 +126,14 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
     setIsSubmitting(true);
     try {
-      const refCode = (formData.referral_code
+      let refCode = (formData.referral_code
         || new URLSearchParams(window.location.search).get("ref")
         || sessionStorage.getItem("referral_code")
         || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
+      if (!refCode) {
+        // Fall back to the platform attribution model (first-click vs last-click)
+        refCode = ((await resolveAttributedReferralCode()) || "").trim().toUpperCase();
+      }
       const { data, error } = await supabase.functions.invoke('auto-provision-tenant', {
         body: {
           church_name: formData.church_name,
