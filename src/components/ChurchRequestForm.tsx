@@ -53,6 +53,11 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
     address: "",
     requested_plan: selectedPlan,
     message: "",
+    referral_code:
+      (typeof window !== "undefined" &&
+        (new URLSearchParams(window.location.search).get("ref") ||
+          sessionStorage.getItem("referral_code") ||
+          "")) || "",
   });
 
   const { data: legalDocs } = useQuery({
@@ -113,8 +118,10 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
 
     setIsSubmitting(true);
     try {
-      const refCode = new URLSearchParams(window.location.search).get("ref")
-        || sessionStorage.getItem("referral_code");
+      const refCode = (formData.referral_code
+        || new URLSearchParams(window.location.search).get("ref")
+        || sessionStorage.getItem("referral_code")
+        || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
       const { data, error } = await supabase.functions.invoke('auto-provision-tenant', {
         body: {
           church_name: formData.church_name,
@@ -194,6 +201,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       address: "",
       requested_plan: "basic",
       message: "",
+      referral_code: "",
     });
     onOpenChange(false);
   };
@@ -391,6 +399,24 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
                 <SelectItem value="premium">{t("churchForm.planEnterprise")}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="referral_code">{t("churchForm.referralCode")}</Label>
+            <Input
+              id="referral_code"
+              value={formData.referral_code}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  referral_code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20),
+                })
+              }
+              placeholder={t("churchForm.referralCodePlaceholder")}
+              maxLength={20}
+              className="font-mono"
+              autoComplete="off"
+            />
           </div>
 
           <div className="space-y-2">
