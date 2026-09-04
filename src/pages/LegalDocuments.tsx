@@ -275,7 +275,7 @@ export default function LegalDocuments() {
                     ))}
                   </Tabs>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Button onClick={handleSave} disabled={saveMutation.isPending}>
                       {saveMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -291,7 +291,12 @@ export default function LegalDocuments() {
                       <Eye className="h-4 w-4 mr-2" />
                       {t.preview}
                     </Button>
+                    <div className="flex items-center gap-2">
+                      <Switch id="notify-toggle" checked={notifyChurches} onCheckedChange={setNotifyChurches} />
+                      <Label htmlFor="notify-toggle" className="text-sm">{t.notifyLabel}</Label>
+                    </div>
                   </div>
+
                 </div>
               ) : null}
             </TabsContent>
@@ -300,14 +305,43 @@ export default function LegalDocuments() {
 
         {/* Acceptances section */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
               {t.acceptances}
+              {filteredAcceptances.length > 0 && (
+                <Badge variant="secondary">{filteredAcceptances.length}</Badge>
+              )}
             </CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={filterDoc}
+                onChange={(e) => setFilterDoc(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              >
+                <option value="all">{t.allDocs}</option>
+                {docTypes.map((dt) => (
+                  <option key={dt.key} value={dt.key}>{dt.label}</option>
+                ))}
+              </select>
+              <select
+                value={filterTenant}
+                onChange={(e) => setFilterTenant(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm max-w-[200px]"
+              >
+                <option value="all">{t.allChurches}</option>
+                {churchOptions.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <Button variant="outline" size="sm" onClick={exportCsv} disabled={!filteredAcceptances.length}>
+                <Download className="h-4 w-4 mr-2" />
+                {t.exportCsv}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            {!acceptances?.length ? (
+            {!filteredAcceptances.length ? (
               <p className="text-muted-foreground text-sm">{t.noAcceptances}</p>
             ) : (
               <div className="overflow-x-auto">
@@ -316,27 +350,43 @@ export default function LegalDocuments() {
                     <tr className="border-b">
                       <th className="text-left py-2 px-3">{t.church}</th>
                       <th className="text-left py-2 px-3">Document</th>
+                      <th className="text-left py-2 px-3">{t.version}</th>
                       <th className="text-left py-2 px-3">{t.acceptedBy}</th>
                       <th className="text-left py-2 px-3">{t.date}</th>
+                      <th className="text-left py-2 px-3">IP</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {acceptances.map((a: any) => (
-                      <tr key={a.id} className="border-b">
-                        <td className="py-2 px-3">{a.tenants?.name || "—"}</td>
-                        <td className="py-2 px-3">
-                          <Badge variant="outline">{a.document_type}</Badge>
-                        </td>
-                        <td className="py-2 px-3">{a.accepted_by_name || a.accepted_by_email || "—"}</td>
-                        <td className="py-2 px-3">{new Date(a.accepted_at).toLocaleDateString()}</td>
-                      </tr>
-                    ))}
+                    {filteredAcceptances.map((a: any) => {
+                      const current = documents?.find((d) => d.document_type === a.document_type)?.version ?? a.document_version;
+                      const isCurrent = a.document_version >= current;
+                      return (
+                        <tr key={a.id} className="border-b">
+                          <td className="py-2 px-3">{a.tenants?.name || "—"}</td>
+                          <td className="py-2 px-3">
+                            <Badge variant="outline">{a.document_type}</Badge>
+                          </td>
+                          <td className="py-2 px-3">
+                            <Badge variant={isCurrent ? "default" : "destructive"}>
+                              v{a.document_version} · {isCurrent ? t.current : t.outdated}
+                            </Badge>
+                          </td>
+                          <td className="py-2 px-3">
+                            <div>{a.accepted_by_name || "—"}</div>
+                            <div className="text-xs text-muted-foreground">{a.accepted_by_email || ""}</div>
+                          </td>
+                          <td className="py-2 px-3">{new Date(a.accepted_at).toLocaleString()}</td>
+                          <td className="py-2 px-3 text-xs text-muted-foreground">{a.ip_address || "—"}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
           </CardContent>
         </Card>
+
       </div>
     </Layout>
   );
