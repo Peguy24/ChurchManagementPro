@@ -143,6 +143,9 @@ export default function LegalDocuments() {
   const [activeDoc, setActiveDoc] = useState("terms_of_use");
   const [editLang, setEditLang] = useState("fr");
   const [editData, setEditData] = useState<Record<string, any>>({});
+  const [notifyChurches, setNotifyChurches] = useState(false);
+  const [filterDoc, setFilterDoc] = useState("all");
+  const [filterTenant, setFilterTenant] = useState("all");
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ["legal-documents"],
@@ -163,7 +166,7 @@ export default function LegalDocuments() {
         .from("tenant_policy_acceptances")
         .select("*, tenants:tenant_id(name)")
         .order("accepted_at", { ascending: false })
-        .limit(100);
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -180,10 +183,25 @@ export default function LegalDocuments() {
         })
         .eq("id", doc.id);
       if (error) throw error;
+
+      if (notifyChurches) {
+        const { error: notifyError } = await supabase.functions.invoke("notify-policy-update", {
+          body: { documentType: activeDoc },
+        });
+        if (notifyError) throw new Error("notify_failed");
+        return { notified: true };
+      }
+      return { notified: false };
     },
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["legal-documents"] });
+      queryClient.invalidateQueries({ queryKey: ["policy-acceptances"] });
       toast.success(t.saved);
+      if (res?.notified) toast.success(t.notifySent);
+    },
+    onError: (e: any) => {
+      queryClient.invalidateQueries({ queryKey: ["legal-documents"] });
+      toast.error(e?.message === "notify_failed" ? t.notifyFailed : String(e?.message || e));
     },
   });
 
