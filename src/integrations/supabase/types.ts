@@ -3937,6 +3937,60 @@ export type Database = {
           },
         ]
       }
+      referral_clicks: {
+        Row: {
+          code: string
+          converted_at: string | null
+          converted_tenant_id: string | null
+          created_at: string
+          id: string
+          landing_path: string | null
+          referrer_tenant_id: string | null
+          referrer_url: string | null
+          user_agent: string | null
+          visitor_hash: string | null
+        }
+        Insert: {
+          code: string
+          converted_at?: string | null
+          converted_tenant_id?: string | null
+          created_at?: string
+          id?: string
+          landing_path?: string | null
+          referrer_tenant_id?: string | null
+          referrer_url?: string | null
+          user_agent?: string | null
+          visitor_hash?: string | null
+        }
+        Update: {
+          code?: string
+          converted_at?: string | null
+          converted_tenant_id?: string | null
+          created_at?: string
+          id?: string
+          landing_path?: string | null
+          referrer_tenant_id?: string | null
+          referrer_url?: string | null
+          user_agent?: string | null
+          visitor_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_clicks_converted_tenant_id_fkey"
+            columns: ["converted_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_clicks_referrer_tenant_id_fkey"
+            columns: ["referrer_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_codes: {
         Row: {
           code: string
@@ -6141,6 +6195,20 @@ export type Database = {
           tenant_name: string
         }[]
       }
+      get_referral_click_leaderboard: {
+        Args: never
+        Returns: {
+          clicks: number
+          code: string
+          conversion_rate: number
+          last_click_at: string
+          qualified: number
+          signups: number
+          tenant_id: string
+          tenant_name: string
+          unique_visitors: number
+        }[]
+      }
       get_referral_code_info: {
         Args: { _code: string }
         Returns: {
@@ -6207,6 +6275,10 @@ export type Database = {
           name: string
         }[]
       }
+      get_tenant_referral_click_stats: {
+        Args: { _tenant_id: string }
+        Returns: Json
+      }
       get_tenant_referral_stats: { Args: { _tenant_id: string }; Returns: Json }
       get_tenant_storage_mb: { Args: { _tenant_id: string }; Returns: number }
       get_tenant_storage_usage: {
@@ -6254,6 +6326,10 @@ export type Database = {
         Args: { _invitation_id: string }
         Returns: undefined
       }
+      mark_referral_click_converted: {
+        Args: { _code: string; _tenant_id: string; _visitor_hash: string }
+        Returns: boolean
+      }
       matches_broadcast_audience: {
         Args: { _rules: Json; _tenant_id: string }
         Returns: boolean
@@ -6276,6 +6352,16 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_referral_click: {
+        Args: {
+          _code: string
+          _landing_path?: string
+          _referrer_url?: string
+          _user_agent?: string
+          _visitor_hash?: string
+        }
+        Returns: boolean
       }
       refresh_tenant_stats: { Args: never; Returns: undefined }
       set_primary_tenant_domain: {
