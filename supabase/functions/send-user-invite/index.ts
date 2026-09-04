@@ -260,7 +260,7 @@ serve(async (req) => {
       ? `<strong>${safeInviter}</strong> ${t.inviteText}`
       : t.inviteTextNoName;
 
-    console.log(`Sending invitation email to ${email} for tenant ${tenantName} with role ${role}`);
+    console.log(`Sending invitation email to ${email} for tenant ${safeTenantName} with role ${role}`);
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -271,7 +271,7 @@ serve(async (req) => {
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">${t.heroTitle} ${tenantName}</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">${t.heroTitle} ${safeTenantName}</h1>
           </div>
           
           <div style="background: #ffffff; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
@@ -280,7 +280,7 @@ serve(async (req) => {
             </p>
             
             <p style="font-size: 16px; margin-bottom: 20px;">
-              ${inviterLine} <strong>${tenantName}</strong> ${t.asRole} <strong>${displayRole}</strong>.
+              ${inviterLine} <strong>${safeTenantName}</strong> ${t.asRole} <strong>${displayRole}</strong>.
             </p>
             
             <p style="font-size: 16px; margin-bottom: 30px;">
@@ -316,9 +316,9 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `${tenantName} <noreply@churchmanagementpro.com>`,
+        from: `${safeTenantName} <noreply@churchmanagementpro.com>`,
         to: [email],
-        subject: `${t.subject} ${tenantName}`,
+        subject: `${t.subject} ${safeTenantName}`,
         html: emailHtml,
       }),
     });
