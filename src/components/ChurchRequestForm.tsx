@@ -145,6 +145,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
           await supabase.functions.invoke("track-referral-signup", {
             body: { code: refCode, referredTenantId: data.tenantId },
           });
+          await markReferralClickConverted(refCode, data.tenantId);
           sessionStorage.removeItem("referral_code");
         } catch (refErr) {
           console.warn("Referral tracking failed:", refErr);
