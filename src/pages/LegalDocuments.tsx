@@ -228,6 +228,43 @@ export default function LegalDocuments() {
     });
   };
 
+  const filteredAcceptances = ((acceptances || []) as any[]).filter(
+    (a) =>
+      (filterDoc === "all" || a.document_type === filterDoc) &&
+      (filterTenant === "all" || a.tenant_id === filterTenant)
+  );
+
+  const churchOptions = Array.from(
+    new Map(
+      ((acceptances || []) as any[])
+        .filter((a) => a.tenant_id)
+        .map((a) => [a.tenant_id as string, { id: a.tenant_id as string, name: a.tenants?.name || a.tenant_id }])
+    ).values()
+  ).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+  const exportCsv = () => {
+    const header = ["Church", "Document", "Version", "Accepted by", "Email", "Date", "IP"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = filteredAcceptances.map((a: any) => [
+      a.tenants?.name || "",
+      a.document_type,
+      a.document_version,
+      a.accepted_by_name || "",
+      a.accepted_by_email || "",
+      new Date(a.accepted_at).toLocaleString(),
+      a.ip_address || "",
+    ]);
+    const csv = [header, ...rows].map((r) => r.map(esc).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `policy-acceptances-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
   const docTypes = [
     { key: "terms_of_use", label: t.terms },
     { key: "privacy_policy", label: t.privacy },
