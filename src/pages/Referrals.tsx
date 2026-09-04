@@ -26,6 +26,7 @@ export default function Referrals() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState({ invited: 0, qualified: 0, rewarded: 0, free_months_earned: 0 });
+  const [clickStats, setClickStats] = useState({ clicks: 0, unique_visitors: 0, conversions: 0, conversion_rate: 0, last_click_at: null as string | null });
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
 
   const tt = (en: string, fr: string, ht: string) => (language === "fr" ? fr : language === "ht" ? ht : en);
