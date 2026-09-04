@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { Copy, Gift, Share2, Loader2, Users, CheckCircle2, Sparkles } from "lucide-react";
+import { Copy, Gift, Share2, Loader2, Users, CheckCircle2, Sparkles, MousePointerClick, TrendingUp } from "lucide-react";
 
 interface ReferralRow {
   id: string;
