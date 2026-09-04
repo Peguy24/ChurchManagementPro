@@ -131,10 +131,24 @@ export default function Referrals() {
             </div>
           </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <Card>
+            <CardHeader className="pb-2"><CardDescription>{tt("Link clicks", "Clics sur le lien", "Klik sou lyen an")}</CardDescription><CardTitle className="text-3xl">{clickStats.clicks}</CardTitle></CardHeader>
+            <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MousePointerClick className="h-5 w-5" />
+              <span>{clickStats.unique_visitors} {tt("unique visitors", "visiteurs uniques", "vizitè inik")}</span>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="pb-2"><CardDescription>{tt("Churches invited", "Églises invitées", "Legliz envite")}</CardDescription><CardTitle className="text-3xl">{stats.invited}</CardTitle></CardHeader>
             <CardContent><Users className="h-5 w-5 text-muted-foreground" /></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2"><CardDescription>{tt("Click to sign-up rate", "Taux de conversion", "To konvèsyon")}</CardDescription><CardTitle className="text-3xl">{clickStats.conversion_rate}%</CardTitle></CardHeader>
+            <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-5 w-5" />
+              <span>{clickStats.conversions} {tt("sign-ups from clicks", "inscriptions issues des clics", "enskripsyon soti nan klik")}</span>
+            </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardDescription>{tt("Qualified", "Qualifiées", "Kalifye")}</CardDescription><CardTitle className="text-3xl">{stats.qualified}</CardTitle></CardHeader>
