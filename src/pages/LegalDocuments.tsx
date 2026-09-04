@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { FileText, Save, Loader2, Eye, Globe, Shield, CreditCard } from "lucide-react";
+import { FileText, Save, Loader2, Eye, Globe, Shield, CreditCard, Download } from "lucide-react";
 
 interface LegalDocument {
   id: string;
@@ -53,6 +53,14 @@ const translations = {
     church: "Église",
     acceptedBy: "Accepté par",
     date: "Date",
+    allDocs: "Tous les documents",
+    allChurches: "Toutes les églises",
+    exportCsv: "Exporter CSV",
+    current: "À jour",
+    outdated: "Obsolète",
+    notifyLabel: "Notifier les églises par email",
+    notifySent: "Notification envoyée aux églises",
+    notifyFailed: "Échec de l'envoi des notifications",
   },
   en: {
     title: "Legal Documents",
@@ -78,6 +86,14 @@ const translations = {
     church: "Church",
     acceptedBy: "Accepted by",
     date: "Date",
+    allDocs: "All documents",
+    allChurches: "All churches",
+    exportCsv: "Export CSV",
+    current: "Current",
+    outdated: "Outdated",
+    notifyLabel: "Notify churches by email",
+    notifySent: "Notification sent to churches",
+    notifyFailed: "Could not send notifications",
   },
   ht: {
     title: "Dokiman Legal",
@@ -103,6 +119,14 @@ const translations = {
     church: "Legliz",
     acceptedBy: "Aksepte pa",
     date: "Dat",
+    allDocs: "Tout dokiman",
+    allChurches: "Tout legliz",
+    exportCsv: "Ekspòte CSV",
+    current: "Ajou",
+    outdated: "Fin itilize",
+    notifyLabel: "Avize legliz yo pa imel",
+    notifySent: "Notifikasyon voye bay legliz yo",
+    notifyFailed: "Nou pa ka voye notifikasyon yo",
   },
 };
 
