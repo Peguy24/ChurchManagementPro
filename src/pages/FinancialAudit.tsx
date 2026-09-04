@@ -32,7 +32,7 @@ const FinancialAudit = () => {
     queryFn: async () => {
       let query = supabase
         .from("financial_audit_logs")
-        .select("*")
+        .select("id, entity_type, entity_id, action, old_values, new_values, user_id, user_email, tenant_id, created_at")
         .order("created_at", { ascending: false })
         .limit(200);
 
