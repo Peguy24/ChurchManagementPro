@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const VISITOR_KEY = "cmp_visitor_id";
 const CLICK_KEY = "cmp_ref_click_recorded";
+const START_KEY = "cmp_ref_start_recorded";
 
 export function getVisitorId(): string {
   try {
@@ -37,6 +38,35 @@ export async function recordReferralClick(code: string): Promise<void> {
   }
 }
 
+/** Records that a visitor started the church sign-up form from a referral link. */
+export async function recordReferralSignupStart(code: string): Promise<void> {
+  const clean = code.trim().toUpperCase();
+  if (!clean) return;
+  try {
+    const marker = `${START_KEY}:${clean}`;
+    if (sessionStorage.getItem(marker)) return;
+    sessionStorage.setItem(marker, "1");
+    await (supabase as any).rpc("record_referral_signup_start", {
+      _code: clean,
+      _visitor_hash: getVisitorId(),
+    });
+  } catch (e) {
+    console.warn("Referral signup-start tracking failed", e);
+  }
+}
+
+/** Resolves which referral code should be credited, following the platform attribution model. */
+export async function resolveAttributedReferralCode(): Promise<string | null> {
+  try {
+    const { data } = await (supabase as any).rpc("get_attributed_referral_code", {
+      _visitor_hash: getVisitorId(),
+    });
+    return (data as string) || null;
+  } catch {
+    return null;
+  }
+}
+
 /** Links a referral click to the church that just signed up. */
 export async function markReferralClickConverted(code: string, tenantId: string): Promise<void> {
   const clean = code.trim().toUpperCase();
@@ -51,3 +81,4 @@ export async function markReferralClickConverted(code: string, tenantId: string)
     console.warn("Referral conversion tracking failed", e);
   }
 }
+
