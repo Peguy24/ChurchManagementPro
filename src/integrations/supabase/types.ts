@@ -6380,6 +6380,17 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: Json
       }
+      get_tenant_policy_status: {
+        Args: { _tenant_id: string }
+        Returns: {
+          accepted_at: string
+          accepted_by_name: string
+          accepted_version: number
+          current_version: number
+          document_type: string
+          needs_acceptance: boolean
+        }[]
+      }
       get_tenant_public_info: {
         Args: { _tenant_id: string }
         Returns: {

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { FileText, Save, Loader2, Eye, Globe, Shield, CreditCard } from "lucide-react";
+import { FileText, Save, Loader2, Eye, Globe, Shield, CreditCard, Download } from "lucide-react";
 
 interface LegalDocument {
   id: string;
@@ -53,6 +53,14 @@ const translations = {
     church: "Église",
     acceptedBy: "Accepté par",
     date: "Date",
+    allDocs: "Tous les documents",
+    allChurches: "Toutes les églises",
+    exportCsv: "Exporter CSV",
+    current: "À jour",
+    outdated: "Obsolète",
+    notifyLabel: "Notifier les églises par email",
+    notifySent: "Notification envoyée aux églises",
+    notifyFailed: "Échec de l'envoi des notifications",
   },
   en: {
     title: "Legal Documents",
@@ -78,6 +86,14 @@ const translations = {
     church: "Church",
     acceptedBy: "Accepted by",
     date: "Date",
+    allDocs: "All documents",
+    allChurches: "All churches",
+    exportCsv: "Export CSV",
+    current: "Current",
+    outdated: "Outdated",
+    notifyLabel: "Notify churches by email",
+    notifySent: "Notification sent to churches",
+    notifyFailed: "Could not send notifications",
   },
   ht: {
     title: "Dokiman Legal",
@@ -103,6 +119,14 @@ const translations = {
     church: "Legliz",
     acceptedBy: "Aksepte pa",
     date: "Dat",
+    allDocs: "Tout dokiman",
+    allChurches: "Tout legliz",
+    exportCsv: "Ekspòte CSV",
+    current: "Ajou",
+    outdated: "Fin itilize",
+    notifyLabel: "Avize legliz yo pa imel",
+    notifySent: "Notifikasyon voye bay legliz yo",
+    notifyFailed: "Nou pa ka voye notifikasyon yo",
   },
 };
 
@@ -119,6 +143,9 @@ export default function LegalDocuments() {
   const [activeDoc, setActiveDoc] = useState("terms_of_use");
   const [editLang, setEditLang] = useState("fr");
   const [editData, setEditData] = useState<Record<string, any>>({});
+  const [notifyChurches, setNotifyChurches] = useState(false);
+  const [filterDoc, setFilterDoc] = useState("all");
+  const [filterTenant, setFilterTenant] = useState("all");
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ["legal-documents"],
@@ -139,7 +166,7 @@ export default function LegalDocuments() {
         .from("tenant_policy_acceptances")
         .select("*, tenants:tenant_id(name)")
         .order("accepted_at", { ascending: false })
-        .limit(100);
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -156,10 +183,25 @@ export default function LegalDocuments() {
         })
         .eq("id", doc.id);
       if (error) throw error;
+
+      if (notifyChurches) {
+        const { error: notifyError } = await supabase.functions.invoke("notify-policy-update", {
+          body: { documentType: activeDoc },
+        });
+        if (notifyError) throw new Error("notify_failed");
+        return { notified: true };
+      }
+      return { notified: false };
     },
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["legal-documents"] });
+      queryClient.invalidateQueries({ queryKey: ["policy-acceptances"] });
       toast.success(t.saved);
+      if (res?.notified) toast.success(t.notifySent);
+    },
+    onError: (e: any) => {
+      queryClient.invalidateQueries({ queryKey: ["legal-documents"] });
+      toast.error(e?.message === "notify_failed" ? t.notifyFailed : String(e?.message || e));
     },
   });
 
@@ -185,6 +227,43 @@ export default function LegalDocuments() {
       ...editData[activeDoc],
     });
   };
+
+  const filteredAcceptances = ((acceptances || []) as any[]).filter(
+    (a) =>
+      (filterDoc === "all" || a.document_type === filterDoc) &&
+      (filterTenant === "all" || a.tenant_id === filterTenant)
+  );
+
+  const churchOptions = Array.from(
+    new Map(
+      ((acceptances || []) as any[])
+        .filter((a) => a.tenant_id)
+        .map((a) => [a.tenant_id as string, { id: a.tenant_id as string, name: a.tenants?.name || a.tenant_id }])
+    ).values()
+  ).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+  const exportCsv = () => {
+    const header = ["Church", "Document", "Version", "Accepted by", "Email", "Date", "IP"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = filteredAcceptances.map((a: any) => [
+      a.tenants?.name || "",
+      a.document_type,
+      a.document_version,
+      a.accepted_by_name || "",
+      a.accepted_by_email || "",
+      new Date(a.accepted_at).toLocaleString(),
+      a.ip_address || "",
+    ]);
+    const csv = [header, ...rows].map((r) => r.map(esc).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `policy-acceptances-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   const docTypes = [
     { key: "terms_of_use", label: t.terms },
@@ -275,7 +354,7 @@ export default function LegalDocuments() {
                     ))}
                   </Tabs>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Button onClick={handleSave} disabled={saveMutation.isPending}>
                       {saveMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -291,7 +370,12 @@ export default function LegalDocuments() {
                       <Eye className="h-4 w-4 mr-2" />
                       {t.preview}
                     </Button>
+                    <div className="flex items-center gap-2">
+                      <Switch id="notify-toggle" checked={notifyChurches} onCheckedChange={setNotifyChurches} />
+                      <Label htmlFor="notify-toggle" className="text-sm">{t.notifyLabel}</Label>
+                    </div>
                   </div>
+
                 </div>
               ) : null}
             </TabsContent>
@@ -300,14 +384,43 @@ export default function LegalDocuments() {
 
         {/* Acceptances section */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
               {t.acceptances}
+              {filteredAcceptances.length > 0 && (
+                <Badge variant="secondary">{filteredAcceptances.length}</Badge>
+              )}
             </CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={filterDoc}
+                onChange={(e) => setFilterDoc(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              >
+                <option value="all">{t.allDocs}</option>
+                {docTypes.map((dt) => (
+                  <option key={dt.key} value={dt.key}>{dt.label}</option>
+                ))}
+              </select>
+              <select
+                value={filterTenant}
+                onChange={(e) => setFilterTenant(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm max-w-[200px]"
+              >
+                <option value="all">{t.allChurches}</option>
+                {churchOptions.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <Button variant="outline" size="sm" onClick={exportCsv} disabled={!filteredAcceptances.length}>
+                <Download className="h-4 w-4 mr-2" />
+                {t.exportCsv}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            {!acceptances?.length ? (
+            {!filteredAcceptances.length ? (
               <p className="text-muted-foreground text-sm">{t.noAcceptances}</p>
             ) : (
               <div className="overflow-x-auto">
@@ -316,27 +429,43 @@ export default function LegalDocuments() {
                     <tr className="border-b">
                       <th className="text-left py-2 px-3">{t.church}</th>
                       <th className="text-left py-2 px-3">Document</th>
+                      <th className="text-left py-2 px-3">{t.version}</th>
                       <th className="text-left py-2 px-3">{t.acceptedBy}</th>
                       <th className="text-left py-2 px-3">{t.date}</th>
+                      <th className="text-left py-2 px-3">IP</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {acceptances.map((a: any) => (
-                      <tr key={a.id} className="border-b">
-                        <td className="py-2 px-3">{a.tenants?.name || "—"}</td>
-                        <td className="py-2 px-3">
-                          <Badge variant="outline">{a.document_type}</Badge>
-                        </td>
-                        <td className="py-2 px-3">{a.accepted_by_name || a.accepted_by_email || "—"}</td>
-                        <td className="py-2 px-3">{new Date(a.accepted_at).toLocaleDateString()}</td>
-                      </tr>
-                    ))}
+                    {filteredAcceptances.map((a: any) => {
+                      const current = documents?.find((d) => d.document_type === a.document_type)?.version ?? a.document_version;
+                      const isCurrent = a.document_version >= current;
+                      return (
+                        <tr key={a.id} className="border-b">
+                          <td className="py-2 px-3">{a.tenants?.name || "—"}</td>
+                          <td className="py-2 px-3">
+                            <Badge variant="outline">{a.document_type}</Badge>
+                          </td>
+                          <td className="py-2 px-3">
+                            <Badge variant={isCurrent ? "default" : "destructive"}>
+                              v{a.document_version} · {isCurrent ? t.current : t.outdated}
+                            </Badge>
+                          </td>
+                          <td className="py-2 px-3">
+                            <div>{a.accepted_by_name || "—"}</div>
+                            <div className="text-xs text-muted-foreground">{a.accepted_by_email || ""}</div>
+                          </td>
+                          <td className="py-2 px-3">{new Date(a.accepted_at).toLocaleString()}</td>
+                          <td className="py-2 px-3 text-xs text-muted-foreground">{a.ip_address || "—"}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
           </CardContent>
         </Card>
+
       </div>
     </Layout>
   );

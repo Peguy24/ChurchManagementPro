@@ -161,6 +161,38 @@ serve(async (req) => {
     if (tenantError) throw new Error(`Error creating tenant: ${tenantError.message}`);
     logStep("Tenant created", { tenantId: tenant.id, slug });
 
+    // 2b. Record legal policy acceptances (service role — the signer is not authenticated yet)
+    try {
+      const ipAddress =
+        (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
+        req.headers.get("cf-connecting-ip") ||
+        null;
+
+      const { data: legalDocs } = await supabase
+        .from("legal_documents")
+        .select("document_type, version");
+
+      const docTypes = ["terms_of_use", "privacy_policy", "payment_terms"];
+      const rows = docTypes.map((dt) => ({
+        tenant_id: tenant.id,
+        document_type: dt,
+        document_version: legalDocs?.find((d: any) => d.document_type === dt)?.version ?? 1,
+        accepted_by_name: contact_name,
+        accepted_by_email: contact_email,
+        ip_address: ipAddress,
+      }));
+
+      const { error: acceptError } = await supabase
+        .from("tenant_policy_acceptances")
+        .insert(rows);
+      if (acceptError) throw acceptError;
+      logStep("Policy acceptances recorded", { count: rows.length });
+    } catch (e) {
+      logStep("Policy acceptance recording failed", { error: String(e) });
+    }
+
+
+
     // 3. Create trial subscription
     const planConfig: Record<string, { price: number; members: number; branches: number; users: number; storage: number }> = {
       free: { price: 0, members: 100, branches: 1, users: 3, storage: 200 },
