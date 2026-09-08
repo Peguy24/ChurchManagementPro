@@ -353,7 +353,7 @@ export default function MinistriesStats() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={(entry) => `${entry.role}: ${entry.count}`}
+                      label={(entry: any) => `${entry.role}: ${entry.count}`}
                     >
                       {roleDistribution.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
