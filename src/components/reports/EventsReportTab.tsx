@@ -458,7 +458,7 @@ export default function EventsReportTab({ selectedBranch }: EventsReportTabProps
                     innerRadius={60} 
                     outerRadius={90} 
                     dataKey="events" 
-                    label={({ name, events }) => `${name}: ${events}`}
+                    label={(props: any) => `${props.name}: ${props.events}`}
                   >
                     {eventsByType.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />

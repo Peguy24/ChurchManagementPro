@@ -503,7 +503,7 @@ export default function MemberAttendanceStats() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={(entry) => `${entry.type}: ${entry.count}`}
+                      label={(entry: any) => `${entry.type}: ${entry.count}`}
                     >
                       {eventTypeData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
