@@ -129,7 +129,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
       let refCode = (formData.referral_code
         || new URLSearchParams(window.location.search).get("ref")
         || sessionStorage.getItem("referral_code")
-        || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
+        || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 20);
       if (!refCode) {
         // Fall back to the platform attribution model (first-click vs last-click)
         refCode = ((await resolveAttributedReferralCode()) || "").trim().toUpperCase();
@@ -407,7 +407,7 @@ export function ChurchRequestForm({ open, onOpenChange, selectedPlan = "basic" }
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  referral_code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20),
+                  referral_code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 20),
                 })
               }
               placeholder={t("churchForm.referralCodePlaceholder")}
