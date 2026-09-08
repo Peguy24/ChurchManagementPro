@@ -103,7 +103,6 @@ export default function MemberRequests() {
           ministry_id: request.desired_ministry_id,
           member_id: memberData.id,
           role: "member",
-          tenant_id: request.tenant_id,
         });
       }
 
