@@ -93,6 +93,7 @@ const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   Omit<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, "payload" | "label" | "content"> &
     Omit<React.ComponentProps<"div">, "color"> & {
+      color?: string;
       active?: boolean;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       payload?: any[];
