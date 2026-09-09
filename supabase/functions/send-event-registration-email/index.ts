@@ -10,14 +10,8 @@ const corsHeaders = {
 };
 
 const InputSchema = z.object({
-  firstName: z.string().min(1).max(100),
-  lastName: z.string().min(1).max(100),
+  eventId: z.string().uuid(),
   email: z.string().email().max(255),
-  eventName: z.string().min(1).max(255),
-  eventDate: z.string().min(1),
-  eventTime: z.string().nullable().optional(),
-  eventLocation: z.string().nullable().optional(),
-  churchName: z.string().optional(),
 });
 
 function escapeHtml(text: string): string {
