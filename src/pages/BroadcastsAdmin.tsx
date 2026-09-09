@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -66,7 +67,7 @@ export default function BroadcastsAdmin() {
     mutationFn: async () => {
       const payload = {
         title: form.title,
-        body_html: form.body_html,
+        body_html: sanitizeRichHtml(form.body_html),
         cta_label: form.cta_label || null,
         cta_url: form.cta_url || null,
         delivery: form.delivery,
@@ -154,7 +155,7 @@ export default function BroadcastsAdmin() {
                     <Badge variant="outline">{b.delivery}</Badge>
                     <Badge variant="outline">{b.severity}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: b.body_html }} />
+                  <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(b.body_html) }} />
                   <p className="text-xs text-muted-foreground mt-1">
                     {format(new Date(b.starts_at), "MMM d, yyyy")} {b.ends_at && `→ ${format(new Date(b.ends_at), "MMM d, yyyy")}`}
                     {" · "} Rules: {Object.keys(b.audience_rules || {}).length === 0 ? "everyone" : Object.keys(b.audience_rules).join(", ")}

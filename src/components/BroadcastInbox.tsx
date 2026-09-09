@@ -7,6 +7,7 @@ import { Bell, X, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { formatDistanceToNow } from "date-fns";
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 
 export function BroadcastInbox() {
   const { tenantId } = useCurrentTenant();
@@ -74,7 +75,7 @@ export function BroadcastInbox() {
                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(b.id)}><X className="w-3 h-3" /></Button>
                   </div>
                 </div>
-                <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: b.body_html }} />
+                <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(b.body_html) }} />
                 {b.cta_url && (
                   <Button size="sm" variant="outline" asChild>
                     <a href={b.cta_url} target="_blank" rel="noreferrer">{b.cta_label || "Open"} <ExternalLink className="w-3 h-3 ml-1" /></a>
