@@ -16,17 +16,49 @@ const cors = {
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+// Only the platform cron/service key, or the signed-in user who submitted
+// the survey, may trigger this notification.
+function isInternalCaller(req: Request): boolean {
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+  if (!token) return false;
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  return Boolean(
+    (cronSecret && token === cronSecret) ||
+    (serviceRoleKey && token === serviceRoleKey),
+  );
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
     const { survey_id } = await req.json();
     if (!survey_id) return new Response(JSON.stringify({ error: "survey_id required" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
 
+    const internal = isInternalCaller(req);
+    let callerUserId: string | null = null;
+    if (!internal) {
+      const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
+      }
+      const { data: { user }, error: authError } = await admin.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
+      }
+      callerUserId = user.id;
+    }
+
     const { data: survey } = await admin
       .from("nps_surveys")
-      .select("id, score, comment, submitted_at, tenant_id, tenants(name)")
+      .select("id, score, comment, submitted_at, tenant_id, user_id, tenants(name)")
       .eq("id", survey_id)
       .maybeSingle();
+
+    // Only the survey's author (or an internal caller) may trigger the email.
+    if (!internal && (!survey || survey.user_id !== callerUserId)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
+    }
     if (!survey || survey.score > 6) {
       return new Response(JSON.stringify({ skipped: true }), { headers: { ...cors, "Content-Type": "application/json" } });
     }
