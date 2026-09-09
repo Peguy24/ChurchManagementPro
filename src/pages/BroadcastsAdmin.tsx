@@ -155,7 +155,7 @@ export default function BroadcastsAdmin() {
                     <Badge variant="outline">{b.delivery}</Badge>
                     <Badge variant="outline">{b.severity}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: b.body_html }} />
+                  <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(b.body_html) }} />
                   <p className="text-xs text-muted-foreground mt-1">
                     {format(new Date(b.starts_at), "MMM d, yyyy")} {b.ends_at && `→ ${format(new Date(b.ends_at), "MMM d, yyyy")}`}
                     {" · "} Rules: {Object.keys(b.audience_rules || {}).length === 0 ? "everyone" : Object.keys(b.audience_rules).join(", ")}
