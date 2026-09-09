@@ -693,7 +693,15 @@ export default function Auth() {
       <form onSubmit={handleForgotPassword} className="mt-4 space-y-3 border-t pt-4">
         <p className="text-sm text-muted-foreground">{lt('forgotPasswordDesc')}</p>
         <div>
-          <Input type="email" placeholder={lt('emailPlaceholder')} value={forgotEmail} onChange={(e) => { setForgotEmail(e.target.value); if (forgotErrors.email) setForgotErrors({}); }} />
+          <Input
+            type="email"
+            placeholder={lt('emailPlaceholder')}
+            maxLength={255}
+            autoComplete="email"
+            value={forgotEmail}
+            onChange={(e) => { setForgotEmail(e.target.value); if (forgotErrors.email) setForgotErrors({}); }}
+            aria-invalid={!!forgotErrors.email}
+          />
           <FieldError name="email" errors={forgotErrors} />
         </div>
         <div className="flex gap-2">
