@@ -67,7 +67,7 @@ export default function BroadcastsAdmin() {
     mutationFn: async () => {
       const payload = {
         title: form.title,
-        body_html: form.body_html,
+        body_html: sanitizeRichHtml(form.body_html),
         cta_label: form.cta_label || null,
         cta_url: form.cta_url || null,
         delivery: form.delivery,
