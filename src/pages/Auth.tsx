@@ -359,6 +359,11 @@ export default function Auth() {
             await sendLoginVerificationCode();
           } catch (sendErr) {
             console.error('Failed to send verification code:', sendErr);
+            toast({
+              title: lt('loginError'),
+              description: 'We could not send your verification code by email. Please use "Resend code".',
+              variant: 'destructive',
+            });
           }
 
           setOtpPending({ email: loginForm.email, userId: loggedInUser.id });
