@@ -27,16 +27,49 @@ export async function requiresLoginVerification(userId: string): Promise<boolean
   }
 }
 
+/**
+ * The edge function identifies the caller from the JWT. Right after
+ * signInWithPassword the session can still be settling in storage, so we wait
+ * for a real access token before invoking — otherwise the request goes out with
+ * the anonymous key and is rejected, and no email is ever sent.
+ */
+async function waitForAccessToken(timeoutMs = 5000): Promise<string | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) return token;
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return null;
+}
+
 export async function sendLoginVerificationCode(): Promise<void> {
-  await supabase.functions.invoke('send-login-verification', {
+  const token = await waitForAccessToken();
+  if (!token) {
+    throw new Error('no_session');
+  }
+
+  const { data, error } = await supabase.functions.invoke('send-login-verification', {
     body: { action: 'send' },
+    headers: { Authorization: `Bearer ${token}` },
   });
+
+  if (error) {
+    console.error('Failed to send login verification code:', error);
+    throw error;
+  }
+  if (data && (data as { error?: string }).error) {
+    throw new Error((data as { error?: string }).error);
+  }
 }
 
 export async function verifyLoginCode(code: string): Promise<boolean> {
   try {
+    const token = await waitForAccessToken();
     const { data, error } = await supabase.functions.invoke('send-login-verification', {
       body: { action: 'verify', code },
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     if (error) return false;
     return Boolean((data as { valid?: boolean } | null)?.valid);
