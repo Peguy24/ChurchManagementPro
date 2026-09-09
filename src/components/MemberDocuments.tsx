@@ -192,6 +192,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       // Insert document record
       const { error } = await supabase.from("member_documents").insert([
         {
+          tenant_id: tenant?.id as string,
           member_id: memberId,
           document_type: formData.documentType,
           document_name: formData.documentName,
