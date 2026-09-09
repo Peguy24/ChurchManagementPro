@@ -23,6 +23,7 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } | null {
 }
 
 import { Button } from "@/components/ui/button";
+import { Seo } from "@/components/Seo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -304,6 +305,10 @@ export default function JoinChurch() {
 
   return (
     <div style={brandStyle} className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 py-8 px-4">
+      <Seo
+        title={churchName ? `Join ${churchName} — Membership Form` : "Join the Church — Membership Form"}
+        description={churchName ? `Fill in the online membership form to join ${churchName}. Share your details in a few guided steps.` : "Fill in the online membership form to join the church in a few guided steps."}
+      />
       <div className="max-w-2xl mx-auto">
         {/* Language Switcher */}
         <div className="flex justify-end mb-4">

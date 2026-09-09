@@ -14,6 +14,7 @@ import LoginOtpVerification from '@/components/LoginOtpVerification';
 import { FieldError } from '@/components/FieldError';
 import { validateForm, loginSchema, signupSchema, forgotPasswordSchema, firstErrorMessage } from '@/lib/validation';
 import { requiresLoginVerification, sendLoginVerificationCode, verifyLoginCode } from '@/lib/loginVerification';
+import { Seo } from '@/components/Seo';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
