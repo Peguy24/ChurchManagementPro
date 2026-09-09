@@ -221,6 +221,69 @@ const Commercial = () => {
     { value: "100%", label: t("commercial.stat_support") }
   ];
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Is the free trial really free?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. You get 14 days of full access (up to 50 members, Essential plan features) with no credit card required."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Can I change plans at any time?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Absolutely. You can upgrade or downgrade at any time from your subscription page. Pro-rated billing is applied automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "What payment methods do you accept?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "We accept all major credit and debit cards through our secure payment processor. Choose monthly or yearly billing (save 15%)."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "How long does setup take?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Less than 5 minutes. Create your account, import your members (CSV), and invite your team. No technical installation required."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Is my data secure?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Your data is encrypted, backed up daily, and hosted on compliant infrastructure. Each church has an isolated workspace."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Can I cancel at any time?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. No commitment. Cancel in one click from your subscription portal and keep access until the end of your paid period."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Do you offer training and support?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "All plans include support. Professional and Enterprise plans get priority support and dedicated onboarding assistance."
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       <Seo
