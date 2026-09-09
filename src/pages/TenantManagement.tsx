@@ -1413,11 +1413,19 @@ export default function TenantManagement() {
                 {t("superAdmin.cancel")}
               </Button>
               {selectedTenantForPlan?.subscription?.status === "active" ? (
-                <Button variant="destructive" onClick={() => handleActivatePlan(false)} disabled={activatePlanMutation.isPending}>
-                  {activatePlanMutation.isPending ? t("superAdmin.deactivating") : (
-                    <><PowerOff className="h-4 w-4 mr-2" />{t("superAdmin.deactivatePlanBtn")}</>
-                  )}
-                </Button>
+                <>
+                  <Button variant="destructive" onClick={() => handleActivatePlan(false)} disabled={activatePlanMutation.isPending}>
+                    {activatePlanMutation.isPending ? t("superAdmin.deactivating") : (
+                      <><PowerOff className="h-4 w-4 mr-2" />{t("superAdmin.deactivatePlanBtn")}</>
+                    )}
+                  </Button>
+                  <Button onClick={() => handleActivatePlan(true)} disabled={activatePlanMutation.isPending}
+                    className="bg-emerald-600 hover:bg-emerald-700">
+                    {activatePlanMutation.isPending ? t("superAdmin.activating") : (
+                      <><Power className="h-4 w-4 mr-2" />{t("superAdmin.updateDurationBtn") || "Update duration"}</>
+                    )}
+                  </Button>
+                </>
               ) : (
                 <Button onClick={() => handleActivatePlan(true)} disabled={activatePlanMutation.isPending}
                   className="bg-emerald-600 hover:bg-emerald-700">
