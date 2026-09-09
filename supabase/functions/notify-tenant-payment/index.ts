@@ -70,14 +70,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (!isInternalCaller(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    const { eventType, tenantId, amount, language = "fr", planName, billingUrl } = await req.json() as {
+    const { eventType, tenantId, amount, language = "fr", planName } = await req.json() as {
       eventType: PaymentEvent;
       tenantId: string;
       amount?: string;
       language?: string;
       planName?: string;
-      billingUrl?: string;
     };
 
     if (!eventType || !tenantId) {
