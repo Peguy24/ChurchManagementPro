@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LoginOtpVerification from '@/components/LoginOtpVerification';
+import { FieldError } from '@/components/FieldError';
+import { validateForm, loginSchema, firstErrorMessage } from '@/lib/validation';
 import { requiresLoginVerification, sendLoginVerificationCode, verifyLoginCode } from '@/lib/loginVerification';
 
 const localTranslations: Record<string, Record<string, string>> = {
@@ -232,7 +234,7 @@ export default function TenantAuth() {
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const lt = (key: string, replacements?: Record<string, string>) => {
     let text = localTranslations[language]?.[key] || localTranslations.en[key] || key;
@@ -256,6 +258,7 @@ export default function TenantAuth() {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState('');
   const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -411,17 +414,20 @@ export default function TenantAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!loginForm.email || !loginForm.password) {
+    const validation = validateForm(loginSchema, loginForm);
+    if (!validation.success) {
+      setLoginErrors(validation.fieldErrors);
       toast({
         title: lt('errorTitle'),
-        description: lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors, t) || lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
       return;
     }
+    setLoginErrors({});
 
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const { error } = await signIn(validation.data.email, validation.data.password);
 
     if (error) {
       toast({
@@ -947,12 +953,17 @@ export default function TenantAuth() {
                       id="login-email"
                       type="email"
                       placeholder={lt('emailPlaceholder')}
+                      maxLength={255}
+                      autoComplete="email"
                       value={loginForm.email}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, email: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setLoginForm({ ...loginForm, email: e.target.value });
+                        if (loginErrors.email) setLoginErrors((p) => ({ ...p, email: '' }));
+                      }}
+                      aria-invalid={!!loginErrors.email}
                       required
                     />
+                    <FieldError name="email" errors={loginErrors} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">{lt('password')}</Label>
@@ -960,12 +971,17 @@ export default function TenantAuth() {
                       id="login-password"
                       type="password"
                       placeholder="••••••••"
+                      maxLength={72}
+                      autoComplete="current-password"
                       value={loginForm.password}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, password: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setLoginForm({ ...loginForm, password: e.target.value });
+                        if (loginErrors.password) setLoginErrors((p) => ({ ...p, password: '' }));
+                      }}
+                      aria-invalid={!!loginErrors.password}
                       required
                     />
+                    <FieldError name="password" errors={loginErrors} />
                   </div>
                   <Button 
                     type="submit" 
