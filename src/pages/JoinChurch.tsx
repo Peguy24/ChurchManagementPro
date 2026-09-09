@@ -293,9 +293,9 @@ export default function JoinChurch() {
             )}
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
             <h2 className="text-2xl font-bold">{t("joinForm.successTitle")}</h2>
-            <p className="text-muted-foreground" dangerouslySetInnerHTML={{
-              __html: t("joinForm.successMessage").replace("{churchName}", churchName)
-            }} />
+            <p className="text-muted-foreground">
+              {t("joinForm.successMessage").replace("{churchName}", churchName)}
+            </p>
           </CardContent>
         </Card>
       </div>
