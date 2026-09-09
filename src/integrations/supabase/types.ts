@@ -5830,6 +5830,24 @@ export type Database = {
         }
         Relationships: []
       }
+      verified_login_sessions: {
+        Row: {
+          session_id: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          session_id: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          session_id?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       visitor_follow_ups: {
         Row: {
           completed_at: string | null
@@ -6496,6 +6514,7 @@ export type Database = {
         Returns: boolean
       }
       refresh_tenant_stats: { Args: never; Returns: undefined }
+      session_mfa_verified: { Args: { _user_id: string }; Returns: boolean }
       set_primary_tenant_domain: {
         Args: { _domain_id: string }
         Returns: undefined

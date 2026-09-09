@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import LoginOtpVerification from '@/components/LoginOtpVerification';
 import { FieldError } from '@/components/FieldError';
 import { validateForm, loginSchema, signupSchema, forgotPasswordSchema, firstErrorMessage } from '@/lib/validation';
+import { requiresLoginVerification, sendLoginVerificationCode, verifyLoginCode } from '@/lib/loginVerification';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -351,36 +352,11 @@ export default function Auth() {
     try {
       const { data: { user: loggedInUser } } = await supabase.auth.getUser();
       if (loggedInUser) {
-        // Check if user is a tenant admin or super admin
-        const { data: tenantRoles } = await supabase
-          .from('tenant_user_roles')
-          .select('role')
-          .eq('user_id', loggedInUser.id)
-          .eq('is_approved', true);
-
-        const { data: platformRoles } = await supabase
-          .from('platform_user_roles')
-          .select('role')
-          .eq('user_id', loggedInUser.id);
-
-        const { data: userRoles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', loggedInUser.id);
-
-        const isTenantAdmin = tenantRoles?.some(r => r.role === 'admin');
-        const isPlatformRole = platformRoles && platformRoles.length > 0;
-        const isSuperAdmin = userRoles?.some(r => r.role === 'admin');
-
-        if (isTenantAdmin || isPlatformRole || isSuperAdmin) {
-          // Sign out temporarily — user must verify OTP first
-          await supabase.auth.signOut();
-          
-          // Send verification code
+        if (await requiresLoginVerification(loggedInUser.id)) {
+          // Keep the session, but it has no admin privileges server-side
+          // until the emailed code is verified for this session.
           try {
-            await supabase.functions.invoke('send-login-verification', {
-              body: { action: 'send', email: loginForm.email, userId: loggedInUser.id },
-            });
+            await sendLoginVerificationCode();
           } catch (sendErr) {
             console.error('Failed to send verification code:', sendErr);
           }
@@ -389,6 +365,7 @@ export default function Auth() {
           setIsLoading(false);
           return;
         }
+
 
         // Not admin — proceed normally
         setIsCheckingOtp(false);
@@ -420,15 +397,8 @@ export default function Auth() {
 
   const handleOtpVerified = async () => {
     if (!otpPending) return;
-    // Re-sign in the user after OTP verification
-    const { error } = await signIn(loginForm.email, loginForm.password);
-    if (error) {
-      toast({ title: lt('loginError'), description: error.message, variant: 'destructive' });
-      setOtpPending(null);
-      return;
-    }
 
-    // Check multi-tenant
+    // Session stays the same; it is now marked verified server-side.
     try {
       const { data: { user: loggedInUser } } = await supabase.auth.getUser();
       if (loggedInUser) {
@@ -440,6 +410,8 @@ export default function Auth() {
 
         if (approvedRoles && approvedRoles.length > 1) {
           toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
+          setOtpPending(null);
+          setIsCheckingOtp(false);
           goAfterAuth('/select-church');
           return;
         }
@@ -450,15 +422,14 @@ export default function Auth() {
 
     toast({ title: lt('loginSuccess'), description: lt('welcomeMessage') });
     setOtpPending(null);
+    setIsCheckingOtp(false);
     goAfterAuth('/');
   };
 
   const handleOtpResend = async () => {
     if (!otpPending) return;
     try {
-      await supabase.functions.invoke('send-login-verification', {
-        body: { action: 'send', email: otpPending.email, userId: otpPending.userId },
-      });
+      await sendLoginVerificationCode();
     } catch (err) {
       console.error('Failed to resend code:', err);
     }
@@ -466,20 +437,15 @@ export default function Auth() {
 
   const handleOtpVerify = async (code: string): Promise<boolean> => {
     if (!otpPending) return false;
-    try {
-      const { data, error } = await supabase.functions.invoke('send-login-verification', {
-        body: { action: 'verify', email: otpPending.email, userId: otpPending.userId, code },
-      });
-      return data?.valid === true;
-    } catch (err) {
-      console.error('Failed to verify code:', err);
-      return false;
-    }
+    return verifyLoginCode(code);
   };
 
   const handleOtpCancel = async () => {
     setOtpPending(null);
+    setIsCheckingOtp(false);
+    await supabase.auth.signOut();
   };
+
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

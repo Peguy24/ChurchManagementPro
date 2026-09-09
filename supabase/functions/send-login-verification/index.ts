@@ -81,6 +81,19 @@ function buildEmailHtml(code: string, lang: Lang, firstName?: string): string {
 </html>`
 }
 
+function decodeJwtClaim(jwt: string, claim: string): string | null {
+  try {
+    const payload = jwt.split('.')[1]
+    if (!payload) return null
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    const parsed = JSON.parse(json)
+    const value = parsed?.[claim]
+    return typeof value === 'string' && value.length > 0 ? value : null
+  } catch (_e) {
+    return null
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -92,7 +105,31 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const { action, email, code: verifyCode, userId } = await req.json()
+    const body = await req.json()
+    const { action, code: verifyCode } = body
+
+    // The caller must be signed in: identity comes from the JWT, never from the body.
+    const authHeader = req.headers.get('Authorization') || ''
+    const jwt = authHeader.replace(/^Bearer\s+/i, '').trim()
+    if (!jwt) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(jwt)
+    const authUser = authData?.user
+    if (authError || !authUser?.email) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const userId = authUser.id
+    const email = authUser.email
+    const sessionId = decodeJwtClaim(jwt, 'session_id')
 
     // === SEND CODE ===
     if (action === 'send') {
@@ -219,6 +256,26 @@ Deno.serve(async (req) => {
         .from('login_verification_codes')
         .update({ used_at: new Date().toISOString() })
         .eq('id', codeRecord.id)
+
+      // Record that THIS session completed the second factor (server-side enforcement)
+      if (!sessionId) {
+        return new Response(JSON.stringify({ error: 'no_session', valid: false }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const { error: sessionError } = await supabase
+        .from('verified_login_sessions')
+        .upsert({ session_id: sessionId, user_id: userId, verified_at: new Date().toISOString() })
+
+      if (sessionError) {
+        console.error('Failed to record verified session:', sessionError)
+        return new Response(JSON.stringify({ error: 'session_record_failed', valid: false }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
 
       return new Response(JSON.stringify({ valid: true }), {
         status: 200,
