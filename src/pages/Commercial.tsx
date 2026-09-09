@@ -290,6 +290,7 @@ const Commercial = () => {
         title="Church Management Pro — All-in-One Church Software"
         description="Manage members, attendance, donations, events and finances in one multilingual church platform. Free 14-day trial, no card required."
         path="/commercial"
+        jsonLd={faqSchema}
       />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm shadow-primary/5">
