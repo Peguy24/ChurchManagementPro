@@ -119,25 +119,12 @@ export default function MemberRequests() {
     },
     onSuccess: async (_, request) => {
       // Send welcome email if the member has an email
-      if (request.email) {
+      if (request.email && request.tenant_id) {
         try {
-          // Get tenant name
-          let tenantName = "Church Management Pro";
-          if (request.tenant_id) {
-            const { data: tenantData } = await supabase
-              .from("tenants")
-              .select("name")
-              .eq("id", request.tenant_id)
-              .maybeSingle();
-            if (tenantData?.name) tenantName = tenantData.name;
-          }
-
           await supabase.functions.invoke("send-member-approved", {
             body: {
-              firstName: request.first_name,
-              lastName: request.last_name,
-              email: request.email,
-              tenantName,
+              tenantId: request.tenant_id,
+              requestId: request.id,
               language,
             },
           });

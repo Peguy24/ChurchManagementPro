@@ -12,10 +12,18 @@ Deno.serve(async (req) => {
     const { domain_id } = await req.json();
     if (!domain_id) return json({ error: "domain_id required" }, 400);
 
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+    if (!token) return json({ error: "Unauthorized" }, 401);
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } },
     );
+
+    const { data: userData } = await supabase.auth.getUser(token);
+    const caller = userData?.user;
+    if (!caller) return json({ error: "Unauthorized" }, 401);
 
     const { data: dom, error } = await supabase
       .from("tenant_domains")
@@ -23,6 +31,17 @@ Deno.serve(async (req) => {
       .eq("id", domain_id)
       .maybeSingle();
     if (error || !dom) return json({ error: "domain not found" }, 404);
+
+    // Only an admin of the owning church (or a platform super admin) may verify it.
+    const { data: isSuper } = await supabase.rpc("is_super_admin", { _user_id: caller.id });
+    if (!isSuper) {
+      const { data: isAdmin } = await supabase.rpc("has_tenant_role", {
+        _user_id: caller.id,
+        _tenant_id: dom.tenant_id,
+        _role: "admin",
+      });
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+    }
     if (dom.kind !== "custom") return json({ error: "subdomains are auto-verified" }, 400);
     if (!dom.verification_token) return json({ error: "no verification token" }, 400);
 

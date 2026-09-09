@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { isInternalCaller, escapeHtml } from "../_shared/tenant-auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -70,14 +71,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (!isInternalCaller(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    const { eventType, tenantId, amount, language = "fr", planName, billingUrl } = await req.json() as {
+    const { eventType, tenantId, amount, language = "fr", planName } = await req.json() as {
       eventType: PaymentEvent;
       tenantId: string;
       amount?: string;
       language?: string;
       planName?: string;
-      billingUrl?: string;
     };
 
     if (!eventType || !tenantId) {
@@ -105,7 +112,7 @@ serve(async (req) => {
 
     // Get tenant name
     const { data: tenant } = await supabase.from("tenants").select("name").eq("id", tenantId).single();
-    const tenantName = tenant?.name || "Church Management Pro";
+    const tenantName = escapeHtml(tenant?.name || "Church Management Pro");
 
     // Get all admin emails for this tenant
     const { data: adminRoles } = await supabase
@@ -151,15 +158,16 @@ serve(async (req) => {
     }
 
     const colors = colorSchemes[eventType];
-    const bodyText = t.body.replace(/\{amount\}/g, amount || currentPlan || "0").replace(/\$\{amount\}/g, amount || "0");
+    const safeAmount = escapeHtml(amount || "0");
+    const bodyText = t.body.replace(/\{amount\}/g, escapeHtml(amount || currentPlan || "0")).replace(/\$\{amount\}/g, safeAmount);
     const eventDateStr = formatDateTime(lang);
-    const billingLink = billingUrl || "https://cogmpw-sys.lovable.app/settings/subscription";
+    const billingLink = "https://churchmanagementpro.com/settings/subscription";
 
     // Details box (plan + date)
     const detailsBox = `
       <div style="background: #f8fafc; border-left: 3px solid ${colors.bg}; padding: 14px 18px; border-radius: 6px; margin: 20px 0;">
         <p style="margin: 0 0 8px 0; color: #475569; font-size: 13px;">
-          <strong style="color: #0f172a;">${lbl.plan}:</strong> ${currentPlan}
+          <strong style="color: #0f172a;">${lbl.plan}:</strong> ${escapeHtml(currentPlan)}
         </p>
         <p style="margin: 0; color: #475569; font-size: 13px;">
           <strong style="color: #0f172a;">${lbl.date}:</strong> ${eventDateStr}

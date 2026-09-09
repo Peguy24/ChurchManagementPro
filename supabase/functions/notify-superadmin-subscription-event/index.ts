@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { isInternalCaller, escapeHtml } from "../_shared/tenant-auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -144,6 +145,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (!isInternalCaller(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -206,8 +214,10 @@ serve(async (req) => {
       });
     }
 
-    const prevLabel = previousPlan ? (PLAN_LABELS[previousPlan] || previousPlan) : "-";
-    const newLabel = newPlan ? (PLAN_LABELS[newPlan] || newPlan) : "-";
+    const prevLabel = escapeHtml(previousPlan ? (PLAN_LABELS[previousPlan] || previousPlan) : "-");
+    const newLabel = escapeHtml(newPlan ? (PLAN_LABELS[newPlan] || newPlan) : "-");
+    const safeTenantName = escapeHtml(tenantName);
+    const safeTenantEmail = escapeHtml(tenantEmail);
 
     const planInfo = eventType === "plan_updated"
       ? `<p style="margin: 0 0 8px 0;"><strong>${lang === "fr" ? "Ancien plan" : lang === "ht" ? "Ansyen plan" : "Previous Plan"}:</strong> ${prevLabel}</p>
@@ -226,7 +236,7 @@ serve(async (req) => {
     await resend.emails.send({
       from: "Church Management Pro <noreply@churchmanagementpro.com>",
       to: superAdminEmails,
-      subject: `${t.subject}: ${tenantName}`,
+      subject: `${t.subject}: ${safeTenantName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -240,8 +250,8 @@ serve(async (req) => {
             <div style="padding: 30px;">
               <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 <h2 style="margin: 0 0 15px 0; color: #334155;">${t.label}</h2>
-                <p style="margin: 0 0 8px 0;"><strong>${lang === "fr" ? "Église" : lang === "ht" ? "Legliz" : "Church"}:</strong> ${tenantName}</p>
-                <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${tenantEmail}</p>
+                <p style="margin: 0 0 8px 0;"><strong>${lang === "fr" ? "Église" : lang === "ht" ? "Legliz" : "Church"}:</strong> ${safeTenantName}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${safeTenantEmail}</p>
                 ${planInfo}
                 <p style="margin: 0;"><strong>Date:</strong> ${new Date().toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { day: "numeric", month: "long", year: "numeric" })}</p>
               </div>
