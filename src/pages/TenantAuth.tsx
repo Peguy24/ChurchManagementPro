@@ -258,6 +258,7 @@ export default function TenantAuth() {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState('');
   const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
 
   const [loginForm, setLoginForm] = useState({
     email: '',
