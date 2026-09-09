@@ -17,7 +17,10 @@ export default defineConfig(({ mode, command }) => ({
     // `vite build --mode development` adds a second esbuild worker and has been
     // causing intermittent EPIPE crashes after the module transform completes.
     command === "serve" && mode === "development" && componentTagger(),
-    mcpPlugin(),
+    // MCP generation has its own esbuild process. Keep it in the live editor,
+    // where source changes need regeneration, instead of starting that worker
+    // alongside the already large frontend build.
+    command === "serve" && mcpPlugin(),
   ].filter(Boolean),
 
   resolve: {
