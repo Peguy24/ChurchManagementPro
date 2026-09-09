@@ -370,6 +370,7 @@ export default function JoinChurch() {
                 </TabsList>
 
                 <TabsContent value="personal" className="space-y-4 mt-4">
+                  <h2 className="text-base font-semibold">{t("joinForm.tabPersonal")}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.firstName")} {t("joinForm.required")}</Label>
@@ -416,7 +417,7 @@ export default function JoinChurch() {
                     <Input value={formData.emergencyPhone} onChange={(e) => updateField("emergencyPhone", e.target.value)} />
                     <FieldError name="emergencyPhone" errors={errors} />
                   </div>
-                  <h4 className="font-semibold text-sm pt-2">{t("joinForm.address")}</h4>
+                  <h3 className="font-semibold text-sm pt-2">{t("joinForm.address")}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2 col-span-2">
                       <Label>{t("joinForm.street")}</Label>
@@ -459,6 +460,7 @@ export default function JoinChurch() {
                 </TabsContent>
 
                 <TabsContent value="formation" className="space-y-4 mt-4">
+                  <h2 className="text-base font-semibold">{t("joinForm.tabFormation")}</h2>
                   <div className="space-y-2">
                     <Label>{t("joinForm.academicFormation")}</Label>
                     <Textarea value={formData.academicFormation} onChange={(e) => updateField("academicFormation", e.target.value)} placeholder={t("joinForm.academicPlaceholder")} rows={3} />
@@ -472,6 +474,7 @@ export default function JoinChurch() {
                 </TabsContent>
 
                 <TabsContent value="spiritual" className="space-y-4 mt-4">
+                  <h2 className="text-base font-semibold">{t("joinForm.tabSpiritual")}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.baptismStatus")}</Label>
@@ -524,6 +527,7 @@ export default function JoinChurch() {
                 </TabsContent>
 
                 <TabsContent value="family" className="space-y-4 mt-4">
+                  <h2 className="text-base font-semibold">{t("joinForm.tabFamily")}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t("joinForm.maritalStatus")}</Label>
