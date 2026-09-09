@@ -6,14 +6,17 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, command }) => ({
   server: {
     host: "::",
     port: 8080,
   },
   plugins: [
     react(),
-    mode === "development" && componentTagger(),
+    // The tagger is only needed by the interactive preview. Running it during
+    // `vite build --mode development` adds a second esbuild worker and has been
+    // causing intermittent EPIPE crashes after the module transform completes.
+    command === "serve" && mode === "development" && componentTagger(),
     mcpPlugin(),
   ].filter(Boolean),
 
