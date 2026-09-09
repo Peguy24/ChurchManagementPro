@@ -7,6 +7,7 @@ import { Bell, X, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { formatDistanceToNow } from "date-fns";
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 
 export function BroadcastInbox() {
   const { tenantId } = useCurrentTenant();
