@@ -755,6 +755,11 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
+      <Seo
+        title="Sign In — Church Management Pro"
+        description="Sign in to Church Management Pro to manage your church members, attendance, donations and events securely."
+        path="/auth"
+      />
       <div className="w-full max-w-md">
         {/* Church Management Pro branding */}
         <div className="mb-6 flex flex-col items-center text-center">
