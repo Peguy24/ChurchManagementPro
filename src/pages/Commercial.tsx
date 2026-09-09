@@ -632,6 +632,9 @@ const Commercial = () => {
               <Link to="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
                 {language === "fr" ? "Nouveautés" : language === "ht" ? "Sa ki nouvo" : "What's New"}
               </Link>
+              <Link to="/guides/church-check-in-kiosk" className="text-muted-foreground hover:text-foreground transition-colors">
+                {language === "fr" ? "Guide : borne de présence" : language === "ht" ? "Gid: kyòs prezans" : "Guide: check-in kiosk"}
+              </Link>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground text-center">
               {t("commercial.footer")}
