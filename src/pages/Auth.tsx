@@ -679,7 +679,7 @@ export default function Auth() {
         <div className="text-center">
           <img 
             src="/images/church-logo.png" 
-            alt="Logo" 
+            alt="Church Management Pro logo" 
             className="mx-auto h-16 w-16 animate-pulse"
           />
           <p className="mt-4 text-muted-foreground">{lt('loading')}</p>
@@ -830,7 +830,7 @@ export default function Auth() {
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>{lt('loginTitle')}</CardTitle>
+                  <CardTitle asChild><h2>{lt('loginTitle')}</h2></CardTitle>
                   <CardDescription>{lt('loginDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -843,7 +843,7 @@ export default function Auth() {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>{lt('createAccount')}</CardTitle>
+                  <CardTitle asChild><h2>{lt('createAccount')}</h2></CardTitle>
                   <CardDescription>{lt('createAccountDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -915,7 +915,7 @@ export default function Auth() {
           /* Login only - no signup tab without invitation */
           <Card>
             <CardHeader>
-              <CardTitle>{lt('loginTitle')}</CardTitle>
+              <CardTitle asChild><h2>{lt('loginTitle')}</h2></CardTitle>
               <CardDescription>{lt('loginDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
