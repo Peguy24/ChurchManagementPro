@@ -830,7 +830,7 @@ export default function Auth() {
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle asChild><h2>{lt('loginTitle')}</h2></CardTitle>
+                  <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('loginTitle')}</h2>
                   <CardDescription>{lt('loginDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -843,7 +843,7 @@ export default function Auth() {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle asChild><h2>{lt('createAccount')}</h2></CardTitle>
+                  <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('createAccount')}</h2>
                   <CardDescription>{lt('createAccountDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -915,7 +915,7 @@ export default function Auth() {
           /* Login only - no signup tab without invitation */
           <Card>
             <CardHeader>
-              <CardTitle asChild><h2>{lt('loginTitle')}</h2></CardTitle>
+              <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('loginTitle')}</h2>
               <CardDescription>{lt('loginDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
