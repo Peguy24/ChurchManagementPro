@@ -194,6 +194,15 @@ export const passwordSchema = z
   .regex(/[A-Za-z]/, "validation.password.needsLetter")
   .regex(/\d/, "validation.password.needsNumber");
 
+export const loginPasswordSchema = z
+  .string()
+  .min(1, "validation.password.required")
+  .max(72, "validation.password.tooLong")
+  .refine(
+    (v) => !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(v),
+    "validation.password.invalidChars",
+  );
+
 export const otpCodeSchema = z
   .string()
   .regex(/^\d{6}$/, "validation.otp.invalid");
@@ -204,7 +213,7 @@ export const otpCodeSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "validation.password.required"),
+  password: loginPasswordSchema,
 });
 
 export const signupSchema = z
