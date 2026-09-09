@@ -55,8 +55,50 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { userId, userEmail, firstName, lastName, tenantId }: NewUserNotificationRequest = await req.json();
-    console.log(`New user signup: ${firstName} ${lastName} (${userEmail}) for tenant: ${tenantId || "unknown"}`);
+    const callerId = claimsData.claims.sub as string;
+
+    // Identity is derived from the JWT — never trust body-supplied name/email/tenant
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(callerId);
+    if (!authUser?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Freshness: only newly-created accounts may trigger a signup alert
+    const createdAt = new Date(authUser.user.created_at).getTime();
+    if (Date.now() - createdAt > 30 * 60 * 1000) {
+      return new Response(
+        JSON.stringify({ error: "Not a recent signup" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("first_name, last_name, email, tenant_id")
+      .eq("id", callerId)
+      .maybeSingle();
+
+    const userEmail = profile?.email || authUser.user.email || "";
+    const firstName = profile?.first_name || "";
+    const lastName = profile?.last_name || "";
+    const tenantId = profile?.tenant_id || null;
+
+    const escapeHtml = (v: unknown) =>
+      String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    const eFirst = escapeHtml(firstName);
+    const eLast = escapeHtml(lastName);
+    const eEmail = escapeHtml(userEmail);
+
+    console.log(`New user signup for tenant: ${tenantId || "unknown"}`);
 
     // Determine which admins to notify based on tenant
     let adminEmails: string[] = [];
@@ -129,14 +171,14 @@ serve(async (req: Request): Promise<Response> => {
         <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">⛪ ${churchName}</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">⛪ ${escapeHtml(churchName)}</h1>
             <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Notification d'inscription</p>
           </div>
           <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e9ecef; border-top: none;">
             <h2 style="color: #1a1a2e; margin-top: 0;">Nouvel utilisateur inscrit</h2>
             <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin: 20px 0;">
-              <p style="margin: 0 0 10px 0;"><strong>Nom:</strong> ${firstName} ${lastName}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${userEmail}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Nom:</strong> ${eFirst} ${eLast}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${eEmail}</p>
               <p style="margin: 0;"><strong>Date d'inscription:</strong> ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
             </div>
             <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffc107; margin: 20px 0;">
@@ -144,7 +186,7 @@ serve(async (req: Request): Promise<Response> => {
             </div>
             <p>Connectez-vous à l'application pour approuver cet utilisateur et lui assigner un rôle approprié.</p>
             <p style="color: #6c757d; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
-              Ce message a été envoyé automatiquement par ${churchName}.<br>Merci de ne pas y répondre directement.
+              Ce message a été envoyé automatiquement par ${escapeHtml(churchName)}.<br>Merci de ne pas y répondre directement.
             </p>
           </div>
         </body>
