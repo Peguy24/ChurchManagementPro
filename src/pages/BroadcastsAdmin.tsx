@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
