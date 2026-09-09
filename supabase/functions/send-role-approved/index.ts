@@ -63,28 +63,55 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const { tenantId, userId, firstName, lastName, role, language = "fr" } = await req.json();
 
-    const { userEmail, firstName, lastName, role, tenantName, tenantSlug, language = "fr" } = await req.json();
-
-    if (!userEmail || !tenantName) {
+    if (!tenantId || !userId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const t = translations[language] || translations["fr"];
-    const displayRole = t[role] || t["user"];
-    const safeName = `${firstName || ""} ${lastName || ""}`.trim();
+    const auth = await requireTenantStaff(req, tenantId);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ error: auth.error }), {
+        status: auth.status,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Recipient must be a member of this tenant; the address comes from the database, never the request.
+    const { data: recipientRole } = await auth.supabase
+      .from("tenant_user_roles")
+      .select("role")
+      .eq("tenant_id", tenantId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!recipientRole) {
+      return new Response(JSON.stringify({ error: "Recipient not found in tenant" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: recipientUser } = await auth.supabase.auth.admin.getUserById(userId);
+    const userEmail = recipientUser?.user?.email;
+    if (!userEmail) {
+      return new Response(JSON.stringify({ success: false, error: "No recipient email" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const lang = ["en", "fr", "ht"].includes(language) ? language : "fr";
+    const t = translations[lang] || translations["fr"];
+    const effectiveRole = role || recipientRole.role;
+    const displayRole = escapeHtml(t[effectiveRole] || t["user"]);
+    const tenantName = escapeHtml(auth.tenantName);
+    const safeName = escapeHtml(`${firstName || ""} ${lastName || ""}`.trim());
     const siteUrl = "https://churchmanagementpro.com";
-    const loginUrl = tenantSlug ? `${siteUrl}/t/${tenantSlug}/auth` : siteUrl;
+    const loginUrl = auth.tenantSlug ? `${siteUrl}/t/${encodeURIComponent(auth.tenantSlug)}/auth` : siteUrl;
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
