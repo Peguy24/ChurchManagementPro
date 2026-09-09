@@ -6,9 +6,9 @@
 import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@2.0.4";
 
 // src/lib/mcp/tools/list_members.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.115.0";
+import { createClient } from "npm:@supabase/supabase-js@^2.116.0";
 import { defineTool } from "npm:@lovable.dev/mcp-js@2.0.4";
-import { z } from "npm:zod@^4.4.3";
+import { z } from "npm:zod@^4.5.4";
 function supabaseForUser(ctx) {
   return createClient("https://ihwhbtmnyhhceiwdcfsc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlod2hidG1ueWhoY2Vpd2RjZnNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1ODUxODQsImV4cCI6MjA3OTE2MTE4NH0.wETFan_eLt8wdCMuOsbGSU5ADyBcEXI-tWlOKLq6aHQ", {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
@@ -44,9 +44,9 @@ var list_members_default = defineTool({
 });
 
 // src/lib/mcp/tools/list_events.ts
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.115.0";
+import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.116.0";
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@2.0.4";
-import { z as z2 } from "npm:zod@^4.4.3";
+import { z as z2 } from "npm:zod@^4.5.4";
 function supabaseForUser2(ctx) {
   return createClient2("https://ihwhbtmnyhhceiwdcfsc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlod2hidG1ueWhoY2Vpd2RjZnNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1ODUxODQsImV4cCI6MjA3OTE2MTE4NH0.wETFan_eLt8wdCMuOsbGSU5ADyBcEXI-tWlOKLq6aHQ", {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
@@ -81,9 +81,9 @@ var list_events_default = defineTool2({
 });
 
 // src/lib/mcp/tools/list_donations.ts
-import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.115.0";
+import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.116.0";
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@2.0.4";
-import { z as z3 } from "npm:zod@^4.4.3";
+import { z as z3 } from "npm:zod@^4.5.4";
 function supabaseForUser3(ctx) {
   return createClient3("https://ihwhbtmnyhhceiwdcfsc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlod2hidG1ueWhoY2Vpd2RjZnNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1ODUxODQsImV4cCI6MjA3OTE2MTE4NH0.wETFan_eLt8wdCMuOsbGSU5ADyBcEXI-tWlOKLq6aHQ", {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
