@@ -36,6 +36,7 @@ import { todayInputValue, parseDateOnly } from "@/lib/date";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTenant } from "@/contexts/TenantContext";
 
 
 interface MemberDocumentsProps {
@@ -56,6 +57,7 @@ interface Document {
 export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { tenant } = useTenant();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -190,6 +192,7 @@ export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
       // Insert document record
       const { error } = await supabase.from("member_documents").insert([
         {
+          tenant_id: tenant?.id as string,
           member_id: memberId,
           document_type: formData.documentType,
           document_name: formData.documentName,
