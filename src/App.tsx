@@ -21,6 +21,7 @@ if (typeof window !== "undefined") enforceHttps();
 
 // Eagerly load landing pages for fast LCP
 import Commercial from "./pages/Commercial";
+const ChurchCheckInKiosk = lazy(() => import("./pages/guides/ChurchCheckInKiosk"));
 import Home from "./pages/Home";
 
 // Lazy load everything else
@@ -168,6 +169,7 @@ const PUBLIC_ROUTE_EXACT = new Set([
 ]);
 
 const PUBLIC_ROUTE_PREFIXES = [
+  "/guides/",
   "/join/",
   "/legal/",
   "/event/",
@@ -258,6 +260,7 @@ const App = () => (
             <DeferredLocation>{(routeLocation) => (
             <Routes location={routeLocation}>
               <Route path="/commercial" element={<Commercial />} />
+              <Route path="/guides/church-check-in-kiosk" element={<ChurchCheckInKiosk />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
