@@ -234,7 +234,7 @@ export default function TenantAuth() {
   const navigate = useNavigate();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const lt = (key: string, replacements?: Record<string, string>) => {
     let text = localTranslations[language]?.[key] || localTranslations.en[key] || key;
