@@ -261,6 +261,19 @@ serve(async (req) => {
       premium: "Enterprise",
     };
 
+    const escapeHtml = (v: unknown) =>
+      String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    const eCn = escapeHtml(cn);
+    const eCtn = escapeHtml(ctn);
+    const eEm = escapeHtml(em);
+    const ePh = escapeHtml(ph);
+    const eAd = escapeHtml(ad);
+
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     let emailSent = false;
 
@@ -270,7 +283,7 @@ serve(async (req) => {
         const emailResponse = await resend.emails.send({
           from: "Church Management Pro <noreply@churchmanagementpro.com>",
           to: [contact_email],
-          subject: `Welcome to Church Management Pro - ${church_name}`,
+          subject: `Welcome to Church Management Pro - ${eCn}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -287,18 +300,18 @@ serve(async (req) => {
                 
                 <div style="padding: 40px 30px;">
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Hello <strong>${contact_name}</strong>,
+                    Hello <strong>${eCtn}</strong>,
                   </p>
                   
                   <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Your church <strong>${church_name}</strong> has been successfully registered on Church Management Pro! 
+                    Your church <strong>${eCn}</strong> has been successfully registered on Church Management Pro! 
                     You have a <strong>14-day free trial</strong> with all features included.
                   </p>
 
                   <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px; margin: 24px 0; border-radius: 4px;">
                     <p style="color: #1E40AF; font-size: 14px; margin: 0;">
                       <strong>📋 Summary</strong><br>
-                      <strong>Church:</strong> ${church_name}<br>
+                      <strong>Church:</strong> ${eCn}<br>
                       <strong>Plan:</strong> ${planLabels[plan] || plan} (free trial)<br>
                       <strong>Trial ends:</strong> ${new Date(trialEndsAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
@@ -364,7 +377,7 @@ serve(async (req) => {
             await resend.emails.send({
               from: "Church Management Pro <noreply@churchmanagementpro.com>",
               to: superAdminEmails,
-              subject: `🆕 New Church Registered: ${church_name}`,
+              subject: `🆕 New Church Registered: ${eCn}`,
               html: `
                 <!DOCTYPE html>
                 <html>
@@ -378,11 +391,11 @@ serve(async (req) => {
                     <div style="padding: 30px;">
                       <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
                         <h2 style="margin: 0 0 15px 0; color: #166534;">Church Details</h2>
-                        <p style="margin: 0 0 8px 0;"><strong>Name:</strong> ${church_name}</p>
-                        <p style="margin: 0 0 8px 0;"><strong>Contact:</strong> ${contact_name}</p>
-                        <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${contact_email}</p>
-                        ${contact_phone ? `<p style="margin: 0 0 8px 0;"><strong>Phone:</strong> ${contact_phone}</p>` : ''}
-                        ${address ? `<p style="margin: 0 0 8px 0;"><strong>Address:</strong> ${address}</p>` : ''}
+                        <p style="margin: 0 0 8px 0;"><strong>Name:</strong> ${eCn}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Contact:</strong> ${eCtn}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${eEm}</p>
+                        ${contact_phone ? `<p style="margin: 0 0 8px 0;"><strong>Phone:</strong> ${ePh}</p>` : ''}
+                        ${address ? `<p style="margin: 0 0 8px 0;"><strong>Address:</strong> ${eAd}</p>` : ''}
                         <p style="margin: 0 0 8px 0;"><strong>Plan:</strong> ${planLabels[plan] || plan} (14-day trial)</p>
                         <p style="margin: 0;"><strong>Slug:</strong> ${slug}</p>
                       </div>
