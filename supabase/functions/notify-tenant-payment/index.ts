@@ -158,7 +158,8 @@ serve(async (req) => {
     }
 
     const colors = colorSchemes[eventType];
-    const bodyText = t.body.replace(/\{amount\}/g, amount || currentPlan || "0").replace(/\$\{amount\}/g, amount || "0");
+    const safeAmount = escapeHtml(amount || "0");
+    const bodyText = t.body.replace(/\{amount\}/g, escapeHtml(amount || currentPlan || "0")).replace(/\$\{amount\}/g, safeAmount);
     const eventDateStr = formatDateTime(lang);
     const billingLink = "https://churchmanagementpro.com/settings/subscription";
 
