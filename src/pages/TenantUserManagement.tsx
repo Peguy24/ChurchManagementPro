@@ -163,12 +163,11 @@ export default function TenantUserManagement() {
             : approvedUser.role;
           await supabase.functions.invoke("send-role-approved", {
             body: {
-              userEmail: approvedUser.user_email,
+              tenantId,
+              userId,
               firstName: approvedUser.profile?.first_name,
               lastName: approvedUser.profile?.last_name,
               role: finalRole,
-              tenantName: tenant?.name,
-              tenantSlug: tenant?.slug,
               language,
             },
           });
