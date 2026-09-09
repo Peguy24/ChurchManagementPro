@@ -516,6 +516,11 @@ export default function TenantAuth() {
           await sendLoginVerificationCode();
         } catch (sendErr) {
           console.error('Failed to send verification code:', sendErr);
+          toast({
+            title: lt('loginError'),
+            description: 'We could not send your verification code by email. Please use "Resend code".',
+            variant: 'destructive',
+          });
         }
         setOtpPending({ email: loggedInUser.email || loginForm.email });
         return false;
