@@ -9,16 +9,20 @@ interface SeoProps {
   /** Optional explicit path; defaults to the current route */
   path?: string;
   noIndex?: boolean;
+  /** Optional JSON-LD structured data object(s) injected into the page head. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 /**
- * Per-route head tags: title, description, self-referencing canonical
- * and Open Graph URL/title/description.
+ * Per-route head tags: title, description, self-referencing canonical,
+ * Open Graph/Twitter metadata, and optional JSON-LD structured data.
  */
-export function Seo({ title, description, path, noIndex }: SeoProps) {
+export function Seo({ title, description, path, noIndex, jsonLd }: SeoProps) {
   const location = useLocation();
   const pathname = path ?? location.pathname;
   const url = `${SITE_URL}${pathname === "/" ? "/" : pathname}`;
+
+  const schemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
   return (
     <Helmet>
@@ -31,6 +35,11 @@ export function Seo({ title, description, path, noIndex }: SeoProps) {
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {noIndex ? <meta name="robots" content="noindex, follow" /> : null}
+      {schemas.map((schema, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      ))}
     </Helmet>
   );
 }
