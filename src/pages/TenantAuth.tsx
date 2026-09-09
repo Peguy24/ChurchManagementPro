@@ -414,17 +414,20 @@ export default function TenantAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!loginForm.email || !loginForm.password) {
+    const validation = validateForm(loginSchema, loginForm);
+    if (!validation.success) {
+      setLoginErrors(validation.fieldErrors);
       toast({
         title: lt('errorTitle'),
-        description: lt('fillAllFields'),
+        description: firstErrorMessage(validation.fieldErrors, t) || lt('fillAllFields'),
         variant: 'destructive',
       });
       setIsLoading(false);
       return;
     }
+    setLoginErrors({});
 
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const { error } = await signIn(validation.data.email, validation.data.password);
 
     if (error) {
       toast({
