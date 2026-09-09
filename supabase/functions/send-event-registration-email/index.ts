@@ -39,15 +39,55 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const { firstName, lastName, email, eventName, eventDate, eventTime, eventLocation, churchName } = result.data;
+    const { eventId, email } = result.data;
+    const supabase = serviceClient();
+
+    // Only send when a matching registration was genuinely just created.
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: registration } = await supabase
+      .from("event_registrations")
+      .select("first_name, last_name, email, event_id, tenant_id, created_at")
+      .eq("event_id", eventId)
+      .eq("email", email)
+      .gte("created_at", tenMinutesAgo)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!registration) {
+      return new Response(JSON.stringify({ error: "No recent registration found" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: event } = await supabase
+      .from("events")
+      .select("name, event_date, event_time, location, tenant_id")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (!event) {
+      return new Response(JSON.stringify({ error: "Event not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("name")
+      .eq("id", event.tenant_id)
+      .maybeSingle();
+
     const safe = {
-      firstName: escapeHtml(firstName),
-      lastName: escapeHtml(lastName),
-      eventName: escapeHtml(eventName),
-      eventDate: escapeHtml(eventDate),
-      eventTime: eventTime ? escapeHtml(eventTime) : null,
-      eventLocation: eventLocation ? escapeHtml(eventLocation) : null,
-      churchName: churchName ? escapeHtml(churchName) : "",
+      firstName: escapeHtml(registration.first_name),
+      lastName: escapeHtml(registration.last_name),
+      eventName: escapeHtml(event.name),
+      eventDate: escapeHtml(event.event_date),
+      eventTime: event.event_time ? escapeHtml(String(event.event_time).substring(0, 5)) : null,
+      eventLocation: event.location ? escapeHtml(event.location) : null,
+      churchName: tenant?.name ? escapeHtml(tenant.name) : "",
     };
 
     const senderName = safe.churchName || "Church Management Pro";
