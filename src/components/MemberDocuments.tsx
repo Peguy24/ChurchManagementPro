@@ -57,6 +57,7 @@ interface Document {
 export default function MemberDocuments({ memberId }: MemberDocumentsProps) {
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { tenant } = useTenant();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
