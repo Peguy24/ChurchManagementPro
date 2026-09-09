@@ -62,6 +62,26 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Authorization: the caller must actually belong to the tenant being notified
+    const { data: isSuper } = await supabaseAdmin.rpc("is_super_admin", { _user_id: user.id });
+    if (!isSuper) {
+      const { data: callerRoles } = await supabaseAdmin
+        .from("tenant_user_roles")
+        .select("role")
+        .eq("tenant_id", tenantId)
+        .eq("user_id", user.id)
+        .eq("is_approved", true);
+      const allowed = (callerRoles || []).some((r: { role: string }) =>
+        ["admin", "pastor", "treasurer", "secretary"].includes(r.role)
+      );
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    }
+
     // Get all approved admins for this tenant
     const { data: adminRoles } = await supabaseAdmin
       .from("tenant_user_roles")
