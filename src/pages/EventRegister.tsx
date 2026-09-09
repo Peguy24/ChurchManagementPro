@@ -139,14 +139,8 @@ export default function EventRegister() {
         try {
           await supabase.functions.invoke("send-event-registration-email", {
             body: {
-              firstName: formData.firstName.trim(),
-              lastName: formData.lastName.trim(),
+              eventId,
               email: formData.email.trim(),
-              eventName: event.name,
-              eventDate: event.event_date,
-              eventTime: event.event_time ? event.event_time.substring(0, 5) : null,
-              eventLocation: event.location || null,
-              churchName: churchName || undefined,
             },
           });
         } catch (emailErr) {
