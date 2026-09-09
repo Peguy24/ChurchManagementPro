@@ -45,7 +45,30 @@ const handler = async (req: Request): Promise<Response> => {
     const { action } = body;
 
     if (action === "create_ticket") {
-      const { subject, message, priority, category, tenantId } = body;
+      const { subject, message, priority, category } = body;
+
+      // Never trust a client-supplied tenant id: resolve it from the caller.
+      let tenantId: string | null = null;
+      const { data: callerRole } = await supabase
+        .from("tenant_user_roles")
+        .select("tenant_id")
+        .eq("user_id", userId)
+        .eq("is_approved", true)
+        .limit(1)
+        .maybeSingle();
+      tenantId = callerRole?.tenant_id ?? null;
+      if (!tenantId) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("tenant_id")
+          .eq("id", userId)
+          .maybeSingle();
+        tenantId = prof?.tenant_id ?? null;
+      }
+      if (!tenantId) {
+        return new Response(JSON.stringify({ error: "No church associated with this account" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
 
       // Validate inputs
       if (!subject || subject.length < 5 || subject.length > 200) {
