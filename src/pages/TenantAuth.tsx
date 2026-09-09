@@ -12,6 +12,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import LoginOtpVerification from '@/components/LoginOtpVerification';
+import { requiresLoginVerification, sendLoginVerificationCode, verifyLoginCode } from '@/lib/loginVerification';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -248,6 +250,7 @@ export default function TenantAuth() {
   const [invitationValid, setInvitationValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [otpPending, setOtpPending] = useState<{ email: string } | null>(null);
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
@@ -276,10 +279,10 @@ export default function TenantAuth() {
 
   // Redirect if already logged in and has access to tenant
   useEffect(() => {
-    if (!authLoading && user && tenant) {
+    if (!authLoading && user && tenant && !otpPending) {
       checkUserTenantAccess();
     }
-  }, [user, authLoading, tenant]);
+  }, [user, authLoading, tenant, otpPending]);
 
   async function fetchTenantAndInvitation() {
     try {
@@ -477,12 +480,14 @@ export default function TenantAuth() {
                 await (supabase.rpc as any)('mark_admin_invitation_used', { _invitation_id: invitation.id });
               }
 
-              toast({
-                title: lt('linkedSuccess'),
-                description: lt('linkedSuccessDesc', { name: tenant.name }),
-              });
-              navigate('/');
+              const linked = await finishLogin(() =>
+                toast({
+                  title: lt('linkedSuccess'),
+                  description: lt('linkedSuccessDesc', { name: tenant.name }),
+                })
+              );
               setIsLoading(false);
+              if (linked) return;
               return;
             }
           }
@@ -491,15 +496,39 @@ export default function TenantAuth() {
         }
       }
 
-      toast({
-        title: lt('loginSuccess'),
-        description: lt('welcomeTo', { name: tenant?.name || '' }),
-      });
-      navigate('/');
+      await finishLogin(() =>
+        toast({
+          title: lt('loginSuccess'),
+          description: lt('welcomeTo', { name: tenant?.name || '' }),
+        })
+      );
     }
 
     setIsLoading(false);
   };
+
+  // Privileged accounts must complete the emailed code before the session gets admin rights.
+  const finishLogin = async (onSuccess: () => void): Promise<boolean> => {
+    try {
+      const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+      if (loggedInUser && (await requiresLoginVerification(loggedInUser.id))) {
+        try {
+          await sendLoginVerificationCode();
+        } catch (sendErr) {
+          console.error('Failed to send verification code:', sendErr);
+        }
+        setOtpPending({ email: loggedInUser.email || loginForm.email });
+        return false;
+      }
+    } catch (err) {
+      console.error('Error checking login verification requirement:', err);
+    }
+
+    onSuccess();
+    navigate('/');
+    return true;
+  };
+
 
   const resendVerificationEmail = async (email: string) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -707,6 +736,34 @@ export default function TenantAuth() {
     setShowEmailConfirmation(true);
     setIsLoading(false);
   };
+
+  if (otpPending) {
+    return (
+      <LoginOtpVerification
+        email={otpPending.email}
+        onVerified={() => {
+          setOtpPending(null);
+          toast({
+            title: lt('loginSuccess'),
+            description: lt('welcomeTo', { name: tenant?.name || '' }),
+          });
+          navigate('/');
+        }}
+        onCancel={async () => {
+          setOtpPending(null);
+          await supabase.auth.signOut();
+        }}
+        onResend={async () => {
+          try {
+            await sendLoginVerificationCode();
+          } catch (err) {
+            console.error('Failed to resend code:', err);
+          }
+        }}
+        onVerify={verifyLoginCode}
+      />
+    );
+  }
 
   if (loading || authLoading) {
     return (
