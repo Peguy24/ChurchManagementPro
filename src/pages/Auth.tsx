@@ -720,8 +720,11 @@ export default function Auth() {
           id="login-email"
           type="email"
           placeholder={lt('emailPlaceholder')}
+          maxLength={255}
+          autoComplete="email"
           value={loginForm.email}
           onChange={(e) => { setLoginForm({ ...loginForm, email: e.target.value }); if (loginErrors.email) setLoginErrors((p) => ({ ...p, email: '' })); }}
+          aria-invalid={!!loginErrors.email}
         />
         <FieldError name="email" errors={loginErrors} />
       </div>
@@ -731,8 +734,11 @@ export default function Auth() {
           id="login-password"
           type="password"
           placeholder="••••••••"
+          maxLength={72}
+          autoComplete="current-password"
           value={loginForm.password}
           onChange={(e) => { setLoginForm({ ...loginForm, password: e.target.value }); if (loginErrors.password) setLoginErrors((p) => ({ ...p, password: '' })); }}
+          aria-invalid={!!loginErrors.password}
         />
         <FieldError name="password" errors={loginErrors} />
       </div>
