@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FieldError } from '@/components/FieldError';
 import { validateForm, resetPasswordSchema, firstErrorMessage } from '@/lib/validation';
+import { Seo } from '@/components/Seo';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -92,6 +93,12 @@ export default function ResetPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
+      <Seo
+        title="Reset Your Password — Church Management Pro"
+        description="Choose a new password for your Church Management Pro account and get back to managing your church."
+        path="/reset-password"
+        noIndex
+      />
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">

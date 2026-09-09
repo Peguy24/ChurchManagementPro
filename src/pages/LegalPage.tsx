@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { Seo } from "@/components/Seo";
 
 export default function LegalPage() {
   const { docType } = useParams<{ docType: string }>();
@@ -40,6 +41,10 @@ export default function LegalPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={`${title || "Legal"} — Church Management Pro`}
+        description={`${title || "Legal document"} of Church Management Pro: the terms, policies and conditions that apply to churches using the platform.`}
+      />
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" onClick={() => navigate(-1)}>

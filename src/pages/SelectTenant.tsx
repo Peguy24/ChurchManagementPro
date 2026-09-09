@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Church, Search, Building2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Seo } from '@/components/Seo';
 
 interface Tenant {
   id: string;
@@ -65,6 +66,11 @@ export default function SelectTenant() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
+      <Seo
+        title="Find Your Church — Church Management Pro"
+        description="Search the churches using Church Management Pro and open the right church space to sign in or join."
+        path="/select-tenant"
+      />
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 text-center pt-8">
           <Church className="mx-auto h-16 w-16 text-primary mb-4" />

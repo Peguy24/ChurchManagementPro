@@ -14,6 +14,7 @@ import LoginOtpVerification from '@/components/LoginOtpVerification';
 import { FieldError } from '@/components/FieldError';
 import { validateForm, loginSchema, signupSchema, forgotPasswordSchema, firstErrorMessage } from '@/lib/validation';
 import { requiresLoginVerification, sendLoginVerificationCode, verifyLoginCode } from '@/lib/loginVerification';
+import { Seo } from '@/components/Seo';
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -679,7 +680,7 @@ export default function Auth() {
         <div className="text-center">
           <img 
             src="/images/church-logo.png" 
-            alt="Logo" 
+            alt="Church Management Pro logo" 
             className="mx-auto h-16 w-16 animate-pulse"
           />
           <p className="mt-4 text-muted-foreground">{lt('loading')}</p>
@@ -755,6 +756,11 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1E40AF]/5 via-background to-[#C5A033]/5 p-4">
+      <Seo
+        title="Sign In — Church Management Pro"
+        description="Sign in to Church Management Pro to manage your church members, attendance, donations and events securely."
+        path="/auth"
+      />
       <div className="w-full max-w-md">
         {/* Church Management Pro branding */}
         <div className="mb-6 flex flex-col items-center text-center">
@@ -830,7 +836,7 @@ export default function Auth() {
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>{lt('loginTitle')}</CardTitle>
+                  <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('loginTitle')}</h2>
                   <CardDescription>{lt('loginDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -843,7 +849,7 @@ export default function Auth() {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>{lt('createAccount')}</CardTitle>
+                  <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('createAccount')}</h2>
                   <CardDescription>{lt('createAccountDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -915,7 +921,7 @@ export default function Auth() {
           /* Login only - no signup tab without invitation */
           <Card>
             <CardHeader>
-              <CardTitle>{lt('loginTitle')}</CardTitle>
+              <h2 className="text-2xl font-semibold leading-none tracking-tight">{lt('loginTitle')}</h2>
               <CardDescription>{lt('loginDesc')}</CardDescription>
             </CardHeader>
             <CardContent>

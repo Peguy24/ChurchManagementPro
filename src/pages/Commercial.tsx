@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-abstract.webp";
 import { recordReferralClick } from "@/lib/referralTracking";
+import { Seo } from "@/components/Seo";
 
 const Commercial = () => {
   const navigate = useNavigate();
@@ -222,6 +223,11 @@ const Commercial = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
+      <Seo
+        title="Church Management Pro — All-in-One Church Software"
+        description="Manage members, attendance, donations, events and finances in one multilingual church platform. Free 14-day trial, no card required."
+        path="/commercial"
+      />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm shadow-primary/5">
         <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
