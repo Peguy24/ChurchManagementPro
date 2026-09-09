@@ -59,24 +59,45 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const { tenantId, requestId, language = "fr" } = await req.json();
 
-    const { firstName, lastName, email, tenantName, language = "fr" } = await req.json();
-
-    if (!email || !firstName || !tenantName) {
+    if (!tenantId || !requestId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const t = translations[language] || translations["fr"];
+    const auth = await requireTenantStaff(req, tenantId);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ error: auth.error }), {
+        status: auth.status,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Recipient details come from the database, never from the request body.
+    const { data: memberRequest } = await auth.supabase
+      .from("member_requests")
+      .select("first_name, last_name, email")
+      .eq("id", requestId)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (!memberRequest?.email) {
+      return new Response(JSON.stringify({ success: false, error: "No recipient email" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const email = memberRequest.email as string;
+    const firstName = escapeHtml(memberRequest.first_name);
+    const lastName = escapeHtml(memberRequest.last_name);
+    const tenantName = escapeHtml(auth.tenantName);
+
+    const lang = ["en", "fr", "ht"].includes(language) ? language : "fr";
+    const t = translations[lang] || translations["fr"];
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
