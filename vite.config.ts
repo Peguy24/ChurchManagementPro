@@ -23,6 +23,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // This application has a large module graph. esbuild's final minification
+    // process was being killed after transformation, which surfaced as an EPIPE
+    // with no source-file error. Skip that fragile subprocess; hosting still
+    // compresses the generated assets when they are served.
+    minify: false,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: {
