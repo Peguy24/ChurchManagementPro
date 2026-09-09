@@ -36,20 +36,32 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check is_tenant_admin
-    const { data: isAdmin } = await adminClient.rpc('is_tenant_admin', { _user_id: user.id });
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: 'Not a tenant admin' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { tenant_id, data_type, before_date, dry_run } = await req.json();
 
     if (!tenant_id || !data_type || !before_date) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Authorize against the REQUESTED tenant, not just any tenant
+    const { data: isSuperAdmin } = await adminClient.rpc('is_super_admin', { _user_id: user.id });
+    let allowed = Boolean(isSuperAdmin);
+
+    if (!allowed) {
+      const { data: ownTenantId } = await adminClient.rpc('get_user_tenant_id', { _user_id: user.id });
+      const { data: isTenantAdmin } = await adminClient.rpc('has_tenant_role', {
+        _user_id: user.id,
+        _tenant_id: tenant_id,
+        _role: 'admin',
+      });
+      allowed = ownTenantId === tenant_id && Boolean(isTenantAdmin);
+    }
+
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
