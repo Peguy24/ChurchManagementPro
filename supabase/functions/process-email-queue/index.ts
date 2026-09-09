@@ -1,5 +1,19 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { isInternalCaller } from '../_shared/tenant-auth.ts'
+
+// Accept a signed service-role JWT as well as the raw key / CRON secret.
+function isServiceRoleJwt(req: Request): boolean {
+  const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim()
+  if (!token || token.split('.').length !== 3) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return payload?.role === 'service_role'
+  } catch {
+    return false
+  }
+}
+
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
