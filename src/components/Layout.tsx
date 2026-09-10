@@ -473,45 +473,50 @@ export default function Layout({ children }: LayoutProps) {
   const showAsSuperAdmin = isAdmin && !tenantLoading && !tenantId;
 
   // Get appropriate navigation based on user type
-  const allNavGroups = showAsSuperAdmin 
-    ? getSuperAdminNavGroups(t, language) 
-    : getChurchNavGroups(t, isTenantAdmin);
-  
-  // Map path -> required global feature flag key (Super Admin platform_settings.feature_flags)
-  const PATH_TO_GLOBAL_FLAG: Record<string, string> = {
-    "/website": "church_website",
-    "/prayer-requests": "prayer_requests",
-    "/ai-assistant": "ai_assistant",
-    "/ai-assistant/denials": "ai_assistant",
-    "/settings/online-giving": "online_giving",
-  };
-  const passesGlobalFlag = (path: string) => {
-    const flag = PATH_TO_GLOBAL_FLAG[path];
-    return !flag || isGlobalFeatureEnabled(flag);
-  };
+  const allNavGroups = useMemo(
+    () =>
+      showAsSuperAdmin
+        ? getSuperAdminNavGroups(t, language)
+        : getChurchNavGroups(t, isTenantAdmin),
+    [showAsSuperAdmin, t, language, isTenantAdmin],
+  );
 
   // Filter nav groups and items based on user permissions (only for church users)
-  const navGroups = roleLoading
-    ? []
-    : showAsSuperAdmin
-    ? allNavGroups
-    : allNavGroups
-        .filter(group => canSeeNav(group.key))
-        .map(group => {
-          const items = group.items.filter(item => canSeeItem(item.to) && passesGlobalFlag(item.to));
-          // Photo Booth must always be available to staff who can manage members,
-          // even if a tenant permission override drops the individual route.
-          if (group.key === "members" && items.length > 0 && !items.some(i => i.to === "/members/photo-booth")) {
-            const membersIndex = items.findIndex(i => i.to === "/members");
-            items.splice(membersIndex >= 0 ? membersIndex + 1 : 0, 0, {
-              to: "/members/photo-booth",
-              icon: Camera,
-              label: t("nav.photoBooth"),
-            });
-          }
-          return { ...group, items };
-        })
-        .filter(group => group.items.length > 0);
+  const navGroups = useMemo(() => {
+    // Map path -> required global feature flag key (Super Admin platform_settings.feature_flags)
+    const PATH_TO_GLOBAL_FLAG: Record<string, string> = {
+      "/website": "church_website",
+      "/prayer-requests": "prayer_requests",
+      "/ai-assistant": "ai_assistant",
+      "/ai-assistant/denials": "ai_assistant",
+      "/settings/online-giving": "online_giving",
+    };
+    const passesGlobalFlag = (path: string) => {
+      const flag = PATH_TO_GLOBAL_FLAG[path];
+      return !flag || isGlobalFeatureEnabled(flag);
+    };
+
+    if (roleLoading) return [];
+    if (showAsSuperAdmin) return allNavGroups;
+
+    return allNavGroups
+      .filter(group => canSeeNav(group.key))
+      .map(group => {
+        const items = group.items.filter(item => canSeeItem(item.to) && passesGlobalFlag(item.to));
+        // Photo Booth must always be available to staff who can manage members,
+        // even if a tenant permission override drops the individual route.
+        if (group.key === "members" && items.length > 0 && !items.some(i => i.to === "/members/photo-booth")) {
+          const membersIndex = items.findIndex(i => i.to === "/members");
+          items.splice(membersIndex >= 0 ? membersIndex + 1 : 0, 0, {
+            to: "/members/photo-booth",
+            icon: Camera,
+            label: t("nav.photoBooth"),
+          });
+        }
+        return { ...group, items };
+      })
+      .filter(group => group.items.length > 0);
+  }, [allNavGroups, roleLoading, showAsSuperAdmin, canSeeNav, canSeeItem, isGlobalFeatureEnabled, t]);
 
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
