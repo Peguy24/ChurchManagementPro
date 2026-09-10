@@ -1,4 +1,5 @@
 import { loadJsPdfOnly } from "@/lib/lazyExportLibs";
+import type jsPDF from "jspdf";
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
