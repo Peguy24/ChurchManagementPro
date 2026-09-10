@@ -1,5 +1,4 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { loadJsPdf } from "@/lib/lazyExportLibs";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getSignedUrl } from "@/hooks/useSignedUrl";
@@ -113,6 +112,7 @@ export const generateInventoryReportPDF = async (
   onProgress?: (progress: number) => void
 ): Promise<Blob> => {
   _currencyCode = options.currencyCode || "USD";
+  const { jsPDF, autoTable } = await loadJsPdf();
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",

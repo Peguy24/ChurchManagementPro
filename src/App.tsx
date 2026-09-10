@@ -138,7 +138,17 @@ const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
 import GlobalFeatureGate from "@/components/GlobalFeatureGate";
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Data stays fresh for a minute and no longer refetches every time the
+      // window regains focus, which removed a wave of duplicate requests.
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const InactivityGuard = ({ children }: { children: React.ReactNode }) => {
   useInactivityLogout();

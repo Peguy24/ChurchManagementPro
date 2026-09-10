@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { loadJsPdfOnly } from "@/lib/lazyExportLibs";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -199,6 +199,7 @@ export async function generateMemberHistoryPDF(
   const t = (key: string) => sanitize(pdfTranslations[lang]?.[key] || pdfTranslations.en[key] || key);
   const fmtCurrency = currencyFormatter || ((amount: number) => `${amount.toLocaleString("en-US")} $`);
   
+  const jsPDF = await loadJsPdfOnly();
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",

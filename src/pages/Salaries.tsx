@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -38,7 +39,6 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Banknote, Download, Edit, Filter, History, Plus, Search, Trash2, Users, Wallet } from 'lucide-react';
-import * as XLSX from "xlsx";
 import { subMonths, subYears, isAfter } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
@@ -498,7 +498,8 @@ export default function Salaries() {
     "1year": language === "fr" ? "1 an" : language === "ht" ? "1 ane" : "1 year",
   };
 
-  const handleDownloadPayments = () => {
+  const handleDownloadPayments = async () => {
+    const XLSX = await loadXlsx();
     if (filteredPayments.length === 0) return;
     const rows = filteredPayments.map((p) => ({
       [language === "fr" ? "Date" : "Date"]: format(new Date(p.payment_date), "dd/MM/yyyy"),

@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { loadJsPdfOnly } from "@/lib/lazyExportLibs";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { formatCurrency as formatCurrencyLib } from "./currency";
@@ -64,6 +64,7 @@ const getPaymentMethodLabel = (method: string): string => {
 
 export async function generateFiscalReceiptPDF(data: FiscalReceiptData): Promise<Blob> {
   const formatCurrency = createFormatCurrency(data.currencyCode);
+  const jsPDF = await loadJsPdfOnly();
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
