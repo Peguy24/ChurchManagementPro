@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { loadXlsx, loadJsPdf } from "@/lib/lazyExportLibs";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,9 +59,6 @@ import {
   parseISO,
 } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -290,7 +288,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
   }, [donations, expenses, budgets]);
 
   // Export functions
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXlsx();
     const wb = XLSX.utils.book_new();
 
     const revenueSheet = XLSX.utils.json_to_sheet(revenueVsExpensesData.map(m => ({
@@ -321,7 +320,8 @@ export default function FinancialReportsTab({ selectedBranch, branches }: Financ
     XLSX.writeFile(wb, `${r("pdfTitle").toLowerCase().replace(/ /g, "-")}-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
+    const { jsPDF, autoTable } = await loadJsPdf();
     const doc = new jsPDF();
     
     doc.setFontSize(20);

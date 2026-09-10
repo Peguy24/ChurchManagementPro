@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +13,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, differenceInYears, isSameMonth, addDays, isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
-import * as XLSX from "xlsx";
 
 const localTranslations: Record<string, Record<string, string>> = {
   en: {
@@ -288,7 +288,8 @@ export default function BirthdaysReportTab({ selectedBranch }: BirthdaysReportTa
   const baptismAnniversaries = currentMonthEvents.filter(e => e.eventType === "baptism").length;
   const marriageAnniversaries = currentMonthEvents.filter(e => e.eventType === "marriage").length;
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXlsx();
     const data = monthEvents.map((event) => ({
       [lt.member]: `${event.member.first_name} ${event.member.last_name}`,
       [lt.type]: getEventLabel(event.eventType),

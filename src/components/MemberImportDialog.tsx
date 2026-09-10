@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,6 @@ import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { Upload, Download, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx";
 import { memberSchema, validateForm } from "@/lib/validation";
 
 interface MemberImportDialogProps {
@@ -273,6 +273,7 @@ export default function MemberImportDialog({
         console.log('[IMPORT DEBUG] CSV text length:', text.length, 'First 200 chars:', text.substring(0, 200));
         readData = parseCSV(text);
       } else if (['xlsx', 'xls'].includes(extension || '')) {
+        const XLSX = await loadXlsx();
         const workbook = XLSX.read(new Uint8Array(rawBytes), { type: 'array' });
         console.log('[IMPORT DEBUG] Excel sheets:', workbook.SheetNames);
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -589,7 +590,8 @@ export default function MemberImportDialog({
     handleImport(retryRows);
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await loadXlsx();
     const headersMap: Record<Language, string[]> = {
       fr: ["Prénom", "Nom", "Email", "Téléphone", "Sexe", "Date de naissance", "Adresse", "Statut", "Date d'entrée", "Statut baptême", "Date de baptême", "Date de conversion", "État civil", "Date de mariage", "Nom du conjoint", "Nombre d'enfants", "Noms des enfants", "Église d'origine", "Expérience chrétienne", "Formation académique", "Formation professionnelle", "Rôle", "Contact d'urgence"],
       en: ["First Name", "Last Name", "Email", "Phone", "Gender", "Date of Birth", "Address", "Status", "Join Date", "Baptism Status", "Baptism Date", "Conversion Date", "Marital Status", "Marriage Date", "Spouse Name", "Number of Children", "Children Names", "Origin Church", "Christian Experience", "Academic Education", "Professional Training", "Role", "Emergency Contact"],

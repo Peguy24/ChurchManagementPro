@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
 import { downloadCsv, arrayToCsv } from "@/lib/csvExport";
 import { flattenRow, transformForExport } from "@/lib/backupExportConfig";
 
@@ -236,6 +236,7 @@ export default function DataBackup() {
   };
 
   const handleExport = async () => {
+    const XLSX = await loadXlsx();
     if (selectedModules.size === 0) {
       toast.error(lt("noModuleSelected"));
       return;

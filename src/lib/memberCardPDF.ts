@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { loadJsPdfOnly } from "@/lib/lazyExportLibs";
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -368,6 +368,7 @@ export const generateMemberCardsPDF = async (
   onProgress?: (progress: number) => void,
   customization?: CardCustomization
 ): Promise<Blob> => {
+  const jsPDF = await loadJsPdfOnly();
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -412,6 +413,7 @@ export const generateSingleMemberCardPDF = async (
   member: MemberCardData,
   customization?: CardCustomization
 ): Promise<Blob> => {
+  const jsPDF = await loadJsPdfOnly();
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "mm",

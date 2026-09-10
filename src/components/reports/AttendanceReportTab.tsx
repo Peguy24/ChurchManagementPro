@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { loadXlsx, loadJsPdf } from "@/lib/lazyExportLibs";
 import {
   Card,
   CardContent,
@@ -44,9 +45,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format, subMonths, parseISO, startOfMonth, endOfMonth } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--accent))", "hsl(var(--warning))"];
 
@@ -315,7 +313,8 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
       .slice(0, 10);
   }, [attendanceRecords]);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXlsx();
     const wb = XLSX.utils.book_new();
 
     const monthlySheet = XLSX.utils.json_to_sheet(monthlyData.map(m => ({
@@ -342,7 +341,8 @@ export default function AttendanceReportTab({ selectedBranch }: AttendanceReport
     XLSX.writeFile(wb, `attendance-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
+    const { jsPDF, autoTable } = await loadJsPdf();
     const doc = new jsPDF();
 
     doc.setFontSize(20);

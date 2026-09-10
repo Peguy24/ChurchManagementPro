@@ -1,5 +1,4 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { loadJsPdf } from "@/lib/lazyExportLibs";
 import { formatCurrency as formatCurrencyLib } from "./currency";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -54,6 +53,7 @@ export async function generateBankReconciliationPDF(
   currencyCode: string = "USD"
 ): Promise<void> {
   const formatCurrency = (amount: number) => formatCurrencyLib(amount, currencyCode);
+  const { jsPDF, autoTable } = await loadJsPdf();
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

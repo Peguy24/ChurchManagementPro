@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { loadXlsx, loadJsPdf } from "@/lib/lazyExportLibs";
 import {
   Card,
   CardContent,
@@ -50,9 +51,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subMonths } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--info))", "hsl(var(--success))", "hsl(var(--destructive))", "hsl(var(--warning))"];
 
@@ -311,7 +309,8 @@ export default function AuditReportTab() {
     return String(val);
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXlsx();
     const wb = XLSX.utils.book_new();
     const logsSheet = XLSX.utils.json_to_sheet(filteredLogs.map(log => ({
       [lt.dateTime]: format(parseISO(log.created_at), "dd/MM/yyyy HH:mm"),
@@ -324,7 +323,8 @@ export default function AuditReportTab() {
     XLSX.writeFile(wb, `audit-report-${format(currentDate, "yyyy-MM-dd")}.xlsx`);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
+    const { jsPDF, autoTable } = await loadJsPdf();
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.text(lt.auditReport, 14, 22);

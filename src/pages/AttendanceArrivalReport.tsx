@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -24,7 +25,6 @@ import {
   getArrivalStatus, formatScanTime, getStatusTranslationKey,
   getStatusBadgeVariant, type ArrivalStatus,
 } from "@/lib/attendanceStatus";
-import * as XLSX from "xlsx";
 
 export default function AttendanceArrivalReport() {
   const { t, language } = useLanguage();
@@ -110,7 +110,8 @@ export default function AttendanceArrivalReport() {
     };
   }, [records]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    const XLSX = await loadXlsx();
     if (!filtered?.length) return;
     const rows = filtered.map((r) => ({
       [t("arrivalReport.memberName")]: r.memberName,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { loadXlsx } from "@/lib/lazyExportLibs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,6 @@ import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
-import * as XLSX from "xlsx";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 const localTranslations: Record<string, Record<string, string>> = {
@@ -409,7 +409,8 @@ export default function InventoryReportTab({ selectedBranch }: InventoryReportTa
   const getStatusLabel = (status: string) => statusOptions.find((s) => s.value === status)?.label || status;
   const getConditionLabel = (condition: string | null) => conditionOptions.find((c) => c.value === condition)?.label || condition;
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXlsx();
     const data = items.map((item) => ({
       [lt.name]: item.name,
       [lt.category]: getCategoryLabel(item.category),
