@@ -125,10 +125,10 @@ export interface TemplateProps {
 function Socials({ social, tone = "light" }: { social?: SiteContent["social"]; tone?: "light" | "dark" }) {
   if (!social) return null;
   const items = [
-    { url: social.facebook, Icon: Facebook, label: "Facebook" },
-    { url: social.instagram, Icon: Instagram, label: "Instagram" },
-    { url: social.youtube, Icon: Youtube, label: "YouTube" },
-    { url: social.whatsapp, Icon: MessageCircle, label: "WhatsApp" },
+    { url: safeExternalUrl(social.facebook), Icon: Facebook, label: "Facebook" },
+    { url: safeExternalUrl(social.instagram), Icon: Instagram, label: "Instagram" },
+    { url: safeExternalUrl(social.youtube), Icon: Youtube, label: "YouTube" },
+    { url: safeExternalUrl(social.whatsapp), Icon: MessageCircle, label: "WhatsApp" },
   ].filter((i) => i.url);
   if (!items.length) return null;
   const base =
