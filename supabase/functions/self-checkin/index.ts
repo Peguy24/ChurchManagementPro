@@ -305,13 +305,30 @@ serve(async (req) => {
 
       if (memberQr) {
         const code = memberQr.replace(/^MEMBER-/i, "").trim();
-        const { data } = await supabaseAdmin
-          .from("members")
-          .select("id, first_name, last_name, branch_id")
-          .eq("tenant_id", session.tenant_id)
-          .or(`qr_code.eq.${code},id.eq.${/^[0-9a-f-]{36}$/i.test(code) ? code : "00000000-0000-0000-0000-000000000000"}`)
-          .maybeSingle();
-        member = data ?? null;
+        // Strict allow-list: only plain codes are ever queried, and each lookup
+        // uses a separate .eq filter so nothing is interpolated into a filter string.
+        const safeCode = /^[A-Za-z0-9_-]{1,64}$/.test(code) ? code : null;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
+
+        if (safeCode) {
+          const { data: byQr } = await supabaseAdmin
+            .from("members")
+            .select("id, first_name, last_name, branch_id")
+            .eq("tenant_id", session.tenant_id)
+            .eq("qr_code", safeCode)
+            .maybeSingle();
+          member = byQr ?? null;
+
+          if (!member && isUuid) {
+            const { data: byId } = await supabaseAdmin
+              .from("members")
+              .select("id, first_name, last_name, branch_id")
+              .eq("tenant_id", session.tenant_id)
+              .eq("id", safeCode)
+              .maybeSingle();
+            member = byId ?? null;
+          }
+        }
       }
 
       if (!member && identifier) {
