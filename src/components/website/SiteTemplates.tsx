@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Youtube, MessageCircle, MapPin, Phone, Mail, Clock, ArrowRight, Church } from "lucide-react";
+import { safeExternalUrl } from "@/lib/sanitizeHtml";
 
 export interface SermonItem {
   title: string;
