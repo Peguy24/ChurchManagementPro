@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { safeExternalUrl } from "@/lib/sanitizeHtml";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { Globe, ExternalLink, Loader2, Sparkles, Plus, Trash2, Image as ImageIcon } from "lucide-react";
@@ -131,11 +132,23 @@ export default function ChurchWebsite() {
     if (!tenantId) return;
     setSaving(true);
     const publish = publishOverride ?? isPublished;
+    const safeContent: SiteContent = {
+      ...content,
+      hero_cta_url: safeExternalUrl(content.hero_cta_url) ?? "",
+      social: content.social
+        ? {
+            facebook: safeExternalUrl(content.social.facebook) ?? "",
+            instagram: safeExternalUrl(content.social.instagram) ?? "",
+            youtube: safeExternalUrl(content.social.youtube) ?? "",
+            whatsapp: safeExternalUrl(content.social.whatsapp) ?? "",
+          }
+        : content.social,
+    };
     const { error } = await supabase.from("tenant_websites").upsert(
       {
         tenant_id: tenantId,
         template,
-        content: content as any,
+        content: safeContent as any,
         is_published: publish,
       },
       { onConflict: "tenant_id" },
