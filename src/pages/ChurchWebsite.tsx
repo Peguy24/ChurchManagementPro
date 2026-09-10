@@ -163,7 +163,7 @@ export default function ChurchWebsite() {
 
   const updateContent = (patch: Partial<SiteContent>) => setContent((c) => ({ ...c, ...patch }));
   const updateSocial = (key: keyof NonNullable<SiteContent["social"]>, val: string) =>
-    setContent((c) => ({ ...c, social: { ...(c.social || {}), [key]: safeExternalUrl(val) ?? "" } }));
+    setContent((c) => ({ ...c, social: { ...(c.social || {}), [key]: val } }));
   const addService = () =>
     setContent((c) => ({ ...c, service_times: [...(c.service_times || []), { day: "Sunday", time: "10:00 AM", title: "" }] }));
   const updateService = (i: number, patch: Partial<{ day: string; time: string; title: string }>) =>
